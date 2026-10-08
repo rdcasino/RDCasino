@@ -23,7 +23,7 @@ O sistema começa **zerado**: nenhum jogador, aposta ou transação inventada. T
 **O que funciona de verdade (na demonstração):**
 - Cadastro e login de jogadores, com bloqueio de países restritos (Brasil incluído).
 - Depósito de teste (simula o processador cripto), saque com aprovação do admin e gorjeta entre jogadores.
-- **Dice e Limbo jogáveis**, com resultado provably fair (HMAC-SHA256) verificável na página Provably Fair.
+- **6 jogos próprios jogáveis: Dice, Limbo, Plinko, Crash, Mines e Hi-Lo**, com resultado provably fair (HMAC-SHA256) verificável na página Provably Fair. Mines, Hi-Lo e Crash descontam a aposta no início e retomam a rodada se a página for recarregada.
 - Nível VIP (Wood → Amethyst) pelo total apostado, rakeback e prêmio de nível para resgatar.
 - Leaderboard do mês calculado pelas apostas reais.
 - Afiliados: todo jogador tem link e código; cliques, cadastros, depósitos e comissão são calculados de verdade; a comissão é coletada para o saldo.
