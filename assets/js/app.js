@@ -57,32 +57,31 @@
     if (!b || !(b.id in inFlight)) return; delete inFlight[b.id];
     var el = $("#hdr-bal"); if (el && b.payout > 0) { el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); }
   }
-  /* Moeda de exibição do saldo (estilo Shuffle). O saldo é em dólar; aqui só converte pela cotação. */
-  var disp = { coin: "USDT", fiat: true };
-  try { var dj = JSON.parse(localStorage.getItem("rd_disp") || "null"); if (dj && RD.prices[dj.coin]) disp = dj; } catch (e) {}
-  function saveDisp() { try { localStorage.setItem("rd_disp", JSON.stringify(disp)); } catch (e) {} }
-  function coinDec(c) { var p = RD.prices[c] || 1; return p >= 1000 ? 8 : p >= 50 ? 6 : p >= 5 ? 4 : 2; }
-  function inCoin(usd, c) { var p = RD.prices[c] || 1; return (usd / p).toLocaleString("en-US", { minimumFractionDigits: coinDec(c), maximumFractionDigits: coinDec(c) }); }
-  function coinDot(c, cls) { return '<span class="coin-dot' + (cls ? " " + cls : "") + '" style="background:' + (COIN_COLORS[c] || "#666") + '">' + (c === "USDT" ? "₮" : c === "BTC" ? "₿" : c === "ETH" ? "Ξ" : c[0]) + "</span>"; }
+  /* Moeda de exibição do saldo: um saldo só (em dólar por dentro), mostrado em USD, BRL, ARS, CAD...
+     O câmbio vem do servidor (tabela prices, "FX:BRL" = quantos reais valem 1 dólar). */
+  var disp = { cur: "USD" };
+  try { var dj = JSON.parse(localStorage.getItem("rd_cur") || "null"); if (dj && dj.cur) disp = dj; } catch (e) {}
+  function saveDisp() { try { localStorage.setItem("rd_cur", JSON.stringify(disp)); } catch (e) {} }
+  function fxRate(c) { return c === "USD" ? 1 : RD.prices["FX:" + c] || 0; }
+  function curInfo(c) { return RD.fiats.filter(function (f) { return f[0] === c; })[0] || RD.fiats[0]; }
+  function inCur(usd, c) {
+    var r = fxRate(c); if (!r) { c = "USD"; r = 1; }
+    var f = curInfo(c), dec = f[3] === 0 ? 0 : 2;
+    return f[1] + (usd * r).toLocaleString(f[4] || "en-US", { minimumFractionDigits: dec, maximumFractionDigits: dec });
+  }
   function paintBal(u) {
-    var v = shownBal(u), el = $("#hdr-bal"), dot = $("#hdr-coin");
-    el.textContent = disp.fiat ? fmt.usd(v) : inCoin(v, disp.coin);
-    if (dot) { dot.style.background = COIN_COLORS[disp.coin] || "#666"; dot.textContent = coinDot(disp.coin).replace(/<[^>]+>/g, ""); }
+    var v = shownBal(u), el = $("#hdr-bal"), tag = $("#hdr-coin");
+    if (!fxRate(disp.cur)) disp.cur = "USD";
+    el.textContent = inCur(v, disp.cur);
+    if (tag) tag.textContent = disp.cur;
     if (!$("#bal-menu").classList.contains("hidden")) renderBalMenu();
   }
   function renderBalMenu() {
     var u = me(); if (!u) return; var v = shownBal(u);
-    /* "Hide zero balances": o saldo é um só (em dólar), então mostra só as moedas que o jogador usa
-       (as que já depositou ou sacou, mais a escolhida); com saldo zerado fica só a escolhida */
-    var used = {}; used[disp.coin] = 1;
-    if (v > 0) (db.txOf(u.id) || []).forEach(function (t) { if (t.coin && t.status !== "Rejected" && RD.coinNames[t.coin]) used[t.coin] = 1; });
-    $("#bal-menu").innerHTML = '<div class="bm-list">' + Object.keys(RD.coinNames).filter(function (c) { return RD.prices[c] && (!disp.hideZero || used[c]); }).map(function (c) {
-      return '<button class="bm-row' + (c === disp.coin ? " active" : "") + '" data-disp-coin="' + c + '">' + coinDot(c) + '<span class="grow"><b>' + c + "</b><small>" + RD.coinNames[c] + '</small></span><span class="bm-amt"><b class="num">' + (disp.fiat ? fmt.usd(v) : inCoin(v, c)) + "</b></span></button>";
-    }).join("") + '</div><label class="bm-fiat"><span>Hide zero balances</span><input type="checkbox" data-disp-zero' + (disp.hideZero ? " checked" : "") + '><i class="sw"></i></label>' +
-      '<label class="bm-fiat bm-tog2"><span>Display in fiat (USD)</span><input type="checkbox" data-disp-fiat' + (disp.fiat ? " checked" : "") + '><i class="sw"></i></label>';
+    $("#bal-menu").innerHTML = '<div class="bm-title">Display currency</div><div class="bm-list">' + RD.fiats.filter(function (f) { return fxRate(f[0]); }).map(function (f) {
+      return '<button class="bm-row' + (f[0] === disp.cur ? " active" : "") + '" data-disp-cur="' + f[0] + '"><span class="bm-sym">' + f[1].trim() + '</span><span class="grow"><b>' + f[0] + "</b><small>" + f[2] + '</small></span><span class="bm-amt"><b class="num">' + inCur(v, f[0]) + "</b></span></button>";
+    }).join("") + "</div>";
   }
-  document.addEventListener("change", function (e) { if (e.target.hasAttribute && e.target.hasAttribute("data-disp-fiat")) { disp.fiat = e.target.checked; saveDisp(); renderHeader(); }
-    if (e.target.hasAttribute && e.target.hasAttribute("data-disp-zero")) { disp.hideZero = e.target.checked; saveDisp(); renderBalMenu(); } });
   RD.onPrices = function () { var u = me(); if (u) paintBal(u); };
   function renderHeader() {
     var u = me();
@@ -1161,7 +1160,7 @@
   function kenoTable(k, risk) { return (KENO[risk] || KENO.classic)[k - 1].slice(); }
   function kenoFrom(fs) { var a = []; for (var i = 1; i <= 40; i++) a.push(i); for (var j = 0; j < 10; j++) { var k = j + Math.floor(fs[j] * (40 - j)), t = a[j]; a[j] = a[k]; a[k] = t; } return a.slice(0, 10); }
   RD.fair.wheelTable = wheelTable; RD.fair.kenoTable = kenoTable; RD.fair.kenoFrom = kenoFrom;
-  function multColor(m, high) { return m === 0 ? "#3a2a35" : high ? "#ff2e55" : m < 1.4 ? "#c9b8c2" : m < 1.6 ? "#22e08a" : m < 1.95 ? "#7aa7ff" : m < 2.5 ? "#ffc85c" : "#a07bff"; }
+  function multColor(m, high) { return m === 0 ? "#22324c" : high ? "#ff2e55" : m < 1.4 ? "#c9b8c2" : m < 1.6 ? "#22e08a" : m < 1.95 ? "#7aa7ff" : m < 2.5 ? "#ffc85c" : "#a07bff"; }
 
   /* ---------- WHEEL ---------- */
   OG.wheel = {
@@ -1171,9 +1170,9 @@
         auto: true,
         side: '<div class="ogx-row2">' + selectField("wh-risk", "Risk", [["low", "Low"], ["medium", "Medium"], ["high", "High"]], ogPrefs.whRisk || "medium") + selectField("wh-seg", "Segments", [[10, "10"], [20, "20"], [30, "30"], [40, "40"], [50, "50"]], ogPrefs.whSeg || 30) + "</div>",
         center: '<div class="wh"><div class="wh-wrap" id="wh-wrap"><div class="wh-pin"></div><svg viewBox="-122 -122 244 244" id="wh-svg"><defs>' +
-          '<linearGradient id="whBz" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4a3a52"/><stop offset=".5" stop-color="#241b29"/><stop offset="1" stop-color="#3a2d41"/></linearGradient>' +
-          '<radialGradient id="whHub" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#3a2d41"/><stop offset="1" stop-color="#140f17"/></radialGradient></defs>' +
-          '<circle r="121" fill="url(#whBz)"/><circle r="121" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="1.5"/><g class="wh-bulbs"><circle class="wb0" cx="113.00" cy="0.00" r="2.6"/><circle class="wb1" cx="109.15" cy="29.25" r="2.6"/><circle class="wb0" cx="97.86" cy="56.50" r="2.6"/><circle class="wb1" cx="79.90" cy="79.90" r="2.6"/><circle class="wb0" cx="56.50" cy="97.86" r="2.6"/><circle class="wb1" cx="29.25" cy="109.15" r="2.6"/><circle class="wb0" cx="0.00" cy="113.00" r="2.6"/><circle class="wb1" cx="-29.25" cy="109.15" r="2.6"/><circle class="wb0" cx="-56.50" cy="97.86" r="2.6"/><circle class="wb1" cx="-79.90" cy="79.90" r="2.6"/><circle class="wb0" cx="-97.86" cy="56.50" r="2.6"/><circle class="wb1" cx="-109.15" cy="29.25" r="2.6"/><circle class="wb0" cx="-113.00" cy="0.00" r="2.6"/><circle class="wb1" cx="-109.15" cy="-29.25" r="2.6"/><circle class="wb0" cx="-97.86" cy="-56.50" r="2.6"/><circle class="wb1" cx="-79.90" cy="-79.90" r="2.6"/><circle class="wb0" cx="-56.50" cy="-97.86" r="2.6"/><circle class="wb1" cx="-29.25" cy="-109.15" r="2.6"/><circle class="wb0" cx="-0.00" cy="-113.00" r="2.6"/><circle class="wb1" cx="29.25" cy="-109.15" r="2.6"/><circle class="wb0" cx="56.50" cy="-97.86" r="2.6"/><circle class="wb1" cx="79.90" cy="-79.90" r="2.6"/><circle class="wb0" cx="97.86" cy="-56.50" r="2.6"/><circle class="wb1" cx="109.15" cy="-29.25" r="2.6"/></g><circle r="107" fill="#140f17"/>' +
+          '<linearGradient id="whBz" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2a4670"/><stop offset=".5" stop-color="#122040"/><stop offset="1" stop-color="#1d3356"/></linearGradient>' +
+          '<radialGradient id="whHub" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#1d3356"/><stop offset="1" stop-color="#091426"/></radialGradient></defs>' +
+          '<circle r="121" fill="url(#whBz)"/><circle r="121" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="1.5"/><g class="wh-bulbs"><circle class="wb0" cx="113.00" cy="0.00" r="2.6"/><circle class="wb1" cx="109.15" cy="29.25" r="2.6"/><circle class="wb0" cx="97.86" cy="56.50" r="2.6"/><circle class="wb1" cx="79.90" cy="79.90" r="2.6"/><circle class="wb0" cx="56.50" cy="97.86" r="2.6"/><circle class="wb1" cx="29.25" cy="109.15" r="2.6"/><circle class="wb0" cx="0.00" cy="113.00" r="2.6"/><circle class="wb1" cx="-29.25" cy="109.15" r="2.6"/><circle class="wb0" cx="-56.50" cy="97.86" r="2.6"/><circle class="wb1" cx="-79.90" cy="79.90" r="2.6"/><circle class="wb0" cx="-97.86" cy="56.50" r="2.6"/><circle class="wb1" cx="-109.15" cy="29.25" r="2.6"/><circle class="wb0" cx="-113.00" cy="0.00" r="2.6"/><circle class="wb1" cx="-109.15" cy="-29.25" r="2.6"/><circle class="wb0" cx="-97.86" cy="-56.50" r="2.6"/><circle class="wb1" cx="-79.90" cy="-79.90" r="2.6"/><circle class="wb0" cx="-56.50" cy="-97.86" r="2.6"/><circle class="wb1" cx="-29.25" cy="-109.15" r="2.6"/><circle class="wb0" cx="-0.00" cy="-113.00" r="2.6"/><circle class="wb1" cx="29.25" cy="-109.15" r="2.6"/><circle class="wb0" cx="56.50" cy="-97.86" r="2.6"/><circle class="wb1" cx="79.90" cy="-79.90" r="2.6"/><circle class="wb0" cx="97.86" cy="-56.50" r="2.6"/><circle class="wb1" cx="109.15" cy="-29.25" r="2.6"/></g><circle r="107" fill="#091426"/>' +
           '<g id="wh-rot"></g><circle r="74" fill="none" stroke="rgba(0,0,0,.45)" stroke-width="7"/><circle r="58" fill="url(#whHub)" stroke="rgba(255,255,255,.14)" stroke-width="2"/>' +
           '<text id="wh-res" y="8" text-anchor="middle" font-size="22" font-weight="900" fill="#fff" style="font-family:var(--font-display)"></text><text id="wh-logo" y="7" text-anchor="middle" font-size="20" font-weight="900" fill="#fff" opacity=".85" style="font-family:var(--font-display)">RD</text></svg></div><div class="wh-legend" id="wh-legend"></div></div>'
       };
@@ -1188,11 +1187,11 @@
           var a0 = (i / N) * 2 * Math.PI - Math.PI / 2, a1 = ((i + 1) / N) * 2 * Math.PI - Math.PI / 2;
           out += '<path d="M' + (R * Math.cos(a0)).toFixed(2) + " " + (R * Math.sin(a0)).toFixed(2) + " A" + R + " " + R + " 0 0 1 " + (R * Math.cos(a1)).toFixed(2) + " " + (R * Math.sin(a1)).toFixed(2) + " L" + (r * Math.cos(a1)).toFixed(2) + " " + (r * Math.sin(a1)).toFixed(2) + " A" + r + " " + r + " 0 0 0 " + (r * Math.cos(a0)).toFixed(2) + " " + (r * Math.sin(a0)).toFixed(2) + 'Z" fill="' + multColor(m, hi && m > 0) + '" stroke="#0e090d" stroke-width="1.2"/>';
         });
-        $("#wh-rot").innerHTML = out + '<circle r="' + r + '" fill="#1c1520"/>';
+        $("#wh-rot").innerHTML = out + '<circle r="' + r + '" fill="#0d182b"/>';
         if (!spun) rot = -180 / N; // parado: um segmento inteiro sob o ponteiro
         $("#wh-rot").style.transform = "rotate(" + rot + "deg)";
         var uniq = []; t.forEach(function (m) { if (uniq.indexOf(m) < 0) uniq.push(m); }); uniq.sort(function (a, b) { return a - b; });
-        $("#wh-legend").innerHTML = uniq.map(function (m) { var c = t.filter(function (x) { return x === m; }).length; return '<div style="--c:' + multColor(m, hi && m > 0) + '"><b>' + m.toFixed(2) + "×</b><small>" + ((c / N) * 100).toFixed(1) + "%</small></div>"; }).join("");
+        $("#wh-legend").innerHTML = uniq.map(function (m) { var c = t.filter(function (x) { return x === m; }).length; return '<div style="--c:' + multColor(m, hi && m > 0) + '"><b>' + m.toFixed(2) + "×</b></div>"; }).join("");
         ctx.setProfit(Math.max.apply(null, t), "max " + Math.max.apply(null, t).toFixed(2));
       }
       function change() { if (spinning) return; ogPrefs.whSeg = n(); ogPrefs.whRisk = risk(); savePrefs(); draw(); }
@@ -2972,7 +2971,7 @@
 
   /* ---------- Events ---------- */
   document.addEventListener("click", function (e) {
-    var t = e.target.closest("[data-open],[data-close],[data-drawer],[data-close-drawer],[data-action],[data-copy],[data-auth],[data-wtab],[data-coin],[data-net],[data-btab],[data-level],[data-promo],[data-tip-user],[data-disp-coin],#user-btn,#bal-btn,#burger,#bn-menu,#sb-backdrop");
+    var t = e.target.closest("[data-open],[data-close],[data-drawer],[data-close-drawer],[data-action],[data-copy],[data-auth],[data-wtab],[data-coin],[data-net],[data-btab],[data-level],[data-promo],[data-tip-user],[data-disp-cur],#user-btn,#bal-btn,#burger,#bn-menu,#sb-backdrop");
     if (!t) {
       if (!e.target.closest(".menu-wrap")) $("#user-menu").classList.add("hidden");
       if (!e.target.closest("#bal-menu")) $("#bal-menu").classList.add("hidden");
@@ -3006,7 +3005,7 @@
     }
     if (t.id === "user-btn") return $("#user-menu").classList.toggle("hidden");
     if (t.id === "bal-btn") { var bm = $("#bal-menu"); bm.classList.toggle("hidden"); if (!bm.classList.contains("hidden")) renderBalMenu(); return; }
-    if (t.hasAttribute("data-disp-coin")) { disp.coin = t.getAttribute("data-disp-coin"); disp.fiat = false; saveDisp(); $("#bal-menu").classList.add("hidden"); return renderHeader(); }
+    if (t.hasAttribute("data-disp-cur")) { disp.cur = t.getAttribute("data-disp-cur"); saveDisp(); $("#bal-menu").classList.add("hidden"); return renderHeader(); }
     if (t.id === "burger" || t.id === "bn-menu") return document.body.classList.toggle("sb-open");
     if (t.id === "sb-backdrop") return closeAll();
 

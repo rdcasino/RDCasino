@@ -193,6 +193,10 @@ RD.wallet = {
 /* Cotação em dólar de cada moeda (o modo real troca por valores do servidor, atualizados a cada 2 min).
    O saldo é sempre em dólar por dentro; a moeda escolhida no cabeçalho só muda a exibição. */
 RD.prices = { USDT: 1, USDC: 1, BTC: 80000, ETH: 2400, SOL: 105, LTC: 61, DOGE: 0.08, TRX: 0.33 };
+/* Moedas para exibir o saldo: [código, símbolo, nome, casas decimais (padrão 2), formato do número] */
+RD.fiats = [["USD", "$", "US Dollar"], ["BRL", "R$", "Brazilian Real", 2, "pt-BR"], ["ARS", "AR$", "Argentine Peso", 0, "es-AR"], ["CAD", "CA$", "Canadian Dollar"], ["EUR", "€", "Euro"], ["GBP", "£", "British Pound"], ["MXN", "MX$", "Mexican Peso"], ["CLP", "CLP$", "Chilean Peso", 0, "es-CL"], ["AUD", "A$", "Australian Dollar"], ["JPY", "¥", "Japanese Yen", 0], ["INR", "₹", "Indian Rupee"], ["TRY", "₺", "Turkish Lira"], ["PHP", "₱", "Philippine Peso"]];
+/* câmbio de reserva (modo demonstração); no modo real vem do servidor */
+["BRL:5.02", "ARS:1516", "CAD:1.42", "EUR:0.89", "GBP:0.76", "MXN:18.2", "CLP:978", "AUD:1.44", "JPY:157.8", "INR:96.8", "TRY:49.2", "PHP:63"].forEach(function (x) { var k = x.split(":"); RD.prices["FX:" + k[0]] = +k[1]; });
 RD.coinNames = { USDT: "Tether", USDC: "USD Coin", BTC: "Bitcoin", ETH: "Ethereum", SOL: "Solana", LTC: "Litecoin", DOGE: "Dogecoin", TRX: "Tron" };
 
 RD.affiliatePlans = [
