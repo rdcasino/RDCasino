@@ -328,7 +328,7 @@
     roulette: "<p><strong>Roulette</strong>: European wheel with a single zero. Place chips on numbers or outside bets — a number pays 35 to 1, dozens and columns 2 to 1, and red/black, even/odd and 1–18/19–36 pay 1 to 1.</p>",
     tower: "<p><strong>Tower</strong>: climb 9 floors. On every floor pick a tile — find the egg and you go up, hit the skull and the round ends. Cash out whenever you want. Five difficulties, from Easy (3 eggs in 4 tiles) to Master (1 egg in 4 tiles, up to 256,901×).</p>",
     chicken: "<p><strong>Chicken</strong>: help the chicken cross the road, one lane at a time. Every lane you cross raises your multiplier, but some lanes hide a car. Cash out before you get hit. Easy hides 1 car in 20 lanes, Expert hides 10.</p>",
-    hilo: "<p><strong>Hi-Lo</strong>: guess whether the next card is higher or lower than the current one. Each correct guess multiplies your win. Skip cards you don't like and cash out whenever you want. Aces are low, kings are high.</p>"
+    hilo: "<p><strong>Hi-Lo</strong>: guess whether the next card is higher or lower than the current one. Each correct guess multiplies your win. Skip cards you don't like and cash out whenever you want. The last card stays on the table for your next round, win or lose. Aces are low, kings are high.</p>"
   };
   function ogTab(g, tab) {
     var box = $("#og-tab-body"); if (!box) return;
@@ -545,7 +545,7 @@
             var res = outcome("limbo", floatFrom(buf)), win = res >= m;
             var b = db.placeBet(u.id, "limbo", a, m, win, { result: res, target: m, nonce: nonce, client: client }); if (b.error) { ctx.msg(b.error); return null; }
             var el = $("#lb-num"), t0 = performance.now();
-            if (el) { el.classList.remove("w", "l"); (function step(t) { var k = Math.min(1, (t - t0) / 280); el.textContent = (1 + (res - 1) * k).toFixed(2) + "×"; if (k < 1) requestAnimationFrame(step); else el.classList.add(win ? "w" : "l"); })(t0); }
+            if (el) { el.classList.remove("w", "l"); (function step(t) { var k = Math.max(0, Math.min(1, (t - t0) / 280)); el.textContent = (1 + (res - 1) * k).toFixed(2) + "×"; if (k < 1) requestAnimationFrame(step); else el.classList.add(win ? "w" : "l"); })(t0); }
             ctx.record(b); return { win: win };
           });
         }
@@ -591,7 +591,7 @@
           for (var i = 0; i < R; i++) { sum += path[i]; pts.push([W / 2 + (sum - (i + 1) / 2) * G.dx, G.top + i * G.dy + G.dy * 0.55]); }
           var per = 115, t0 = performance.now();
           (function step(t) {
-            var e = (t - t0) / per, i = Math.min(Math.floor(e), pts.length - 2), k = Math.min(1, e - i);
+            var e = Math.max(0, (t - t0) / per), i = Math.min(Math.floor(e), pts.length - 2), k = Math.min(1, e - i);
             var a = pts[i], b = pts[i + 1], x = a[0] + (b[0] - a[0]) * k, y = a[1] + (b[1] - a[1]) * (k * k) - Math.sin(k * Math.PI) * G.dy * 0.35;
             ball.setAttribute("cx", x.toFixed(2)); ball.setAttribute("cy", y.toFixed(2));
             if (e < pts.length - 1) return requestAnimationFrame(step);
@@ -827,28 +827,39 @@
           $("#hl-" + x[0] + "-p").textContent = (x[1].p * 100).toFixed(2) + "% · " + (0.99 / x[1].p).toFixed(2) + "×";
           $("#hl-" + x[0]).disabled = !live;
         });
-        $("#hl-skip").disabled = !live;
+        $("#hl-skip").disabled = live ? false : !me();
         $("#hl-hist").innerHTML = round ? round.cards.map(function (k, i) { return miniCard(k, i === 0 ? "" : k.res); }).join("") : "";
         $("#hl-live").classList.toggle("hidden", !live);
         if (live) { ctx.setProfit(round.mult, round.mult.toFixed(2)); $("#og-profit").value = (round.amount * (round.mult - 1)).toFixed(2); }
         var b = ctx.btn(); b.textContent = live ? "Cashout" : "Bet"; b.disabled = live && round.mult <= 1;
       }
+      /* A carta da mesa continua de uma rodada para a outra (ganhando ou perdendo).
+         Ela é só o ponto de partida: as próximas cartas vêm das suas seeds. */
+      function randomCard() { var a = new Uint32Array(1); crypto.getRandomValues(a); return cardFrom(a[0] / 4294967296); }
       function loadPreview() {
         var u = me(); if (!u) { preview = { rank: 7, suit: 0 }; return show(); }
-        var s = db.seeds(u.id); floats(s.server, s.client, s.nonce, 1).then(function (fs) { preview = cardFrom(fs[0]); show(); });
+        var last = db.betsOf(u.id).filter(function (b) { return b.game === G && b.detail && b.detail.last; })[0], saved = (ogPrefs.hlCard || {})[u.id];
+        preview = saved || (last ? { rank: last.detail.last.rank, suit: last.detail.last.suit } : randomCard()); keepCard(preview); show();
+      }
+      function keepCard(c) { var u = me(); if (!u) return; ogPrefs.hlCard = ogPrefs.hlCard || {}; ogPrefs.hlCard[u.id] = { rank: c.rank, suit: c.suit }; savePrefs(); }
+      function cardsDetail(cards, extra) {
+        var d = { cards: cards.map(function (c) { return RANKS[c.rank] + SUITS[c.suit]; }).join(" "), start: { rank: cards[0].rank, suit: cards[0].suit }, last: { rank: cards[cards.length - 1].rank, suit: cards[cards.length - 1].suit } };
+        for (var k in extra) d[k] = extra[k]; return d;
       }
       function draw(kind) {
-        if (!round || busyCard) return; busyCard = true;
+        if (!round) { if (kind === "skip" && !busyCard && me()) { preview = randomCard(); keepCard(preview); show(); } return; }
+        if (busyCard) return; busyCard = true;
         var u = me(), r = db.activeRound(u.id, G), idx = round.cards.length;
-        floats(r.server, r.client, r.nonce, idx + 1).then(function (fs) {
-          var next = cardFrom(fs[idx]), cur = current(), o = hiloOpts(cur.rank);
+        // carta nº idx da rodada = número (idx − 1) das seeds (a 1ª carta é a que já estava na mesa)
+        floats(r.server, r.client, r.nonce, idx).then(function (fs) {
+          var next = cardFrom(fs[idx - 1]), cur = current(), o = hiloOpts(cur.rank);
           if (kind === "skip") { next.res = "skip"; round.cards.push(next); }
           else {
             var opt = kind === "up" ? o.up : o.down, ok = opt.ok(next.rank);
             next.res = ok ? "good" : "bad"; round.cards.push(next);
             if (!ok) {
-              var b = db.settleRound(u.id, G, 0, false, { cards: round.cards.map(function (c) { return RANKS[c.rank] + SUITS[c.suit]; }).join(" "), mult: round.mult });
-              var last = round; round = null; busyCard = false;
+              var b = db.settleRound(u.id, G, 0, false, cardsDetail(round.cards, { mult: round.mult }));
+              var last = round; round = null; busyCard = false; keepCard(next); preview = { rank: next.rank, suit: next.suit };
               if (!$("#hl-card")) return;
               ctx.lock(false);
               $("#hl-card").innerHTML = cardHtml(next, "lose"); $("#hl-hist").innerHTML = last.cards.map(function (k, i) { return miniCard(k, i === 0 ? "" : k.res); }).join("");
@@ -859,17 +870,15 @@
             }
             round.mult = Math.floor(round.mult * (0.99 / opt.p) * 100) / 100;
           }
-          db.updateRound(u.id, G, { cards: round.cards, mult: round.mult }); busyCard = false; show();
+          db.updateRound(u.id, G, { cards: round.cards, mult: round.mult }); keepCard(next); busyCard = false; show();
         });
       }
       function start() {
         var a = ctx.amount(), u = ctx.validate(a); if (!u) return;
-        var r = db.startRound(u.id, G, a, { cards: [], mult: 1 }); if (r.error) return ctx.msg(r.error);
-        renderHeader(); ctx.refresh(); ctx.lock(true); busyCard = true;
-        floats(r.round.server, r.round.client, r.round.nonce, 1).then(function (fs) {
-          var first = cardFrom(fs[0]); busyCard = false;
-          round = { amount: a, cards: [first], mult: 1 }; db.updateRound(u.id, G, { cards: round.cards, mult: 1 }); show();
-        });
+        if (!preview) loadPreview();
+        var first = { rank: preview.rank, suit: preview.suit };
+        var r = db.startRound(u.id, G, a, { cards: [first], mult: 1 }); if (r.error) return ctx.msg(r.error);
+        round = { amount: a, cards: [first], mult: 1 }; renderHeader(); ctx.refresh(); ctx.lock(true); show();
       }
       $("#hl-up").addEventListener("click", function () { draw("up"); });
       $("#hl-down").addEventListener("click", function () { draw("down"); });
@@ -881,15 +890,12 @@
           if (!round) return start();
           if (round.mult <= 1) return;
           var u = me(), mult = capMult(round.amount, round.mult);
-          var b = db.settleRound(u.id, G, mult, true, { cards: round.cards.map(function (c) { return RANKS[c.rank] + SUITS[c.suit]; }).join(" "), mult: mult });
-          round = null; ctx.lock(false); ctx.record(b); loadPreview();
+          var b = db.settleRound(u.id, G, mult, true, cardsDetail(round.cards, { mult: mult }));
+          var lastCard = round.cards[round.cards.length - 1]; round = null; ctx.lock(false); keepCard(lastCard); preview = { rank: lastCard.rank, suit: lastCard.suit }; ctx.record(b); show();
         },
         resume: function () {
           var u = me(), r = u && db.activeRound(u.id, G);
-          if (r && !(r.state.cards && r.state.cards.length)) {
-            busyCard = true; ctx.lock(true);
-            return floats(r.server, r.client, r.nonce, 1).then(function (fs) { busyCard = false; round = { amount: r.amount, cards: [cardFrom(fs[0])], mult: 1 }; db.updateRound(u.id, G, { cards: round.cards, mult: 1 }); $("#og-amt").value = r.amount.toFixed(2); show(); });
-          }
+          if (r && !(r.state.cards && r.state.cards.length)) { r.state.cards = [preview || randomCard()]; r.state.mult = 1; db.updateRound(u.id, G, r.state); }
           if (r) { round = { amount: r.amount, cards: r.state.cards.slice(), mult: r.state.mult }; $("#og-amt").value = r.amount.toFixed(2); ctx.lock(true); show(); }
         }
       };
@@ -1710,7 +1716,7 @@
     return '<div class="container prose"><h1>Provably fair</h1><p class="muted" style="margin-top:8px">Every RD Originals result can be verified by you. We commit to the server seed (showing its hash) before you bet, so nobody can change a result afterwards.</p>' +
       "<h2>How results are made</h2><ul>" +
       "<li><strong>Dice / Limbo / Crash:</strong> <code>HMAC_SHA256(server_seed, client_seed:nonce)</code> → first 4 bytes → number between 0 and 1. Dice: <code>floor(n × 10001) / 100</code>. Limbo and Crash: <code>floor(0.99 / n × 100) / 100</code> (min 1.00×).</li>" +
-      "<li><strong>Plinko / Mines / Hi-Lo / Keno / Wheel / Roulette / Blackjack / Tower / Chicken:</strong> need several numbers, made with <code>HMAC_SHA256(server_seed, client_seed:nonce:cursor)</code>, 8 numbers per cursor. Plinko: each row goes right if <code>n ≥ 0.5</code>. Mines: Fisher–Yates shuffle of the 25 tiles, the first N are mines. Hi-Lo and Blackjack: card = <code>floor(n × 52)</code> (infinite deck). Keno: shuffle of 1–40, first 10 are drawn. Wheel: segment = <code>floor(n × segments)</code>. Roulette: number = <code>floor(n × 37)</code>. Tower: on each of the 9 floors, Fisher–Yates shuffle of the tiles, the first ones are eggs. Chicken: Fisher–Yates shuffle of the 20 lanes, the first ones hide a car.</li></ul>" +
+      "<li><strong>Plinko / Mines / Hi-Lo / Keno / Wheel / Roulette / Blackjack / Tower / Chicken:</strong> need several numbers, made with <code>HMAC_SHA256(server_seed, client_seed:nonce:cursor)</code>, 8 numbers per cursor. Plinko: each row goes right if <code>n ≥ 0.5</code>. Mines: Fisher–Yates shuffle of the 25 tiles, the first N are mines. Hi-Lo and Blackjack: card = <code>floor(n × 52)</code> (infinite deck). In Hi-Lo the first card on the table is the last card of your previous round; every card after it comes from your seeds. Keno: shuffle of 1–40, first 10 are drawn. Wheel: segment = <code>floor(n × segments)</code>. Roulette: number = <code>floor(n × 37)</code>. Tower: on each of the 9 floors, Fisher–Yates shuffle of the tiles, the first ones are eggs. Chicken: Fisher–Yates shuffle of the 20 lanes, the first ones hide a car.</li></ul>" +
       '<h2>Verify a bet</h2><div class="card card-pad"><div class="row wrap" style="gap:0 12px;align-items:flex-start"><div class="field grow" style="min-width:160px"><label>Game</label><select class="select" id="v-game"><option value="dice">Dice</option><option value="limbo">Limbo</option><option value="crash">Crash</option><option value="plinko">Plinko</option><option value="mines">Mines</option><option value="hilo">Hi-Lo</option><option value="keno">Keno</option><option value="wheel">Wheel</option><option value="roulette">Roulette</option><option value="blackjack">Blackjack</option><option value="tower">Tower</option><option value="chicken">Chicken</option></select></div>' +
       '<div class="field grow" style="min-width:160px" id="v-extra-wrap"><label id="v-extra-l">—</label><input class="input" id="v-extra" disabled></div></div>' +
       '<div class="field"><label>Server seed (revealed)</label><input class="input" id="v-server"></div><div class="field"><label>Client seed</label><input class="input" id="v-client"></div><div class="field"><label>Nonce</label><input class="input" id="v-nonce" type="number" value="0" min="0"></div><button class="btn btn-primary" data-action="verify">Verify</button><div id="v-out" style="margin-top:16px"></div></div>' +
@@ -1719,7 +1725,7 @@
   pages.fairness.after = function () {
     var g = $("#v-game"), ex = $("#v-extra"), lb = $("#v-extra-l");
     function upd() {
-      var v = g.value, cfg = { plinko: ["Rows / risk (e.g. 16 high)", "16 high"], mines: ["Number of mines", "3"], hilo: ["Cards to show", "8"], blackjack: ["Cards to show", "8"], wheel: ["Segments / risk (e.g. 30 medium)", "30 medium"], tower: ["Difficulty", "easy"], chicken: ["Difficulty", "easy"] }[v];
+      var v = g.value, cfg = { plinko: ["Rows / risk (e.g. 16 high)", "16 high"], mines: ["Number of mines", "3"], hilo: ["Cards drawn after the start card", "8"], blackjack: ["Cards to show", "8"], wheel: ["Segments / risk (e.g. 30 medium)", "30 medium"], tower: ["Difficulty", "easy"], chicken: ["Difficulty", "easy"] }[v];
       ex.disabled = !cfg; lb.textContent = cfg ? cfg[0] : "—"; ex.value = cfg ? cfg[1] : "";
     }
     g.addEventListener("change", upd); upd();
