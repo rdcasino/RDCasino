@@ -323,7 +323,7 @@
     mines: "<p><strong>Mines</strong>: a 5×5 grid hides gems and mines. Choose how many mines (1–24), then reveal tiles. Every gem raises your multiplier — cash out any time, but hit a mine and the round is lost.</p>",
     wheel: "<p><strong>Wheel</strong>: spin the wheel and win the multiplier it stops on. Choose 10 to 50 segments and low, medium or high risk — high risk has a single big segment worth up to 49.5×.</p>",
     keno: "<p><strong>Keno</strong>: pick 1 to 10 numbers from 40. We draw 10. The more of your numbers are drawn, the bigger the multiplier — up to 1,000×. Choose Classic, Low, Medium or High risk; the payout table updates as you pick.</p>",
-    blackjack: "<p><strong>Blackjack</strong>: get closer to 21 than the dealer without going over. Blackjack pays 3 to 2, the dealer stands on all 17s, and you can double, or split a pair once. Cards are dealt from an infinite deck. RTP shown assumes basic strategy (approximate).</p>",
+    blackjack: "<p><strong>Blackjack</strong>: get closer to 21 than the dealer without going over. Blackjack pays 3 to 2, the dealer stands on all 17s, you can double, or split a pair once, and when the dealer shows an Ace you can take insurance (half your bet, pays 2 to 1 if the dealer has Blackjack). Cards are dealt from an infinite deck. RTP shown assumes basic strategy (approximate).</p>",
     roulette: "<p><strong>Roulette</strong>: European wheel with a single zero. Place chips on numbers or outside bets — a number pays 35 to 1, dozens and columns 2 to 1, and red/black, even/odd and 1–18/19–36 pay 1 to 1.</p>",
     tower: "<p><strong>Tower</strong>: climb 9 floors. On every floor pick a tile — find the egg and you go up, hit the skull and the round ends. Cash out whenever you want. Five difficulties, from Easy (3 eggs in 4 tiles) to Master (1 egg in 4 tiles, up to 256,901×).</p>",
     chicken: "<p><strong>Chicken</strong>: help the chicken cross the road, one lane at a time. Every lane you cross raises your multiplier, but some lanes hide a car. Cash out before you get hit. Easy hides 1 car in 20 lanes, Expert hides 10.</p>",
@@ -1044,7 +1044,7 @@
     cfg: function () {
       return {
         after: '<div class="bj-actions"><button class="btn btn-secondary" id="bj-hit" disabled>' + ic("plus", 16) + 'Hit</button><button class="btn btn-secondary" id="bj-stand" disabled>' + ic("ban", 16) + 'Stand</button><button class="btn btn-secondary" id="bj-split" disabled>' + ic("swap", 16) + 'Split</button><button class="btn btn-secondary" id="bj-double" disabled>' + ic("coins", 16) + "Double</button></div>",
-        center: '<div class="bj"><div class="bj-side"><div class="bj-cards" id="bj-dealer"></div><span class="bj-val" id="bj-dval"></span></div><div class="bj-mid"><div class="bj-rules">Blackjack pays 3 to 2 · Dealer stands on 17</div><div class="bj-result hidden" id="bj-result"></div></div><div class="bj-hands" id="bj-hands"></div></div>'
+        center: '<div class="bj"><div class="bj-side"><div class="bj-cards" id="bj-dealer"></div><span class="bj-val" id="bj-dval"></span></div><div class="bj-mid"><div class="bj-rules">Blackjack pays 3 to 2 · Dealer stands on 17 · Insurance pays 2 to 1</div><div class="bj-ins hidden" id="bj-ins"><span>Dealer shows an Ace. <b>Insurance?</b><small id="bj-ins-cost"></small></span><div><button class="btn btn-gold btn-sm" id="bj-ins-yes">Accept</button><button class="btn btn-secondary btn-sm" id="bj-ins-no">No thanks</button></div></div><div class="bj-result hidden" id="bj-result"></div></div><div class="bj-hands" id="bj-hands"></div></div>'
       };
     },
     bind: function (ctx) {
@@ -1058,13 +1058,34 @@
         $("#bj-dval").textContent = S ? (reveal ? bjTotal(dCards).t : bjTotal([dCards[0]]).t) : "";
         $("#bj-dval").classList.toggle("hidden", !S);
         $("#bj-hands").innerHTML = S ? S.hands.map(function (h, i) { var v = bjTotal(h.cards); return '<div class="bj-hand' + (S.hands.length > 1 && i === S.active && !S.over ? " active" : "") + (h.res ? " " + h.res : "") + '"><div class="bj-cards">' + h.cards.map(function (c) { return bjCard(c); }).join("") + '</div><span class="bj-val">' + (v.soft && v.t < 21 ? v.t - 10 + "/" + v.t : v.t) + "</span></div>"; }).join("") : '<div class="bj-hand"><div class="bj-cards"><div class="bj-card ghost"></div><div class="bj-card ghost"></div></div></div>';
-        var h = S && !S.over ? S.hands[S.active] : null, bal = u() ? u().balance : 0;
+        var insOpen = !!(S && S.ins === "offer" && !S.over), box = $("#bj-ins");
+        box.classList.toggle("hidden", !insOpen);
+        if (insOpen) { $("#bj-ins-cost").textContent = "Costs " + fmt.usd(insCost()) + " · pays " + fmt.usd(insCost() * 3) + " if the dealer has Blackjack"; $("#bj-ins-yes").disabled = (u() ? u().balance : 0) < insCost(); }
+        var h = S && !S.over && !insOpen ? S.hands[S.active] : null, bal = u() ? u().balance : 0;
         $("#bj-hit").disabled = !h; $("#bj-stand").disabled = !h;
         $("#bj-double").disabled = !(h && h.cards.length === 2 && bal >= h.bet);
         $("#bj-split").disabled = !(h && S.hands.length === 1 && h.cards.length === 2 && bjVal(h.cards[0].rank) === bjVal(h.cards[1].rank) && bal >= h.bet);
         var b = ctx.btn(); b.disabled = !!(S && !S.over);
       }
       function persist() { db.updateRound(u().id, G, S); }
+      /* Seguro: metade da aposta, paga 2:1 se o dealer tiver Blackjack */
+      function insCost() { return Math.round(S.hands[0].bet * 50) / 100; }
+      function peek() {
+        var p = bjTotal(S.hands[0].cards).t, d = bjTotal(S.dealer).t;
+        if (p === 21 || (d === 21 && (S.dealer[0].rank === 1 || bjVal(S.dealer[0].rank) === 10))) { busyB = true; persist(); render(); return setTimeout(finish, 500); }
+        if (S.ins === "taken") { S.ins = "lost"; ctx.msg(""); RD.toast("Dealer doesn't have Blackjack — insurance lost"); }
+        persist(); render();
+      }
+      function insurance(take) {
+        if (!S || S.ins !== "offer" || busyB) return;
+        if (take) {
+          var c = insCost(), r = db.addToRound(u().id, G, c); if (r.error) return ctx.msg(r.error);
+          S.insBet = c; S.ins = "taken"; renderHeader(); ctx.refresh();
+        } else S.ins = "declined";
+        peek();
+      }
+      $("#bj-ins-yes").addEventListener("click", function () { insurance(true); });
+      $("#bj-ins-no").addEventListener("click", function () { insurance(false); });
       function finish() {
         S.over = true;
         var d = bjTotal(S.dealer).t, total = 0, base = S.hands[0].bet, natural = S.hands.length === 1 && S.hands[0].cards.length === 2 && bjTotal(S.hands[0].cards).t === 21;
@@ -1079,12 +1100,14 @@
           else { pay = 0; h.res = "lose"; }
           total += pay;
         });
-        var amount = S.hands.reduce(function (a, h) { return a + h.bet; }, 0), mult = capMult(amount, Math.round((total / amount) * 10000) / 10000);
-        var outcome = natural && !dealerBJ ? "Blackjack" : total > amount ? "Win" : total === amount ? "Push" : "Lose";
-        var bet = db.settleRound(u().id, G, mult, total > 0, { outcome: outcome, player: S.hands.map(function (h) { return bjTotal(h.cards).t; }).join("/"), dealer: d });
+        var ins = S.insBet || 0, insWon = ins > 0 && dealerBJ;
+        if (insWon) total += ins * 3;
+        var amount = S.hands.reduce(function (a, h) { return a + h.bet; }, 0) + ins, mult = capMult(amount, Math.round((total / amount) * 10000) / 10000);
+        var outcome = natural && !dealerBJ ? "Blackjack" : insWon ? "Insured" : total > amount ? "Win" : total === amount ? "Push" : "Lose";
+        var bet = db.settleRound(u().id, G, mult, total > 0, { outcome: outcome, player: S.hands.map(function (h) { return bjTotal(h.cards).t; }).join("/"), dealer: d, insurance: ins || undefined });
         render(true);
         var r = $("#bj-result"); if (!r) { S = null; busyB = false; return; } r.className = "bj-result " + (total > amount ? "w" : total === amount ? "p" : "l");
-        r.textContent = outcome === "Blackjack" ? "Blackjack! +" + fmt.usd(total - amount) : outcome === "Win" ? "You win +" + fmt.usd(total - amount) : outcome === "Push" ? "Push" : "Dealer wins";
+        r.textContent = outcome === "Blackjack" ? "Blackjack! +" + fmt.usd(total - amount) : outcome === "Insured" ? "Dealer Blackjack — insurance paid" + (total > amount ? " +" + fmt.usd(total - amount) : "") : outcome === "Win" ? "You win +" + fmt.usd(total - amount) : outcome === "Push" ? "Push" : "Dealer wins";
         S = null; busyB = false; ctx.lock(false); if (ctx.btn()) ctx.btn().disabled = false; ctx.record(bet);
       }
       function dealerPlay() {
@@ -1102,7 +1125,7 @@
         persist(); render();
       }
       function act(kind) {
-        if (!S || S.over || busyB) return; busyB = true;
+        if (!S || S.over || busyB || S.ins === "offer") return; busyB = true;
         var h = S.hands[S.active];
         if (kind === "stand") { h.done = true; busyB = false; return nextHand(); }
         if (kind === "double") { var r1 = db.addToRound(u().id, G, h.bet); if (r1.error) { busyB = false; return ctx.msg(r1.error); } h.bet *= 2; renderHeader(); ctx.refresh(); }
@@ -1133,9 +1156,8 @@
         draw(4).then(function (c) {
           busyB = false;
           S.hands[0].cards = [c[0], c[2]]; S.dealer = [c[1], c[3]];
-          var p = bjTotal(S.hands[0].cards).t, d = bjTotal(S.dealer).t;
-          persist(); render();
-          if (p === 21 || (d === 21 && (S.dealer[0].rank === 1 || bjVal(S.dealer[0].rank) === 10))) { busyB = true; return setTimeout(finish, 500); }
+          if (S.dealer[0].rank === 1) { S.ins = "offer"; persist(); return render(); }
+          peek();
         });
       }
       render();
@@ -1147,6 +1169,7 @@
           if (!r) return;
           if (!(r.state && r.state.hands && r.state.hands[0].cards.length)) { $("#og-amt").value = r.amount.toFixed(2); return deal(r.amount); }
           S = r.state; $("#og-amt").value = S.hands[0].bet.toFixed(2); ctx.lock(true); render();
+          if (S.ins === "offer") return;
           var p0 = bjTotal(S.hands[0].cards).t, d0 = bjTotal(S.dealer).t;
           if (S.hands.length === 1 && S.hands[0].cards.length === 2 && S.dealer.length === 2 && (p0 === 21 || (d0 === 21 && (S.dealer[0].rank === 1 || bjVal(S.dealer[0].rank) === 10)))) { busyB = true; return setTimeout(finish, 400); }
           if (S.hands.every(function (h) { return h.done; })) { busyB = true; dealerPlay(); }
@@ -1360,7 +1383,7 @@
   /* Embaralha as 20 faixas (Fisher–Yates, 19 números); as primeiras "bones" escondem um carro */
   function chickenFrom(fs, diff) { var a = []; for (var i = 0; i < 20; i++) a.push(i); for (var j = 0; j < 19; j++) { var k = j + Math.floor(fs[j] * (20 - j)), t = a[j]; a[j] = a[k]; a[k] = t; } return a.slice(0, CHICKEN[diff].bones); }
   RD.fair.chicken = CHICKEN; RD.fair.chickenFrom = chickenFrom;
-  var HEN = '<svg viewBox="0 0 48 48" class="ck-hen"><ellipse cx="24" cy="44" rx="11" ry="2.5" fill="#000" opacity=".3"/><path d="M19 38v5M27 38v5M17 43h4M25 43h4" stroke="#ff9d1a" stroke-width="2.2" stroke-linecap="round"/><ellipse cx="24" cy="29" rx="12" ry="11" fill="#fff"/><path d="M13 28c-3-1-5 1-5 4 3 0 5-1 6-2z" fill="#e8edf7"/><circle cx="27" cy="16" r="8" fill="#fff"/><path d="M23 9c0-3 2-4 3-2 1-3 3-3 4-1 2-1 3 1 2 3z" fill="#ff2e55"/><path d="M34 16l5 1.5-5 1.5z" fill="#ffb020"/><path d="M33 20c0 3-2 4-3 2 0-1 1-2 3-2z" fill="#ff2e55"/><circle cx="29.5" cy="15" r="1.6" fill="#1a1205"/><path d="M17 27c3 4 9 4 12 1" stroke="#dfe6f5" stroke-width="2" fill="none" stroke-linecap="round"/></svg>';
+  var HEN = '<svg viewBox="0 0 48 48" class="ck-hen">' + RD.art.hen() + "</svg>";
   var CAR = '<svg viewBox="0 0 48 64" class="ck-car"><rect x="8" y="4" width="32" height="56" rx="9" fill="#ff2e55"/><rect x="12" y="14" width="24" height="12" rx="3" fill="#2a1a24"/><rect x="12" y="40" width="24" height="9" rx="3" fill="#2a1a24"/><rect x="5" y="12" width="4" height="10" rx="2" fill="#111"/><rect x="39" y="12" width="4" height="10" rx="2" fill="#111"/><rect x="5" y="44" width="4" height="10" rx="2" fill="#111"/><rect x="39" y="44" width="4" height="10" rx="2" fill="#111"/><rect x="13" y="5" width="6" height="3" rx="1.5" fill="#fff4c2"/><rect x="29" y="5" width="6" height="3" rx="1.5" fill="#fff4c2"/></svg>';
   OG.chicken = {
     label: function (b) { return b.multiplier ? b.multiplier.toFixed(2) + "×" : "0.00×"; },
@@ -1385,7 +1408,7 @@
           html += '<button class="ck-lane' + (done ? " done" : "") + (here ? " here" : "") + (next ? " next" : "") + (dead ? " dead" : "") + (final && bone && !dead ? " reveal" : "") + '" data-ck="' + i + '"' + (next ? "" : " disabled") + ">" +
             '<span class="ck-m">' + T.mult[i].toFixed(2) + "×</span>" + (dead ? CAR : here ? HEN : final && bone ? CAR : "") + "</button>";
         }
-        road.innerHTML = html + '<div class="ck-lane ck-end"></div>';
+        road.innerHTML = html + '<div class="ck-lane ck-end"><span class="ck-flag">RD FINISH</span></div>';
         var at = road.querySelector(".here, .dead") || road.querySelector(".ck-start");
         if (at && road.scrollWidth > road.clientWidth) road.scrollTo({ left: Math.max(0, at.offsetLeft - road.clientWidth / 2 + at.offsetWidth / 2), behavior: "smooth" });
         $("#ck-note").textContent = round ? "Next lane pays " + (T.mult[steps + 1] ? T.mult[steps + 1].toFixed(2) + "×" : "—") + " · " + T.bones + " of 20 lanes hide a car" : T.bones + " of 20 lanes hide a car · up to " + T.mult[lanes].toLocaleString("en-US") + "×";

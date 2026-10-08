@@ -118,6 +118,9 @@ window.RD = window.RD || {};
     return out;
   }
 
+  /* Mascote do Chicken: galinha com boné e lenço RD (viewBox 0 0 48 48) */
+  function hen() { return '<ellipse cx="24" cy="44.5" rx="11" ry="2.3" fill="#000" opacity=".3"/> <path d="M19.5 38v5.5M27.5 38v5.5M17.3 43.6h4.4M25.3 43.6h4.4" stroke="#ff9d1a" stroke-width="2.2" stroke-linecap="round"/> <ellipse cx="24" cy="30" rx="12.5" ry="10.8" fill="#fff"/> <path d="M11.8 29.5c-3.4-1.2-5.6 1.2-5.2 4.4 3.2.2 5.4-1 6.6-2.4z" fill="#e8edf7"/> <path d="M16.5 30.5c3 4.2 9.6 4.4 12.6 1" stroke="#dfe6f5" stroke-width="2" fill="none" stroke-linecap="round"/> <circle cx="27" cy="16.5" r="8.2" fill="#fff"/> <path d="M34.6 17.8l5.2 1.7-5.2 1.6z" fill="#ffb020"/> <circle cx="30.2" cy="17.4" r="1.6" fill="#1a1205"/><circle cx="30.7" cy="16.9" r=".5" fill="#fff"/>  <path d="M19.4 21.6c4.6 2.6 10 2.6 14.6-.3l.4 3.1c-5 3-10.6 3-15.4.3z" fill="#ff2e55"/> <path d="M22 23.6l3.6 6.2 3.4-6.4z" fill="#ff2e55"/> <path d="M22.6 24.4l3 4.8 2.8-5" fill="none" stroke="#c2133a" stroke-width=".6"/> <circle cx="23.4" cy="22.9" r=".45" fill="#fff" opacity=".8"/><circle cx="28.6" cy="23.4" r=".45" fill="#fff" opacity=".8"/><circle cx="32" cy="22.4" r=".45" fill="#fff" opacity=".8"/><circle cx="25.6" cy="26.2" r=".4" fill="#fff" opacity=".8"/> <path d="M19.6 22.4l-3.6 2.6 2.4 1.6z M19.8 23.6l-2 4.2 2.8-1z" fill="#c2133a"/>  <path d="M18.9 15.2c-.2-5.6 3.6-8.4 8.1-8.4s8.3 2.8 8.1 8.2z" fill="#ff2e55"/> <path d="M18.9 15.2h16.2" stroke="#c2133a" stroke-width="1.2"/> <path d="M33.6 14.4h7.2c1.4 0 1.4 2.2 0 2.2h-7.4z" fill="#c2133a"/> <circle cx="27" cy="6.9" r="1" fill="#c2133a"/> <path d="M21.5 9.5c1.6-1.6 3.4-2.1 5.5-2.1" stroke="#ff8fa3" stroke-width="1" fill="none" stroke-linecap="round" opacity=".8"/> <text x="27.4" y="13.6" text-anchor="middle" font-size="5" font-weight="900" fill="#ffc85c" style="font-family:var(--font-display,Arial)" letter-spacing="-.2">RD</text>'; }
+
   /* ---------- Capas (300×400) ---------- */
   var COVERS = {
     dice: { a: "#3b6cff", b: "#0b1a4a", draw: function () { return die(118, 168, 64, 5, 2, 3, "#e11d48") + die(196, 222, 50, 6, 1, 4, "#2f6bff") + spark(232, 92, 12) + spark(70, 96, 8, "#fff", 0.6); } },
@@ -204,8 +207,8 @@ window.RD = window.RD || {};
       var lanes = "";
       for (var i = 0; i < 4; i++) lanes += '<rect x="' + (18 + i * 70) + '" y="64" width="64" height="226" rx="10" fill="#2a1a12" opacity="' + (0.55 + i * 0.08) + '"/><path d="M' + (85 + i * 70) + ' 74 v206" stroke="#fff" stroke-opacity=".35" stroke-width="3" stroke-dasharray="14 12"/>';
       var car = '<g transform="translate(232 70)"><rect x="0" y="0" width="40" height="66" rx="11" fill="#ff2e55"/><rect x="6" y="12" width="28" height="14" rx="4" fill="#2a1a24"/><rect x="6" y="44" width="28" height="10" rx="3" fill="#2a1a24"/><rect x="6" y="1" width="8" height="4" rx="2" fill="#fff4c2"/><rect x="26" y="1" width="8" height="4" rx="2" fill="#fff4c2"/></g>';
-      var hen = '<g transform="translate(88 118) scale(2.6)"><ellipse cx="24" cy="44" rx="11" ry="2.5" fill="#000" opacity=".3"/><path d="M19 38v5M27 38v5M17 43h4M25 43h4" stroke="#ff9d1a" stroke-width="2.2" stroke-linecap="round"/><ellipse cx="24" cy="29" rx="12" ry="11" fill="#fff"/><path d="M13 28c-3-1-5 1-5 4 3 0 5-1 6-2z" fill="#e8edf7"/><circle cx="27" cy="16" r="8" fill="#fff"/><path d="M23 9c0-3 2-4 3-2 1-3 3-3 4-1 2-1 3 1 2 3z" fill="#ff2e55"/><path d="M34 16l5 1.5-5 1.5z" fill="#ffb020"/><path d="M33 20c0 3-2 4-3 2 0-1 1-2 3-2z" fill="#ff2e55"/><circle cx="29.5" cy="15" r="1.6" fill="#1a1205"/><path d="M17 27c3 4 9 4 12 1" stroke="#dfe6f5" stroke-width="2" fill="none" stroke-linecap="round"/></g>';
-      return lanes + car + '<rect x="160" y="236" width="56" height="26" rx="13" fill="#22e08a"/><text x="188" y="254" text-anchor="middle" font-size="14" font-weight="900" fill="#05301c" style="font-family:var(--font-display,Arial)">2.46×</text>' + hen + coinFront(252, 210, 18) + spark(54, 62, 10);
+      var chick = '<g transform="translate(88 118) scale(2.6)">' + hen() + '</g>';
+      return lanes + car + '<rect x="160" y="236" width="56" height="26" rx="13" fill="#22e08a"/><text x="188" y="254" text-anchor="middle" font-size="14" font-weight="900" fill="#05301c" style="font-family:var(--font-display,Arial)">2.46×</text>' + chick + coinFront(252, 210, 18) + spark(54, 62, 10);
     } },
     keno: { a: "#ff3d6e", b: "#4a0518", draw: function () {
       var out = "";
@@ -270,6 +273,7 @@ window.RD = window.RD || {};
       if (k[0] === "scene" && SCENES[k[1]]) return SCENES[k[1]](o);
       return generic(o || {});
     },
+    hen: hen,
     games: Object.keys(COVERS)
   };
 })();
