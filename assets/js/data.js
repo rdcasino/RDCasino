@@ -241,12 +241,52 @@ document.addEventListener("error", function (e) { var t = e.target; if (t && t.h
 RD.toast = function (msg, type) {
   var box = document.querySelector(".toasts");
   if (!box) { box = document.createElement("div"); box.className = "toasts"; document.body.appendChild(box); }
+  /* mesma mensagem já na tela: não repete; no máximo 3 avisos de cada vez */
+  if ([].some.call(box.children, function (x) { return x.textContent === msg; })) return;
+  while (box.children.length >= 3) box.firstChild.remove();
   var t = document.createElement("div");
   t.className = "toast" + (type === "error" ? " error" : "");
   t.textContent = msg;
   box.appendChild(t);
   setTimeout(function () { t.style.opacity = "0"; t.style.transition = "opacity .3s"; setTimeout(function () { t.remove(); }, 300); }, 2800);
 };
+
+/* ---------- Sons dos originais (gerados na hora com Web Audio: nada para baixar) ---------- */
+RD.sfx = (function () {
+  var ac = null, muted = false, last = {};
+  try { muted = localStorage.getItem("rd_mute") === "1"; } catch (e) {}
+  function ctx() { if (!ac) { var A = window.AudioContext || window.webkitAudioContext; if (!A) return null; ac = new A(); } if (ac.state === "suspended") ac.resume(); return ac; }
+  function tone(f, dur, type, vol, at, slide) {
+    var a = ctx(); if (!a) return; var t = a.currentTime + (at || 0), o = a.createOscillator(), g = a.createGain();
+    o.type = type || "sine"; o.frequency.setValueAtTime(f, t); if (slide) o.frequency.exponentialRampToValueAtTime(slide, t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol || 0.12, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + dur + 0.02);
+  }
+  function noise(dur, vol, lp) {
+    var a = ctx(); if (!a) return; var n = Math.floor(a.sampleRate * dur), b = a.createBuffer(1, n, a.sampleRate), d = b.getChannelData(0);
+    for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2);
+    var s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); f.type = "lowpass"; f.frequency.value = lp || 900; g.gain.value = vol || 0.3;
+    s.buffer = b; s.connect(f); f.connect(g); g.connect(a.destination); s.start();
+  }
+  var S = {
+    bet: function () { tone(520, 0.06, "triangle", 0.07); },
+    tick: function () { tone(1250 + Math.random() * 250, 0.035, "sine", 0.045); },
+    pin: function () { tone(1700 + Math.random() * 500, 0.03, "sine", 0.03); },
+    step: function () { tone(660, 0.07, "triangle", 0.08); tone(990, 0.06, "triangle", 0.05, 0.05); },
+    gem: function () { tone(1320, 0.12, "sine", 0.09); tone(1980, 0.16, "sine", 0.06, 0.05); },
+    card: function () { noise(0.06, 0.12, 3200); },
+    win: function () { [784, 988, 1175, 1568].forEach(function (f, i) { tone(f, 0.16, "triangle", 0.08, i * 0.06); }); },
+    small: function () { tone(880, 0.1, "triangle", 0.07); tone(1320, 0.14, "triangle", 0.06, 0.07); },
+    lose: function () { tone(220, 0.22, "sine", 0.09, 0, 140); },
+    boom: function () { noise(0.45, 0.45, 700); tone(110, 0.35, "sine", 0.12, 0, 50); },
+    cash: function () { tone(1568, 0.08, "square", 0.04); tone(2093, 0.22, "triangle", 0.07, 0.07); }
+  };
+  return {
+    play: function (k, gap) { if (muted || !S[k]) return; var now = Date.now(); if (now - (last[k] || 0) < (gap == null ? 40 : gap)) return; last[k] = now; try { S[k](); } catch (e) {} },
+    muted: function () { return muted; },
+    toggle: function () { muted = !muted; try { localStorage.setItem("rd_mute", muted ? "1" : "0"); } catch (e) {} if (!muted) S.small(); return muted; }
+  };
+})();
 
 RD.copy = function (text, label) {
   var done = function () { RD.toast((label || "Copied") + " to clipboard"); };

@@ -73,7 +73,7 @@
   function renderBalMenu() {
     var u = me(); if (!u) return; var v = shownBal(u);
     $("#bal-menu").innerHTML = '<div class="bm-list">' + Object.keys(RD.coinNames).filter(function (c) { return RD.prices[c]; }).map(function (c) {
-      return '<button class="bm-row' + (c === disp.coin ? " active" : "") + '" data-disp-coin="' + c + '">' + coinDot(c) + '<span class="grow"><b>' + c + "</b><small>" + RD.coinNames[c] + '</small></span><span class="bm-amt"><b class="num">' + (disp.fiat ? fmt.usd(v) : inCoin(v, c)) + "</b><small>1 " + c + " = " + fmt.usd(RD.prices[c]) + "</small></span></button>";
+      return '<button class="bm-row' + (c === disp.coin ? " active" : "") + '" data-disp-coin="' + c + '">' + coinDot(c) + '<span class="grow"><b>' + c + "</b><small>" + RD.coinNames[c] + '</small></span><span class="bm-amt"><b class="num">' + (disp.fiat ? fmt.usd(v) : inCoin(v, c)) + "</b></span></button>";
     }).join("") + '</div><label class="bm-fiat"><span>Display in fiat (USD)</span><input type="checkbox" data-disp-fiat' + (disp.fiat ? " checked" : "") + '><i class="sw"></i></label>';
   }
   document.addEventListener("change", function (e) { if (e.target.hasAttribute && e.target.hasAttribute("data-disp-fiat")) { disp.fiat = e.target.checked; saveDisp(); renderHeader(); } });
@@ -381,6 +381,7 @@
       '<button class="icon-btn' + (ogPrefs.stats ? " active" : "") + '" data-ogx="stats" title="Live stats">' + ic("bars", 18) + "</button>" +
       '<button class="icon-btn' + (ogPrefs.hotkeys ? " active" : "") + '" data-ogx="hotkeys" title="Hotkeys">' + ic("keyboard", 18) + "</button>" +
       '<button class="icon-btn' + (fav ? " fav" : "") + '" data-ogx="fav" title="Favorite">' + ic("star", 18) + "</button>" +
+      '<button class="icon-btn" data-ogx="sound" title="Sound">' + ic(RD.sfx.muted() ? "volumeX" : "volume", 18) + "</button>" +
       '<div class="ogx-brand">RDCASINO</div><button class="ogx-fair" data-action="seeds">' + ic("shield", 15) + "Provably fair</button></div>";
     return '<div class="container' + (ogPrefs.theatre ? " wide" : "") + '">' +
       '<div class="row" style="margin-bottom:14px;gap:8px"><a class="icon-btn" href="#/casino/originals" aria-label="Back">' + ic("chevronLeft") + '</a><h2 style="font-size:18px">' + esc(g.name) + '</h2><span class="badge">RD Originals</span></div>' +
@@ -470,7 +471,8 @@
       record: function (b) {
         if (!b || b.error) return;
         release(b);
-        var me0 = me(); if (me0) { var t0 = db.tierOf(me0.wagered - b.amount), t1 = db.tierOf(me0.wagered); if (t1 && t1 !== t0) { RD.toast("Level up! You reached " + t1.name + " — claim " + fmt.usd(t1.reward, { dec: 0 }) + " on the VIP page"); renderSidebar(); markActive(currentPath); } }
+        RD.sfx.play(b.payout > b.amount ? (b.payout >= b.amount * 5 ? "win" : "small") : "lose", 90);
+        var me0 = me(); if (me0) { var t1 = db.tierOf(me0.wagered), lk = "rd_lvl_" + me0.id, seen = null; try { seen = localStorage.getItem(lk); } catch (e) {} if (t1 && seen !== t1.name && (seen || db.tierOf(me0.wagered - b.amount) !== t1)) { try { localStorage.setItem(lk, t1.name); } catch (e) {} RD.toast("Level up! You reached " + t1.name + " — claim " + fmt.usd(t1.reward, { dec: 0 }) + " on the VIP page"); renderSidebar(); markActive(currentPath); } }
         var st = sess(g.id), delta = b.payout - b.amount;
         st.profit = Math.round((st.profit + delta) * 100) / 100; st.wagered += b.amount; st[b.payout > b.amount ? "wins" : "losses"]++; st.series.push(st.profit); if (st.series.length > 200) st.series.shift();
         renderHeader(); ctx.refresh(); history(); stats(); ogTab(g, tab);
@@ -542,6 +544,7 @@
     });
     ctx.btn().addEventListener("click", function () {
       if (!me()) return openAuth("register");
+      RD.sfx.play("bet");
       if (mode === "auto") return auto ? stopAuto() : startAuto();
       manual();
     });
@@ -552,6 +555,7 @@
       if (a === "stats") { ogPrefs.stats = !ogPrefs.stats; savePrefs(); $("#og-stats").classList.toggle("hidden", !ogPrefs.stats); stats(); }
       if (a === "reset-stats") { session[g.id] = null; stats(); }
       if (a === "hotkeys") { ogPrefs.hotkeys = !ogPrefs.hotkeys; savePrefs(); RD.toast(ogPrefs.hotkeys ? "Hotkeys on: Space bet · S half · D double" : "Hotkeys off"); }
+      if (a === "sound") { var mu = RD.sfx.toggle(), sb = $(".ogx-bar [data-ogx=sound]"); if (sb) sb.innerHTML = ic(mu ? "volumeX" : "volume", 18); return; }
       if (a === "fav") { var f = ogPrefs.favs = ogPrefs.favs || [], i = f.indexOf(g.id); if (i > -1) f.splice(i, 1); else f.push(g.id); savePrefs(); RD.toast(i > -1 ? "Removed from favorites" : "Added to favorites"); }
       $$(".ogx-bar [data-ogx]").forEach(function (x) {
         var k = x.getAttribute("data-ogx");
@@ -629,7 +633,7 @@
     cfg: function () {
       return {
         auto: true, side: '<div class="og-manual-only">' + profitField() + "</div>",
-        center: '<div class="lb"><div class="lb-num" id="lb-num">1.00×</div><div class="lb-sub" id="lb-sub"></div></div>',
+        center: '<div class="lb"><div class="lb-num" id="lb-num">1.00×</div></div>',
         fields: '<div class="ogx-fields two"><div><div class="ogx-label">Target multiplier</div><div class="ogx-input"><input id="lb-target" type="number" min="1.01" step="0.01" value="2.00" inputmode="decimal"><span class="sfx">×</span></div></div>' +
           '<div><div class="ogx-label">Win chance</div><div class="ogx-input"><input id="lb-chance" inputmode="decimal"><span class="sfx">%</span></div></div></div>'
       };
@@ -639,7 +643,6 @@
       function refresh() {
         var m = target(), c = 99 / m; ctx.setProfit(m);
         if (document.activeElement !== $("#lb-chance")) $("#lb-chance").value = c.toFixed(4);
-        $("#lb-sub").textContent = "Target " + m.toFixed(2) + "× · " + c.toFixed(2) + "% chance";
       }
       $("#lb-target").addEventListener("input", refresh);
       $("#lb-chance").addEventListener("change", function () { var c = Math.max(0.0001, Math.min(98.02, parseFloat(this.value) || 49.5)); $("#lb-target").value = (99 / c).toFixed(2); this.blur(); refresh(); });
@@ -692,14 +695,17 @@
         return new Promise(function (resolve) {
           var R = path.length, G = geo(R), svg = $("#pk-svg"); if (!svg) return resolve();
           var ball = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-          ball.setAttribute("r", (G.dx * 0.2).toFixed(2)); ball.setAttribute("fill", "#ff4d6d"); svg.appendChild(ball);
+          ball.setAttribute("r", (G.dx * 0.2).toFixed(2)); ball.setAttribute("fill", "#ff2e55"); ball.setAttribute("stroke", "#ffb3c1"); ball.setAttribute("stroke-width", (G.dx * 0.04).toFixed(2)); svg.appendChild(ball);
           var pts = [[W / 2, G.top - G.dy * 0.9]], sum = 0;
           for (var i = 0; i < R; i++) { sum += path[i]; pts.push([W / 2 + (sum - (i + 1) / 2) * G.dx, G.top + i * G.dy + G.dy * 0.55]); }
-          var per = 115, t0 = performance.now();
+          /* trajetória suave: em cada pino a bola quica um pouco para cima e cai com "gravidade" (parábola contínua) */
+          var per = 120, t0 = performance.now(), lastSeg = -1;
           (function step(t) {
             var e = Math.max(0, (t - t0) / per), i = Math.min(Math.floor(e), pts.length - 2), k = Math.min(1, e - i);
-            var a = pts[i], b = pts[i + 1], x = a[0] + (b[0] - a[0]) * k, y = a[1] + (b[1] - a[1]) * (k * k) - Math.sin(k * Math.PI) * G.dy * 0.35;
+            var a = pts[i], b = pts[i + 1], dyS = b[1] - a[1], v0 = i === 0 ? 0 : -0.35 * dyS;
+            var x = a[0] + (b[0] - a[0]) * (k * (1.5 - 0.5 * k)), y = a[1] + v0 * k + (dyS - v0) * k * k;
             ball.setAttribute("cx", x.toFixed(2)); ball.setAttribute("cy", y.toFixed(2));
+            if (i !== lastSeg) { if (i > 0) RD.sfx.play("pin", 25); lastSeg = i; }
             if (e < pts.length - 1) return requestAnimationFrame(step);
             ball.remove(); var s = $("#pk-s" + slot); if (s) { s.classList.add("hit"); setTimeout(function () { s.classList.remove("hit"); }, 200); }
             resolve();
@@ -735,7 +741,7 @@
       return {
         auto: true,
         side: '<div><div class="ogx-label">Cashout at</div><div class="ogx-input"><input type="number" id="cr-target" min="1.01" step="0.01" value="2.00" inputmode="decimal"><span class="sfx">×</span></div></div>' + '<div class="og-manual-only">' + profitField("Profit at cashout") + "</div>",
-        center: '<div class="cr" id="cr"><canvas id="cr-canvas"></canvas><div class="cr-over"><div class="cr-num" id="cr-num">1.00×</div><div class="cr-sub" id="cr-sub">Place a bet to start a round</div></div></div>'
+        center: '<div class="cr" id="cr"><canvas id="cr-canvas"></canvas><div class="cr-over"><div class="cr-num" id="cr-num">1.00×</div><div class="cr-sub" id="cr-sub"></div></div></div>'
       };
     },
     bind: function (ctx) {
@@ -748,24 +754,41 @@
         if (c.width !== Math.round(r.width * d)) { c.width = Math.round(r.width * d); c.height = Math.round(r.height * d); }
         return { c: c, x: c.getContext("2d"), w: c.width, h: c.height, d: d };
       }
-      function paint(ms, crashed) {
+      function paint(ms, crashed, cashedAt) {
         var cv = canvas(); if (!cv) return;
-        var x = cv.x, w = cv.w, h = cv.h, d = cv.d, pad = 34 * d, tMax = Math.max(6000, ms * 1.15), m = Math.exp(K * ms), mMax = Math.max(2, m * 1.15);
+        var x = cv.x, w = cv.w, h = cv.h, d = cv.d, padL = 44 * d, padB = 26 * d, padT = 18 * d, padR = 18 * d;
+        var tMax = Math.max(8000, ms * 1.2), m = Math.exp(K * ms), mMax = Math.max(2, m * 1.25);
+        var X = function (t) { return padL + (w - padL - padR) * (t / tMax); }, Ym = function (v) { return h - padB - (h - padB - padT) * ((v - 1) / (mMax - 1)); }, Y = function (t) { return Ym(Math.exp(K * t)); };
         x.clearRect(0, 0, w, h);
-        x.strokeStyle = "rgba(255,255,255,0.06)"; x.lineWidth = d; x.fillStyle = "rgba(177,186,211,0.6)"; x.font = 11 * d + "px Inter,sans-serif";
-        for (var i = 0; i <= 4; i++) { var v = 1 + (mMax - 1) * i / 4, y = h - pad - (h - 2 * pad) * (i / 4); x.beginPath(); x.moveTo(pad, y); x.lineTo(w - 10 * d, y); x.stroke(); x.fillText(v.toFixed(1) + "×", 4 * d, y + 4 * d); }
+        // grade discreta: linhas horizontais pontilhadas + rótulos de multiplicador e de tempo
+        x.font = "600 " + 11 * d + "px Inter,sans-serif"; x.textBaseline = "middle";
+        for (var i = 0; i <= 4; i++) {
+          var v = 1 + (mMax - 1) * i / 4, y = Ym(v);
+          x.setLineDash([3 * d, 6 * d]); x.strokeStyle = "rgba(255,255,255,0.07)"; x.lineWidth = d;
+          x.beginPath(); x.moveTo(padL, y); x.lineTo(w - padR, y); x.stroke(); x.setLineDash([]);
+          x.fillStyle = "rgba(255,255,255,0.38)"; x.textAlign = "right"; x.fillText(v.toFixed(v < 10 ? 1 : 0) + "×", padL - 8 * d, y);
+        }
+        x.textAlign = "center"; x.textBaseline = "alphabetic";
+        var step = tMax > 30000 ? 10000 : tMax > 14000 ? 4000 : 2000;
+        for (var tt = step; tt < tMax; tt += step) x.fillText(Math.round(tt / 1000) + "s", X(tt), h - 7 * d);
+        var tg = parseFloat(($("#cr-target") || {}).value);
+        if (tg > 1 && tg < mMax) { var yt = Ym(tg); x.setLineDash([6 * d, 6 * d]); x.strokeStyle = "rgba(255,200,92,0.45)"; x.beginPath(); x.moveTo(padL, yt); x.lineTo(w - padR, yt); x.stroke(); x.setLineDash([]); x.fillStyle = "rgba(255,200,92,0.8)"; x.textAlign = "right"; x.fillText(tg.toFixed(2) + "×", w - padR, yt - 6 * d); }
         if (ms <= 0) return;
-        var X = function (t) { return pad + (w - pad - 14 * d) * (t / tMax); }, Y = function (t) { return h - pad - (h - 2 * pad) * ((Math.exp(K * t) - 1) / (mMax - 1)); };
-        var col = crashed ? "#f0566a" : "#ff2e55";
-        x.beginPath(); x.moveTo(X(0), Y(0));
-        for (var s = 0; s <= 60; s++) { var t = ms * s / 60; x.lineTo(X(t), Y(t)); }
-        x.lineWidth = 4 * d; x.strokeStyle = col; x.lineCap = "round"; x.stroke();
-        x.lineTo(X(ms), h - pad); x.lineTo(X(0), h - pad); x.closePath();
-        var gr = x.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, crashed ? "rgba(255,122,89,.35)" : "rgba(255,46,85,.35)"); gr.addColorStop(1, "rgba(255,46,85,0)");
-        x.fillStyle = gr; x.fill();
-        x.beginPath(); x.arc(X(ms), Y(ms), 6 * d, 0, Math.PI * 2); x.fillStyle = "#fff"; x.fill();
+        var path = function () { x.beginPath(); x.moveTo(X(0), Y(0)); for (var s2 = 1; s2 <= 80; s2++) { var t2 = ms * s2 / 80; x.lineTo(X(t2), Y(t2)); } };
+        var c1 = crashed ? "#ff5a5a" : "#ff2e55", c2 = crashed ? "#ff8a5c" : "#ff9f43";
+        // área preenchida
+        path(); x.lineTo(X(ms), h - padB); x.lineTo(X(0), h - padB); x.closePath();
+        var fill = x.createLinearGradient(0, Y(ms), 0, h - padB); fill.addColorStop(0, crashed ? "rgba(255,90,90,.28)" : "rgba(255,46,85,.30)"); fill.addColorStop(1, "rgba(255,46,85,0)");
+        x.fillStyle = fill; x.fill();
+        // linha com degradê e brilho
+        var stroke = x.createLinearGradient(X(0), 0, X(ms), 0); stroke.addColorStop(0, c1); stroke.addColorStop(1, c2);
+        path(); x.lineWidth = 4 * d; x.lineCap = "round"; x.lineJoin = "round"; x.strokeStyle = stroke; x.shadowColor = c1; x.shadowBlur = 14 * d; x.stroke(); x.shadowBlur = 0;
+        if (cashedAt) { var tc = Math.log(cashedAt) / K; if (tc <= ms) { x.beginPath(); x.arc(X(tc), Y(tc), 5 * d, 0, Math.PI * 2); x.fillStyle = "#22e08a"; x.fill(); } }
+        // ponta
+        x.beginPath(); x.arc(X(ms), Y(ms), 11 * d, 0, Math.PI * 2); x.fillStyle = crashed ? "rgba(255,90,90,.25)" : "rgba(255,159,67,.25)"; x.fill();
+        x.beginPath(); x.arc(X(ms), Y(ms), 5.5 * d, 0, Math.PI * 2); x.fillStyle = "#fff"; x.fill();
       }
-      function setNum(text, cls, sub) { var n = $("#cr-num"); if (!n) return; n.textContent = text; n.className = "cr-num" + (cls ? " " + cls : ""); $("#cr-sub").textContent = sub || ""; }
+      function setNum(text, cls, sub) { var n = $("#cr-num"); if (!n) return; n.textContent = text; n.className = "cr-num" + (cls ? " " + cls : ""); var sb = $("#cr-sub"); sb.textContent = sub || ""; sb.className = "cr-sub" + (sub ? " on" : ""); }
       var box = null;
       function finish(resolveRound, auto) {
         if (!auto && document.contains(box)) { ctx.lock(false); $("#cr-target").disabled = false; var b = ctx.btn(); if (b) { b.disabled = false; b.classList.remove("stop"); b.textContent = "Bet"; } }
@@ -786,7 +809,7 @@
             function apply(x) {
               if (!x || x.error || !x.done) return;
               crash = x.crash; if (x.cashout) cashed = capMult(a, x.cashout);
-              if (x.bet && !recorded) { recorded = true; if (cashed) { ctx.record(x.bet); if (!auto && document.contains(box)) { btn.disabled = true; btn.textContent = "Cashed out @ " + cashed.toFixed(2) + "×"; btn.classList.remove("stop"); } } else if (run) run.lossBet = x.bet; }
+              if (x.bet && !recorded) { recorded = true; if (run) run.endBet = x.bet; if (cashed) { renderHeader(); RD.sfx.play("cash"); if (!auto && document.contains(box)) { btn.disabled = true; btn.textContent = "Cashed out @ " + cashed.toFixed(2) + "×"; btn.classList.remove("stop"); } } }
             }
             run = { cashout: function () {
               if (cashed || crash || run.busy) return; run.busy = true;
@@ -797,11 +820,11 @@
               var ms = now - t0, m = multAt(ms);
               if (!crash && !polling && now - lastPoll > 200) { polling = true; lastPoll = now; db.roundAct(G, "status").then(function (x) { polling = false; apply(x); }); }
               if (crash && m >= crash) {
-                paint(Math.log(crash) / K, true); setNum(crash.toFixed(2) + "×", "l", cashed ? "You cashed out at " + cashed.toFixed(2) + "× · +" + fmt.usd(a * cashed - a) : "Crashed");
-                if (!cashed && run && run.lossBet) ctx.record(run.lossBet);
+                paint(Math.log(crash) / K, true, cashed); setNum(crash.toFixed(2) + "×", "l", "Crashed"); RD.sfx.play("boom");
+                if (run && run.endBet) ctx.record(run.endBet); /* só agora: o histórico não entrega onde ia crashar */
                 run = null; return setTimeout(function () { finish(function () { resolve({ win: !!cashed }); }, auto); }, auto ? 300 : 700);
               }
-              paint(ms, false); setNum(m.toFixed(2) + "×", cashed ? "w" : "", cashed ? "Cashed out at " + cashed.toFixed(2) + "×" : "Cash out before it crashes");
+              paint(ms, false, cashed); setNum(m.toFixed(2) + "×", cashed ? "w" : "");
               requestAnimationFrame(step);
             })(t0);
           });
@@ -821,19 +844,19 @@
             var btn = ctx.btn(); if (!auto) { btn.textContent = "Cash out"; btn.classList.add("stop"); }
             run = { cashout: function () {
               if (cashed) return; var m = multAt(performance.now() - t0); if (m >= crash) return;
-              cashed = capMult(a, m); var bet = db.settleRound(u.id, G, cashed, true, { crash: crash, cashout: cashed, target: tg });
-              ctx.record(bet); btn.disabled = true; btn.textContent = "Cashed out @ " + cashed.toFixed(2) + "×";
+              cashed = capMult(a, m); run.endBet = db.settleRound(u.id, G, cashed, true, { crash: crash, cashout: cashed, target: tg });
+              renderHeader(); RD.sfx.play("cash"); btn.disabled = true; btn.textContent = "Cashed out @ " + cashed.toFixed(2) + "×";
             } };
             (function step(now) {
               if (!document.contains(box)) { if (!cashed) { var w2 = tg < crash; db.settleRound(u.id, G, w2 ? capMult(a, tg) : 0, w2, { crash: crash, cashout: w2 ? tg : null, target: tg }); } run = null; return resolve({ win: !!cashed }); }
               var ms = now - t0, m = multAt(ms);
-              if (!cashed && m >= tg && tg < crash) { cashed = capMult(a, tg); var bw = db.settleRound(u.id, G, cashed, true, { crash: crash, cashout: cashed, target: tg }); ctx.record(bw); if (!auto) { btn.disabled = true; btn.textContent = "Cashed out @ " + cashed.toFixed(2) + "×"; btn.classList.remove("stop"); } }
+              if (!cashed && m >= tg && tg < crash) { cashed = capMult(a, tg); run.endBet = db.settleRound(u.id, G, cashed, true, { crash: crash, cashout: cashed, target: tg }); renderHeader(); RD.sfx.play("cash"); if (!auto) { btn.disabled = true; btn.textContent = "Cashed out @ " + cashed.toFixed(2) + "×"; btn.classList.remove("stop"); } }
               if (m >= crash) {
-                paint(Math.log(crash) / K, true); setNum(crash.toFixed(2) + "×", "l", cashed ? "You cashed out at " + cashed.toFixed(2) + "× · +" + fmt.usd(a * cashed - a) : "Crashed");
-                if (!cashed) { var bl = db.settleRound(u.id, G, 0, false, { crash: crash, target: tg }); ctx.record(bl); }
+                paint(Math.log(crash) / K, true, cashed); setNum(crash.toFixed(2) + "×", "l", "Crashed"); RD.sfx.play("boom");
+                ctx.record(cashed ? run.endBet : db.settleRound(u.id, G, 0, false, { crash: crash, target: tg }));
                 run = null; return setTimeout(function () { finish(function () { resolve({ win: !!cashed }); }, auto); }, auto ? 300 : 700);
               }
-              paint(ms, false); setNum(m.toFixed(2) + "×", cashed ? "w" : "", cashed ? "Cashed out at " + cashed.toFixed(2) + "×" : "Cash out before it crashes");
+              paint(ms, false, cashed); setNum(m.toFixed(2) + "×", cashed ? "w" : "");
               requestAnimationFrame(step);
             })(t0);
           });
@@ -867,8 +890,16 @@
   };
 
   /* ---------- MINES ---------- */
-  var GEM = '<svg viewBox="0 0 24 24"><path d="M6 3h12l4 6-10 12L2 9z" fill="#28e0a0"/><path d="M2 9h20M8 3l4 18 4-18M6 3l2 6 4-6 4 6 2-6" fill="none" stroke="#0b7a55" stroke-width="1.2" stroke-linejoin="round"/></svg>';
-  var MINE = '<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="7" fill="#f0566a"/><circle cx="9.5" cy="10.5" r="2" fill="#ffb3bd"/><path d="M12 6V3M17 8l2-2M7 8 5 6" stroke="#f0566a" stroke-width="2" stroke-linecap="round"/></svg>';
+  /* Ícones do Mines: diamante lapidado e mina naval com a marca RD (desenho próprio, sem emoji) */
+  var GEM = '<svg viewBox="0 0 64 64" class="mn-ic"><defs><linearGradient id="mnGa" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7dffd2"/><stop offset="1" stop-color="#14c98a"/></linearGradient><linearGradient id="mnGb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1fd99a"/><stop offset="1" stop-color="#0a8a5c"/></linearGradient></defs>' +
+    '<ellipse cx="32" cy="58" rx="15" ry="2.6" fill="#000" opacity=".25"/><path d="M18 10h28l12 14-26 32L6 24z" fill="url(#mnGb)"/><path d="M18 10h28l12 14H6z" fill="url(#mnGa)"/>' +
+    '<path d="M6 24h52M18 10l8 14 6-14 6 14 8-14M26 24l6 32 6-32" fill="none" stroke="#0b6e4b" stroke-opacity=".55" stroke-width="1.4" stroke-linejoin="round"/><path d="M20 13l-6 9h9z" fill="#fff" opacity=".55"/></svg>';
+  var MINE = '<svg viewBox="0 0 64 64" class="mn-ic"><defs><radialGradient id="mnMb" cx=".38" cy=".34" r=".75"><stop offset="0" stop-color="#5a4a63"/><stop offset=".55" stop-color="#2a2030"/><stop offset="1" stop-color="#120c16"/></radialGradient></defs>' +
+    '<ellipse cx="32" cy="59" rx="16" ry="2.6" fill="#000" opacity=".3"/>' +
+    '<g stroke="#8d7c98" stroke-width="4.5" stroke-linecap="round"><path d="M32 6v8M32 50v8M6 32h8M50 32h8M13.6 13.6l5.6 5.6M44.8 44.8l5.6 5.6M50.4 13.6l-5.6 5.6M19.2 44.8l-5.6 5.6"/></g>' +
+    '<g fill="#ff2e55"><circle cx="32" cy="6" r="3.4"/><circle cx="32" cy="58" r="3.4"/><circle cx="6" cy="32" r="3.4"/><circle cx="58" cy="32" r="3.4"/><circle cx="13.6" cy="13.6" r="3.2"/><circle cx="50.4" cy="50.4" r="3.2"/><circle cx="50.4" cy="13.6" r="3.2"/><circle cx="13.6" cy="50.4" r="3.2"/></g>' +
+    '<circle cx="32" cy="32" r="19" fill="url(#mnMb)"/><path d="M13.4 32a18.6 6.4 0 0 0 37.2 0" fill="none" stroke="#ff2e55" stroke-width="3"/>' +
+    '<text x="32" y="30" text-anchor="middle" font-size="11" font-weight="900" fill="#fff" style="font-family:var(--font-display,Arial)">RD</text><ellipse cx="25" cy="23" rx="5" ry="3" fill="#fff" opacity=".22" transform="rotate(-30 25 23)"/></svg>';
   OG.mines = {
     label: function (b) { return b.multiplier ? b.multiplier.toFixed(2) + "×" : "0.00×"; },
     cfg: function () {
@@ -922,6 +953,7 @@
         if (RD.live) return db.roundAct(G, "reveal", { tile: i }).then(function (x) {
           pending = false; if (x.error) return ctx.msg(x.error); if (!round) return;
           round.revealed.push(i);
+          RD.sfx.play(x.mine ? "boom" : "gem");
           if (x.mine) { var t = tiles()[i]; end(false, x.minePos); if (!t || !document.contains(t)) return; t.classList.remove("dim"); t.innerHTML = MINE; t.classList.add("boom"); return; }
           if (x.bet) return end(true, x.minePos);
           if (!$("#mn-grid")) return;
@@ -930,6 +962,7 @@
         floats(r.server, r.client, r.nonce, 24).then(function (fs) {
           pending = false; if (!round) return;
           var pos = minesFrom(fs, round.m);
+          RD.sfx.play(pos.indexOf(i) > -1 ? "boom" : "gem");
           if (pos.indexOf(i) > -1) { round.revealed.push(i); var t = tiles()[i]; end(false, pos); if (!t || !document.contains(t)) return; t.classList.remove("dim"); t.innerHTML = MINE; t.classList.add("boom"); return; }
           round.revealed.push(i); db.updateRound(u.id, G, { m: round.m, revealed: round.revealed });
           if (round.revealed.length === 25 - round.m) return end(true, pos);
@@ -1020,6 +1053,7 @@
         got.then(function (x) {
           if (!x || !round) { busyCard = false; return; }
           var next = { rank: x.card.rank, suit: x.card.suit }, cur = current(), o = hiloOpts(cur.rank);
+          RD.sfx.play("card");
           if (kind === "skip") { next.res = "skip"; round.cards.push(next); }
           else {
             var opt = kind === "up" ? o.up : o.down, ok = RD.live ? x.ok : opt.ok(next.rank);
@@ -1203,7 +1237,7 @@
             var i = 0;
             (function next() {
               if (!$("#kn-grid")) { busyK = false; return res({ win: m > 1 }); }
-              i++; paint(drawn.slice(0, i), i === 10 ? hits : null);
+              i++; paint(drawn.slice(0, i), i === 10 ? hits : null); RD.sfx.play(picks.indexOf(drawn[i - 1]) > -1 ? "gem" : "tick", 0);
               if (i < 10) return setTimeout(next, 70);
               busyK = false; ctx.lock(false); ctx.record(b); res({ win: m > 1 });
             })();
@@ -1579,6 +1613,7 @@
         if (RD.live) return db.roundAct(G, "pick", { col: i }).then(function (x) {
           pending = false; if (x.error) return ctx.msg(x.error); if (!round) return;
           round.picks.push(i);
+          RD.sfx.play(x.safe ? "step" : "boom");
           if (!x.safe) return end(false, x.eggs);
           if (x.bet) return end(true, x.eggs);
           if (!$("#tw")) return;
@@ -1587,6 +1622,7 @@
         layout(r).then(function (eggs) {
           pending = false; if (!round) return;
           var row = round.picks.length; round.picks.push(i);
+          RD.sfx.play(eggs[row].indexOf(i) < 0 ? "boom" : "step");
           if (eggs[row].indexOf(i) < 0) return end(false, eggs);
           db.updateRound(u.id, G, { level: round.level, picks: round.picks });
           if (round.picks.length === 9) return end(true, eggs);
@@ -1687,7 +1723,7 @@
         pending = true; paint();
         if (RD.live) return db.roundAct(G, "go").then(function (x) {
           pending = false; if (x.error) { paint(); return ctx.msg(x.error); } if (!round) return;
-          round.steps++;
+          round.steps++; RD.sfx.play(x.dead ? "boom" : "step");
           if (x.dead) return end(false, x.bones, true);
           if (x.bet) return end(true, x.bones, false);
           if (!$("#ck-road")) return;
@@ -1695,7 +1731,7 @@
         });
         layout(r).then(function (bones) {
           pending = false; if (!round) return;
-          round.steps++;
+          round.steps++; RD.sfx.play(bones.indexOf(round.steps - 1) > -1 ? "boom" : "step");
           if (bones.indexOf(round.steps - 1) > -1) return end(false, bones, true);
           db.updateRound(u.id, G, { diff: round.diff, steps: round.steps });
           if (round.steps === CHICKEN[round.diff].mult.length - 1) return end(true, bones, false);
