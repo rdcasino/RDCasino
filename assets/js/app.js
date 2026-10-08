@@ -337,7 +337,7 @@
     roulette: "<p><strong>Roulette</strong>: European wheel with a single zero. Place chips on numbers or outside bets — a number pays 35 to 1, dozens and columns 2 to 1, and red/black, even/odd and 1–18/19–36 pay 1 to 1.</p>",
     tower: "<p><strong>Tower</strong>: climb 9 floors. On every floor pick a tile — find the egg and you go up, hit the skull and the round ends. Cash out whenever you want. Five difficulties, from Easy (3 eggs in 4 tiles) to Master (1 egg in 4 tiles, up to 256,901×).</p>",
     chicken: "<p><strong>Chicken</strong>: help the chicken cross the road, one lane at a time. Every lane you cross raises your multiplier, but some lanes hide a car. Cash out before you get hit. Easy hides 1 car in 20 lanes, Expert hides 10.</p>",
-    coinflip: "<p><strong>Coinflip</strong>: pick Heads or Tails and flip. <b>Classic</b> is one flip at 1.98×. <b>Target</b> asks for 2 to 10 flips in a row on your side — every extra flip doubles the multiplier, up to 1,013.76×. Heads shows our founder, Richard.</p>",
+    coinflip: "<p><strong>Coinflip</strong>: pick Heads or Tails and flip. <b>Classic</b> is one flip at 1.98×. <b>Target</b> asks for 2 to 10 flips in a row on your side — every extra flip doubles the multiplier, up to 1,013.76×. Heads is the gold RD coin, Tails the silver one.</p>",
     rps: "<p><strong>Rock Paper Scissors</strong>: beat the house hand to climb the ladder — 1.96×, 3.92×, 7.84× and up to 1,003.52× after 10 wins. A tie gives you another throw at no cost. Cash out after any win. Scissors cut paper, rock smashes scissors, paper wraps rock.</p>",
     baccarat: "<p><strong>Baccarat</strong>: bet on Player, Banker or Tie. The hand closest to 9 wins. Player pays 1:1, Banker pays 0.95:1 and Tie pays 8:1 (on a tie, Player and Banker bets are returned). Standard third-card rules, infinite deck. House edge: 1.24% on Player, 1.06% on Banker, 14.4% on Tie.</p>",
     hilo: "<p><strong>Hi-Lo</strong>: guess whether the next card is higher or lower than the current one. Each correct guess multiplies your win. Skip cards you don't like and cash out whenever you want. The last card stays on the table for your next round, win or lose. Aces are low, kings are high.</p>"
@@ -396,8 +396,20 @@
         var st = sess(g.id), delta = b.payout - b.amount;
         st.profit = Math.round((st.profit + delta) * 100) / 100; st.wagered += b.amount; st[b.payout > b.amount ? "wins" : "losses"]++; st.series.push(st.profit); if (st.series.length > 200) st.series.shift();
         renderHeader(); ctx.refresh(); history(); stats(); if (tab !== "about") ogTab(g, tab);
+        if (b.payout > b.amount && g.id !== "plinko") winPop(b);
       }
     };
+    /* Aviso de vitória no centro do jogo (multiplicador + valor recebido) */
+    var popTimer = null;
+    function winPop(b) {
+      var stage = $(".ogx-stage"); if (!stage) return;
+      var old = stage.querySelector(".ogx-win"); if (old) old.remove();
+      var el = document.createElement("div"); el.className = "ogx-win";
+      el.innerHTML = '<div class="m">' + b.multiplier.toFixed(2) + '×</div><div class="v"><span class="coin-dot" style="background:#26a17b">₮</span>' + fmt.usd(b.payout) + "</div>";
+      el.addEventListener("click", function () { el.remove(); });
+      stage.appendChild(el); clearTimeout(popTimer);
+      popTimer = setTimeout(function () { el.classList.add("out"); setTimeout(function () { el.remove(); }, 250); }, 1700);
+    }
     var api = mod.bind(ctx);
     function history() {
       var u = me(), h = $("#og-hist"); if (!h) return;

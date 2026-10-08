@@ -247,6 +247,13 @@
 #hdr-bal { display: inline-block; }
 #hdr-bal.bump { animation: balBump 0.6s ease; }
 @keyframes balBump { 0% { color: var(--success); transform: scale(1.12); } 100% { color: inherit; transform: none; } }
+.ogx-win { position: absolute; left: 50%; top: 46%; z-index: 20; transform: translate(-50%, -50%); min-width: 150px; border-radius: 14px; overflow: hidden; border: 2px solid var(--success); box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55), 0 0 40px rgba(34, 224, 138, 0.25); animation: winIn 0.28s cubic-bezier(.2, 1.4, .4, 1); cursor: pointer; text-align: center; }
+.ogx-win .m { background: var(--success); color: #05301c; font-family: var(--font-display); font-weight: 800; font-size: 28px; padding: 14px 22px; }
+.ogx-win .v { background: #1a1218; color: var(--text); font-weight: 800; font-size: 14px; padding: 9px 16px; display: flex; align-items: center; justify-content: center; gap: 7px; }
+.ogx-win .coin-dot { width: 18px; height: 18px; font-size: 10px; }
+.ogx-win.out { animation: winOut 0.25s ease forwards; }
+@keyframes winIn { from { transform: translate(-50%, -50%) scale(0.6); opacity: 0; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+@keyframes winOut { to { transform: translate(-50%, -50%) scale(0.9); opacity: 0; } }
 /* VIP */
 .tier-badge { flex: 0 0 auto; display: block; }
 .sb-vip { position: relative; display: flex; align-items: center; gap: 10px; padding: 12px; margin-bottom: 10px; border-radius: 14px; background: linear-gradient(135deg, rgba(255, 46, 85, 0.14), rgba(255, 200, 92, 0.06)); border: 1px solid var(--line); }
