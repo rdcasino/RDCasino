@@ -140,20 +140,31 @@ window.RD = window.RD || {};
 
   /* Moeda do Coinflip. Cara: moeda dourada com RD em relevo.
      Coroa: moeda prateada com a joia RD. viewBox -110 -110 220 220 */
-  var HEADS = '<defs><radialGradient id="cg" cx=".38" cy=".32" r=".8"><stop offset="0" stop-color="#fff2b8"/><stop offset=".45" stop-color="#f3c547"/><stop offset="1" stop-color="#b47a0c"/></radialGradient><linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe9a0"/><stop offset=".5" stop-color="#d9a21c"/><stop offset="1" stop-color="#8a5a06"/></linearGradient><linearGradient id="emb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6d0"/><stop offset="1" stop-color="#e2ab2e"/></linearGradient></defs>' +
-    '<circle r="99" fill="url(#rim)"/><circle r="92" fill="none" stroke="#7a4f05" stroke-opacity=".5" stroke-width="1.5" stroke-dasharray="2 3"/><circle r="86" fill="url(#cg)"/><circle r="86" fill="none" stroke="#fff6cf" stroke-opacity=".6" stroke-width="2"/>' +
-    '<circle r="66" fill="none" stroke="#b47a0c" stroke-opacity=".55" stroke-width="2.5"/><circle r="62" fill="none" stroke="#fff6cf" stroke-opacity=".45" stroke-width="1.2"/>' +
-    '<path d="M-58 -70 L70 60" stroke="#fff" stroke-opacity=".14" stroke-width="22"/>' +
-    '<text y="22" text-anchor="middle" font-size="66" font-weight="900" fill="#9a6408" opacity=".55" transform="translate(2 3)" style="font-family:var(--font-display,Arial)">RD</text>' +
-    '<text y="22" text-anchor="middle" font-size="66" font-weight="900" fill="url(#emb)" style="font-family:var(--font-display,Arial)">RD</text>' +
-    '<path d="M0 -50 l3 7 7 0 -5.5 4.5 2 7 -6.5 -4 -6.5 4 2 -7 -5.5 -4.5 7 0z M0 38 l2 5 5 0 -4 3 1.5 5 -4.5 -3 -4.5 3 1.5 -5 -4 -3 5 0z" fill="#fff6d0" opacity=".85"/>';
-  var TAILS = '<defs><radialGradient id="tg" cx=".38" cy=".32" r=".8"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#d6dde8"/><stop offset="1" stop-color="#7d8898"/></radialGradient><linearGradient id="trim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4f7fb"/><stop offset=".5" stop-color="#a9b4c4"/><stop offset="1" stop-color="#5b6575"/></linearGradient><linearGradient id="tgem" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff8fa3"/><stop offset=".5" stop-color="#ff2e55"/><stop offset="1" stop-color="#9e0f2c"/></linearGradient><path id="tarc" d="M-62 30 A68 68 0 0 0 62 30" fill="none"/></defs>' +
-    '<circle r="99" fill="url(#trim)"/><circle r="92" fill="none" stroke="#4a5363" stroke-opacity=".5" stroke-width="1.5" stroke-dasharray="2 3"/><circle r="86" fill="url(#tg)"/><circle r="86" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="2"/>' +
-    '<path d="M-58 -70 L70 60" stroke="#fff" stroke-opacity=".18" stroke-width="22"/>' +
-    '<path d="M0 -58 L36 -28 L0 30 L-36 -28Z" fill="url(#tgem)" stroke="#5b0718" stroke-width="2" stroke-linejoin="round"/><path d="M-36 -28 H36 M0 -58 L-14 -28 L0 30 L14 -28Z" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.6" stroke-linejoin="round"/><path d="M0 -58 L-14 -28 H14Z" fill="#fff" fill-opacity=".25"/>' +
-    '<text y="-22" text-anchor="middle" font-size="22" font-weight="900" fill="#fff" style="font-family:var(--font-display,Arial)">RD</text>';
+  function coinBuild(gold) {
+    var P = gold ? { hi: "#fff4c4", mid: "#f2c040", lo: "#a8700a", deep: "#6e4504", ink: "#7a4d05", rimA: "#ffe7a0", rimB: "#c48a12", rimC: "#7a4e06" }
+                 : { hi: "#ffffff", mid: "#cfd6e0", lo: "#8a95a6", deep: "#4a5363", ink: "#465060", rimA: "#f4f7fb", rimB: "#a7b1c0", rimC: "#5c6676" };
+    var ticks = ""; for (var i = 0; i < 120; i++) { var a = i * Math.PI / 60, c = Math.cos(a), s = Math.sin(a); ticks += "M" + (c * 93).toFixed(1) + " " + (s * 93).toFixed(1) + "L" + (c * 99).toFixed(1) + " " + (s * 99).toFixed(1); }
+    var label = gold ? "RDCASINO • PROVABLY FAIR • HEADS •" : "RDCASINO • PROVABLY FAIR • TAILS •";
+    var emblem = gold
+      ? '<text y="21" text-anchor="middle" font-size="56" font-weight="900" fill="#fff6d6" opacity=".7" transform="translate(-1.5 -2)" style="font-family:var(--font-display,Arial)">RD</text>' +
+        '<text y="21" text-anchor="middle" font-size="56" font-weight="900" fill="url(#emb)" style="font-family:var(--font-display,Arial)">RD</text>'
+      : '<g transform="translate(0 3)"><path d="M0 -40 L32 -11 L0 38 L-32 -11Z" fill="#000" opacity=".22" transform="translate(2 4)"/><path d="M0 -40 L32 -11 L0 38 L-32 -11Z" fill="url(#emb)"/>' +
+        '<path d="M-32 -11 H32 M0 -40 L-11 -11 L0 38 L11 -11Z" fill="none" stroke="#7a0a22" stroke-opacity=".55" stroke-width="1.6" stroke-linejoin="round"/><path d="M0 -40 L-11 -11 H-32Z" fill="#fff" opacity=".45"/><path d="M0 -40 L11 -11 H32Z" fill="#fff" opacity=".15"/></g>';
+    var embG = gold ? '<stop offset="0" stop-color="#d89a1c"/><stop offset="1" stop-color="#8a5806"/>' : '<stop offset="0" stop-color="#ff6b88"/><stop offset=".55" stop-color="#ff2e55"/><stop offset="1" stop-color="#a30d2c"/>';
+    return '<defs><radialGradient id="cg" cx=".36" cy=".3" r=".85"><stop offset="0" stop-color="' + P.hi + '"/><stop offset=".5" stop-color="' + P.mid + '"/><stop offset="1" stop-color="' + P.lo + '"/></radialGradient>' +
+      '<linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + P.rimA + '"/><stop offset=".5" stop-color="' + P.rimB + '"/><stop offset="1" stop-color="' + P.rimC + '"/></linearGradient>' +
+      '<linearGradient id="emb" x1="0" y1="0" x2="0" y2="1">' + embG + "</linearGradient>" +
+      '<radialGradient id="gl" cx=".3" cy=".22" r=".55"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>' +
+      '<path id="tp" d="M-71 0a71 71 0 1 1 142 0a71 71 0 1 1 -142 0"/></defs>' +
+      '<circle r="100" fill="url(#rim)"/><path d="' + ticks + '" stroke="' + P.rimC + '" stroke-opacity=".55" stroke-width="1.6"/>' +
+      '<circle r="91" fill="' + P.rimC + '" opacity=".35"/><circle r="89" fill="url(#cg)"/>' +
+      '<circle r="82" fill="none" stroke="' + P.ink + '" stroke-opacity=".35" stroke-width="1.4"/><circle r="60" fill="none" stroke="' + P.ink + '" stroke-opacity=".35" stroke-width="1.4"/>' +
+      '<text font-size="11.5" font-weight="800" letter-spacing="2.2" fill="' + P.ink + '" opacity=".75" style="font-family:var(--font-display,Arial)"><textPath href="#tp" startOffset="0">' + label + "</textPath></text>" +
+      emblem + '<circle r="89" fill="url(#gl)"/>';
+  }
+  var HEADS = coinBuild(true), TAILS = coinBuild(false);
   function uniq(svg, ids) { var k = U("cf"); ids.forEach(function (id) { svg = svg.split('id="' + id + '"').join('id="' + id + k + '"').split("url(#" + id + ")").join("url(#" + id + k + ")").split('href="#' + id + '"').join('href="#' + id + k + '"'); }); return svg; }
-  function coinSide(side) { return side === "tails" ? uniq(TAILS, ["tg", "trim", "tgem", "tarc"]) : uniq(HEADS, ["cg", "rim", "emb"]); }
+  function coinSide(side) { return uniq(side === "tails" ? TAILS : HEADS, ["cg", "rim", "emb", "gl", "tp"]); }
 
   /* Selo de nível VIP: quadrado arredondado na cor da família, com a joia RD no centro */
   function tierBadge(t, size) {
