@@ -23,8 +23,9 @@ O sistema começa **zerado**: nenhum jogador, aposta ou transação inventada. T
 **O que funciona de verdade (na demonstração):**
 - Cadastro e login de jogadores, com bloqueio de países restritos (Brasil incluído).
 - Depósito de teste (simula o processador cripto), saque com aprovação do admin e gorjeta entre jogadores.
-- **12 jogos próprios jogáveis: Dice, Limbo, Crash, Mines, Plinko, Keno, Hi-Lo, Wheel, Blackjack, Roulette, Tower e Chicken**, com resultado provably fair (HMAC-SHA256) verificável na página Provably Fair. Jogos por etapas (Mines, Hi-Lo, Crash, Blackjack, Tower, Chicken) descontam a aposta no início e retomam a rodada se a página for recarregada. Cada jogo tem a sua rodada: dá para deixar um Mines aberto e jogar outro jogo.
+- **15 jogos próprios jogáveis: Dice, Limbo, Crash, Mines, Plinko, Keno, Hi-Lo, Wheel, Blackjack, Roulette, Tower, Chicken, Coinflip, Rock Paper Scissors e Baccarat**, com resultado provably fair (HMAC-SHA256) verificável na página Provably Fair. Jogos por etapas (Mines, Hi-Lo, Crash, Blackjack, Tower, Chicken) descontam a aposta no início e retomam a rodada se a página for recarregada. Cada jogo tem a sua rodada: dá para deixar um Mines aberto e jogar outro jogo.
 - **Tabelas de pagamento iguais às da Stake** (Plinko 8–16 linhas, Keno Classic/Low/Medium/High, Wheel, Tower e Chicken), conferidas por cálculo de RTP. Dice/Limbo/Crash/Mines/Hi-Lo usam 1% de vantagem da casa; Tower e Chicken 2% (como na Stake); Roulette 2,7% (europeia).
+- **VIP**: níveis Wood ($10k) a Jade 1 ($500k) com prêmio de subida (0,4% do apostado), rakeback, página VIP estilo Rainbet, progresso no menu lateral e painel Admin → VIP & Recompensas. Os valores ficam em `RD.vipTiers` (assets/js/data.js).
 - **Admin → Jogadores → Zerar apostas**: apaga o histórico e as estatísticas de jogo de um jogador (o saldo não muda).
 - Nível VIP (Wood → Amethyst) pelo total apostado, rakeback e prêmio de nível para resgatar.
 - Leaderboard do mês calculado pelas apostas reais.
