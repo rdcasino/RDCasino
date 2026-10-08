@@ -15,6 +15,29 @@ python3 -m http.server 8000
 
 Qualquer e-mail e senha entram, nos dois.
 
+## Site e admin integrados
+
+Os dois usam os mesmos dados. Abra o site numa aba e o admin em outra (no mesmo navegador): o que você faz em um aparece no outro na hora.
+
+**Como abrir o admin pelo site (atalho secreto):**
+- No computador: digite `rdadmin` em qualquer lugar da página (fora de campos de texto).
+- No celular: toque 5 vezes rápido no logo.
+
+O atalho só abre a tela de login do admin. A proteção de verdade precisa ser a senha + 2FA no servidor (ver "O que falta").
+
+**O que já funciona entre os dois:**
+- Admin adiciona ou remove saldo, ou dá bônus → o saldo do jogador muda no site e ele recebe um aviso.
+- Jogador pede saque → o valor sai do saldo e o saque cai na fila do admin → admin aprova (jogador vê "Sent") ou rejeita (o valor volta para o saldo).
+- Jogador envia documentos (KYC) → aparecem na fila do admin → admin aprova ou rejeita com motivo, e o jogador vê o resultado.
+- Saques acima de $2.000 exigem KYC aprovado.
+- Admin suspende a conta → o site mostra o aviso e bloqueia saque, depósito e jogo.
+- Admin liga ou desliga um jogo, ou edita uma promoção → muda no site.
+- Tudo fica registrado no Log de auditoria.
+
+Para recomeçar do zero: Admin → Configurações → "Restaurar dados da demo".
+
+**Limite importante:** os dados ficam guardados só no navegador. Isso serve para testar e mostrar o funcionamento; não serve para jogadores reais. As funções em `assets/js/store.js` são exatamente as que o backend real vai precisar ter.
+
 ## Estrutura
 
 ```
@@ -23,7 +46,8 @@ admin/index.html        Back-office
 assets/css/base.css     Design system compartilhado (cores, botões, tabelas, modais)
 assets/css/app.css      Estilos do site
 assets/css/admin.css    Estilos do admin
-assets/js/data.js       Camada de dados (mock). É aqui que o backend vai entrar
+assets/js/data.js       Dados iniciais de demonstração
+assets/js/store.js      Memória compartilhada site ↔ admin (vira o backend depois)
 assets/js/icons.js      Ícones SVG
 assets/js/app.js        Site: rotas, páginas, afiliados, carteira, login
 assets/js/admin.js      Admin: dashboard, jogadores, transações, KYC, jogos,

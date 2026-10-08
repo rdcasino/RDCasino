@@ -9,8 +9,8 @@
   var ic = RD.ic, fmt = RD.fmt, esc = RD.esc, media = RD.media, D = RD.admin;
 
   var store = {
-    get: function (k, d) { try { var v = sessionStorage.getItem("rda_" + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
-    set: function (k, v) { try { sessionStorage.setItem("rda_" + k, JSON.stringify(v)); } catch (e) {} }
+    get: function (k, d) { try { var v = localStorage.getItem("rda_" + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set: function (k, v) { try { localStorage.setItem("rda_" + k, JSON.stringify(v)); } catch (e) {} }
   };
 
   function hydrate(root) { $$("[data-ic]", root).forEach(function (el) { el.outerHTML = ic(el.getAttribute("data-ic")); }); }
@@ -45,15 +45,7 @@
   }
 
   /* ---------- Helpers ---------- */
-  var audit = store.get("audit", [
-    { at: "2026-10-08 09:12", who: "admin", what: "Aprovou saque TX-88209 ($1,240.00)" },
-    { at: "2026-10-08 08:40", who: "admin", what: "Alterou banner 'welcome'" },
-    { at: "2026-10-07 22:05", who: "support_01", what: "Suspendeu jogador lucky_7 (risco: multi-contas)" }
-  ]);
-  function log(what) {
-    var d = new Date(), at = d.toISOString().slice(0, 10) + " " + d.toTimeString().slice(0, 5);
-    audit.unshift({ at: at, who: "admin", what: what }); store.set("audit", audit);
-  }
+  function log(what) { RD.db.log("admin", what); }
   function statusBadge(s) {
     var map = { Completed: "badge-brand", Paid: "badge-brand", Active: "badge-brand", Verified: "badge-brand", Approved: "badge-brand",
       Pending: "badge-warn", "Pending review": "badge-warn", Scheduled: "badge-info", scheduled: "badge-info", active: "badge-brand", draft: "",
@@ -121,6 +113,7 @@
       '<div class="row" style="gap:12px;margin-bottom:16px"><span class="avatar" style="width:44px;height:44px;font-size:15px">' + p.username.slice(0, 2).toUpperCase() + '</span><div><strong>' + esc(p.username) + '</strong><br><small class="faint">' + esc(p.email) + " · " + p.id + '</small></div></div>' +
       '<div class="row wrap" style="gap:6px;margin-bottom:16px">' + statusBadge(p.status) + statusBadge(p.kyc) + '<span class="badge">Risco: ' + p.risk + '</span><span class="badge">' + p.tier + "</span></div>" +
       '<div class="detail-grid"><div><small>Saldo</small><strong class="num">' + fmt.usd(p.balance) + '</strong></div><div><small>Lucro da casa (NGR)</small><strong class="num">' + fmt.usd(p.deposits - p.withdrawals - p.balance, { dec: 0 }) + '</strong></div><div><small>Depósitos</small><strong class="num">' + fmt.usd(p.deposits, { dec: 0 }) + '</strong></div><div><small>Saques</small><strong class="num">' + fmt.usd(p.withdrawals, { dec: 0 }) + '</strong></div><div><small>País</small><strong>' + esc(p.country) + '</strong></div><div><small>Cadastro</small><strong>' + p.registered + '</strong></div><div><small>Afiliado</small><strong>' + p.affiliate + '</strong></div><div><small>Último IP</small><strong>203.0.113.' + (p.id.slice(-2) | 0) + "</strong></div></div>" +
+      (p.kycInfo ? '<h3 style="margin:20px 0 10px">Documentos enviados</h3><div class="detail-grid"><div><small>Nome</small><strong>' + esc(p.kycInfo.name) + '</strong></div><div><small>Nascimento</small><strong>' + esc(p.kycInfo.dob) + '</strong></div><div><small>Documento</small><strong>' + esc(p.kycInfo.doc) + '</strong></div><div><small>Enviado em</small><strong>' + esc(p.kycInfo.sent) + '</strong></div></div>' + (p.kyc === "Pending" ? '<div class="row" style="gap:8px;margin-top:10px"><button class="btn btn-primary btn-sm" data-act="kyc-ok" data-id="' + p.id + '">Aprovar KYC</button><button class="btn btn-danger btn-sm" data-act="kyc-no" data-id="' + p.id + '">Rejeitar</button></div>' : "") : "") +
       '<h3 style="margin:20px 0 10px">Ações</h3><div class="row wrap" style="gap:8px">' +
         '<button class="btn btn-secondary btn-sm" data-act="adjust" data-id="' + p.id + '">' + ic("sliders", 14) + "Ajustar saldo</button>" +
         '<button class="btn btn-secondary btn-sm" data-act="bonus" data-id="' + p.id + '">' + ic("gift", 14) + "Dar bônus</button>" +
@@ -136,7 +129,7 @@
       list.map(function (t) {
         var act = actions && t.status === "Pending" && t.type === "Withdrawal"
           ? '<td class="right"><div class="row" style="gap:6px;justify-content:flex-end"><button class="btn btn-primary btn-sm" data-act="approve" data-id="' + t.id + '">Aprovar</button><button class="btn btn-danger btn-sm" data-act="reject" data-id="' + t.id + '">Rejeitar</button></div></td>' : actions ? "<td></td>" : "";
-        return '<tr><td class="strong">' + t.id + "</td><td>" + esc(t.user) + "</td><td>" + (t.type === "Deposit" ? '<span class="pos">' + ic("arrowDown", 14) + " Depósito</span>" : '<span class="neg">' + ic("arrowUp", 14) + " Saque</span>") + "</td><td>" + t.coin + '</td><td class="right num strong">' + fmt.usd(t.amount) + "</td><td>" + statusBadge(t.status) + '</td><td class="faint">' + t.date + "</td>" + act + "</tr>";
+        return '<tr><td class="strong">' + t.id + "</td><td>" + esc(t.user) + "</td><td>" + ({ Deposit: '<span class="pos">' + ic("arrowDown", 14) + " Depósito</span>", Withdrawal: '<span class="neg">' + ic("arrowUp", 14) + " Saque</span>", Bonus: '<span style="color:var(--gold)">' + ic("gift", 14) + " Bônus</span>", Adjustment: '<span class="muted">' + ic("sliders", 14) + (t.sign === -1 ? " Débito manual" : " Crédito manual") + "</span>" }[t.type] || t.type) + "</td><td>" + t.coin + '</td><td class="right num strong">' + fmt.usd(t.amount) + "</td><td>" + statusBadge(t.status) + '</td><td class="faint">' + t.date + "</td>" + act + "</tr>";
       }).join("") + "</tbody></table></div>";
   }
   P.transactions = function (filter) {
@@ -258,7 +251,7 @@
   /* Configurações */
   P.settings = function () {
     var L = RD.config.license;
-    return head("Configurações", "Dados da operação exibidos no site") +
+    return head("Configurações", "Dados da operação exibidos no site", '<button class="btn btn-danger btn-sm" data-act="reset-demo">' + ic("trash", 16) + "Restaurar dados da demo</button>") +
       '<div class="adm-grid-2"><div class="card card-pad"><h3 style="margin-bottom:14px">Licença</h3>' +
         '<div class="notice" style="margin-bottom:14px">' + ic("alert", 16) + "<span>Enquanto o status for “pendente”, o rodapé avisa que não há licença. Não opere com dinheiro real nesse estado.</span></div>" +
         '<div class="field"><label>Status</label><select class="select"><option' + (L.status === "pending" ? " selected" : "") + '>Pendente</option><option' + (L.status === "active" ? " selected" : "") + ">Ativa</option></select></div>" +
@@ -286,7 +279,7 @@
   P.audit = function () {
     return head("Log de auditoria", "Toda ação administrativa deve ser registrada no servidor (quem, quando, o quê, IP).") +
       '<div class="card"><div class="table-wrap"><table class="table"><thead><tr><th>Data</th><th>Usuário</th><th>Ação</th></tr></thead><tbody>' +
-      audit.map(function (a) { return '<tr><td class="faint">' + a.at + '</td><td class="strong">' + esc(a.who) + "</td><td>" + esc(a.what) + "</td></tr>"; }).join("") + "</tbody></table></div></div>";
+      RD.db.audit.map(function (a) { return '<tr><td class="faint">' + a.at + '</td><td class="strong">' + esc(a.who) + "</td><td>" + esc(a.what) + "</td></tr>"; }).join("") + "</tbody></table></div></div>";
   };
 
   /* ---------- Router ---------- */
@@ -315,16 +308,26 @@
 
     var a = t.getAttribute("data-act"), id = t.getAttribute("data-id");
     if (a === "approve" || a === "reject") {
-      var tx = find(D.transactions, id); tx.status = a === "approve" ? "Completed" : "Rejected";
-      log((a === "approve" ? "Aprovou" : "Rejeitou") + " saque " + id + " (" + fmt.usd(tx.amount) + ")");
-      RD.toast("Saque " + id + (a === "approve" ? " aprovado" : " rejeitado"), a === "reject" ? "error" : ""); return route();
+      var tx = find(D.transactions, id);
+      if (a === "reject") {
+        openModal('<div class="modal-head"><h3>Rejeitar saque ' + id + '</h3><button class="btn btn-ghost btn-icon btn-sm" data-close>' + ic("x") + '</button></div><form id="rej-form"><div class="modal-body"><p class="muted" style="margin-bottom:14px">' + fmt.usd(tx.amount) + ' volta para o saldo de <strong>' + esc(tx.user) + '</strong>.</p><div class="field"><label>Motivo (o jogador não vê; fica na auditoria)</label><input class="input" name="why" required placeholder="Ex.: endereço suspeito, KYC pendente"></div></div><div class="modal-foot"><button type="button" class="btn btn-ghost" data-close>Cancelar</button><button class="btn btn-danger">Rejeitar e devolver</button></div></form>');
+        $("#rej-form").addEventListener("submit", function (ev) { ev.preventDefault(); RD.db.decideWithdrawal(id, false, ev.target.why.value); closeAll(); RD.toast("Saque " + id + " rejeitado e valor devolvido", "error"); route(); });
+        return;
+      }
+      RD.db.decideWithdrawal(id, true);
+      RD.toast("Saque " + id + " aprovado"); return route();
     }
-    if (a === "kyc-ok" || a === "kyc-no") { var p = find(D.players, id); p.kyc = a === "kyc-ok" ? "Verified" : "Rejected"; log("KYC " + (a === "kyc-ok" ? "aprovado" : "rejeitado") + ": " + p.username); RD.toast("KYC atualizado"); return route(); }
-    if (a === "suspend" || a === "unsuspend") { var q = find(D.players, id); q.status = a === "suspend" ? "Suspended" : "Active"; log((a === "suspend" ? "Suspendeu " : "Reativou ") + q.username); RD.toast("Status atualizado"); playerDrawer(id); if (location.hash.indexOf("players") > -1) P.players.after(); return; }
-    if (a === "adjust") {
-      var pl = find(D.players, id);
-      openModal('<div class="modal-head"><h3>Ajustar saldo · ' + esc(pl.username) + '</h3><button class="btn btn-ghost btn-icon btn-sm" data-close>' + ic("x") + '</button></div><form id="adj-form"><div class="modal-body"><div class="field"><label>Tipo</label><select class="select" name="type"><option value="1">Crédito</option><option value="-1">Débito</option></select></div><div class="field"><label>Valor (USD)</label><input class="input" name="amt" type="number" min="0.01" step="0.01" required></div><div class="field"><label>Motivo (obrigatório, vai para auditoria)</label><input class="input" name="why" required minlength="5"></div></div><div class="modal-foot"><button type="button" class="btn btn-ghost" data-close>Cancelar</button><button class="btn btn-primary">Confirmar</button></div></form>');
-      $("#adj-form").addEventListener("submit", function (ev) { ev.preventDefault(); var f = ev.target, v = +f.amt.value * +f.type.value; pl.balance = Math.max(0, pl.balance + v); log("Ajuste de saldo " + pl.username + ": " + fmt.usd(v, { sign: true }) + " — " + f.why.value); closeAll(); RD.toast("Saldo ajustado"); route(); });
+    if (a === "kyc-ok") { RD.db.setKyc(id, "Verified"); RD.toast("KYC aprovado"); return route(); }
+    if (a === "kyc-no") {
+      openModal('<div class="modal-head"><h3>Rejeitar KYC</h3><button class="btn btn-ghost btn-icon btn-sm" data-close>' + ic("x") + '</button></div><form id="kyc-rej"><div class="modal-body"><div class="field"><label>Motivo (o jogador VÊ esta mensagem, escreva em inglês)</label><select class="select" name="why"><option>Document is blurry or cropped</option><option>Document is expired</option><option>Name does not match your account</option><option>Proof of address is older than 3 months</option></select></div></div><div class="modal-foot"><button type="button" class="btn btn-ghost" data-close>Cancelar</button><button class="btn btn-danger">Rejeitar</button></div></form>');
+      $("#kyc-rej").addEventListener("submit", function (ev) { ev.preventDefault(); RD.db.setKyc(id, "Rejected", ev.target.why.value); closeAll(); RD.toast("KYC rejeitado", "error"); route(); });
+      return;
+    }
+    if (a === "suspend" || a === "unsuspend") { RD.db.setStatus(id, a === "suspend" ? "Suspended" : "Active"); RD.toast("Status atualizado"); playerDrawer(id); if (location.hash.indexOf("players") > -1) P.players.after(); return; }
+    if (a === "adjust" || a === "bonus") {
+      var pl = find(D.players, id), isBonus = a === "bonus";
+      openModal('<div class="modal-head"><h3>' + (isBonus ? "Dar bônus" : "Ajustar saldo") + ' · ' + esc(pl.username) + '</h3><button class="btn btn-ghost btn-icon btn-sm" data-close>' + ic("x") + '</button></div><form id="adj-form"><div class="modal-body"><p class="muted" style="margin-bottom:14px">Saldo atual: <strong>' + fmt.usd(pl.balance) + '</strong></p>' + (isBonus ? '<input type="hidden" name="type" value="1">' : '<div class="field"><label>Tipo</label><select class="select" name="type"><option value="1">Adicionar saldo</option><option value="-1">Remover saldo</option></select></div>') + '<div class="field"><label>Valor (USD)</label><input class="input" name="amt" type="number" min="0.01" step="0.01" required></div><div class="field"><label>Motivo (o jogador vê no extrato)</label><input class="input" name="why" required minlength="3" placeholder="' + (isBonus ? "Ex.: VIP reload bonus" : "Ex.: Compensation for game error") + '"></div></div><div class="modal-foot"><button type="button" class="btn btn-ghost" data-close>Cancelar</button><button class="btn btn-primary">Confirmar</button></div></form>');
+      $("#adj-form").addEventListener("submit", function (ev) { ev.preventDefault(); var f = ev.target, v = +f.amt.value * +f.type.value; RD.db.adjustBalance(pl.id, v, f.why.value, isBonus ? "Bonus" : "Adjustment"); closeAll(); RD.toast(isBonus ? "Bônus enviado" : "Saldo ajustado"); route(); playerDrawer(pl.id); });
       return;
     }
     if (a === "new-promo") return promoForm();
@@ -333,19 +336,27 @@
     if (a === "aff-pay") { var ap = find(D.affiliates, id); log("Pagou afiliado " + ap.name + " " + fmt.usd(ap.owed)); RD.toast("Pagamento de " + fmt.usd(ap.owed) + " registrado"); ap.owed = 0; return route(); }
     if (a === "aff-edit") { var ae = find(D.affiliates, id); return openDrawer(ae.name, '<div class="field"><label>Acordo</label><select class="select"><option>Revenue share (plano padrão)</option><option>Revenue share customizado</option><option>CPA</option><option>Híbrido (CPA + RS)</option></select></div><div class="field"><label>% revenue share</label><input class="input" value="' + (ae.plan.match(/(\d+)%/) || [0, 30])[1] + '"></div><div class="field"><label>CPA (USD por FTD qualificado)</label><input class="input" placeholder="Ex.: 80"></div><div class="field"><label>Baseline de qualificação do CPA</label><input class="input" placeholder="Ex.: depósito mín. $50 + $250 apostado"></div><div class="field"><label>Carteira de pagamento</label><input class="input" placeholder="USDT TRC20"></div><button class="btn btn-primary" data-act="save">Salvar acordo</button><div class="notice" style="margin-top:16px">' + ic("alert", 16) + "<span>CPA sem baseline mínima é a principal porta de fraude de afiliado.</span></div>"); }
     if (a === "new-aff") return openDrawer("Convidar afiliado", '<div class="field"><label>Nome / marca</label><input class="input"></div><div class="field"><label>E-mail</label><input class="input" type="email"></div><div class="field"><label>Código</label><input class="input" style="text-transform:uppercase"></div><button class="btn btn-primary" data-act="save">Enviar convite</button>');
-    if (a === "bonus") return RD.toast("Concessão de bônus (precisa de backend)");
     if (a === "reset2fa") { log("Resetou 2FA de " + find(D.players, id).username); return RD.toast("2FA resetado"); }
     if (a === "sync") return RD.toast("Sincronização com agregador (precisa de integração)");
     if (a === "export") return RD.toast("Exportação CSV (demo)");
     if (a === "save") { log("Salvou configurações"); return RD.toast("Salvo"); }
+    if (a === "reset-demo") { if (confirm("Apagar todas as mudanças e voltar aos dados iniciais?")) { RD.db.reset(); RD.toast("Dados de demonstração restaurados"); route(); } return; }
   });
   document.addEventListener("change", function (e) {
     var g = e.target.getAttribute("data-toggle-game");
-    if (g) { var game = find(RD.games, g); game.enabled = e.target.checked; log((game.enabled ? "Ativou" : "Desativou") + " jogo " + game.name); RD.toast(game.name + (game.enabled ? " ativado" : " desativado")); }
+    if (g) { var game = find(RD.games, g); game.enabled = e.target.checked; RD.db.save(); log((game.enabled ? "Ativou" : "Desativou") + " jogo " + game.name); RD.toast(game.name + (game.enabled ? " ativado" : " desativado")); }
     var tg = e.target.getAttribute("data-tag");
-    if (tg) { find(RD.games, tg).tag = e.target.value; RD.toast("Destaque atualizado"); }
+    if (tg) { find(RD.games, tg).tag = e.target.value; RD.db.save(); RD.toast("Destaque atualizado"); }
   });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeAll(); });
+
+  RD.db.onChange(function () {
+    if ($("#adm-modal").classList.contains("open")) return;
+    var open = $("#adm-drawer").classList.contains("open") && $("#adm-drawer-title").textContent;
+    route();
+    if (open) { var p = D.players.filter(function (x) { return x.username === open; })[0]; if (p) playerDrawer(p.id); }
+    RD.toast("Dados atualizados pelo site");
+  });
 
   /* ---------- Boot ---------- */
   hydrate(document);

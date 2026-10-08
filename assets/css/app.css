@@ -358,3 +358,8 @@ input[type="range"] { width: 100%; accent-color: var(--brand); }
 .thumb-28 { width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0; }
 
 .grid-2 > *, .hero > *, .lb-hero > * { min-width: 0; }
+.balance-card > * { min-width: 0; }
+@media (max-width: 960px) {
+  .balance-card .bc-actions { grid-column: 1 / -1; }
+  .balance-card .bc-actions .btn { flex: 1; }
+}

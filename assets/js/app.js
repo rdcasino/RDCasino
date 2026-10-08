@@ -71,7 +71,7 @@
       '<a href="#/vip">' + ic("crown", 16) + "VIP Club</a>" +
       '<a href="#/affiliate/overview">' + ic("link", 16) + "Affiliate dashboard</a>" +
       '<button data-open="wallet">' + ic("wallet", 16) + "Wallet</button>" +
-      '<a href="#/account">' + ic("settings", 16) + "Settings & security</a>" +
+      '<a href="#/account">' + ic("user", 16) + "Account & verification</a>" +
       '<a href="#/responsible">' + ic("help", 16) + "Responsible gaming</a>" +
       '<button class="danger" data-action="logout">' + ic("logout", 16) + "Sign out</button>";
   }
@@ -118,11 +118,11 @@
         '<div class="field"><label>Your ' + c.sym + " deposit address (" + state.net + ')</label><div class="copy-field"><code>' + RD.wallet.demoAddress + '</code><button class="btn btn-secondary btn-sm" data-copy="' + RD.wallet.demoAddress + '">' + ic("copy", 14) + "Copy</button></div></div>" +
         '<div class="qr">' + fakeQR() + "</div>" +
         '<div class="notice">' + ic("alert", 16) + "<span>Send only " + c.sym + " on the " + state.net + " network. Funds sent on another network can't be recovered. Credited after 1 confirmation.</span></div>" +
-        '<div class="wallet-foot">' + ic("shield", 14) + "Demo address — not a real wallet</div>";
+        '<div class="divider"></div><div class="field"><label>Demo: simulate a confirmed deposit</label><div class="input-group"><input type="number" min="1" step="0.01" placeholder="Amount in USD" id="dep-amt"><button class="btn btn-primary btn-sm" data-action="sim-deposit">Simulate</button></div><span class="hint">In production the payment processor credits the balance automatically after the blockchain confirms.</span></div>';
     } else if (state.walletTab === "withdraw") {
       h = coins + nets +
-        '<div class="field"><label>Destination address</label><input class="input" placeholder="Paste your ' + c.sym + ' address"></div>' +
-        '<div class="field"><label>Amount</label><div class="input-group"><input type="number" min="0" step="0.01" placeholder="0.00" id="wd-amt"><button class="btn btn-ghost btn-sm" id="wd-max">Max</button></div><span class="hint">Available: ' + fmt.usd(c.bal) + " · Network fee shown before confirming</span></div>" +
+        '<div class="field"><label>Destination address</label><input class="input" id="wd-addr" placeholder="Paste your ' + c.sym + ' address"></div>' +
+        '<div class="field"><label>Amount</label><div class="input-group"><input type="number" min="0" step="0.01" placeholder="0.00" id="wd-amt"><button class="btn btn-ghost btn-sm" id="wd-max">Max</button></div><span class="hint">Available: ' + fmt.usd(RD.user.balance) + " · Network fee shown before confirming</span></div><div id=\"wd-msg\"></div>" +
         '<button class="btn btn-primary btn-block btn-lg" data-action="withdraw">Request withdrawal</button>' +
         '<div class="wallet-foot">' + ic("lock", 14) + "Withdrawals require 2FA. Large amounts may need KYC.</div>";
     } else {
@@ -478,13 +478,41 @@
       "<h2>Restricted territories</h2><p>Accounts may not be opened or used by residents of: " + RD.config.restrictedCountries.join(", ") + ".</p>" +
       "<h2>Other documents</h2><ul>" + Object.keys(LEGAL).map(function (k) { return '<li><a class="link-sm" href="#/legal/' + k + '">' + LEGAL[k] + "</a></li>"; }).join("") + "</ul></div>";
   };
+  var KYC_LABEL = { "Not started": ["Not verified", ""], Pending: ["Under review", "badge-warn"], Verified: ["Verified", "badge-brand"], Rejected: ["Rejected — resubmit", "badge-danger"] };
+  var TX_LABEL = { Deposit: "Deposit", Withdrawal: "Withdrawal", Adjustment: "Balance adjustment", Bonus: "Bonus" };
   pages.account = function () {
     if (!state.loggedIn) { setTimeout(function () { openAuth("login"); }, 0); return pages.home(); }
-    return '<div class="container"><div class="page-head"><h1>Settings & security</h1></div><div class="grid-2">' +
-      '<div class="card card-pad"><h3 style="margin-bottom:14px">Profile</h3><div class="field"><label>Username</label><input class="input" value="' + esc(RD.user.username) + '" disabled></div><div class="field"><label>Email</label><input class="input" value="' + esc(RD.user.email) + '"></div>' +
-        '<div class="row between" style="padding:10px 0"><div><strong>Two-factor authentication</strong><br><small class="faint">Required for withdrawals</small></div><button class="btn btn-secondary btn-sm">Enable</button></div>' +
-        '<div class="row between" style="padding:10px 0"><div><strong>Identity verification (KYC)</strong><br><small class="faint">Needed for large withdrawals</small></div><span class="badge badge-warn">Not started</span></div></div>' +
-      '<div class="card card-pad"><h3 style="margin-bottom:14px">Limits</h3><div class="field"><label>Daily deposit limit</label><select class="select"><option>No limit</option><option>$100</option><option>$500</option><option>$1,000</option></select></div><div class="field"><label>Session reminder</label><select class="select"><option>Off</option><option>Every 30 min</option><option>Every hour</option></select></div><button class="btn btn-primary" data-action="save">Save limits</button></div></div></div>';
+    var u = RD.user, k = KYC_LABEL[u.kyc] || [u.kyc, ""], txs = RD.db.txOf(u.id);
+    var kycBody;
+    if (u.kyc === "Verified") kycBody = '<p class="muted" style="font-size:13px">Your identity is verified. No withdrawal limits apply.</p>';
+    else if (u.kyc === "Pending") kycBody = '<p class="muted" style="font-size:13px">We received your documents. Reviews usually take less than 24 hours. You will see the result here.</p>';
+    else kycBody = (u.kyc === "Rejected" ? '<div class="notice" style="margin-bottom:14px">' + ic("alert", 16) + "<span>Your documents were rejected" + (u.kycReason ? ": " + esc(u.kycReason) : "") + ". Please send them again.</span></div>" : '<p class="muted" style="font-size:13px;margin-bottom:14px">Required for withdrawals above $2,000.</p>') +
+      '<form id="kyc-form"><div class="field"><label>Full legal name</label><input class="input" name="name" required placeholder="As shown on your document"></div>' +
+      '<div class="row wrap" style="gap:0 12px;align-items:flex-start"><div class="field grow" style="min-width:150px"><label>Date of birth</label><input class="input" type="date" name="dob" required></div><div class="field grow" style="min-width:150px"><label>Document</label><select class="select" name="doc"><option>Passport</option><option>National ID</option><option>Driver\'s license</option></select></div></div>' +
+      '<div class="field"><label>Document photo</label><input class="input" type="file" accept="image/*,.pdf" style="padding-top:9px"></div>' +
+      '<div class="field"><label>Proof of address</label><input class="input" type="file" accept="image/*,.pdf" style="padding-top:9px"><span class="hint">Utility bill or bank statement from the last 3 months.</span></div>' +
+      '<button class="btn btn-primary">Submit for review</button></form>';
+    var pendingWd = txs.filter(function (t) { return t.type === "Withdrawal" && t.status === "Pending"; }).reduce(function (a, t) { return a + t.amount; }, 0);
+    return '<div class="container"><div class="page-head"><h1>Account</h1><p>Balance, transactions and verification</p></div>' +
+      '<div class="card balance-card"><div><div class="kpi-label">Balance</div><div class="kpi-value num">' + fmt.usd(u.balance) + '</div></div><div><div class="kpi-label">Pending withdrawals</div><div class="kpi-value num">' + fmt.usd(pendingWd) + '</div></div><div><div class="kpi-label">Verification</div><div style="margin-top:6px"><span class="badge ' + k[1] + '">' + k[0] + '</span></div></div><div class="row bc-actions" style="gap:8px"><button class="btn btn-primary" data-open="wallet">Deposit</button><button class="btn btn-secondary" data-action="open-withdraw">Withdraw</button></div></div>' +
+      '<div class="grid-2" style="margin-top:16px"><div class="card"><div class="card-head"><h3>Transactions</h3></div>' +
+        (txs.length ? '<div class="table-wrap"><table class="table"><thead><tr><th>Type</th><th>Date</th><th class="right">Amount</th><th>Status</th></tr></thead><tbody>' + txs.map(function (t) {
+          var out = t.type === "Withdrawal" || t.sign === -1;
+          var st = t.status === "Completed" ? "badge-brand" : t.status === "Pending" ? "badge-warn" : "badge-danger";
+          var label = t.status === "Completed" ? (t.type === "Withdrawal" ? "Sent" : "Completed") : t.status === "Pending" ? "Processing" : "Rejected";
+          return '<tr><td class="strong">' + (TX_LABEL[t.type] || t.type) + (t.note && t.type !== "Withdrawal" ? '<br><small class="faint">' + esc(t.note) + "</small>" : "") + '</td><td class="faint">' + t.date + '</td><td class="right num strong ' + (out ? "" : "pos") + '">' + (out ? "-" : "+") + fmt.usd(t.amount) + '</td><td><span class="badge ' + st + '">' + label + "</span></td></tr>";
+        }).join("") + "</tbody></table></div>" : '<div class="empty">No transactions yet.</div>') + "</div>" +
+      '<div class="card card-pad"><div class="row between" style="margin-bottom:12px"><h3>Identity verification</h3><span class="badge ' + k[1] + '">' + k[0] + "</span></div>" + kycBody + "</div></div>" +
+      '<div class="grid-2" style="margin-top:16px"><div class="card card-pad"><h3 style="margin-bottom:14px">Security</h3><div class="field"><label>Email</label><input class="input" value="' + esc(u.email) + '"></div><div class="row between" style="padding:6px 0"><div><strong>Two-factor authentication</strong><br><small class="faint">Required for withdrawals</small></div><button class="btn btn-secondary btn-sm">Enable</button></div></div>' +
+      '<div class="card card-pad"><h3 style="margin-bottom:14px">Limits</h3><div class="field"><label>Daily deposit limit</label><select class="select"><option>No limit</option><option>$100</option><option>$500</option><option>$1,000</option></select></div><button class="btn btn-primary" data-action="save">Save limits</button></div></div></div>';
+  };
+  pages.account.after = function () {
+    var f = $("#kyc-form"); if (!f) return;
+    f.addEventListener("submit", function (e) {
+      e.preventDefault();
+      RD.db.submitKyc({ name: f.name.value, dob: f.dob.value, doc: f.doc.value, sent: new Date().toISOString().slice(0, 10) });
+      lastSeen = snapshotMine(); RD.toast("Documents sent for review"); route(true);
+    });
   };
   pages.notfound = function () {
     return '<div class="container"><div class="card empty" style="padding:72px 20px"><h2>Page not found</h2><p style="margin:8px 0 20px">The page you are looking for does not exist.</p><a class="btn btn-primary" href="#/">Back to lobby</a></div></div>';
@@ -506,7 +534,7 @@
   }
 
   /* ---------- Live bits ---------- */
-  var feedTimer, heroTimer;
+  var feedTimer, heroTimer, lastSeen = {};
   function feedRow() {
     var g = RD.games[Math.floor(Math.random() * RD.games.length)];
     var users = ["satoshi_k", "Hidden", "m***x", "alpha_dog", "Hidden", "n***88", "cryptoqueen", "j***o"];
@@ -537,18 +565,23 @@
   }
 
   /* ---------- Router ---------- */
-  function route() {
+  function route(keep) {
     var path = (location.hash || "#/").replace(/^#\/?/, "").replace(/\/$/, "");
     var parts = path.split("/"), name = parts[0] || "home", arg = parts[1];
     var fn = pages[name] || pages.notfound;
     clearInterval(feedTimer);
-    $("#view").innerHTML = fn(arg);
+    var banner = state.loggedIn && RD.user.status !== "Active" ? '<div class="container" style="padding-bottom:0"><div class="notice" style="background:var(--danger-soft);border-color:rgba(240,90,110,.3);color:var(--danger)">' + ic("ban", 16) + '<span><strong>Your account is suspended.</strong> Deposits, bets and withdrawals are disabled. Contact support to resolve it.</span></div></div>' : "";
+    $("#view").innerHTML = banner + fn(arg);
     if (fn.after) fn.after(arg);
     $("#search-pop").classList.add("hidden");
     closeAll();
     markActive(path);
     countdown();
-    window.scrollTo(0, 0);
+    if (!keep) window.scrollTo(0, 0);
+  }
+
+  function showWdError(msg, kyc) {
+    $("#wd-msg").innerHTML = '<div class="notice" style="margin-bottom:12px;background:var(--danger-soft);border-color:rgba(240,90,110,.3);color:var(--danger)">' + ic("alert", 16) + "<span>" + esc(msg) + (kyc ? ' <a href="#/account" class="link-sm">Verify now</a>' : "") + "</span></div>";
   }
 
   /* ---------- Global events (delegation) ---------- */
@@ -583,11 +616,24 @@
       case "logout": return logout();
       case "new-campaign": return newCampaign();
       case "aff-withdraw": return RD.toast("Withdrawal of " + fmt.usd(A.stats.available) + " requested (demo)");
-      case "withdraw": return RD.toast("Withdrawal requested (demo)");
+      case "withdraw": {
+        var amt = parseFloat($("#wd-amt").value), addr = $("#wd-addr").value.trim();
+        if (addr.length < 20) return showWdError("Enter a valid wallet address.");
+        var r = RD.db.requestWithdrawal(amt, state.coin, addr);
+        if (r.error) return showWdError(r.error, r.kyc);
+        closeAll(); renderAuth(); lastSeen = snapshotMine(); RD.toast("Withdrawal of " + fmt.usd(amt) + " sent for processing"); return route(true);
+      }
+      case "sim-deposit": {
+        var d = parseFloat($("#dep-amt").value);
+        if (!(d > 0)) return RD.toast("Enter an amount", "error");
+        if (RD.user.status !== "Active") return RD.toast("Account suspended", "error");
+        RD.db.deposit(d, state.coin); lastSeen = snapshotMine(); renderAuth(); closeAll(); RD.toast(fmt.usd(d) + " credited to your balance"); return route(true);
+      }
+      case "open-withdraw": state.walletTab = "withdraw"; openModal("wallet"); return renderWallet();
       case "tip": return RD.toast("Tip sent (demo)");
       case "claim": return state.loggedIn ? RD.toast("Claimed (demo)") : openAuth("register");
       case "terms": location.hash = "#/legal/bonus"; return;
-      case "play-real": return RD.toast("Provider not integrated yet");
+      case "play-real": return RD.user.status !== "Active" ? RD.toast("Account suspended", "error") : RD.toast("Provider not integrated yet");
       case "play-demo": return RD.toast("Demo mode will load the provider iframe");
       case "export": return RD.toast("CSV export (demo)");
       case "save": return RD.toast("Saved");
@@ -596,7 +642,7 @@
     }
   });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") { closeAll(); var c = $("#modal-campaign"); c && c.remove(); } });
-  document.addEventListener("click", function (e) { if (e.target.id === "wd-max") { $("#wd-amt").value = coin().bal.toFixed(2); } });
+  document.addEventListener("click", function (e) { if (e.target.id === "wd-max") { $("#wd-amt").value = RD.user.balance.toFixed(2); } });
 
   $("#form-login").addEventListener("submit", function (e) { e.preventDefault(); login(); });
   $("#form-register").addEventListener("submit", function (e) {
@@ -622,6 +668,46 @@
     if (m) store.set("ref", m[1].toUpperCase());
     var ref = store.get("ref", ""); if (ref) $("#reg-ref").value = ref;
   })();
+
+  /* ---------- Acesso secreto ao admin ----------
+     Digite "rdadmin" em qualquer lugar do site (fora de campos de texto)
+     ou toque 5 vezes rápido no logo. Isto é só um atalho: a proteção real
+     é o login do admin (e, em produção, autenticação no servidor). */
+  (function () {
+    var buf = "", taps = 0, tapTimer;
+    function go() { window.open("admin/index.html", "rdadmin"); }
+    document.addEventListener("keydown", function (e) {
+      if (/input|textarea|select/i.test(e.target.tagName) || !e.key || e.key.length !== 1) return;
+      buf = (buf + e.key.toLowerCase()).slice(-7);
+      if (buf === "rdadmin") { buf = ""; go(); }
+    });
+    $$(".brand").forEach(function (b) {
+      b.addEventListener("click", function () {
+        taps++; clearTimeout(tapTimer); tapTimer = setTimeout(function () { taps = 0; }, 1200);
+        if (taps >= 5) { taps = 0; go(); }
+      });
+    });
+  })();
+
+  /* ---------- Mudanças feitas no admin (outra aba) ---------- */
+  function snapshotMine() { var m = {}; RD.db.txOf(RD.db.ME).forEach(function (t) { m[t.id] = t.status; }); m._bal = RD.user.balance; m._kyc = RD.user.kyc; return m; }
+  lastSeen = snapshotMine();
+  RD.db.onChange(function () {
+    var before = lastSeen, after = snapshotMine(), told = false;
+    lastSeen = after;
+    renderAuth(); renderFooter();
+    if (state.loggedIn) {
+      RD.db.txOf(RD.db.ME).forEach(function (t) {
+        if (before[t.id] === "Pending" && t.status === "Completed" && t.type === "Withdrawal") { told = true; RD.toast("Your withdrawal of " + fmt.usd(t.amount) + " was sent"); }
+        if (before[t.id] === "Pending" && t.status === "Rejected") { told = true; RD.toast("Withdrawal of " + fmt.usd(t.amount) + " was rejected and refunded", "error"); }
+        if (!before[t.id] && t.type === "Bonus") { told = true; RD.toast("You received a bonus of " + fmt.usd(t.amount)); }
+      });
+      if (before._kyc !== after._kyc && after._kyc === "Verified") RD.toast("Your identity is verified");
+      if (before._kyc !== after._kyc && after._kyc === "Rejected") RD.toast("Verification rejected — please resubmit", "error");
+      if (!told && before._bal !== after._bal) RD.toast("Balance updated: " + fmt.usd(after._bal));
+    }
+    if (!$(".overlay.open")) route(true);
+  });
 
   /* ---------- Boot ---------- */
   hydrateIcons(document);
