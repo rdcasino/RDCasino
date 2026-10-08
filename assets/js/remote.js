@@ -141,8 +141,32 @@
   };
   db.deposit = function () { return { error: "Use the deposit form." }; };
 
-  /* ---------- Jogos: ainda no modo demonstração até o sorteio ir para o servidor ---------- */
-  var SOON = { error: "Games open for real money in the next update." };
+  /* ---------- Jogos de um clique: o servidor sorteia, calcula e grava (play_bet) ---------- */
+  var lastNonce = -1;
+  db.playBet = function (game, amount, params) {
+    return sb.rpc("play_bet", { p_game: game, p_amount: amount, p_params: params || {} }).then(function (r) {
+      if (r.error) return { error: msg(r.error) };
+      var x = r.data, nonce = +x.nonce;
+      return {
+        fs: x.fs.map(Number), nonce: nonce, client: x.client,
+        place: function (mult, win, detail) {
+          var me = db.current(), b = x.bet, pr = x.profile;
+          var bet = { id: "B-" + b.id, userId: me.id, user: me.username, game: game, amount: n(b.amount), multiplier: +b.multiplier, payout: n(b.payout), date: b.created_at, detail: Object.assign({}, detail, b.detail, { nonce: nonce, client: x.client }) };
+          if (Math.abs(bet.payout - (win ? n(bet.amount * mult) : 0)) > 0.011) console.warn("RD: resultado do servidor diferente do site", game, bet, mult, win);
+          /* Plinko com várias bolas: só o saldo da aposta mais recente vale */
+          if (nonce > lastNonce) {
+            lastNonce = nonce;
+            me.balance = n(pr.balance); me.wagered = n(pr.wagered); me.profit = n(pr.profit); me.bets = +pr.bets; me.rakeback = +pr.rakeback;
+            me.seeds.nonce = nonce + 1;
+          }
+          D.bets.unshift(bet); if (D.bets.length > 500) D.bets.length = 500;
+          db.emit(); return bet;
+        }
+      };
+    }, function (e) { return { error: msg(e) }; });
+  };
+  /* Jogos com rodada (Mines, Crash, Blackjack...): ainda chegando no modo real */
+  var SOON = { error: "This game opens for real money very soon. Dice, Limbo, Plinko, Keno, Wheel, Roulette, Coinflip and Baccarat are live now." };
   db.placeBet = function () { return SOON; };
   db.startRound = function () { return SOON; };
   db.reserve = function () { return { server: "", client: "", nonce: 0 }; };
