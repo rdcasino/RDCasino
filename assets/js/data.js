@@ -190,6 +190,11 @@ RD.wallet = {
   ]
 };
 
+/* Cotação em dólar de cada moeda (o modo real troca por valores do servidor, atualizados a cada 2 min).
+   O saldo é sempre em dólar por dentro; a moeda escolhida no cabeçalho só muda a exibição. */
+RD.prices = { USDT: 1, USDC: 1, BTC: 80000, ETH: 2400, SOL: 105, LTC: 61, DOGE: 0.08, TRX: 0.33 };
+RD.coinNames = { USDT: "Tether", USDC: "USD Coin", BTC: "Bitcoin", ETH: "Ethereum", SOL: "Solana", LTC: "Litecoin", DOGE: "Dogecoin", TRX: "Tron" };
+
 RD.affiliatePlans = [
   { tier: 1, label: "Standard", min: 0, max: Infinity, range: "Every player you refer", share: 15 }
 ];

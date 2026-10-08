@@ -243,6 +243,9 @@
       if (!RD.isAdminPage) db.emit();
     });
   }
+  /* Cotações (tabela prices, atualizada pelo servidor) */
+  function loadPrices() { return sb.from("prices").select("coin,usd").then(function (r) { if (r.data && r.data.length) { r.data.forEach(function (x) { RD.prices[x.coin] = +x.usd; }); if (RD.onPrices) RD.onPrices(); } }); }
+  if (!RD.isAdminPage) { loadPrices(); setInterval(function () { if (!document.hidden) loadPrices(); }, 120000); }
   if (!RD.isAdminPage) { loadPub(); setInterval(function () { if (!document.hidden) loadPub(); }, 15000); }
   var pubTimer = null;
   function pubSoon() { clearTimeout(pubTimer); pubTimer = setTimeout(loadPub, 1500); }
