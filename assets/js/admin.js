@@ -246,7 +246,7 @@
   P.invites = function () {
     var list = db.invites ? db.invites() : [], free = list.filter(function (i) { return !i.used_at; }).length;
     var link = location.origin + location.pathname.replace(/admin\/?(index\.html)?$/, "") + "?live=1&invite=";
-    return head("Convites", "Gere códigos e mande para quem você quer no teste. Cada código vale para uma conta só.") +
+    return head("Convites", "O cadastro é aberto. Códigos servem para campanhas ou para criar contas de administrador. Cada código vale para uma conta só.") +
       '<div class="kpi-grid">' + kpi("Convites gerados", list.length) + kpi("Disponíveis", free) + kpi("Usados", list.length - free) + "</div>" +
       '<div class="card card-pad mt"><form id="inv-form" class="row wrap" style="gap:12px;align-items:flex-end"><div class="field" style="margin:0;width:140px"><label>Quantidade</label><input class="input" type="number" name="n" min="1" max="200" value="10" required></div><div class="field grow" style="margin:0;min-width:200px"><label>Anotação (opcional)</label><input class="input" name="note" placeholder="ex.: amigos da RD"></div><button class="btn btn-primary">Gerar convites</button></form></div>' +
       '<div class="card mt">' + (list.length ? '<div class="table-wrap"><table class="table"><thead><tr><th>Código</th><th>Anotação</th><th>Status</th><th>Usado por</th><th>Criado</th><th></th></tr></thead><tbody>' +
