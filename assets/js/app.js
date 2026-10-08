@@ -202,25 +202,59 @@
   };
   pages.game.after = function (id) { var g = gameOf(id); if (g && g.playable) bindOriginal(g); };
 
+  /* ---------- RD Originals (Dice / Limbo) — padrão Shuffle/Rainbet ---------- */
+  var ogPrefs = (function () { try { return JSON.parse(localStorage.getItem("rd_og_prefs")) || {}; } catch (e) { return {}; } })();
+  function savePrefs() { try { localStorage.setItem("rd_og_prefs", JSON.stringify(ogPrefs)); } catch (e) {} }
+  var session = {}; // estatísticas ao vivo da sessão, por jogo
+  function sess(gid) { return session[gid] = session[gid] || { profit: 0, wagered: 0, wins: 0, losses: 0, series: [0] }; }
+  var ogKeys = null; // atalhos do jogo aberto
+  document.addEventListener("keydown", function (e) {
+    if (!ogKeys || !ogPrefs.hotkeys || !$("#og-bet")) return;
+    if (/input|textarea|select/i.test(e.target.tagName)) return;
+    var k = e.key.toLowerCase();
+    if (k === " ") { e.preventDefault(); ogKeys.bet(); }
+    if (k === "s") ogKeys.half();
+    if (k === "d") ogKeys.double();
+  });
+
+  function autoRule(k, label) {
+    return '<div><div class="ogx-label">' + label + '</div><div class="ogx-split" style="margin-bottom:6px"><button class="active" data-rule="' + k + '" data-val="reset">Reset</button><button data-rule="' + k + '" data-val="inc">Increase by</button></div>' +
+      '<div class="ogx-input"><input type="number" id="au-' + k + '" min="0" step="1" value="0" disabled><span class="sfx">' + ic("percent", 14) + "</span></div></div>";
+  }
   function originalPage(g) {
-    var u = me(), isDice = g.id === "dice";
-    var panel = '<div class="og-panel">' +
-      '<div class="field"><label>Bet amount</label><div class="og-amount"><span>$</span><input type="number" id="og-amt" min="0" step="0.01" value="1.00"><button data-og="half">½</button><button data-og="double">2×</button></div></div>' +
-      '<div class="field"><label>Profit on win</label><div class="og-readonly num" id="og-profit">$0.00</div></div>' +
-      '<button class="btn btn-primary btn-block og-bet" id="og-bet">' + (u ? "Bet" : "Sign in to play") + "</button>" +
-      '<div id="og-msg" style="margin-top:8px"></div></div>';
-    var stage = isDice
-      ? '<div class="og-stage"><div class="og-history" id="og-history"></div><div class="og-result num" id="og-result">50.00</div>' +
-        '<div><div class="dice-track" id="dice-track" style="--t:50.5%"><div class="dice-bar"><span class="dice-marker hidden" id="dice-marker">0</span></div><input type="range" id="dice-range" min="2" max="98" step="0.5" value="50.5"></div><div class="dice-scale" style="margin-top:12px"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div></div>' +
-        '<div class="og-stats"><div class="field"><label>Multiplier</label><input class="input num" id="dice-mult"></div><div class="field"><label id="dice-mode-label">Roll over</label><button class="input num" id="dice-mode" style="text-align:left;cursor:pointer">50.50 ⇄</button></div><div class="field"><label>Win chance</label><input class="input num" id="dice-chance"></div></div></div>'
-      : '<div class="og-stage"><div class="og-history" id="og-history"></div><div class="og-result num" id="og-result">1.00×</div>' +
-        '<div class="og-stats" style="grid-template-columns:1fr 1fr"><div class="field"><label>Target multiplier</label><input class="input num" id="limbo-target" type="number" min="1.01" step="0.01" value="2.00"></div><div class="field"><label>Win chance</label><input class="input num" id="limbo-chance" readonly></div></div></div>';
-    return '<div class="container">' +
-      '<div class="row between" style="margin-bottom:14px"><div class="row"><a class="icon-btn" href="#/casino/originals" aria-label="Back">' + ic("chevronLeft") + '</a><div><h2 style="font-size:20px">' + esc(g.name) + '</h2><small class="faint">RD Originals · RTP ' + g.rtp + "%</small></div></div>" +
-      '<button class="btn btn-secondary btn-sm" data-action="seeds">' + ic("shield", 16) + "Fairness</button></div>" +
-      '<div class="og">' + panel + stage + "</div>" +
-      '<div class="og-foot"><span class="faint" style="font-size:12px">Max profit per bet: ' + fmt.usd(MAX_PROFIT, { dec: 0 }) + ". Results are provably fair — verify any bet.</span></div>" +
-      '<div class="section">' + sectionHead("My " + g.name + " bets") + '<div class="card" id="og-mybets"></div></div></div>';
+    var isDice = g.id === "dice", u = me(), fav = (ogPrefs.favs || []).indexOf(g.id) > -1;
+    var side = '<aside class="ogx-side">' +
+      '<div class="ogx-mode"><button class="active" data-mode="manual">Manual</button><button data-mode="auto">Auto</button></div>' +
+      '<div><div class="ogx-label">Bet amount<small id="og-bal">' + (u ? "Balance " + fmt.usd(u.balance) : "") + '</small></div><div class="ogx-input"><span class="cur">$</span><input type="number" id="og-amt" min="0" step="0.01" value="1.00" inputmode="decimal"><button class="mini" data-og="half">½</button><button class="mini" data-og="double">2×</button></div></div>' +
+      '<div id="og-manual"><div class="ogx-label">Profit on win<small id="og-mult-lbl"></small></div><div class="ogx-input ro"><span class="cur">$</span><input id="og-profit" readonly></div></div>' +
+      '<div id="og-auto" class="hidden" style="display:flex;flex-direction:column;gap:14px">' +
+        '<div><div class="ogx-label">Number of bets<small>0 = infinite</small></div><div class="ogx-input"><input type="number" id="au-n" min="0" step="1" value="10"><span class="sfx">∞</span></div></div>' +
+        autoRule("win", "On win") + autoRule("loss", "On loss") +
+        '<div><div class="ogx-label">Stop on profit</div><div class="ogx-input"><span class="cur">$</span><input type="number" id="au-sp" min="0" step="0.01" value="0"></div></div>' +
+        '<div><div class="ogx-label">Stop on loss</div><div class="ogx-input"><span class="cur">$</span><input type="number" id="au-sl" min="0" step="0.01" value="0"></div></div>' +
+      "</div>" +
+      '<button class="btn btn-primary btn-block ogx-bet" id="og-bet">' + (u ? "Bet" : "Sign in to play") + "</button>" +
+      '<div class="ogx-msg" id="og-msg"></div></aside>';
+    var center = isDice
+      ? '<div class="ogx-center"><div class="dx" id="dx" style="--t:50.5%"><div class="dx-frame"><span class="dx-res hidden" id="dx-res">0.00</span><div class="dx-bar"></div><input type="range" id="dx-range" min="2" max="98" step="0.01" value="50.5" aria-label="Roll target"></div>' +
+        '<div class="dx-ticks">' + [0, 25, 50, 75, 100].map(function (v) { return '<span style="left:' + v + '%">' + v + "</span>"; }).join("") + "</div></div></div>" +
+        '<div class="ogx-fields"><div><div class="ogx-label">Multiplier</div><div class="ogx-input"><input id="dx-mult" inputmode="decimal"><span class="sfx">×</span></div></div>' +
+        '<div><div class="ogx-label" id="dx-mode-lbl">Roll over</div><button class="ogx-input" id="dx-mode" title="Switch over / under"><span id="dx-target">50.50</span><span class="sfx">' + ic("swap", 16) + "</span></button></div>" +
+        '<div><div class="ogx-label">Win chance</div><div class="ogx-input"><input id="dx-chance" inputmode="decimal"><span class="sfx">%</span></div></div></div>'
+      : '<div class="ogx-center"><div class="lb"><div class="lb-num" id="lb-num">1.00×</div><div class="lb-sub" id="lb-sub"></div></div></div>' +
+        '<div class="ogx-fields two"><div><div class="ogx-label">Target multiplier</div><div class="ogx-input"><input id="lb-target" type="number" min="1.01" step="0.01" value="2.00" inputmode="decimal"><span class="sfx">×</span></div></div>' +
+        '<div><div class="ogx-label">Win chance</div><div class="ogx-input"><input id="lb-chance" inputmode="decimal"><span class="sfx">%</span></div></div></div>';
+    var stage = '<section class="ogx-stage"><div class="ogx-hist" id="og-hist"></div><div class="ogx-stats' + (ogPrefs.stats ? "" : " hidden") + '" id="og-stats"></div>' + center + "</section>";
+    var bar = '<div class="ogx-bar">' +
+      '<button class="icon-btn' + (ogPrefs.theatre ? " active" : "") + '" data-ogx="theatre" title="Theatre mode">' + ic("maximize", 18) + "</button>" +
+      '<button class="icon-btn' + (ogPrefs.stats ? " active" : "") + '" data-ogx="stats" title="Live stats">' + ic("bars", 18) + "</button>" +
+      '<button class="icon-btn' + (ogPrefs.hotkeys ? " active" : "") + '" data-ogx="hotkeys" title="Hotkeys">' + ic("keyboard", 18) + "</button>" +
+      '<button class="icon-btn' + (fav ? " fav" : "") + '" data-ogx="fav" title="Favorite">' + ic("star", 18) + "</button>" +
+      '<div class="ogx-brand">RDCASINO</div><button class="ogx-fair" data-action="seeds">' + ic("shield", 15) + "Provably fair</button></div>";
+    return '<div class="container' + (ogPrefs.theatre ? " wide" : "") + '">' +
+      '<div class="row" style="margin-bottom:14px;gap:8px"><a class="icon-btn" href="#/casino/originals" aria-label="Back">' + ic("chevronLeft") + '</a><h2 style="font-size:18px">' + esc(g.name) + '</h2><span class="badge">RD Originals</span></div>' +
+      '<div class="ogx' + (ogPrefs.theatre ? " theatre" : "") + '" id="ogx"><div class="ogx-main">' + side + stage + "</div>" + bar + "</div>" +
+      '<div class="card og-info"><div class="card-head"><div class="pill-tabs" id="og-tabs"><button class="active" data-ogtab="about">Description</button><button data-ogtab="big">Big wins</button><button data-ogtab="lucky">Lucky wins</button><button data-ogtab="mine">My bets</button></div></div><div id="og-tab-body"></div></div></div>';
   }
 
   /* Provably fair: HMAC-SHA256(serverSeed, clientSeed:nonce) → float [0,1) */
@@ -235,85 +269,187 @@
   function outcome(game, f) { return game === "dice" ? Math.floor(f * 10001) / 100 : Math.max(1, Math.floor((0.99 / Math.max(f, 1e-8)) * 100) / 100); }
   RD.fair = { hmac: hmac, sha256: sha256, floatFrom: floatFrom, outcome: outcome };
 
+  function statsHtml(gid) {
+    var s = sess(gid), pts = s.series, n = pts.length;
+    var min = Math.min.apply(null, pts.concat([0])), max = Math.max.apply(null, pts.concat([0])), span = (max - min) || 1;
+    var y = function (v) { return 38 - ((v - min) / span) * 36; }, x = function (i) { return n < 2 ? 0 : (i / (n - 1)) * 100; };
+    var line = pts.map(function (v, i) { return x(i).toFixed(2) + "," + y(v).toFixed(2); }).join(" ");
+    var color = s.profit >= 0 ? "var(--success)" : "var(--danger)";
+    return '<div class="row between"><h4>Live stats</h4><div class="row" style="gap:4px"><button class="btn btn-ghost btn-sm" data-ogx="reset-stats">Reset</button><button class="icon-btn" style="width:28px;height:28px" data-ogx="stats">' + ic("x", 14) + "</button></div></div>" +
+      '<dl><div><dt>Profit</dt><dd class="' + (s.profit >= 0 ? "pos" : "neg") + '">' + fmt.usd(s.profit, { sign: true }) + "</dd></div><div><dt>Wagered</dt><dd>" + fmt.usd(s.wagered) + '</dd></div><div><dt>Wins</dt><dd class="pos">' + s.wins + '</dd></div><div><dt>Losses</dt><dd class="neg">' + s.losses + "</dd></div></dl>" +
+      '<div class="ogx-chart"><svg viewBox="0 0 100 40" preserveAspectRatio="none"><line x1="0" x2="100" y1="' + y(0) + '" y2="' + y(0) + '" stroke="rgba(255,255,255,.15)" stroke-width="0.4" stroke-dasharray="1.5 1.5"/>' +
+      (n > 1 ? '<polygon points="0,' + y(0) + " " + line + " 100," + y(0) + '" fill="' + color + '" fill-opacity="0.15"/><polyline points="' + line + '" fill="none" stroke="' + color + '" stroke-width="1.2" vector-effect="non-scaling-stroke"/>' : "") + "</svg></div>";
+  }
+
+  function ogTab(g, tab) {
+    var box = $("#og-tab-body"); if (!box) return;
+    $$("#og-tabs [data-ogtab]").forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-ogtab") === tab); });
+    var u = me(), mine = function (b) { return b.game === g.id; };
+    if (tab === "about") {
+      var isDice = g.id === "dice";
+      box.innerHTML = '<div class="og-info-body">' + (isDice
+        ? "<p><strong>Dice</strong> is the classic crypto casino game. Pick a number between 2 and 98 and choose to roll over or under it. The lower your win chance, the higher the multiplier.</p><p>Every roll lands between 0.00 and 100.00 and is generated from your seeds, so you can verify each result on the Provably Fair page.</p>"
+        : "<p><strong>Limbo</strong> is simple and fast. Set a target multiplier and place your bet. If the result reaches your target, you win your bet times the target.</p><p>Targets go from 1.01× up to 1,000,000×. The higher the target, the lower the chance — and every result is provably fair.</p>") +
+        '<div class="og-facts"><div><small>House edge</small><strong>1%</strong></div><div><small>RTP</small><strong>99%</strong></div><div><small>Min bet</small><strong>$0.01</strong></div><div><small>Max profit</small><strong>' + fmt.usd(MAX_PROFIT, { dec: 0 }) + "</strong></div></div>" +
+        '<p class="faint" style="font-size:12.5px;margin-top:14px">Hotkeys (turn on in the bottom bar): <span class="kbd">Space</span> bet · <span class="kbd">S</span> half · <span class="kbd">D</span> double</p></div>';
+      return;
+    }
+    var all = db.allBets ? db.allBets() : db.recentBets(2000), list;
+    if (tab === "mine") list = u ? db.betsOf(u.id).filter(mine).slice(0, 15) : [];
+    if (tab === "big") list = db.recentBets(2000).filter(function (b) { return mine(b) && b.payout > b.amount; }).sort(function (a, b) { return (b.payout - b.amount) - (a.payout - a.amount); }).slice(0, 10);
+    if (tab === "lucky") list = db.recentBets(2000).filter(function (b) { return mine(b) && b.payout > 0; }).sort(function (a, b) { return b.multiplier - a.multiplier; }).slice(0, 10);
+    if (tab === "mine" && !u) { box.innerHTML = empty("Sign in to see your bets", "", '<button class="btn btn-primary btn-sm" data-open="register">Register</button>'); return; }
+    box.innerHTML = list.length ? '<div class="table-wrap"><table class="table"><thead><tr><th>Player</th><th>Time</th><th class="right">Bet</th><th class="right">Result</th><th class="right">Multiplier</th><th class="right">Profit</th></tr></thead><tbody>' +
+      list.map(function (b) {
+        var r = b.detail && b.detail.result != null ? (g.id === "dice" ? Number(b.detail.result).toFixed(2) : Number(b.detail.result).toFixed(2) + "×") : "—";
+        return '<tr><td class="strong">' + esc(b.user) + '</td><td class="faint">' + b.date.slice(11, 16) + '</td><td class="right num">' + fmt.usd(b.amount) + '</td><td class="right num">' + r + '</td><td class="right num">' + b.multiplier.toFixed(2) + '×</td><td class="right num strong ' + (b.payout > 0 ? "pos" : "faint") + '">' + (b.payout > 0 ? "+" + fmt.usd(b.payout - b.amount) : "-" + fmt.usd(b.amount)) + "</td></tr>";
+      }).join("") + "</tbody></table></div>" : empty("Nothing here yet", tab === "mine" ? "Your bets on " + g.name + " show up here." : "Wins on " + g.name + " show up here.");
+  }
+
   function bindOriginal(g) {
-    var isDice = g.id === "dice", amt = $("#og-amt"), busy = false, over = true;
-    var dr = $("#dice-range");
+    var isDice = g.id === "dice", amt = $("#og-amt"), dr = $("#dx-range");
+    var over = true, busy = false, auto = false, mode = "manual", tab = "about", rules = { win: "reset", loss: "reset" };
     function amount() { return Math.max(0, Math.round((parseFloat(amt.value) || 0) * 100) / 100); }
     function params() {
-      if (isDice) {
-        var t = parseFloat(dr.value), chance = over ? 100 - t : t;
-        return { target: t, chance: chance, mult: Math.floor((99 / chance) * 10000) / 10000 };
-      }
-      var m = Math.max(1.01, Math.min(1000000, parseFloat($("#limbo-target").value) || 1.01));
+      if (isDice) { var t = parseFloat(dr.value), c = over ? 100 - t : t; return { target: t, chance: c, mult: Math.floor((99 / c) * 10000) / 10000 }; }
+      var m = Math.max(1.01, Math.min(1000000, parseFloat($("#lb-target").value) || 1.01));
       return { target: m, chance: 99 / m, mult: m };
     }
     function refresh() {
-      var p = params();
-      $("#og-profit").textContent = fmt.usd(amount() * (p.mult - 1));
+      var p = params(), u = me();
+      $("#og-profit").value = (amount() * (p.mult - 1)).toFixed(2);
+      $("#og-mult-lbl").textContent = p.mult.toFixed(4).replace(/0+$/, "").replace(/\.$/, ".00") + "×";
+      $("#og-bal").textContent = u ? "Balance " + fmt.usd(u.balance) : "";
       if (isDice) {
-        $("#dice-track").style.setProperty("--t", p.target + "%");
-        $("#dice-track").classList.toggle("under", !over);
-        $("#dice-mode-label").textContent = over ? "Roll over" : "Roll under";
-        $("#dice-mode").textContent = p.target.toFixed(2) + " ⇄";
-        if (document.activeElement !== $("#dice-mult")) $("#dice-mult").value = p.mult.toFixed(4);
-        if (document.activeElement !== $("#dice-chance")) $("#dice-chance").value = p.chance.toFixed(2);
+        $("#dx").style.setProperty("--t", p.target + "%");
+        $("#dx").classList.toggle("under", !over);
+        $("#dx-mode-lbl").textContent = over ? "Roll over" : "Roll under";
+        $("#dx-target").textContent = p.target.toFixed(2);
+        if (document.activeElement !== $("#dx-mult")) $("#dx-mult").value = p.mult.toFixed(4);
+        if (document.activeElement !== $("#dx-chance")) $("#dx-chance").value = p.chance.toFixed(4);
       } else {
-        $("#limbo-chance").value = p.chance.toFixed(4) + "%";
+        if (document.activeElement !== $("#lb-chance")) $("#lb-chance").value = p.chance.toFixed(4);
+        $("#lb-sub").textContent = "Target " + p.mult.toFixed(2) + "× · " + p.chance.toFixed(2) + "% chance";
       }
     }
-    function myBets() {
-      var u = me(), box = $("#og-mybets"); if (!box) return;
-      box.innerHTML = u ? betsTable(db.betsOf(u.id).filter(function (b) { return b.game === g.id; }).slice(0, 10), "Place your first bet above.") : empty("Sign in to play", "Create an account and make a test deposit to try " + g.name + ".", '<button class="btn btn-primary btn-sm" data-open="register">Register</button>');
-    }
     function history() {
-      var u = me(), h = $("#og-history"); if (!u || !h) return;
-      h.innerHTML = db.betsOf(u.id).filter(function (b) { return b.game === g.id; }).slice(0, 8).reverse().map(function (b) {
+      var u = me(), h = $("#og-hist"); if (!h) return;
+      h.innerHTML = u ? db.betsOf(u.id).filter(function (b) { return b.game === g.id; }).slice(0, 7).reverse().map(function (b) {
         var v = b.detail && b.detail.result; return '<span class="' + (b.payout > 0 ? "w" : "") + '">' + (isDice ? Number(v).toFixed(2) : Number(v).toFixed(2) + "×") + "</span>";
-      }).join("");
+      }).join("") : "";
     }
-    amt.addEventListener("input", refresh);
-    $$("[data-og]").forEach(function (b) {
-      b.addEventListener("click", function () { var v = amount(); amt.value = (b.getAttribute("data-og") === "half" ? v / 2 : v * 2).toFixed(2); refresh(); });
-    });
-    if (isDice) {
-      dr.addEventListener("input", refresh);
-      $("#dice-mode").addEventListener("click", function () { over = !over; dr.value = (100 - parseFloat(dr.value)).toFixed(1); refresh(); });
-      $("#dice-mult").addEventListener("change", function () {
-        var m = Math.max(1.0102, Math.min(49.5, parseFloat(this.value) || 2)), chance = 99 / m;
-        dr.value = (over ? 100 - chance : chance).toFixed(2); refresh();
-      });
-      $("#dice-chance").addEventListener("change", function () {
-        var c = Math.max(2, Math.min(98, parseFloat(this.value) || 49.5));
-        dr.value = (over ? 100 - c : c).toFixed(2); refresh();
-      });
-    } else {
-      $("#limbo-target").addEventListener("input", refresh);
-    }
-    $("#og-bet").addEventListener("click", function () {
-      if (busy) return;
-      var u = me(); $("#og-msg").innerHTML = "";
-      if (!u) return openAuth("register");
-      if (u.status !== "Active") { $("#og-msg").innerHTML = errorBox("Your account is suspended."); return; }
+    function stats() { var el = $("#og-stats"); if (el && !el.classList.contains("hidden")) el.innerHTML = statsHtml(g.id); }
+    function msg(t, extra) { $("#og-msg").innerHTML = t ? errorBox(t, extra) : ""; }
+    function setAmt(v) { amt.value = Math.max(0, v).toFixed(2); refresh(); }
+
+    function playOnce() {
+      var u = me(); msg("");
+      if (!u) { openAuth("register"); return Promise.resolve(null); }
+      if (u.status !== "Active") { msg("Your account is suspended."); return Promise.resolve(null); }
       var a = amount(), p = params();
-      if (a < 0.01) { $("#og-msg").innerHTML = errorBox("Minimum bet is $0.01."); return; }
-      if (a > u.balance) { $("#og-msg").innerHTML = errorBox("Insufficient balance.", ' <a href="#" class="link-sm" data-open="wallet">Deposit</a>'); return; }
-      if (a * (p.mult - 1) > MAX_PROFIT) { $("#og-msg").innerHTML = errorBox("Max profit per bet is " + fmt.usd(MAX_PROFIT, { dec: 0 }) + "."); return; }
-      busy = true; $("#og-bet").disabled = true;
-      var s = db.seeds(u.id);
-      hmac(s.server, s.client + ":" + s.nonce).then(function (buf) {
+      if (a < 0.01) { msg("Minimum bet is $0.01."); return Promise.resolve(null); }
+      if (a > u.balance) { msg("Insufficient balance.", ' <a href="#" class="link-sm" data-open="wallet">Deposit</a>'); return Promise.resolve(null); }
+      if (a * (p.mult - 1) > MAX_PROFIT) { msg("Max profit per bet is " + fmt.usd(MAX_PROFIT, { dec: 0 }) + "."); return Promise.resolve(null); }
+      var s = db.seeds(u.id), nonce = s.nonce, client = s.client;
+      return hmac(s.server, client + ":" + nonce).then(function (buf) {
         var res = outcome(g.id, floatFrom(buf));
         var win = isDice ? (over ? res > p.target : res < p.target) : res >= p.target;
-        db.placeBet(u.id, g.id, a, p.mult, win, { result: res, target: p.target, mode: isDice ? (over ? "over" : "under") : "target", nonce: s.nonce, client: s.client });
-        var el = $("#og-result");
-        el.classList.remove("w", "l"); void el.offsetWidth;
-        el.textContent = isDice ? res.toFixed(2) : res.toFixed(2) + "×";
-        el.classList.add(win ? "w" : "l");
-        if (isDice) { var mk = $("#dice-marker"); mk.classList.remove("hidden"); mk.textContent = res.toFixed(2); mk.style.left = res + "%"; }
-        renderHeader(); history(); myBets();
-        setTimeout(function () { busy = false; var b = $("#og-bet"); if (b) b.disabled = false; }, 250);
+        var b = db.placeBet(u.id, g.id, a, p.mult, win, { result: res, target: p.target, mode: isDice ? (over ? "over" : "under") : "target", nonce: nonce, client: client });
+        var st = sess(g.id), delta = b.payout - b.amount;
+        st.profit = Math.round((st.profit + delta) * 100) / 100; st.wagered += a; st[win ? "wins" : "losses"]++; st.series.push(st.profit); if (st.series.length > 200) st.series.shift();
+        if (isDice) {
+          var r = $("#dx-res"); if (r) { r.classList.remove("hidden", "w", "l", "pop"); void r.offsetWidth; r.textContent = res.toFixed(2); r.style.left = "calc(var(--pad) + (100% - 2 * var(--pad)) * " + (res / 100) + ")"; r.classList.add(win ? "w" : "l", "pop"); }
+        } else {
+          var el = $("#lb-num"), t0 = performance.now(), dur = 280;
+          if (el) { el.classList.remove("w", "l"); (function step(t) { var k = Math.min(1, (t - t0) / dur), v = 1 + (res - 1) * k; el.textContent = v.toFixed(2) + "×"; if (k < 1) requestAnimationFrame(step); else el.classList.add(win ? "w" : "l"); })(t0); }
+        }
+        renderHeader(); refresh(); history(); stats(); if (tab !== "about") ogTab(g, tab);
+        return { win: win, delta: delta };
+      });
+    }
+    function manual() {
+      if (busy) return; busy = true; $("#og-bet").disabled = true;
+      playOnce().then(function () { setTimeout(function () { busy = false; var b = $("#og-bet"); if (b) b.disabled = false; }, 180); });
+    }
+    function startAuto() {
+      var base = amount(), count = 0, total = parseInt($("#au-n").value, 10) || 0, startProfit = sess(g.id).profit;
+      var sp = parseFloat($("#au-sp").value) || 0, sl = parseFloat($("#au-sl").value) || 0;
+      auto = true; var btn = $("#og-bet"); btn.textContent = "Stop autobet"; btn.classList.add("stop");
+      (function loop() {
+        if (!auto || !document.contains(btn)) return stopAuto();
+        playOnce().then(function (r) {
+          if (!r) return stopAuto();
+          count++;
+          var rule = rules[r.win ? "win" : "loss"], pct = parseFloat($("#au-" + (r.win ? "win" : "loss")).value) || 0;
+          setAmt(rule === "reset" ? base : amount() * (1 + pct / 100));
+          var run = sess(g.id).profit - startProfit;
+          if ((total && count >= total) || (sp && run >= sp) || (sl && -run >= sl)) return stopAuto();
+          setTimeout(loop, 320);
+        });
+      })();
+    }
+    function stopAuto() { auto = false; var btn = $("#og-bet"); if (btn) { btn.textContent = mode === "auto" ? "Start autobet" : "Bet"; btn.classList.remove("stop"); } }
+
+    amt.addEventListener("input", refresh);
+    $$("[data-og]").forEach(function (b) { b.addEventListener("click", function () { setAmt(b.getAttribute("data-og") === "half" ? amount() / 2 : amount() * 2); }); });
+    $$("[data-mode]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        if (auto) return; mode = b.getAttribute("data-mode");
+        $$("[data-mode]").forEach(function (x) { x.classList.toggle("active", x === b); });
+        $("#og-auto").classList.toggle("hidden", mode !== "auto"); $("#og-manual").classList.toggle("hidden", mode === "auto");
+        if (me()) $("#og-bet").textContent = mode === "auto" ? "Start autobet" : "Bet";
       });
     });
-    refresh(); history(); myBets();
+    $$("[data-rule]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var k = b.getAttribute("data-rule"); rules[k] = b.getAttribute("data-val");
+        $$('[data-rule="' + k + '"]').forEach(function (x) { x.classList.toggle("active", x === b); });
+        $("#au-" + k).disabled = rules[k] === "reset";
+      });
+    });
+    $("#og-bet").addEventListener("click", function () {
+      if (!me()) return openAuth("register");
+      if (mode === "auto") return auto ? stopAuto() : startAuto();
+      manual();
+    });
+    $$("[data-ogtab]").forEach(function (b) { b.addEventListener("click", function () { tab = b.getAttribute("data-ogtab"); ogTab(g, tab); }); });
+    $$("[data-ogx]").forEach(function (b) { b.addEventListener("click", function () { ogBar(b.getAttribute("data-ogx")); }); });
+    function ogBar(a) {
+      if (a === "theatre") { ogPrefs.theatre = !ogPrefs.theatre; savePrefs(); $("#ogx").classList.toggle("theatre", ogPrefs.theatre); $("#ogx").closest(".container").classList.toggle("wide", ogPrefs.theatre); }
+      if (a === "stats") { ogPrefs.stats = !ogPrefs.stats; savePrefs(); $("#og-stats").classList.toggle("hidden", !ogPrefs.stats); stats(); bindStatsButtons(); }
+      if (a === "reset-stats") { session[g.id] = null; stats(); bindStatsButtons(); }
+      if (a === "hotkeys") { ogPrefs.hotkeys = !ogPrefs.hotkeys; savePrefs(); RD.toast(ogPrefs.hotkeys ? "Hotkeys on: Space bet · S half · D double" : "Hotkeys off"); }
+      if (a === "fav") { var f = ogPrefs.favs = ogPrefs.favs || [], i = f.indexOf(g.id); if (i > -1) f.splice(i, 1); else f.push(g.id); savePrefs(); RD.toast(i > -1 ? "Removed from favorites" : "Added to favorites"); }
+      $$(".ogx-bar [data-ogx]").forEach(function (x) {
+        var k = x.getAttribute("data-ogx");
+        if (k === "fav") x.classList.toggle("fav", (ogPrefs.favs || []).indexOf(g.id) > -1); else x.classList.toggle("active", !!ogPrefs[k]);
+      });
+    }
+    function bindStatsButtons() {
+      $$("#og-stats [data-ogx]").forEach(function (b) { b.addEventListener("click", function () { ogBar(b.getAttribute("data-ogx")); }); });
+      // Arrastar o painel pelo título (só no computador)
+      var panel = $("#og-stats"), handle = panel && panel.querySelector(".row.between");
+      if (!handle || window.innerWidth <= 960) return;
+      if (ogPrefs.statsPos) panel.style.transform = "translate(" + ogPrefs.statsPos[0] + "px," + ogPrefs.statsPos[1] + "px)";
+      handle.addEventListener("pointerdown", function (e) {
+        if (e.target.closest("button")) return;
+        var start = [e.clientX, e.clientY], base = ogPrefs.statsPos || [0, 0];
+        function move(ev) { ogPrefs.statsPos = [base[0] + ev.clientX - start[0], base[1] + ev.clientY - start[1]]; panel.style.transform = "translate(" + ogPrefs.statsPos[0] + "px," + ogPrefs.statsPos[1] + "px)"; }
+        function up() { document.removeEventListener("pointermove", move); document.removeEventListener("pointerup", up); savePrefs(); }
+        document.addEventListener("pointermove", move); document.addEventListener("pointerup", up);
+      });
+    }
+    if (isDice) {
+      dr.addEventListener("input", refresh);
+      $("#dx-mode").addEventListener("click", function () { over = !over; dr.value = (100 - parseFloat(dr.value)).toFixed(2); refresh(); });
+      $("#dx-mult").addEventListener("change", function () { var m = Math.max(1.0102, Math.min(49.5, parseFloat(this.value) || 2)), c = 99 / m; dr.value = (over ? 100 - c : c).toFixed(2); this.blur(); refresh(); });
+      $("#dx-chance").addEventListener("change", function () { var c = Math.max(2, Math.min(98, parseFloat(this.value) || 49.5)); dr.value = (over ? 100 - c : c).toFixed(2); this.blur(); refresh(); });
+    } else {
+      $("#lb-target").addEventListener("input", refresh);
+      $("#lb-chance").addEventListener("change", function () { var c = Math.max(0.0001, Math.min(98.02, parseFloat(this.value) || 49.5)); $("#lb-target").value = (99 / c).toFixed(2); this.blur(); refresh(); });
+    }
+    ogKeys = { bet: function () { if (mode === "manual") manual(); }, half: function () { setAmt(amount() / 2); }, double: function () { setAmt(amount() * 2); } };
+    refresh(); history(); stats(); bindStatsButtons(); ogTab(g, "about");
   }
 
   function seedsModal() {
