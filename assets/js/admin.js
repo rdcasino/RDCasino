@@ -225,17 +225,19 @@
   P.vip = function () {
     var ps = db.players(), txs = db.transactions();
     var paid = function (type) { return txs.filter(function (t) { return t.type === type && t.status === "Completed"; }).reduce(function (a, t) { return a + t.amount; }, 0); };
+    var acc = 0, peak = 0;
     var rows = RD.vipTiers.map(function (t, i) {
+      acc += t.reward; var cost = acc / t.wager * 100; if (cost > peak) peak = cost;
       var nxt = RD.vipTiers[i + 1], at = ps.filter(function (p) { return p.wagered >= t.wager && (!nxt || p.wagered < nxt.wager); }).length;
       var reached = ps.filter(function (p) { return p.wagered >= t.wager; }), claimed = reached.filter(function (p) { return p.claimedTiers.indexOf(t.name) > -1; }).length;
-      return { t: t, at: at, claimed: claimed, open: reached.length - claimed };
+      return { t: t, at: at, claimed: claimed, open: reached.length - claimed, cost: cost };
     });
     var owed = rows.reduce(function (a, r) { return a + r.open * r.t.reward; }, 0), rakeOpen = ps.reduce(function (a, p) { return a + p.rakeback; }, 0);
     return head("VIP & Recompensas", "Níveis por valor apostado. O prêmio de cada nível é pago uma vez, quando o jogador resgata na página VIP.") +
       '<div class="kpi-grid">' + kpi("Prêmios de nível pagos", fmt.usd(paid("Level reward"))) + kpi("Prêmios liberados, não resgatados", fmt.usd(owed), "o jogador ainda pode resgatar") + kpi("Rakeback pago", fmt.usd(paid("Rakeback"))) + kpi("Rakeback acumulado", fmt.usd(rakeOpen), "ainda não resgatado") + "</div>" +
-      '<div class="card mt"><div class="table-wrap"><table class="table"><thead><tr><th>Nível</th><th class="right">Apostado para chegar</th><th class="right">Prêmio</th><th class="right">Jogadores neste nível</th><th class="right">Resgataram</th><th class="right">Falta resgatar</th><th class="right">Prêmio ÷ apostado</th></tr></thead><tbody>' +
-      rows.map(function (r) { return '<tr><td><span class="row" style="gap:10px">' + RD.art.tierBadge(r.t, 26) + '<b>' + r.t.name + '</b></span></td><td class="right num">' + fmt.usd(r.t.wager, { dec: 0 }) + '</td><td class="right num strong">' + fmt.usd(r.t.reward, { dec: 0 }) + '</td><td class="right">' + r.at + '</td><td class="right">' + r.claimed + '</td><td class="right">' + (r.open ? '<span class="badge badge-warn">' + r.open + "</span>" : "0") + '</td><td class="right num faint">' + (((r.t.reward / r.t.wager) * 100).toFixed(2)) + "% do apostado</td></tr>"; }).join("") +
-      '</tbody></table></div></div><p class="faint" style="font-size:12.5px;margin-top:10px">Os prêmios de nível custam 0,2% do valor apostado. Com 1% de vantagem da casa e 5% de rakeback, o custo total do VIP fica em torno de 25% da vantagem da casa nos originais. Os valores ficam em <code>assets/js/data.js</code> (RD.vipTiers).</p>';
+      '<div class="card mt"><div class="table-wrap"><table class="table"><thead><tr><th>Nível</th><th class="right">Apostado para chegar</th><th class="right">Prêmio</th><th class="right">Jogadores neste nível</th><th class="right">Resgataram</th><th class="right">Falta resgatar</th><th class="right">Custo acumulado</th></tr></thead><tbody>' +
+      rows.map(function (r) { return '<tr><td><span class="row" style="gap:10px">' + RD.art.tierBadge(r.t, 26) + '<b>' + r.t.name + '</b></span></td><td class="right num">' + fmt.usd(r.t.wager, { dec: 0 }) + '</td><td class="right num strong">' + fmt.usd(r.t.reward, { dec: 0 }) + '</td><td class="right">' + r.at + '</td><td class="right">' + r.claimed + '</td><td class="right">' + (r.open ? '<span class="badge badge-warn">' + r.open + "</span>" : "0") + '</td><td class="right num ' + (r.cost >= 1 ? "neg" : "faint") + '">' + r.cost.toFixed(2) + "% do apostado</td></tr>"; }).join("") +
+      '</tbody></table></div></div><p class="faint" style="font-size:12.5px;margin-top:10px">Custo acumulado = soma de todos os prêmios até o nível ÷ valor apostado para chegar nele. Chega a ' + peak.toFixed(2) + '% (mais ' + (RD.config.rakebackRate * 100) + '% da vantagem da casa em rakeback). Nos originais a casa ganha de 1% a 2% do apostado; em vermelho, os níveis em que o VIP custa 1% ou mais. Os valores ficam em <code>assets/js/data.js</code> (RD.vipTiers).</p>';
   };
 
   P.settings = function () {

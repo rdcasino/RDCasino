@@ -93,14 +93,19 @@ RD.promotions = [
 
 /* Níveis VIP (mesmos nomes da versão original). wager = total apostado. */
 /* Níveis VIP: valor total apostado para chegar no nível e prêmio de subida (pago uma vez, o jogador resgata).
-   Para adicionar níveis acima do Jade 1, basta continuar a lista. */
+   Prêmios = metade da tabela de referência (0,2% do apostado na maioria dos níveis). */
 RD.vipFamilies = {
   wood: { label: "Wood", c1: "#c08a52", c2: "#6b4120" },
   iron: { label: "Iron", c1: "#b7c2cf", c2: "#56616e" },
   bronze: { label: "Bronze", c1: "#f0a066", c2: "#8a4a1c" },
   silver: { label: "Silver", c1: "#eef3f8", c2: "#8d9cae" },
   gold: { label: "Gold", c1: "#ffe08a", c2: "#c98a00" },
-  jade: { label: "Jade", c1: "#6ff0bd", c2: "#0f8a5c" }
+  jade: { label: "Jade", c1: "#6ff0bd", c2: "#0f8a5c" },
+  sapphire: { label: "Sapphire", c1: "#7aa7ff", c2: "#1f3fae" },
+  emerald: { label: "Emerald", c1: "#4ff08a", c2: "#0a7a3a" },
+  ruby: { label: "Ruby", c1: "#ff7a90", c2: "#a80f2e" },
+  obsidian: { label: "Obsidian", c1: "#9a86ad", c2: "#2e2340" },
+  amethyst: { label: "Amethyst", c1: "#e08aff", c2: "#7a1fb0" }
 };
 RD.vipTiers = [
   { name: "Wood", wager: 10000, reward: 20, family: "wood" },
@@ -114,7 +119,22 @@ RD.vipTiers = [
   { name: "Gold 2", wager: 350000, reward: 700, family: "gold" },
   { name: "Gold 3", wager: 400000, reward: 800, family: "gold" },
   { name: "Gold 4", wager: 450000, reward: 900, family: "gold" },
-  { name: "Jade 1", wager: 500000, reward: 1000, family: "jade" }
+  { name: "Jade 1", wager: 500000, reward: 1000, family: "jade" },
+  { name: "Jade 2", wager: 600000, reward: 1200, family: "jade" },
+  { name: "Jade 3", wager: 700000, reward: 1400, family: "jade" },
+  { name: "Jade 4", wager: 800000, reward: 1600, family: "jade" },
+  { name: "Jade 5", wager: 900000, reward: 1800, family: "jade" },
+  { name: "Sapphire 1", wager: 1000000, reward: 2000, family: "sapphire" },
+  { name: "Sapphire 2", wager: 1500000, reward: 3000, family: "sapphire" },
+  { name: "Emerald 1", wager: 2000000, reward: 4000, family: "emerald" },
+  { name: "Emerald 2", wager: 2500000, reward: 5000, family: "emerald" },
+  { name: "Ruby 1", wager: 3000000, reward: 6000, family: "ruby" },
+  { name: "Ruby 2", wager: 3500000, reward: 7000, family: "ruby" },
+  { name: "Obsidian 1", wager: 4000000, reward: 8000, family: "obsidian" },
+  { name: "Obsidian 2", wager: 4500000, reward: 9000, family: "obsidian" },
+  { name: "Amethyst 1", wager: 5000000, reward: 10000, family: "amethyst" },
+  { name: "Amethyst 2", wager: 7500000, reward: 15000, family: "amethyst" },
+  { name: "Amethyst 3", wager: 10000000, reward: 20000, family: "amethyst" }
 ];
 RD.vipTiers.forEach(function (t) { t.color = RD.vipFamilies[t.family].c1; });
 
