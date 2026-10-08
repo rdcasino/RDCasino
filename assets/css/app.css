@@ -152,7 +152,7 @@
 .ogx-label { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
 .ogx-label small { font-weight: 600; color: var(--text-3); font-size: 11.5px; }
 .ogx-input { display: flex; align-items: center; gap: 8px; height: 46px; padding: 0 6px 0 12px; background: var(--bg-2); border: 1px solid transparent; border-radius: 8px; transition: border-color 0.15s; }
-.ogx-input:focus-within { border-color: var(--brand); }
+.ogx-input:focus-within { border-color: rgba(255, 255, 255, 0.28); }
 .ogx-input.ro { background: transparent; border-color: var(--line-2); }
 .ogx-input input { flex: 1; min-width: 0; background: none; border: none; outline: none; font-size: 14px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
 .ogx-input .cur { width: 18px; height: 18px; border-radius: 50%; background: #26a17b; color: #fff; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -244,6 +244,9 @@
 .promo-foot { display: flex; gap: 8px; margin-top: 8px; }
 
 /* ---------- VIP ---------- */
+#hdr-bal { display: inline-block; }
+#hdr-bal.bump { animation: balBump 0.6s ease; }
+@keyframes balBump { 0% { color: var(--success); transform: scale(1.12); } 100% { color: inherit; transform: none; } }
 /* VIP */
 .tier-badge { flex: 0 0 auto; display: block; }
 .sb-vip { position: relative; display: flex; align-items: center; gap: 10px; padding: 12px; margin-bottom: 10px; border-radius: 14px; background: linear-gradient(135deg, rgba(255, 46, 85, 0.14), rgba(255, 200, 92, 0.06)); border: 1px solid var(--line); }
