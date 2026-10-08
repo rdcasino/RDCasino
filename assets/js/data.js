@@ -48,7 +48,7 @@ RD.config = {
     daily:   { label: "Daily Bonus",   rate: 0.05,  hours: 24,  minTier: "Bronze 2" },
     weekly:  { label: "Weekly Bonus",  rate: 0.075, hours: 168, minTier: "Silver 1" },
     monthly: { label: "Monthly Bonus", rate: 0.10,  hours: 720, minTier: "Gold 1" },
-    reload:  { label: "VIP Reload",    rate: 0.10,  hours: 24,  claims: 7, lookbackDays: 30, minTier: "Jade 1" }
+    reload:  { label: "VIP Reload" }   // só aparece quando o admin dá (Jogadores → VIP Reload)
   }
 };
 

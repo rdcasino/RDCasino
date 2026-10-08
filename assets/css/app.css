@@ -934,3 +934,15 @@ input[type="range"] { width: 100%; accent-color: var(--brand); }
   .rl-cell.o { font-size: 9.5px; }
   .rl-chip { min-width: 20px; height: 20px; font-size: 9px; }
 }
+
+/* ---------- Tip ---------- */
+.tip-intro { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; margin-bottom: 14px; }
+.tip-intro svg { flex: none; color: var(--gold); margin-top: 2px; }
+.tip-quick { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.tip-quick .chip { padding: 5px 12px; font-size: 12.5px; }
+.tip-pub { margin: 2px 0 14px; }
+.chat-name { background: none; border: 0; padding: 0; font: inherit; font-weight: 700; color: inherit; cursor: pointer; }
+.chat-name:hover { color: var(--gold); text-decoration: underline; }
+.chat-sys.tip { background: rgba(255, 200, 92, 0.1); border-color: rgba(255, 200, 92, 0.3); color: #ffe2a3; }
+.chat-sys.tip svg { color: var(--gold); flex: none; }
+.rain-timer i { font-style: normal; }

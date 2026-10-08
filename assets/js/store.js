@@ -103,21 +103,16 @@
     p.bonus = p.bonus || {};
     ["daily", "weekly", "monthly", "reload"].forEach(function (k) {
       var c = cfg[k]; if (!c) return;
+      /* VIP Reload: só aparece quando o admin dá um para o jogador */
+      if (k === "reload") {
+        var g = p.reloadGrant; if (!g || g.used >= g.claims) return;
+        var it = { key: k, label: c.label, amount: g.per, remaining: g.claims - g.used, claims: g.claims, status: "ready", availableAt: null }, gap = g.hours * 3600e3;
+        if (g.last && now - new Date(g.last).getTime() < gap) { it.status = "wait"; it.availableAt = new Date(new Date(g.last).getTime() + gap).toISOString(); }
+        out.push(it); return;
+      }
       var need = tierIndex(c.minTier), item = { key: k, label: c.label, minTier: c.minTier, amount: 0, status: "locked", availableAt: null };
       if (ci < need) { out.push(item); return; }
       var period = c.hours * 3600e3;
-      if (k === "reload") {
-        var r = p.bonus.reload;
-        if (!r || now - new Date(r.start).getTime() > c.lookbackDays * 864e5) {
-          var base = edgeSince(p, new Date(now - c.lookbackDays * 864e5).toISOString());
-          r = p.bonus.reload = { start: new Date(now).toISOString(), used: 0, last: null, per: Math.floor((base * c.rate / c.claims) * 100) / 100 };
-        }
-        item.remaining = c.claims - r.used; item.claims = c.claims; item.amount = r.per;
-        if (item.remaining <= 0) { item.status = "wait"; item.availableAt = new Date(new Date(r.start).getTime() + c.lookbackDays * 864e5).toISOString(); }
-        else if (r.last && now - new Date(r.last).getTime() < period) { item.status = "wait"; item.availableAt = new Date(new Date(r.last).getTime() + period).toISOString(); }
-        else item.status = r.per >= 0.01 ? "ready" : "empty";
-        out.push(item); return;
-      }
       var last = p.bonus[k] ? new Date(p.bonus[k]).getTime() : 0;
       if (last && now - last < period) { item.status = "wait"; item.availableAt = new Date(last + period).toISOString(); }
       var from = Math.max(last, now - period);
@@ -203,15 +198,24 @@
       log(p.username, "Pediu saque " + RD.fmt.usd(amount) + " (" + t.id + ")"); save();
       return { tx: t };
     },
-    tip: function (pid, to, amount) {
+    /* VIP Reload dado pelo admin: "per" por resgate, "claims" vezes, um a cada "hours" horas */
+    grantReload: function (pid, per, claims, hours, note) {
+      var p = byId(pid); p.reloadGrant = { id: id("RL-"), per: round(per), claims: claims, used: 0, hours: hours || 24, last: null, note: note || "", created: nowIso() };
+      log("admin", "Deu VIP Reload para " + p.username + ": " + claims + "× " + RD.fmt.usd(per)); save(); return { ok: true };
+    },
+    cancelReload: function (pid) { var p = byId(pid); p.reloadGrant = null; log("admin", "Cancelou VIP Reload de " + p.username); save(); return { ok: true }; },
+    tip: function (pid, to, amount, pub) {
       var p = byId(pid), q = byName(to);
       if (!q) return { error: "User not found." };
       if (q.id === pid) return { error: "You can't tip yourself." };
-      if (!(amount > 0) || amount > p.balance) return { error: "Invalid amount." };
+      if (!(amount >= 1)) return { error: "Minimum tip is $1." };
+      if (amount > p.balance) return { error: "Insufficient balance." };
       p.balance = round(p.balance - amount); q.balance = round(q.balance + amount);
       addTx(p, "Tip sent", amount, "Completed", { sign: -1, note: "to " + q.username });
       addTx(q, "Tip received", amount, "Completed", { note: "from " + p.username });
-      log(p.username, "Gorjeta " + RD.fmt.usd(amount) + " para " + q.username); save();
+      log(p.username, "Gorjeta " + RD.fmt.usd(amount) + " para " + q.username);
+      if (pub !== false) { D.chat.push({ user: "Tip", kind: "tip", text: p.username + " tipped " + q.username + " " + RD.fmt.usd(amount), at: nowIso() }); D.chat = D.chat.slice(-100); }
+      save();
       return { ok: true };
     },
     submitKyc: function (pid, info) {
@@ -253,7 +257,7 @@
       var p = byId(pid), st = bonusState(p).filter(function (b) { return b.key === key; })[0];
       if (!st || st.status !== "ready") return { error: st && st.status === "wait" ? "Not available yet." : "Nothing to claim yet." };
       var v = st.amount; p.bonus = p.bonus || {};
-      if (key === "reload") { var r = p.bonus.reload; r.used++; r.last = nowIso(); }
+      if (key === "reload") { var r = p.reloadGrant; r.used++; r.last = nowIso(); }
       else p.bonus[key] = nowIso();
       p.balance = round(p.balance + v); p.bonusTotal = round(p.bonusTotal + v);
       addTx(p, "Bonus", v, "Completed", { note: RD.config.bonuses[key].label });

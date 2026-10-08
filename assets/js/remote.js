@@ -42,6 +42,7 @@
       seeds: { server: "", client: "", nonce: 0, revealed: [] }
     };
   }
+  function mapReload(r) { return r ? { id: r.id, per: n(r.per_claim), claims: r.claims, used: r.used, hours: r.interval_hours, last: r.last_claim_at, note: r.note || "", created: r.created_at } : null; }
   function fill(arr, items) { arr.length = 0; Array.prototype.push.apply(arr, items); }
 
   /* ---------- Carregar dados do servidor para o cache ---------- */
@@ -52,12 +53,14 @@
       sb.from("transactions").select("*").eq("user_id", uid).order("created_at", { ascending: false }).limit(200),
       sb.from("bets").select("*").eq("user_id", uid).order("created_at", { ascending: false }).limit(200),
       sb.from("my_seeds").select("*").maybeSingle(),
-      sb.from("wallets").select("*").eq("enabled", true).order("id")
+      sb.from("wallets").select("*").eq("enabled", true).order("id"),
+      sb.from("vip_reloads").select("*").eq("user_id", uid).eq("status", "active").maybeSingle()
     ]).then(function (r) {
       var prof = r[0].data; if (!prof) throw new Error("Profile not found.");
       var txs = (r[1].data || []).map(function (t) { return mapTx(t, prof.username); });
       var me = mapProfile(prof, state.user.email, txs), s = r[3].data;
       if (s) me.seeds = { server: "", hash: s.server_hash, client: s.client_seed, nonce: +s.nonce, revealed: s.revealed || [] };
+      me.reloadGrant = mapReload(r[5].data);
       fill(D.players, [me]); fill(D.tx, txs);
       fill(D.bets, (r[2].data || []).map(function (b) { return { id: "B-" + b.id, userId: b.user_id, user: prof.username, game: b.game, amount: n(b.amount), multiplier: +b.multiplier, payout: n(b.payout), date: b.created_at, detail: Object.assign({ nonce: +b.nonce, client: b.client_seed }, b.detail || {}) }; }));
       state.wallets = r[4].data || [];
@@ -71,7 +74,9 @@
       sb.from("bets").select("*").order("created_at", { ascending: false }).limit(2000),
       sb.from("audit_log").select("*").order("at", { ascending: false }).limit(500),
       sb.from("invites_admin").select("*").order("created_at", { ascending: false }),
-      sb.from("wallets").select("*").order("id")
+      sb.from("wallets").select("*").order("id"),
+      sb.from("vip_reloads").select("*").eq("status", "active"),
+      sb.from("settings").select("*").eq("key", "rain_auto").maybeSingle()
     ]).then(function (r) {
       r.forEach(function (x) { if (x.error) throw x.error; });
       var profs = r[0].data || [], emails = {}, names = {};
@@ -79,7 +84,9 @@
       profs.forEach(function (p) { names[p.id] = p.username; });
       var txs = (r[2].data || []).map(function (t) { return mapTx(t, names[t.user_id]); });
       fill(D.tx, txs);
-      fill(D.players, profs.map(function (p) { var m = mapProfile(p, emails[p.id], txs); if (p.referred_by) m.referredBy = (profs.filter(function (x) { return x.id === p.referred_by; })[0] || {}).ref_code || null; return m; }));
+      var rl = {}; (r[7].data || []).forEach(function (x) { rl[x.user_id] = mapReload(x); });
+      state.rainAuto = r[8].data ? r[8].data.value : null;
+      fill(D.players, profs.map(function (p) { var m = mapProfile(p, emails[p.id], txs); m.reloadGrant = rl[p.id] || null; if (p.referred_by) m.referredBy = (profs.filter(function (x) { return x.id === p.referred_by; })[0] || {}).ref_code || null; return m; }));
       fill(D.bets, (r[3].data || []).map(function (b) { return { id: "B-" + b.id, userId: b.user_id, user: names[b.user_id] || "", game: b.game, amount: n(b.amount), multiplier: +b.multiplier, payout: n(b.payout), date: b.created_at, detail: b.detail || {} }; }));
       fill(D.audit, (r[4].data || []).map(function (a) { return { at: a.at, who: names[a.who] || (a.who ? "admin" : "sistema"), what: a.what + (a.data ? " " + JSON.stringify(a.data) : "") }; }));
       state.invites = r[5].data || []; state.wallets = r[6].data || [];
@@ -172,8 +179,21 @@
   db.reserve = function () { return { server: "", client: "", nonce: 0 }; };
   db.claimLevel = function () { return SOON; };
   db.claimRakeback = function () { return SOON; };
-  db.claimBonus = function () { return SOON; };
-  db.tip = function () { return { error: "Tips are not available yet." }; };
+  /* VIP Reload (dado pelo admin) já paga no servidor; diário/semanal/mensal ainda não */
+  db.claimBonus = function (pid, key) {
+    if (key !== "reload") return SOON;
+    return sb.rpc("claim_reload").then(function (r) { if (r.error) return { error: msg(r.error) }; return refresh().then(function () { return { amount: n(r.data) }; }); });
+  };
+  db.tip = function (pid, to, amount, pub) {
+    return sb.rpc("tip_send", { p_to: String(to || "").trim(), p_amount: amount, p_public: pub !== false }).then(function (r) {
+      if (r.error) return { error: msg(r.error) };
+      return refresh().then(function () { return { ok: true }; });
+    });
+  };
+  db.grantReload = function (pid, per, claims, hours, note) { return adminCall("admin_grant_reload", { p_user: pid, p_per: per, p_claims: claims, p_hours: hours, p_note: note || null }); };
+  db.cancelReload = function (pid) { return adminCall("admin_cancel_reload", { p_user: pid }); };
+  db.rainAuto = function () { return state.rainAuto; };
+  db.setRainAuto = function (enabled, amount, minWager) { return adminCall("admin_set_rain_auto", { p_enabled: enabled, p_amount: amount, p_min_wager: minWager }).then(loadRain); };
   /* ---------- Chat em tempo real + Chuva ---------- */
   var chatSubs = [];
   db.onChat = function (fn) { chatSubs.push(fn); };
@@ -186,7 +206,7 @@
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages" }, function (ev) {
       if (D.chat.some(function (x) { return x.id === ev.new.id; })) return;
       D.chat.push(mapMsg(ev.new)); if (D.chat.length > 100) D.chat.splice(0, D.chat.length - 100); chatNotify();
-      if (ev.new.kind === "rain" && /split between/.test(ev.new.text) && state.user) refresh();
+      if (((ev.new.kind === "rain" && /split between/.test(ev.new.text)) || ev.new.kind === "tip") && state.user) refresh();
     })
     .on("postgres_changes", { event: "*", schema: "public", table: "rains" }, function () { loadRain(); })
     .subscribe(function (status) { live.rt = status === "SUBSCRIBED"; });
@@ -200,7 +220,7 @@
       var fresh = (r.data || []).filter(function (m) { return !D.chat.some(function (x) { return x.id === m.id; }); });
       if (!fresh.length) return;
       fresh.forEach(function (m) { D.chat.push(mapMsg(m)); }); if (D.chat.length > 100) D.chat.splice(0, D.chat.length - 100);
-      if (fresh.some(function (m) { return m.kind === "rain" && /split between/.test(m.text); }) && state.user) refresh();
+      if (fresh.some(function (m) { return (m.kind === "rain" && /split between/.test(m.text)) || m.kind === "tip"; }) && state.user) refresh();
       chatNotify();
     });
     if (live.tick % 2 === 0) loadRain();
@@ -225,7 +245,7 @@
   loadRain();
   db.ready.then(loadRain);
   db.rain = function () { return state.rain; };
-  db.rainSettle = function () { return sb.rpc("rain_settle").then(loadRain); };
+  db.rainSettle = function () { return sb.rpc("rain_auto_tick").then(loadRain); };  /* fecha a vencida e já abre a próxima chuva da hora */
   db.rainJoin = function () {
     return sb.rpc("rain_join").then(function (r) { if (r.error) return { error: msg(r.error) }; return loadRain().then(function () { return { ok: true }; }); });
   };
