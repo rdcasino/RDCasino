@@ -184,6 +184,29 @@ window.RD = window.RD || {};
         '<circle cx="' + cx + '" cy="' + cy + '" r="' + R + '" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/><circle cx="' + cx + '" cy="' + cy + '" r="22" fill="#fff"/><circle cx="' + cx + '" cy="' + cy + '" r="10" fill="#1f1235"/>' +
         '<path d="M150 92 l-16 -30 h32z" fill="#fff" stroke="#1f1235" stroke-width="4" stroke-linejoin="round"/>';
     } },
+    tower: { a: "#16c98d", b: "#06352a", draw: function () {
+      var out = "", egg = U("eg"), glow = U("tg");
+      var rows = [[3, 252], [3, 206], [3, 160], [3, 114]];
+      rows.forEach(function (r, k) {
+        for (var i = 0; i < r[0]; i++) {
+          var x = 150 + (i - 1) * 58 - 25, y = r[1], hot = k === 3 && i === 1, bad = k === 2 && i === 0;
+          out += '<rect x="' + x + '" y="' + y + '" width="50" height="36" rx="8" fill="' + (hot ? "#ffffff" : "#0b3a2c") + '" fill-opacity="' + (hot ? 0.18 : 0.75) + '" stroke="#5fffd0" stroke-opacity="' + (k < 2 ? 0.55 : 0.25) + '" stroke-width="2"/>';
+          if (k < 2 && i === (k ? 2 : 1)) out += '<ellipse cx="' + (x + 25) + '" cy="' + (y + 19) + '" rx="9" ry="11" fill="#ffc85c"/>';
+          if (bad) out += '<circle cx="' + (x + 25) + '" cy="' + (y + 17) + '" r="10" fill="#ff7a59"/><circle cx="' + (x + 21) + '" cy="' + (y + 16) + '" r="2.4" fill="#2a0d10"/><circle cx="' + (x + 29) + '" cy="' + (y + 16) + '" r="2.4" fill="#2a0d10"/>';
+        }
+      });
+      return "<defs>" + rad(egg, [[0, "#fff8d6"], [0.5, "#ffd23f"], [1, "#e08a00"]], 0.38, 0.3, 0.75) + rad(glow, [[0, "#5fffd0", 0.55], [1, "#5fffd0", 0]]) + "</defs>" +
+        '<circle cx="150" cy="78" r="70" fill="url(#' + glow + ')"/>' + out +
+        '<ellipse cx="150" cy="86" rx="30" ry="38" fill="url(#' + egg + ')"/><ellipse cx="140" cy="72" rx="8" ry="12" fill="#fff" opacity=".6"/>' +
+        '<path d="M128 96c8 6 14 0 22 4s14 2 22-4" stroke="#e08a00" stroke-width="3" fill="none"/>' + spark(222, 58, 11) + spark(74, 92, 8);
+    } },
+    chicken: { a: "#ffc23a", b: "#7a2e00", draw: function () {
+      var lanes = "";
+      for (var i = 0; i < 4; i++) lanes += '<rect x="' + (18 + i * 70) + '" y="64" width="64" height="226" rx="10" fill="#2a1a12" opacity="' + (0.55 + i * 0.08) + '"/><path d="M' + (85 + i * 70) + ' 74 v206" stroke="#fff" stroke-opacity=".35" stroke-width="3" stroke-dasharray="14 12"/>';
+      var car = '<g transform="translate(232 70)"><rect x="0" y="0" width="40" height="66" rx="11" fill="#ff2e55"/><rect x="6" y="12" width="28" height="14" rx="4" fill="#2a1a24"/><rect x="6" y="44" width="28" height="10" rx="3" fill="#2a1a24"/><rect x="6" y="1" width="8" height="4" rx="2" fill="#fff4c2"/><rect x="26" y="1" width="8" height="4" rx="2" fill="#fff4c2"/></g>';
+      var hen = '<g transform="translate(88 118) scale(2.6)"><ellipse cx="24" cy="44" rx="11" ry="2.5" fill="#000" opacity=".3"/><path d="M19 38v5M27 38v5M17 43h4M25 43h4" stroke="#ff9d1a" stroke-width="2.2" stroke-linecap="round"/><ellipse cx="24" cy="29" rx="12" ry="11" fill="#fff"/><path d="M13 28c-3-1-5 1-5 4 3 0 5-1 6-2z" fill="#e8edf7"/><circle cx="27" cy="16" r="8" fill="#fff"/><path d="M23 9c0-3 2-4 3-2 1-3 3-3 4-1 2-1 3 1 2 3z" fill="#ff2e55"/><path d="M34 16l5 1.5-5 1.5z" fill="#ffb020"/><path d="M33 20c0 3-2 4-3 2 0-1 1-2 3-2z" fill="#ff2e55"/><circle cx="29.5" cy="15" r="1.6" fill="#1a1205"/><path d="M17 27c3 4 9 4 12 1" stroke="#dfe6f5" stroke-width="2" fill="none" stroke-linecap="round"/></g>';
+      return lanes + car + '<rect x="160" y="236" width="56" height="26" rx="13" fill="#22e08a"/><text x="188" y="254" text-anchor="middle" font-size="14" font-weight="900" fill="#05301c" style="font-family:var(--font-display,Arial)">2.46×</text>' + hen + coinFront(252, 210, 18) + spark(54, 62, 10);
+    } },
     keno: { a: "#ff3d6e", b: "#4a0518", draw: function () {
       var out = "";
       for (var i = 0; i < 5; i++) for (var j = 0; j < 5; j++) out += '<rect x="' + (52 + j * 40) + '" y="' + (70 + i * 40) + '" width="32" height="32" rx="7" fill="#fff" opacity="' + ((i * 5 + j) % 7 === 0 ? 0.35 : 0.1) + '"/>';
@@ -194,7 +217,7 @@ window.RD = window.RD || {};
 
   function cover(id) {
     var c = COVERS[id]; if (!c) return "";
-    var bg = U("bg"), gl = U("gw"), fd = U("fd"), name = { dice: "DICE", limbo: "LIMBO", crash: "CRASH", mines: "MINES", plinko: "PLINKO", hilo: "HI-LO", blackjack: "BLACKJACK", roulette: "ROULETTE", wheel: "WHEEL", keno: "KENO" }[id];
+    var bg = U("bg"), gl = U("gw"), fd = U("fd"), name = { dice: "DICE", limbo: "LIMBO", crash: "CRASH", mines: "MINES", plinko: "PLINKO", hilo: "HI-LO", blackjack: "BLACKJACK", roulette: "ROULETTE", wheel: "WHEEL", keno: "KENO", tower: "TOWER", chicken: "CHICKEN" }[id];
     return '<svg class="art" viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + name + '"><defs>' +
       lin(bg, [[0, c.a], [1, c.b]]) + rad(gl, [[0, "#ffffff", 0.35], [1, "#ffffff", 0]]) + lin(fd, [[0, "#000", 0], [1, "#000", 0.55]]) + "</defs>" +
       '<rect width="300" height="400" fill="url(#' + bg + ')"/>' +
