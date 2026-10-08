@@ -27,10 +27,10 @@
     [{ route: "affiliate", label: "Affiliate", icon: "link" }, { route: "fairness", label: "Provably Fair", icon: "shield" }, { route: "responsible", label: "Responsible Gaming", icon: "help" }]
   ];
   function renderSidebar() {
-    var h = vipWidget() + '<a class="sb-promo" href="#/leaderboard"><span class="eyebrow">Monthly leaderboard</span><strong>' + fmt.usd(RD.config.leaderboardPrize, { dec: 0 }) + '</strong><small>Ends in <span data-countdown-short></span></small></a>';
+    var h = vipWidget() + '<a class="sb-promo" href="#/leaderboard" title="Monthly leaderboard">' + ic("trophy", 18) + '<span class="eyebrow">Monthly leaderboard</span><strong>' + fmt.usd(RD.config.leaderboardPrize, { dec: 0 }) + '</strong><small>Ends in <span data-countdown-short></span></small></a>';
     NAV.forEach(function (box) {
       h += '<div class="sb-box">' + box.map(function (n) {
-        return '<a class="sb-link" href="#/' + n.route + '" data-route="' + n.route + '">' + ic(n.icon) + "<span>" + n.label + "</span>" + (n.badge ? '<span class="badge badge-brand">' + n.badge + "</span>" : "") + "</a>";
+        return '<a class="sb-link" href="#/' + n.route + '" data-route="' + n.route + '" title="' + n.label + '">' + ic(n.icon) + "<span>" + n.label + "</span>" + (n.badge ? '<span class="badge badge-brand">' + n.badge + "</span>" : "") + "</a>";
       }).join("") + "</div>";
     });
     $("#sb-nav").innerHTML = h;
@@ -2330,6 +2330,14 @@
     if (/^game\//.test(currentPath)) return; // não reinicia o jogo no meio da aposta
     if (currentPath === "" || currentPath === "home") { renderTicker(); renderFeed(); return; }
     route(true);
+  });
+
+  /* Menu lateral: no computador encolhe para só ícones (lembra a escolha); no celular fecha a gaveta */
+  try { if (localStorage.getItem("rd_sb_mini") === "1") document.body.classList.add("sb-mini"); } catch (x) {}
+  $("#sb-toggle").addEventListener("click", function () {
+    if (window.innerWidth <= 960) return document.body.classList.remove("sb-open");
+    var on = document.body.classList.toggle("sb-mini");
+    try { localStorage.setItem("rd_sb_mini", on ? "1" : "0"); } catch (x) {}
   });
 
   /* ---------- Boot ---------- */
