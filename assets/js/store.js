@@ -86,6 +86,48 @@
   }
   function monthKey(iso) { return (iso || nowIso()).slice(0, 7); }
 
+  /* Vantagem da casa gerada pelo jogador desde "since" (valor apostado × vantagem do jogo) */
+  function edgeSince(p, since) {
+    var t0 = new Date(since).getTime(), e = 0;
+    D.bets.forEach(function (b) {
+      if (b.userId !== p.id || new Date(b.date).getTime() < t0) return;
+      var g = RD.games.filter(function (x) { return x.id === b.game; })[0] || {};
+      e += b.amount * ((g.edge || 1) / 100);
+    });
+    return e;
+  }
+  function tierIndex(name) { var i = -1; RD.vipTiers.forEach(function (t, k) { if (t.name === name) i = k; }); return i; }
+  function bonusState(p) {
+    if (!p) return [];
+    var cfg = RD.config.bonuses || {}, now = Date.now(), cur = tierOf(p.wagered), ci = cur ? tierIndex(cur.name) : -1, out = [];
+    p.bonus = p.bonus || {};
+    ["daily", "weekly", "monthly", "reload"].forEach(function (k) {
+      var c = cfg[k]; if (!c) return;
+      var need = tierIndex(c.minTier), item = { key: k, label: c.label, minTier: c.minTier, amount: 0, status: "locked", availableAt: null };
+      if (ci < need) { out.push(item); return; }
+      var period = c.hours * 3600e3;
+      if (k === "reload") {
+        var r = p.bonus.reload;
+        if (!r || now - new Date(r.start).getTime() > c.lookbackDays * 864e5) {
+          var base = edgeSince(p, new Date(now - c.lookbackDays * 864e5).toISOString());
+          r = p.bonus.reload = { start: new Date(now).toISOString(), used: 0, last: null, per: Math.floor((base * c.rate / c.claims) * 100) / 100 };
+        }
+        item.remaining = c.claims - r.used; item.claims = c.claims; item.amount = r.per;
+        if (item.remaining <= 0) { item.status = "wait"; item.availableAt = new Date(new Date(r.start).getTime() + c.lookbackDays * 864e5).toISOString(); }
+        else if (r.last && now - new Date(r.last).getTime() < period) { item.status = "wait"; item.availableAt = new Date(new Date(r.last).getTime() + period).toISOString(); }
+        else item.status = r.per >= 0.01 ? "ready" : "empty";
+        out.push(item); return;
+      }
+      var last = p.bonus[k] ? new Date(p.bonus[k]).getTime() : 0;
+      if (last && now - last < period) { item.status = "wait"; item.availableAt = new Date(last + period).toISOString(); }
+      var from = Math.max(last, now - period);
+      item.amount = Math.floor(edgeSince(p, new Date(from).toISOString()) * c.rate * 100) / 100;
+      if (item.status !== "wait") item.status = item.amount >= 0.01 ? "ready" : "empty";
+      out.push(item);
+    });
+    return out;
+  }
+
   var db = {
     /* ---------- infraestrutura ---------- */
     data: function () { return D; },
@@ -204,6 +246,19 @@
       D.bets.unshift(b); D.bets = D.bets.slice(0, 2000);
       save();
       return b;
+    },
+    /* ---------- Bônus recorrentes (diário, semanal, mensal, recarga VIP) ---------- */
+    bonusState: function (pid) { return bonusState(byId(pid)); },
+    claimBonus: function (pid, key) {
+      var p = byId(pid), st = bonusState(p).filter(function (b) { return b.key === key; })[0];
+      if (!st || st.status !== "ready") return { error: st && st.status === "wait" ? "Not available yet." : "Nothing to claim yet." };
+      var v = st.amount; p.bonus = p.bonus || {};
+      if (key === "reload") { var r = p.bonus.reload; r.used++; r.last = nowIso(); }
+      else p.bonus[key] = nowIso();
+      p.balance = round(p.balance + v); p.bonusTotal = round(p.bonusTotal + v);
+      addTx(p, "Bonus", v, "Completed", { note: RD.config.bonuses[key].label });
+      log(p.username, "Resgatou " + RD.config.bonuses[key].label + " " + RD.fmt.usd(v)); save();
+      return { amount: v };
     },
     claimRakeback: function (pid) {
       var p = byId(pid), v = Math.floor(p.rakeback * 100) / 100;

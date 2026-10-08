@@ -118,6 +118,26 @@ window.RD = window.RD || {};
     return out;
   }
 
+  /* Ícones dos cards de recompensa (VIP): rakeback, diário, semanal, mensal, recarga */
+  function giftBox(c1, c2, rib) {
+    var g = U("rb"), l = U("rl");
+    return "<defs>" + lin(g, [[0, c1], [1, c2]], 0, 0, 1, 1) + lin(l, [[0, c1], [1, c2]]) + "</defs>" +
+      '<ellipse cx="50" cy="88" rx="30" ry="5" fill="#000" opacity=".3"/>' +
+      '<rect x="24" y="46" width="52" height="38" rx="5" fill="url(#' + g + ')"/><rect x="20" y="34" width="60" height="15" rx="5" fill="url(#' + l + ')"/>' +
+      '<rect x="45" y="34" width="10" height="50" fill="' + rib + '"/><rect x="24" y="49" width="52" height="3" fill="#000" opacity=".18"/>' +
+      '<path d="M50 34 c-10 -16 -27 -14 -23 -4 c3 6 16 4 23 4z" fill="' + rib + '"/><path d="M50 34 c10 -16 27 -14 23 -4 c-3 6 -16 4 -23 4z" fill="' + rib + '" opacity=".85"/><circle cx="50" cy="33" r="4.5" fill="' + rib + '"/>' +
+      '<rect x="29" y="54" width="4" height="24" rx="2" fill="#fff" opacity=".25"/>';
+  }
+  function rewardIcon(kind, size) {
+    size = size || 56; var body = "";
+    if (kind === "rakeback") body = coinFront(50, 52, 32, "") + '<path d="M54 30 L38 56 h11 l-5 20 l18 -28 h-11 z" fill="#fff5c2" stroke="#b46f00" stroke-width="2" stroke-linejoin="round"/>' + spark(82, 22, 7) + spark(18, 76, 5);
+    else if (kind === "daily") body = giftBox("#ff5c7a", "#b0102e", "#ffd23f") + spark(84, 24, 7) + spark(16, 40, 5);
+    else if (kind === "weekly") body = giftBox("#ffd86b", "#d68a00", "#ff2e55") + coinFront(80, 72, 10, "") + spark(16, 30, 6);
+    else if (kind === "monthly") body = giftBox("#b07cff", "#5b21b6", "#ffd23f") + spark(82, 20, 8) + spark(16, 26, 6) + spark(86, 60, 5);
+    else if (kind === "reload") body = giftBox("#3ff0a6", "#0b8a57", "#fff") + '<path d="M78 24 a18 18 0 1 1 -14 -8" fill="none" stroke="#ffd23f" stroke-width="5" stroke-linecap="round"/><path d="M60 10 l8 7 l-9 5z" fill="#ffd23f"/>';
+    return '<svg class="rw-ic" width="' + size + '" height="' + size + '" viewBox="0 0 100 100" aria-hidden="true">' + body + "</svg>";
+  }
+
   /* Moeda do Coinflip. Cara: moeda dourada com RD em relevo.
      Coroa: moeda prateada com a joia RD. viewBox -110 -110 220 220 */
   var HEADS = '<defs><radialGradient id="cg" cx=".38" cy=".32" r=".8"><stop offset="0" stop-color="#fff2b8"/><stop offset=".45" stop-color="#f3c547"/><stop offset="1" stop-color="#b47a0c"/></radialGradient><linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe9a0"/><stop offset=".5" stop-color="#d9a21c"/><stop offset="1" stop-color="#8a5a06"/></linearGradient><linearGradient id="emb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6d0"/><stop offset="1" stop-color="#e2ab2e"/></linearGradient></defs>' +
@@ -317,6 +337,7 @@ window.RD = window.RD || {};
     },
     hen: hen,
     tierBadge: tierBadge,
+    rewardIcon: rewardIcon,
     coinSide: coinSide,
     games: Object.keys(COVERS)
   };
