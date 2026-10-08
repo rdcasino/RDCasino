@@ -19,6 +19,7 @@ RD.config = {
   ],
   minAge: 18,
   leaderboardPrize: 50000,
+  maxProfit: 0, // lucro máximo por aposta nos originais (0 = sem limite; muda no admin)
   leaderboardPrizes: [15000, 9000, 6000, 4000, 3000, 2500, 2000, 1500, 1200, 1000],
   kycWithdrawLimit: 2000,
   rakebackRate: 0.05 // 5% da vantagem da casa volta como rakeback

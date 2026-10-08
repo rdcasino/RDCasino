@@ -463,6 +463,12 @@ input[type="range"] { width: 100%; accent-color: var(--brand); }
 .ogx-input input { width: 100%; }
 
 /* Mines */
+.bj-ins { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; padding: 10px 14px; border-radius: 12px; background: var(--gold-soft); border: 1px solid rgba(255, 200, 92, 0.35); font-size: 13.5px; text-align: center; }
+.bj-ins span { display: flex; flex-direction: column; gap: 2px; }
+.bj-ins small { color: var(--muted); font-size: 12px; }
+.bj-ins div { display: flex; gap: 8px; }
+.ck-end { display: flex; align-items: center; justify-content: center; }
+.ck-flag { writing-mode: vertical-rl; font-family: var(--font-display); font-weight: 800; font-size: 13px; letter-spacing: 4px; color: var(--gold); opacity: 0.9; }
 /* Tower */
 .tw { width: 100%; max-width: 460px; margin: 0 auto; display: flex; flex-direction: column; gap: 7px; }
 .tw-row { display: grid; grid-template-columns: 64px 1fr; align-items: center; gap: 10px; opacity: 0.55; transition: opacity 0.15s; }
@@ -497,7 +503,7 @@ input[type="range"] { width: 100%; accent-color: var(--brand); }
 .ck-lane.dead { background: rgba(255, 122, 89, 0.16); }
 .ck-lane.dead .ck-m { background: var(--danger); color: #2a0d10; }
 .ck-lane.reveal { opacity: 0.6; }
-.ck-hen { width: 58px; height: 58px; animation: pop 0.25s ease; }
+.ck-hen { width: 84px; height: 84px; margin: -6px -8px; animation: pop 0.25s ease; }
 .ck-car { width: 40px; height: 54px; animation: pop 0.2s ease; }
 .ck-note { text-align: center; font-size: 12.5px; color: var(--muted); }
 .mn-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; width: 100%; max-width: 480px; margin: 0 auto; }
@@ -550,6 +556,7 @@ input[type="range"] { width: 100%; accent-color: var(--brand); }
   .mn-grid { gap: 7px; }
   .ck-lane { flex-basis: 78px; min-height: 200px; }
   .ck-road { min-height: 200px; }
+  .ck-hen { width: 70px; height: 70px; }
   .tw-row { grid-template-columns: 52px 1fr; gap: 8px; }
   .tw-tile { height: 34px; }
   .cr { height: 260px; }
