@@ -36,6 +36,7 @@
       { group: "Crescimento" },
       { id: "affiliates", label: "Afiliados", icon: "link" },
       RD.live ? { id: "invites", label: "Convites", icon: "gift" } : null,
+      RD.live ? { id: "rain", label: "Chuva (Rain)", icon: "coins" } : null,
       { id: "vip", label: "VIP & Recompensas", icon: "crown" },
       { group: "Sistema" },
       { id: "settings", label: "Configurações", icon: "settings" },
@@ -265,6 +266,29 @@
     $$("[data-copy-inv]").forEach(function (b) { b.addEventListener("click", function () { RD.copy(b.getAttribute("data-copy-inv")); }); });
   };
 
+  /* Chuva: a casa coloca um valor que é dividido entre quem clicar "Join" no chat */
+  P.rain = function () {
+    return head("Chuva (Rain)", "Você coloca um valor e ele é dividido igualmente entre os jogadores que clicarem em Join no chat antes do tempo acabar. Os jogadores também podem aumentar o pote.") +
+      '<div class="card card-pad"><form id="rain-form" class="row wrap" style="gap:12px;align-items:flex-end">' +
+      '<div class="field" style="margin:0;width:160px"><label>Valor (USD)</label><input class="input" type="number" name="amt" min="1" step="1" value="50" required></div>' +
+      '<div class="field" style="margin:0;width:160px"><label>Duração (minutos)</label><input class="input" type="number" name="min" min="1" max="1440" value="5" required></div>' +
+      '<div class="field" style="margin:0;width:220px"><label>Apostado mínimo para entrar (USD)</label><input class="input" type="number" name="wag" min="0" step="1" value="100" required></div>' +
+      '<button class="btn btn-primary">Começar chuva</button></form><p class="faint" style="font-size:12.5px;margin-top:10px">O apostado mínimo evita que alguém crie várias contas só para pegar a chuva. A divisão acontece sozinha quando o tempo acaba.</p></div>' +
+      '<div class="card mt" id="rain-list"><div class="card-pad faint">Carregando…</div></div>';
+  };
+  P.rain.after = function () {
+    $("#rain-form").addEventListener("submit", function (e) {
+      e.preventDefault(); var f = e.target, b = f.querySelector("button"); b.disabled = true;
+      db.adminStartRain(+f.amt.value, +f.min.value, +f.wag.value).then(function () { RD.toast("Chuva começou! Aparece no chat de todo mundo."); route(); }, function () { b.disabled = false; });
+    });
+    db.adminRains().then(function (list) {
+      var box = $("#rain-list"); if (!box) return;
+      box.innerHTML = list.length ? '<div class="table-wrap"><table class="table"><thead><tr><th>#</th><th>Início</th><th class="right">Pote</th><th class="right">Da casa</th><th class="right">Participantes</th><th class="right">Cada um</th><th>Status</th></tr></thead><tbody>' +
+        list.map(function (r) { return "<tr><td>" + r.id + '</td><td class="faint">' + fmt.date(r.starts_at) + '</td><td class="right num strong">' + fmt.usd(+r.amount) + '</td><td class="right num">' + fmt.usd(+r.house_amount) + '</td><td class="right">' + r.participants + '</td><td class="right num">' + (r.per_user != null ? fmt.usd(+r.per_user) : "—") + "</td><td>" + (r.status === "open" ? '<span class="badge badge-success">Ao vivo</span>' : '<span class="badge">Encerrada</span>') + "</td></tr>"; }).join("") +
+        "</tbody></table></div>" : empty("Nenhuma chuva ainda", "Comece a primeira acima.");
+    });
+  };
+
   P.settings = function () {
     var L = RD.config.license;
     return head("Configurações", "O que você muda aqui aparece no site na hora") +
@@ -301,7 +325,7 @@
   };
 
   /* ---------- Router ---------- */
-  var TITLES = { dashboard: "Dashboard", players: "Jogadores", transactions: "Transações", bets: "Apostas", kyc: "KYC & Risco", games: "Jogos", promotions: "Promoções", media: "Banners & Imagens", affiliates: "Afiliados", invites: "Convites", vip: "VIP & Recompensas", settings: "Configurações", audit: "Auditoria" };
+  var TITLES = { dashboard: "Dashboard", players: "Jogadores", transactions: "Transações", bets: "Apostas", kyc: "KYC & Risco", games: "Jogos", promotions: "Promoções", media: "Banners & Imagens", affiliates: "Afiliados", invites: "Convites", rain: "Chuva (Rain)", vip: "VIP & Recompensas", settings: "Configurações", audit: "Auditoria" };
   var current = "dashboard";
   function route() {
     var parts = (location.hash || "#/dashboard").replace(/^#\/?/, "").split("/");
