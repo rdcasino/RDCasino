@@ -260,7 +260,7 @@
   function savePrefs() { try { localStorage.setItem("rd_og_prefs", JSON.stringify(ogPrefs)); } catch (e) {} }
   var session = {};
   function sess(gid) { return session[gid] = session[gid] || { profit: 0, wagered: 0, wins: 0, losses: 0, series: [0] }; }
-  var ogKeys = null;
+  var ogKeys = null, ogTabRefresh = null;
   document.addEventListener("keydown", function (e) {
     if (!ogKeys || !ogPrefs.hotkeys || !$("#og-bet")) return;
     if (/input|textarea|select/i.test(e.target.tagName)) return;
@@ -365,7 +365,7 @@
     return '<div class="container' + (ogPrefs.theatre ? " wide" : "") + '">' +
       '<div class="row" style="margin-bottom:14px;gap:8px"><a class="icon-btn" href="#/casino/originals" aria-label="Back">' + ic("chevronLeft") + '</a><h2 style="font-size:18px">' + esc(g.name) + '</h2><span class="badge">RD Originals</span></div>' +
       '<div class="ogx' + (ogPrefs.theatre ? " theatre" : "") + '" id="ogx"><div class="ogx-main">' + side + stage + "</div>" + bar + "</div>" +
-      '<div class="card og-info"><div class="card-head"><div class="pill-tabs" id="og-tabs"><button class="active" data-ogtab="about">Description</button><button data-ogtab="big">Big wins</button><button data-ogtab="lucky">Lucky wins</button><button data-ogtab="mine">My bets</button></div></div><div id="og-tab-body"></div></div></div>';
+      '<div class="card og-info"><div class="card-head"><div class="pill-tabs" id="og-tabs"><button class="active" data-ogtab="recent">Recent plays</button><button data-ogtab="big">Big wins</button><button data-ogtab="lucky">Lucky wins</button><button data-ogtab="mine">My bets</button><button data-ogtab="about">Stats</button></div></div><div id="og-tab-body"></div></div></div>';
   }
 
   function statsHtml(gid) {
@@ -405,24 +405,24 @@
     $$("#og-tabs [data-ogtab]").forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-ogtab") === tab); });
     var u = me(), mod = OG[g.id], mine = function (b) { return b.game === g.id; };
     if (tab === "about") {
-      box.innerHTML = '<div class="og-info-body">' + ABOUT[g.id] + "<p>Every result is generated from your seeds and can be verified on the Provably Fair page.</p>" +
-        '<div class="og-facts"><div><small>House edge</small><strong>' + (Math.round((100 - g.rtp) * 10) / 10) + '%</strong></div><div><small>RTP</small><strong>' + (g.id === "blackjack" || g.id === "baccarat" ? "≈" : "") + g.rtp + '%</strong></div><div><small>Min bet</small><strong>$0.01</strong></div><div><small>Max profit</small><strong>' + (maxProfit() ? fmt.usd(maxProfit(), { dec: 0 }) : "No limit") + "</strong></div></div>" +
-        '<p class="faint" style="font-size:12.5px;margin-top:14px">Hotkeys (turn on in the bottom bar): <span class="kbd">Space</span> bet · <span class="kbd">S</span> half · <span class="kbd">D</span> double</p></div>';
+      box.innerHTML = '<div class="og-info-body">' +
+        '<div class="og-facts"><div><small>House edge</small><strong>' + (Math.round((100 - g.rtp) * 10) / 10) + '%</strong></div><div><small>RTP</small><strong>' + (g.id === "blackjack" || g.id === "baccarat" ? "≈" : "") + g.rtp + '%</strong></div><div><small>Min bet</small><strong>$0.01</strong></div><div><small>Max profit</small><strong>' + (maxProfit() ? fmt.usd(maxProfit(), { dec: 0 }) : "No limit") + "</strong></div></div></div>";
       return;
     }
     if (tab === "mine" && !u) { box.innerHTML = empty("Sign in to see your bets", "", '<button class="btn btn-primary btn-sm" data-open="register">Register</button>'); return; }
     var all = db.recentBets(2000).filter(mine), list;
+    if (tab === "recent") list = all.slice(0, 15);
     if (tab === "mine") list = all.filter(function (b) { return b.userId === u.id; }).slice(0, 15);
     if (tab === "big") list = all.filter(function (b) { return b.payout > b.amount; }).sort(function (a, b) { return (b.payout - b.amount) - (a.payout - a.amount); }).slice(0, 10);
     if (tab === "lucky") list = all.filter(function (b) { return b.payout > 0; }).sort(function (a, b) { return b.multiplier - a.multiplier; }).slice(0, 10);
     box.innerHTML = list.length ? '<div class="table-wrap"><table class="table"><thead><tr><th>Player</th><th>Time</th><th class="right">Bet</th><th class="right">Result</th><th class="right">Multiplier</th><th class="right">Profit</th></tr></thead><tbody>' +
       list.map(function (b) {
         return '<tr><td class="strong">' + esc(b.user) + '</td><td class="faint">' + b.date.slice(11, 16) + '</td><td class="right num">' + fmt.usd(b.amount) + '</td><td class="right num">' + mod.label(b) + '</td><td class="right num">' + b.multiplier.toFixed(2) + '×</td><td class="right num strong ' + (b.payout > b.amount ? "pos" : "faint") + '">' + fmt.usd(b.payout - b.amount, { sign: true }) + "</td></tr>";
-      }).join("") + "</tbody></table></div>" : empty("Nothing here yet", tab === "mine" ? "Your bets on " + g.name + " show up here." : "Wins on " + g.name + " show up here.");
+      }).join("") + "</tbody></table></div>" : empty("Nothing here yet", tab === "mine" ? "Your bets on " + g.name + " show up here." : tab === "recent" ? "Plays on " + g.name + " show up here in real time." : "Wins on " + g.name + " show up here.");
   }
 
   function bindOriginal(g) {
-    var mod = OG[g.id], amt = $("#og-amt"), mode = "manual", auto = false, busy = false, tab = "about", rules = { win: "reset", loss: "reset" };
+    var mod = OG[g.id], amt = $("#og-amt"), mode = "manual", auto = false, busy = false, tab = "recent", rules = { win: "reset", loss: "reset" };
     var ctx = {
       g: g,
       amount: function () { return Math.max(0, Math.round((parseFloat(amt.value) || 0) * 100) / 100); },
@@ -453,7 +453,7 @@
         var me0 = me(); if (me0) { var t0 = db.tierOf(me0.wagered - b.amount), t1 = db.tierOf(me0.wagered); if (t1 && t1 !== t0) { RD.toast("Level up! You reached " + t1.name + " — claim " + fmt.usd(t1.reward, { dec: 0 }) + " on the VIP page"); renderSidebar(); markActive(currentPath); } }
         var st = sess(g.id), delta = b.payout - b.amount;
         st.profit = Math.round((st.profit + delta) * 100) / 100; st.wagered += b.amount; st[b.payout > b.amount ? "wins" : "losses"]++; st.series.push(st.profit); if (st.series.length > 200) st.series.shift();
-        renderHeader(); ctx.refresh(); history(); stats(); if (tab !== "about") ogTab(g, tab);
+        renderHeader(); ctx.refresh(); history(); stats(); ogTab(g, tab);
         if (b.payout > b.amount && g.id !== "plinko") winPop(b);
       }
     };
@@ -552,7 +552,8 @@
       });
     }
     ogKeys = { bet: function () { if (mode === "manual") manual(); }, half: function () { if (!amt.disabled) ctx.setAmt(ctx.amount() / 2); }, double: function () { if (!amt.disabled) ctx.setAmt(doubled()); } };
-    ctx.refresh(); history(); stats(); ogTab(g, "about");
+    ctx.refresh(); history(); stats(); ogTab(g, tab);
+    ogTabRefresh = function () { if ($("#og-tab-body") && tab !== "about") ogTab(g, tab); };
     if (api.resume) api.resume();
   }
 
@@ -1725,7 +1726,7 @@
         auto: true,
         side: '<div><div class="ogx-label">Color</div><div class="dbl-pick"><button class="dbl-c red" data-dbl="red">2×</button><button class="dbl-c white" data-dbl="white">14×</button><button class="dbl-c black" data-dbl="black">2×</button></div></div>' +
           '<div class="og-manual-only">' + profitField() + "</div>",
-        center: '<div class="dbl"><div class="dbl-stage" id="dbl-stage"><div class="dbl-ptr"></div><div class="dbl-strip" id="dbl-strip"></div></div><div class="dbl-sub" id="dbl-sub">Pick a color and place your bet</div></div>'
+        center: '<div class="dbl"><div class="dbl-stage" id="dbl-stage"><div class="dbl-ptr"></div><div class="dbl-strip" id="dbl-strip"></div></div></div>'
       };
     },
     bind: function (ctx) {
@@ -1757,13 +1758,12 @@
           if (b.error) { unlock(); ctx.msg(b.error); return null; }
           ctx.hold(b);
           var k = DBL_ORDER.indexOf(n), ms = 4200;
-          jit = (Math.random() - 0.5) * 0.7; $("#dbl-sub").textContent = "Rolling…"; place(15 * 7 + k, ms);
+          jit = (Math.random() - 0.5) * 0.7; place(15 * 7 + k, ms);
           return new Promise(function (done) {
             setTimeout(function () {
               if (!$("#dbl-strip")) { unlock(); ctx.record(b); return done({ win: win }); }
               pos = 30 + k; place(pos, 0);
               var t = $$("#dbl-strip .dbl-t")[pos]; if (t) t.classList.add("hit");
-              $("#dbl-sub").innerHTML = "Rolled " + dblDot(n) + (c === "white" ? " · White pays 14×" : " · " + (c === "red" ? "Red" : "Black") + " pays 2×");
               unlock(); ctx.record(b); hist(); done({ win: win });
             }, ms + 80);
           });
@@ -1792,7 +1792,7 @@
     label: function (b) { return b.multiplier ? b.multiplier.toFixed(2) + "×" : "0.00×"; },
     cfg: function () {
       return {
-        side: selectField("sc-diff", "Difficulty", [["easy", "Easy · keeper covers 1"], ["medium", "Medium · covers 2"], ["hard", "Hard · covers 3"], ["expert", "Expert · covers 4"]], ogPrefs.scDiff || "medium") +
+        side: selectField("sc-diff", "Difficulty", [["easy", "Easy"], ["medium", "Medium"], ["hard", "Hard"], ["expert", "Expert"]], ogPrefs.scDiff || "medium") +
           '<div id="sc-live" class="hidden">' + profitField("Total profit") + "</div>",
         after: '<button class="btn btn-secondary btn-block hidden" id="sc-random" style="height:42px">Random shot</button>',
         center: '<div class="sc"><div class="sc-pitch">' + soccerScene() + '<div class="sc-flash hidden" id="sc-flash"></div></div><div class="ladder" id="sc-ladder"></div><div class="sc-note" id="sc-note"></div></div>'
@@ -1907,7 +1907,7 @@
     label: function (b) { return b.multiplier ? b.multiplier.toFixed(2) + "×" : "0.00×"; },
     cfg: function () {
       return {
-        side: selectField("dr-diff", "Difficulty", [["easy", "Easy · 1 trap in 4"], ["medium", "Medium · 1 trap in 3"], ["hard", "Hard · 1 trap in 2"], ["expert", "Expert · 2 traps in 3"]], ogPrefs.drDiff || "medium") +
+        side: selectField("dr-diff", "Difficulty", [["easy", "Easy"], ["medium", "Medium"], ["hard", "Hard"], ["expert", "Expert"]], ogPrefs.drDiff || "medium") +
           '<div id="dr-live" class="hidden">' + profitField("Total profit") + "</div>",
         after: '<button class="btn btn-secondary btn-block hidden" id="dr-random" style="height:42px">Random door</button>',
         center: '<div class="dr"><div class="dr-room" id="dr-room"><div class="dr-level" id="dr-level"></div><div class="dr-doors" id="dr-doors"></div>' + DOOR_KID + '</div><div class="ladder" id="dr-ladder"></div></div>'
@@ -2822,7 +2822,7 @@
     if (t.hasAttribute("data-coin")) { state.coin = t.getAttribute("data-coin"); return renderWallet(); }
     if (t.hasAttribute("data-net")) { state.net = t.getAttribute("data-net"); return renderWallet(); }
     if (t.hasAttribute("data-btab")) { state.betsTab = t.getAttribute("data-btab"); return renderFeed(); }
-    if (t.hasAttribute("data-level")) { var r1 = db.claimLevel(me().id, t.getAttribute("data-level")); RD.toast(r1.error || "Claimed " + fmt.usd(r1.amount), r1.error ? "error" : ""); renderHeader(); renderSidebar(); markActive(currentPath); return route(true); }
+    if (t.hasAttribute("data-level")) { t.disabled = true; Promise.resolve(db.claimLevel(me().id, t.getAttribute("data-level"))).then(function (r1) { RD.toast(r1.error || "Claimed " + fmt.usd(r1.amount), r1.error ? "error" : ""); renderHeader(); renderSidebar(); markActive(currentPath); route(true); }); return; }
     if (t.hasAttribute("data-promo")) {
       var pid = t.getAttribute("data-promo");
       if (needLogin()) return;
@@ -2851,10 +2851,12 @@
       }
       case "vip-claim-all": {
         if (needLogin()) return; var got = 0;
-        vipState(u).pending.forEach(function (tr) { var r2 = db.claimLevel(u.id, tr.name); if (r2.amount) got += r2.amount; });
-        RD.toast(got ? "Claimed " + fmt.usd(got) + " in VIP rewards" : "Nothing to claim yet", got ? "" : "error"); renderHeader(); renderSidebar(); markActive(currentPath); return route(true);
+        vipState(u).pending.reduce(function (pr, tr) { return pr.then(function () { return Promise.resolve(db.claimLevel(u.id, tr.name)).then(function (r2) { if (r2.amount) got += r2.amount; }); }); }, Promise.resolve()).then(function () {
+          RD.toast(got ? "Claimed " + fmt.usd(got) + " in VIP rewards" : "Nothing to claim yet", got ? "" : "error"); renderHeader(); renderSidebar(); markActive(currentPath); route(true);
+        });
+        return;
       }
-      case "rakeback": { if (needLogin()) return; var rb = db.claimRakeback(u.id); if ($("#drawer-vip").classList.contains("open")) setTimeout(renderVipDrawer, 0); RD.toast(rb.error || "Claimed " + fmt.usd(rb.amount), rb.error ? "error" : ""); renderHeader(); return route(true); }
+      case "rakeback": { if (needLogin()) return; t.disabled = true; Promise.resolve(db.claimRakeback(u.id)).then(function (rb) { if ($("#drawer-vip").classList.contains("open")) renderVipDrawer(); RD.toast(rb.error || "Claimed " + fmt.usd(rb.amount), rb.error ? "error" : ""); renderHeader(); route(true); }); return; }
       case "seeds": return seedsModal();
       case "rotate": { var rs = db.rotateSeed(u.id, ($("#new-client").value || "").trim()); if (rs && rs.error) return RD.toast(rs.error, "error"); RD.toast("Seeds rotated — previous server seed revealed"); return seedsModal(); }
       case "open-withdraw": state.walletTab = "withdraw"; openModal("wallet"); return renderWallet();
@@ -3041,7 +3043,7 @@
     if ($(".overlay.open")) return;
     /* Login terminou de carregar (ou trocou de conta) com um jogo aberto: monta o jogo de novo para retomar a rodada */
     var uid = u ? u.id : null; if (uid !== lastUid) { lastUid = uid; if (/^game\//.test(currentPath)) return route(true); }
-    if (/^game\//.test(currentPath)) return; // não reinicia o jogo no meio da aposta
+    if (/^game\//.test(currentPath)) { if (ogTabRefresh) ogTabRefresh(); return; } // não reinicia o jogo no meio da aposta
     if (currentPath === "" || currentPath === "home") { renderTicker(); renderFeed(); return; }
     route(true);
   });
