@@ -12,7 +12,7 @@
 
   function hydrate(root) { $$("[data-ic]", root).forEach(function (el) { el.outerHTML = ic(el.getAttribute("data-ic")); }); }
   function gameOf(id) { return RD.games.filter(function (g) { return g.id === id; })[0] || { name: id }; }
-  function errorBox(msg) { return '<div class="notice" style="margin-bottom:14px;background:var(--danger-soft);border-color:rgba(240,86,106,.3);color:var(--danger)">' + ic("alert", 16) + "<span>" + esc(msg) + "</span></div>"; }
+  function errorBox(msg) { return '<div class="notice" style="margin-bottom:14px;background:var(--danger-soft);border-color:rgba(255,122,89,.3);color:var(--danger)">' + ic("alert", 16) + "<span>" + esc(msg) + "</span></div>"; }
   function empty(title, text) { return '<div class="empty"><h3>' + title + "</h3><p>" + (text || "") + "</p></div>"; }
   function initials(u) { return String(u || "?").slice(0, 2).toUpperCase(); }
 
@@ -187,7 +187,7 @@
     var slots = [];
     RD.banners.forEach(function (b) { slots.push({ group: "Banners da home (3 cards)", name: b.title, path: b.img, size: "1200×600", o: b }); });
     RD.promotions.forEach(function (p) { slots.push({ group: "Promoções", name: p.title, path: p.img, size: "1200×600", o: p }); });
-    slots.push({ group: "Afiliados", name: "Topo da página de afiliados", path: RD.img.heroAffiliate, size: "1920×800", o: { img: RD.img.heroAffiliate, c1: "#1d4ed8", c2: "#0a1730" } });
+    slots.push({ group: "Afiliados", name: "Topo da página de afiliados", path: RD.img.heroAffiliate, size: "1920×800", o: { img: RD.img.heroAffiliate, art: RD.img.heroArt } });
     RD.affiliateAssets.forEach(function (a) { slots.push({ group: "Afiliados", name: "Material: " + a.name, path: a.img, size: a.size, o: a }); });
     RD.games.forEach(function (g) { slots.push({ group: "Capas dos jogos", name: g.name, path: g.img, size: "600×800", o: g }); });
     var groups = {}; slots.forEach(function (s) { (groups[s.group] = groups[s.group] || []).push(s); });

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>RDCasino — Kit de artes</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Unbounded:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--font:"Inter",sans-serif;--font-display:"Unbounded",sans-serif}
+body{margin:0;background:#0e090d;color:#fff;font-family:var(--font);padding:24px}
+h1{font-family:var(--font-display);margin:0 0 6px}h2{font-family:var(--font-display);margin:28px 0 12px;font-size:18px}
+p{color:#b1bad3;margin:0 0 16px;font-size:14px}
+.covers{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+.covers div,.scenes div{border-radius:12px;overflow:hidden;line-height:0}
+.covers svg{width:100%;height:auto;display:block}
+.scenes{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.scenes svg{width:100%;aspect-ratio:2/1;display:block}
+.dl{display:block;margin-top:6px;font-size:12px;color:#ff8fa3;line-height:1.4}
+</style></head><body>
+<h1>Kit de artes RDCasino</h1><p>Ilustrações vetoriais usadas no site. Clique em "baixar SVG" para usar em redes sociais ou entregar a um designer como referência.</p>
+<h2>Capas dos jogos (300×400)</h2><div class="covers" id="covers"></div>
+<h2>Banners e promoções (2:1)</h2><div class="scenes" id="scenes"></div>
+<script src="../assets/js/art.js"></script>
+<script>
+function dl(svg,name){var b=new Blob([svg],{type:'image/svg+xml'});return '<a class="dl" download="'+name+'.svg" href="'+URL.createObjectURL(b)+'">baixar SVG</a>';}
+document.getElementById('covers').innerHTML=RD.art.games.map(function(g){var s=RD.art.render('cover:'+g);return '<div>'+s+dl(s,g)+'</div>';}).join('');
+document.getElementById('scenes').innerHTML=['welcome','leaderboard','affiliate','reload','rakeback','race','hero'].map(function(k){var s=RD.art.render('scene:'+k);return '<div>'+s+dl(s,k)+'</div>';}).join('');
+</script></body></html>

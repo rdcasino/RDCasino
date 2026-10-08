@@ -23,7 +23,7 @@ O sistema começa **zerado**: nenhum jogador, aposta ou transação inventada. T
 **O que funciona de verdade (na demonstração):**
 - Cadastro e login de jogadores, com bloqueio de países restritos (Brasil incluído).
 - Depósito de teste (simula o processador cripto), saque com aprovação do admin e gorjeta entre jogadores.
-- **6 jogos próprios jogáveis: Dice, Limbo, Plinko, Crash, Mines e Hi-Lo**, com resultado provably fair (HMAC-SHA256) verificável na página Provably Fair. Mines, Hi-Lo e Crash descontam a aposta no início e retomam a rodada se a página for recarregada.
+- **10 jogos próprios jogáveis: Dice, Limbo, Crash, Mines, Plinko, Keno, Hi-Lo, Wheel, Blackjack e Roulette**, com resultado provably fair (HMAC-SHA256) verificável na página Provably Fair. Jogos por etapas (Mines, Hi-Lo, Crash, Blackjack) descontam a aposta no início e retomam a rodada se a página for recarregada.
 - Nível VIP (Wood → Amethyst) pelo total apostado, rakeback e prêmio de nível para resgatar.
 - Leaderboard do mês calculado pelas apostas reais.
 - Afiliados: todo jogador tem link e código; cliques, cadastros, depósitos e comissão são calculados de verdade; a comissão é coletada para o saldo.
@@ -33,6 +33,12 @@ O sistema começa **zerado**: nenhum jogador, aposta ou transação inventada. T
 Para recomeçar do zero: Admin → Configurações → "Apagar tudo e recomeçar".
 
 **Limite importante:** os dados ficam guardados só no navegador de quem está usando. Um jogador no celular dele e você no seu computador não se enxergam. Para isso funcionar entre pessoas diferentes (e com dinheiro real), é preciso o servidor com banco de dados. As funções de `assets/js/store.js` são exatamente as que esse servidor vai ter.
+
+## Identidade visual: Rubi Real
+
+- Cores: rubi `#FF2E55` (ação), ouro `#FFC85C` (VIP), fundo preto quente `#0E090D`. Verde `#22E08A` = ganho; coral `#FF7A59` = erro/perda, para o vermelho da marca nunca ser lido como prejuízo.
+- Fontes: Unbounded (títulos e números grandes) + Inter (texto).
+- Logo: losango de rubi facetado com "RD" — símbolo comum da família RD (Sports, Rewards, Casino).
 
 ## Estrutura
 
@@ -48,7 +54,10 @@ assets/js/icons.js      Ícones SVG
 assets/js/app.js        Site: rotas, páginas, afiliados, carteira, login
 assets/js/admin.js      Admin: dashboard, jogadores, transações, KYC, jogos,
                         promoções, imagens, afiliados, configurações, auditoria
-assets/img/             Fotos (guia em assets/img/README.md)
+assets/js/art.js        Ilustrações SVG (capas dos jogos, banners, promoções)
+assets/img/             Fotos/artes finais que substituem as ilustrações (guia em assets/img/README.md)
+design/artes.html       Kit de artes: ver e baixar todas as ilustrações em SVG
+design/identidade.html  As 3 direções de identidade avaliadas (escolhida: Rubi Real)
 legacy/                 Versão anterior em arquivo único (só referência)
 ```
 

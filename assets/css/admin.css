@@ -5,7 +5,7 @@
 .brand-name span { color: var(--brand); }
 
 .adm-login { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px;
-  background: radial-gradient(ellipse at top, rgba(47, 107, 255, 0.12), transparent 60%), var(--bg); }
+  background: radial-gradient(ellipse at top, rgba(255, 46, 85, 0.12), transparent 60%), var(--bg); }
 .adm-login-card { width: 100%; max-width: 400px; padding: 28px; }
 
 .adm { display: flex; min-height: 100vh; }

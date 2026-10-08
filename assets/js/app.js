@@ -16,7 +16,7 @@
   function hydrateIcons(root) { $$("[data-ic]", root).forEach(function (el) { el.outerHTML = ic(el.getAttribute("data-ic")); }); }
   function gameOf(id) { return RD.games.filter(function (g) { return g.id === id; })[0]; }
   function initials(u) { return String(u || "?").slice(0, 2).toUpperCase(); }
-  function errorBox(msg, extra) { return '<div class="notice form-error" style="background:var(--danger-soft);border-color:rgba(240,86,106,.3);color:var(--danger)">' + ic("alert", 16) + "<span>" + esc(msg) + (extra || "") + "</span></div>"; }
+  function errorBox(msg, extra) { return '<div class="notice form-error" style="background:var(--danger-soft);border-color:rgba(255,122,89,.3);color:var(--danger)">' + ic("alert", 16) + "<span>" + esc(msg) + (extra || "") + "</span></div>"; }
   function empty(title, text, cta) { return '<div class="empty"><h3>' + title + "</h3><p>" + text + "</p>" + (cta ? '<div style="margin-top:16px">' + cta + "</div>" : "") + "</div>"; }
 
   /* ---------- Sidebar ---------- */
@@ -273,7 +273,7 @@
     var mod = OG[g.id], cfg = mod.cfg(), u = me(), fav = (ogPrefs.favs || []).indexOf(g.id) > -1;
     var side = '<aside class="ogx-side">' +
       (cfg.auto ? '<div class="ogx-mode"><button class="active" data-mode="manual">Manual</button><button data-mode="auto">Auto</button></div>' : "") +
-      '<div><div class="ogx-label">Bet amount<small id="og-bal"></small></div><div class="ogx-input"><span class="cur">$</span><input type="number" id="og-amt" min="0" step="0.01" value="1.00" inputmode="decimal"><button class="mini" data-og="half">½</button><button class="mini" data-og="double">2×</button></div></div>' +
+      '<div><div class="ogx-label">' + (cfg.amountLabel || "Bet amount") + '<small id="og-bal"></small></div><div class="ogx-input"><span class="cur">$</span><input type="number" id="og-amt" min="0" step="0.01" value="1.00" inputmode="decimal"><button class="mini" data-og="half">½</button><button class="mini" data-og="double">2×</button></div></div>' +
       (cfg.side || "") +
       (cfg.auto ? '<div id="og-auto" class="hidden" style="display:flex;flex-direction:column;gap:14px">' +
         '<div><div class="ogx-label">Number of bets<small>0 = infinite</small></div><div class="ogx-input"><input type="number" id="au-n" min="0" step="1" value="10"><span class="sfx">∞</span></div></div>' +
@@ -313,6 +313,10 @@
     plinko: "<p><strong>Plinko</strong>: drop the ball and watch it bounce down the pegs. Where it lands sets your multiplier. Choose 8, 12 or 16 rows and low, medium or high risk — high risk pays up to 1,000× on the edges.</p>",
     crash: "<p><strong>Crash</strong>: the multiplier starts at 1.00× and climbs until it crashes. Cash out before the crash to win your bet times the multiplier. Set an automatic cashout to lock in a target.</p>",
     mines: "<p><strong>Mines</strong>: a 5×5 grid hides gems and mines. Choose how many mines (1–24), then reveal tiles. Every gem raises your multiplier — cash out any time, but hit a mine and the round is lost.</p>",
+    wheel: "<p><strong>Wheel</strong>: spin the wheel and win the multiplier it stops on. Choose 10 to 50 segments and low, medium or high risk — high risk has a single big segment worth up to 49.5×.</p>",
+    keno: "<p><strong>Keno</strong>: pick 1 to 10 numbers from 40. We draw 10. The more of your numbers are drawn, the bigger the multiplier — the payout table updates as you pick.</p>",
+    blackjack: "<p><strong>Blackjack</strong>: get closer to 21 than the dealer without going over. Blackjack pays 3 to 2, the dealer stands on all 17s, and you can double, or split a pair once. Cards are dealt from an infinite deck. RTP shown assumes basic strategy (approximate).</p>",
+    roulette: "<p><strong>Roulette</strong>: European wheel with a single zero. Place chips on numbers or outside bets — a number pays 35 to 1, dozens and columns 2 to 1, and red/black, even/odd and 1–18/19–36 pay 1 to 1.</p>",
     hilo: "<p><strong>Hi-Lo</strong>: guess whether the next card is higher or lower than the current one. Each correct guess multiplies your win. Skip cards you don't like and cash out whenever you want. Aces are low, kings are high.</p>"
   };
   function ogTab(g, tab) {
@@ -321,7 +325,7 @@
     var u = me(), mod = OG[g.id], mine = function (b) { return b.game === g.id; };
     if (tab === "about") {
       box.innerHTML = '<div class="og-info-body">' + ABOUT[g.id] + "<p>Every result is generated from your seeds and can be verified on the Provably Fair page.</p>" +
-        '<div class="og-facts"><div><small>House edge</small><strong>1%</strong></div><div><small>RTP</small><strong>99%</strong></div><div><small>Min bet</small><strong>$0.01</strong></div><div><small>Max profit</small><strong>' + fmt.usd(MAX_PROFIT, { dec: 0 }) + "</strong></div></div>" +
+        '<div class="og-facts"><div><small>House edge</small><strong>' + (Math.round((100 - g.rtp) * 10) / 10) + '%</strong></div><div><small>RTP</small><strong>' + (g.id === "blackjack" ? "≈" : "") + g.rtp + '%</strong></div><div><small>Min bet</small><strong>$0.01</strong></div><div><small>Max profit</small><strong>' + fmt.usd(MAX_PROFIT, { dec: 0 }) + "</strong></div></div>" +
         '<p class="faint" style="font-size:12.5px;margin-top:14px">Hotkeys (turn on in the bottom bar): <span class="kbd">Space</span> bet · <span class="kbd">S</span> half · <span class="kbd">D</span> double</p></div>';
       return;
     }
@@ -342,9 +346,9 @@
       g: g,
       amount: function () { return Math.max(0, Math.round((parseFloat(amt.value) || 0) * 100) / 100); },
       setAmt: function (v) { amt.value = Math.max(0, v).toFixed(2); ctx.refresh(); },
-      msg: function (t, extra) { $("#og-msg").innerHTML = t ? errorBox(t, extra) : ""; },
+      msg: function (t, extra) { if (!$("#og-msg")) return; $("#og-msg").innerHTML = t ? errorBox(t, extra) : ""; },
       btn: function () { return $("#og-bet"); },
-      refresh: function () { var u = me(); $("#og-bal").textContent = u ? "Balance " + fmt.usd(u.balance) : ""; if (api.refresh) api.refresh(); },
+      refresh: function () { var u = me(); if (!$("#og-bal")) return; $("#og-bal").textContent = u ? "Balance " + fmt.usd(u.balance) : ""; if (api.refresh) api.refresh(); },
       setProfit: function (mult, label) { var p = $("#og-profit"); if (!p) return; p.value = (ctx.amount() * (mult - 1)).toFixed(2); $("#og-mult-lbl").textContent = (label || mult.toFixed(2)) + "×"; },
       validate: function (a, maxMult) {
         var u = me(); ctx.msg("");
@@ -356,6 +360,7 @@
         return u;
       },
       lock: function (on) {
+        if (!document.contains(amt)) return;
         amt.disabled = on; $$("[data-og]").forEach(function (b) { b.disabled = on; });
         $$(".ogx-side select").forEach(function (s) { s.disabled = on; });
         $$("[data-mode]").forEach(function (b) { b.disabled = on; });
@@ -630,12 +635,12 @@
         for (var i = 0; i <= 4; i++) { var v = 1 + (mMax - 1) * i / 4, y = h - pad - (h - 2 * pad) * (i / 4); x.beginPath(); x.moveTo(pad, y); x.lineTo(w - 10 * d, y); x.stroke(); x.fillText(v.toFixed(1) + "×", 4 * d, y + 4 * d); }
         if (ms <= 0) return;
         var X = function (t) { return pad + (w - pad - 14 * d) * (t / tMax); }, Y = function (t) { return h - pad - (h - 2 * pad) * ((Math.exp(K * t) - 1) / (mMax - 1)); };
-        var col = crashed ? "#f0566a" : "#2f6bff";
+        var col = crashed ? "#f0566a" : "#ff2e55";
         x.beginPath(); x.moveTo(X(0), Y(0));
         for (var s = 0; s <= 60; s++) { var t = ms * s / 60; x.lineTo(X(t), Y(t)); }
         x.lineWidth = 4 * d; x.strokeStyle = col; x.lineCap = "round"; x.stroke();
         x.lineTo(X(ms), h - pad); x.lineTo(X(0), h - pad); x.closePath();
-        var gr = x.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, crashed ? "rgba(240,86,106,.35)" : "rgba(47,107,255,.35)"); gr.addColorStop(1, "rgba(47,107,255,0)");
+        var gr = x.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, crashed ? "rgba(255,122,89,.35)" : "rgba(255,46,85,.35)"); gr.addColorStop(1, "rgba(255,46,85,0)");
         x.fillStyle = gr; x.fill();
         x.beginPath(); x.arc(X(ms), Y(ms), 6 * d, 0, Math.PI * 2); x.fillStyle = "#fff"; x.fill();
       }
@@ -711,6 +716,7 @@
       }
       function tiles() { return $$("#mn-grid .mn-tile"); }
       function paint(final) {
+        if (!$("#mn-grid")) return;
         tiles().forEach(function (t, i) {
           var open = round && round.revealed.indexOf(i) > -1, isMine = final && final.mines.indexOf(i) > -1;
           t.classList.toggle("open", open || !!final); t.classList.toggle("dim", !!final && !open);
@@ -720,6 +726,7 @@
         $("#mn-grid").classList.toggle("idle", !round);
       }
       function setLive(on) {
+        if (!$("#mn-live")) return;
         $("#mn-live").classList.toggle("hidden", !on); $("#mn-random").classList.toggle("hidden", !on); ctx.lock(on);
         var b = ctx.btn(); b.textContent = on ? "Cashout" : "Bet"; b.classList.toggle("stop", false);
         b.disabled = on && (!round || !round.revealed.length);
@@ -784,7 +791,7 @@
       var round = null, preview = null, busyCard = false; // round: {amount, cards:[{rank,suit,res}], mult, idx}
       function current() { return round ? round.cards[round.cards.length - 1] : preview; }
       function show() {
-        var c = current(); if (!c) return;
+        var c = current(); if (!c || !$("#hl-card")) return;
         $("#hl-card").innerHTML = cardHtml(c);
         var o = hiloOpts(c.rank), live = !!round;
         [["up", o.up], ["down", o.down]].forEach(function (x) {
@@ -851,6 +858,349 @@
           if (r && r.game === "hilo") { round = { amount: r.amount, cards: r.state.cards.slice(), mult: r.state.mult }; $("#og-amt").value = r.amount.toFixed(2); ctx.lock(true); show(); }
         }
       };
+    }
+  };
+
+  /* ---------- Tabelas: Wheel e Keno (RTP ≈ 99%, conferidas) ---------- */
+  function wheelTable(n, risk) {
+    var base = { low: [1.5, 1.2, 1.2, 1.2, 0, 1.2, 1.2, 1.2, 1.2, 0], medium: [0, 1.9, 0, 1.5, 0, 2, 0, 1.5, 0, 3] }[risk], t = [];
+    for (var i = 0; i < n; i++) t.push(risk === "high" ? (i === 0 ? Math.round(0.99 * n * 100) / 100 : 0) : base[i % 10]);
+    return t;
+  }
+  function comb(n, k) { if (k < 0 || k > n) return 0; var r = 1; for (var i = 1; i <= k; i++) r = r * (n - k + i) / i; return r; }
+  function kenoTable(k, risk) {
+    var P = []; for (var h = 0; h <= k; h++) P.push(comb(k, h) * comb(40 - k, 10 - h) / comb(40, 10));
+    var hmin = risk === "low" ? Math.max(1, Math.floor(k * 0.3)) : risk === "medium" ? Math.max(1, Math.ceil(k * 0.4)) : Math.max(1, Math.ceil(k * 0.55));
+    var r = { low: 1.9, medium: 3, high: 5.5 }[risk], cap = { low: 500, medium: 2000, high: 10000 }[risk];
+    var w = P.map(function (_, x) { return x >= hmin ? Math.pow(r, x - hmin) : 0; }), fixed = {}, pay = [];
+    for (var it = 0; it < 12; it++) {
+      var rest = 0.99, den = 0;
+      P.forEach(function (p, x) { if (fixed[x] != null) rest -= p * fixed[x]; else den += p * w[x]; });
+      var c = rest / den, over = false;
+      pay = P.map(function (_, x) { return fixed[x] != null ? fixed[x] : c * w[x]; });
+      for (var y = k; y >= 0; y--) if (fixed[y] == null && pay[y] > cap) { fixed[y] = cap; over = true; break; }
+      if (!over) break;
+    }
+    return pay.map(function (v) { return Math.floor(v * 100) / 100; });
+  }
+  function kenoFrom(fs) { var a = []; for (var i = 1; i <= 40; i++) a.push(i); for (var j = 0; j < 10; j++) { var k = j + Math.floor(fs[j] * (40 - j)), t = a[j]; a[j] = a[k]; a[k] = t; } return a.slice(0, 10); }
+  RD.fair.wheelTable = wheelTable; RD.fair.kenoTable = kenoTable; RD.fair.kenoFrom = kenoFrom;
+  function multColor(m, high) { return m === 0 ? "#3a2a35" : high ? "#ff2e55" : m < 1.4 ? "#c9b8c2" : m < 1.6 ? "#22e08a" : m < 1.95 ? "#7aa7ff" : m < 2.5 ? "#ffc85c" : "#a07bff"; }
+
+  /* ---------- WHEEL ---------- */
+  OG.wheel = {
+    label: function (b) { return b.multiplier.toFixed(2) + "×"; },
+    cfg: function () {
+      return {
+        auto: true,
+        side: '<div class="ogx-row2">' + selectField("wh-risk", "Risk", [["low", "Low"], ["medium", "Medium"], ["high", "High"]], ogPrefs.whRisk || "medium") + selectField("wh-seg", "Segments", [[10, "10"], [20, "20"], [30, "30"], [40, "40"], [50, "50"]], ogPrefs.whSeg || 30) + "</div>",
+        center: '<div class="wh"><div class="wh-wrap"><div class="wh-pointer"></div><svg viewBox="-120 -120 240 240" id="wh-svg"><g id="wh-rot"></g><circle r="22" fill="#170f16" stroke="rgba(255,255,255,.15)" stroke-width="2"/><text id="wh-res" y="5" text-anchor="middle" font-size="13" font-weight="800" fill="#fff" style="font-family:var(--font-display)"></text></svg></div><div class="wh-legend" id="wh-legend"></div></div>'
+      };
+    },
+    bind: function (ctx) {
+      var rot = 0, spinning = false;
+      function n() { return +$("#wh-seg").value; }
+      function risk() { return $("#wh-risk").value; }
+      function draw() {
+        var t = wheelTable(n(), risk()), N = t.length, R = 110, r = 70, out = "", hi = risk() === "high";
+        t.forEach(function (m, i) {
+          var a0 = (i / N) * 2 * Math.PI - Math.PI / 2, a1 = ((i + 1) / N) * 2 * Math.PI - Math.PI / 2;
+          out += '<path d="M' + (R * Math.cos(a0)).toFixed(2) + " " + (R * Math.sin(a0)).toFixed(2) + " A" + R + " " + R + " 0 0 1 " + (R * Math.cos(a1)).toFixed(2) + " " + (R * Math.sin(a1)).toFixed(2) + " L" + (r * Math.cos(a1)).toFixed(2) + " " + (r * Math.sin(a1)).toFixed(2) + " A" + r + " " + r + " 0 0 0 " + (r * Math.cos(a0)).toFixed(2) + " " + (r * Math.sin(a0)).toFixed(2) + 'Z" fill="' + multColor(m, hi && m > 0) + '" stroke="#0e090d" stroke-width="1.2"/>';
+        });
+        $("#wh-rot").innerHTML = '<circle r="116" fill="#170f16"/>' + out + '<circle r="70" fill="#0e090d"/>';
+        $("#wh-rot").style.transform = "rotate(" + rot + "deg)";
+        var uniq = []; t.forEach(function (m) { if (uniq.indexOf(m) < 0) uniq.push(m); }); uniq.sort(function (a, b) { return a - b; });
+        $("#wh-legend").innerHTML = uniq.map(function (m) { var c = t.filter(function (x) { return x === m; }).length; return '<div style="--c:' + multColor(m, hi && m > 0) + '"><b>' + m.toFixed(2) + "×</b><small>" + ((c / N) * 100).toFixed(1) + "%</small></div>"; }).join("");
+        ctx.setProfit(Math.max.apply(null, t), "max " + Math.max.apply(null, t).toFixed(2));
+      }
+      function change() { if (spinning) return; ogPrefs.whSeg = n(); ogPrefs.whRisk = risk(); savePrefs(); draw(); }
+      $("#wh-seg").addEventListener("change", change); $("#wh-risk").addEventListener("change", change);
+      draw();
+      function play() {
+        var a = ctx.amount(), t = wheelTable(n(), risk()), N = t.length, u = ctx.validate(a, Math.max.apply(null, t)); if (!u || spinning) return Promise.resolve(null);
+        var s = db.seeds(u.id), nonce = s.nonce, client = s.client; spinning = true; ctx.lock(true);
+        return floats(s.server, client, nonce, 1).then(function (fs) {
+          var seg = Math.floor(fs[0] * N), m = t[seg];
+          var b = db.placeBet(u.id, "wheel", a, m, m > 0, { result: m, segment: seg, segments: N, risk: risk(), nonce: nonce, client: client });
+          var segA = 360 / N, jitter = (Math.random() - 0.5) * segA * 0.6, target = -((seg + 0.5) * segA) + jitter;
+          rot = rot - (rot % 360) + 360 * 4 + target; if (rot <= 0) rot += 360 * 5;
+          var g = $("#wh-rot"); g.style.transition = "transform 2.4s cubic-bezier(.12,.75,.12,1)"; g.style.transform = "rotate(" + rot + "deg)";
+          $("#wh-res").textContent = "";
+          return new Promise(function (res) {
+            setTimeout(function () {
+              spinning = false; ctx.lock(false); if (!$("#wh-res")) return res({ win: m > 1 });
+              g.style.transition = "none"; $("#wh-res").textContent = m.toFixed(2) + "×"; $("#wh-res").setAttribute("fill", m > 1 ? "#22e08a" : m > 0 ? "#fff" : "#ff7a59");
+              ctx.record(b); res({ win: m > 1 });
+            }, 2450);
+          });
+        });
+      }
+      return { refresh: function () { var t = wheelTable(n(), risk()); ctx.setProfit(Math.max.apply(null, t), "max " + Math.max.apply(null, t).toFixed(2)); }, play: play, cooldown: 100 };
+    }
+  };
+
+  /* ---------- KENO ---------- */
+  OG.keno = {
+    label: function (b) { return b.detail.hits + "/" + b.detail.picks; },
+    cfg: function () {
+      var tiles = ""; for (var i = 1; i <= 40; i++) tiles += '<button class="kn-tile" data-kn="' + i + '">' + i + "</button>";
+      return {
+        auto: true,
+        side: selectField("kn-risk", "Risk", [["low", "Low"], ["medium", "Medium"], ["high", "High"]], ogPrefs.knRisk || "medium"),
+        after: '<div class="ogx-row2"><button class="btn btn-secondary" style="height:42px" id="kn-auto">Auto pick</button><button class="btn btn-secondary" style="height:42px" id="kn-clear">Clear</button></div>',
+        center: '<div class="kn"><div class="kn-grid" id="kn-grid">' + tiles + '</div><div class="kn-pay" id="kn-pay"></div></div>'
+      };
+    },
+    bind: function (ctx) {
+      var picks = (ogPrefs.knPicks || []).slice(0, 10), busyK = false;
+      function risk() { return $("#kn-risk").value; }
+      function paint(drawn, hitsShown) {
+        if (!$("#kn-pay")) return;
+        $$("#kn-grid .kn-tile").forEach(function (t) {
+          var n = +t.getAttribute("data-kn"), sel = picks.indexOf(n) > -1, d = drawn && drawn.indexOf(n) > -1;
+          t.className = "kn-tile" + (sel ? " sel" : "") + (d && sel ? " hit" : d ? " drawn" : "");
+        });
+        var k = picks.length, box = $("#kn-pay");
+        if (!k) { box.innerHTML = '<div class="kn-empty">Select 1 to 10 numbers</div>'; ctx.setProfit(1, "0.00"); return; }
+        var t = kenoTable(k, risk());
+        box.innerHTML = t.map(function (m, h) { return '<div class="' + (hitsShown === h ? "on" : "") + '"><b>' + (m >= 100 ? Math.round(m) : m.toFixed(2)) + "×</b><small>" + h + " hits</small></div>"; }).join("");
+        ctx.setProfit(Math.max.apply(null, t), "max " + Math.max.apply(null, t));
+      }
+      function save() { ogPrefs.knPicks = picks; savePrefs(); }
+      $("#kn-grid").addEventListener("click", function (e) {
+        var t = e.target.closest("[data-kn]"); if (!t || busyK) return;
+        var n = +t.getAttribute("data-kn"), i = picks.indexOf(n);
+        if (i > -1) picks.splice(i, 1); else if (picks.length < 10) picks.push(n); else return ctx.msg("You can pick up to 10 numbers.");
+        ctx.msg(""); save(); paint();
+      });
+      $("#kn-clear").addEventListener("click", function () { if (busyK) return; picks = []; save(); paint(); });
+      $("#kn-auto").addEventListener("click", function () {
+        if (busyK) return; var pool = []; for (var i = 1; i <= 40; i++) pool.push(i);
+        picks = []; while (picks.length < 10) picks.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]); save(); paint();
+      });
+      $("#kn-risk").addEventListener("change", function () { ogPrefs.knRisk = risk(); savePrefs(); paint(); });
+      paint();
+      function play() {
+        if (busyK) return Promise.resolve(null);
+        if (!picks.length) { ctx.msg("Select at least 1 number."); return Promise.resolve(null); }
+        var a = ctx.amount(), t = kenoTable(picks.length, risk()), u = ctx.validate(a); if (!u) return Promise.resolve(null);
+        var s = db.seeds(u.id), nonce = s.nonce, client = s.client; busyK = true; ctx.lock(true);
+        return floats(s.server, client, nonce, 10).then(function (fs) {
+          var drawn = kenoFrom(fs), hits = drawn.filter(function (n) { return picks.indexOf(n) > -1; }).length, m = capMult(a, t[hits]);
+          var b = db.placeBet(u.id, "keno", a, m, m > 0, { result: hits, hits: hits, picks: picks.length, drawn: drawn, risk: risk(), nonce: nonce, client: client });
+          paint([]);
+          return new Promise(function (res) {
+            var i = 0;
+            (function next() {
+              if (!$("#kn-grid")) { busyK = false; return res({ win: m > 1 }); }
+              i++; paint(drawn.slice(0, i), i === 10 ? hits : null);
+              if (i < 10) return setTimeout(next, 70);
+              busyK = false; ctx.lock(false); ctx.record(b); res({ win: m > 1 });
+            })();
+          });
+        });
+      }
+      return { refresh: function () { if (picks.length) { var t = kenoTable(picks.length, risk()); ctx.setProfit(Math.max.apply(null, t), "max " + Math.max.apply(null, t)); } }, play: play, cooldown: 120 };
+    }
+  };
+
+  /* ---------- BLACKJACK (baralho infinito, dealer para em 17, BJ paga 3:2) ---------- */
+  function bjVal(r) { return r === 1 ? 11 : r > 10 ? 10 : r; }
+  function bjTotal(cards) { var t = 0, aces = 0; cards.forEach(function (c) { t += bjVal(c.rank); if (c.rank === 1) aces++; }); while (t > 21 && aces) { t -= 10; aces--; } return { t: t, soft: aces > 0 }; }
+  function bjCard(c, hidden) {
+    if (hidden) return '<div class="bj-card back"></div>';
+    var red = c.suit === 1 || c.suit === 2;
+    return '<div class="bj-card' + (red ? " red" : "") + '"><span class="r">' + RANKS[c.rank] + '</span><span class="s">' + SUITS[c.suit] + "</span></div>";
+  }
+  OG.blackjack = {
+    label: function (b) { return b.detail.outcome || b.multiplier.toFixed(2) + "×"; },
+    cfg: function () {
+      return {
+        after: '<div class="bj-actions"><button class="btn btn-secondary" id="bj-hit" disabled>' + ic("plus", 16) + 'Hit</button><button class="btn btn-secondary" id="bj-stand" disabled>' + ic("ban", 16) + 'Stand</button><button class="btn btn-secondary" id="bj-split" disabled>' + ic("swap", 16) + 'Split</button><button class="btn btn-secondary" id="bj-double" disabled>' + ic("coins", 16) + "Double</button></div>",
+        center: '<div class="bj"><div class="bj-side"><div class="bj-cards" id="bj-dealer"></div><span class="bj-val" id="bj-dval"></span></div><div class="bj-mid"><div class="bj-rules">Blackjack pays 3 to 2 · Dealer stands on 17</div><div class="bj-result hidden" id="bj-result"></div></div><div class="bj-hands" id="bj-hands"></div></div>'
+      };
+    },
+    bind: function (ctx) {
+      var S = null, busyB = false; // S: {cursor, dealer, hands:[{cards,bet,done,doubled}], active, over}
+      function u() { return me(); }
+      function draw(n) { var r = db.activeRound(u().id); return floats(r.server, r.client, r.nonce, S.cursor + n).then(function (fs) { var out = []; for (var i = 0; i < n; i++) out.push(cardFrom(fs[S.cursor + i])); S.cursor += n; return out; }); }
+      function render(reveal) {
+        if (!$("#bj-dealer")) return;
+        var dCards = S ? S.dealer : [];
+        $("#bj-dealer").innerHTML = dCards.map(function (c, i) { return bjCard(c, i === 1 && !reveal); }).join("");
+        $("#bj-dval").textContent = S ? (reveal ? bjTotal(dCards).t : bjTotal([dCards[0]]).t) : "";
+        $("#bj-dval").classList.toggle("hidden", !S);
+        $("#bj-hands").innerHTML = S ? S.hands.map(function (h, i) { var v = bjTotal(h.cards); return '<div class="bj-hand' + (S.hands.length > 1 && i === S.active && !S.over ? " active" : "") + (h.res ? " " + h.res : "") + '"><div class="bj-cards">' + h.cards.map(function (c) { return bjCard(c); }).join("") + '</div><span class="bj-val">' + (v.soft && v.t < 21 ? v.t - 10 + "/" + v.t : v.t) + "</span></div>"; }).join("") : '<div class="bj-hand"><div class="bj-cards"><div class="bj-card ghost"></div><div class="bj-card ghost"></div></div></div>';
+        var h = S && !S.over ? S.hands[S.active] : null, bal = u() ? u().balance : 0;
+        $("#bj-hit").disabled = !h; $("#bj-stand").disabled = !h;
+        $("#bj-double").disabled = !(h && h.cards.length === 2 && bal >= h.bet);
+        $("#bj-split").disabled = !(h && S.hands.length === 1 && h.cards.length === 2 && bjVal(h.cards[0].rank) === bjVal(h.cards[1].rank) && bal >= h.bet);
+        var b = ctx.btn(); b.disabled = !!(S && !S.over);
+      }
+      function persist() { db.updateRound(u().id, S); }
+      function finish() {
+        S.over = true;
+        var d = bjTotal(S.dealer).t, total = 0, base = S.hands[0].bet, natural = S.hands.length === 1 && S.hands[0].cards.length === 2 && bjTotal(S.hands[0].cards).t === 21;
+        var dealerBJ = S.dealer.length === 2 && d === 21;
+        S.hands.forEach(function (h) {
+          var v = bjTotal(h.cards).t, pay = 0;
+          if (v > 21) { pay = 0; h.res = "lose"; }
+          else if (natural && !dealerBJ) { pay = h.bet * 2.5; h.res = "win"; }
+          else if (dealerBJ && !natural) { pay = 0; h.res = "lose"; }
+          else if (d > 21 || v > d) { pay = h.bet * 2; h.res = "win"; }
+          else if (v === d) { pay = h.bet; h.res = "push"; }
+          else { pay = 0; h.res = "lose"; }
+          total += pay;
+        });
+        var amount = S.hands.reduce(function (a, h) { return a + h.bet; }, 0), mult = capMult(amount, Math.round((total / amount) * 10000) / 10000);
+        var outcome = natural && !dealerBJ ? "Blackjack" : total > amount ? "Win" : total === amount ? "Push" : "Lose";
+        var bet = db.settleRound(u().id, mult, total > 0, { outcome: outcome, player: S.hands.map(function (h) { return bjTotal(h.cards).t; }).join("/"), dealer: d });
+        render(true);
+        var r = $("#bj-result"); if (!r) { S = null; busyB = false; return; } r.className = "bj-result " + (total > amount ? "w" : total === amount ? "p" : "l");
+        r.textContent = outcome === "Blackjack" ? "Blackjack! +" + fmt.usd(total - amount) : outcome === "Win" ? "You win +" + fmt.usd(total - amount) : outcome === "Push" ? "Push" : "Dealer wins";
+        S = null; busyB = false; ctx.lock(false); ctx.btn().disabled = false; ctx.record(bet);
+      }
+      function dealerPlay() {
+        render(true);
+        var allBust = S.hands.every(function (h) { return bjTotal(h.cards).t > 21; });
+        if (allBust) return finish();
+        (function step() {
+          if (bjTotal(S.dealer).t >= 17) return finish();
+          draw(1).then(function (c) { S.dealer.push(c[0]); persist(); render(true); setTimeout(step, 420); });
+        })();
+      }
+      function nextHand() {
+        var h = S.hands[S.active];
+        if (h.done) { if (S.active < S.hands.length - 1) { S.active++; persist(); render(); return; } busyB = true; return dealerPlay(); }
+        persist(); render();
+      }
+      function act(kind) {
+        if (!S || S.over || busyB) return; busyB = true;
+        var h = S.hands[S.active];
+        if (kind === "stand") { h.done = true; busyB = false; return nextHand(); }
+        if (kind === "double") { var r1 = db.addToRound(u().id, h.bet); if (r1.error) { busyB = false; return ctx.msg(r1.error); } h.bet *= 2; renderHeader(); ctx.refresh(); }
+        if (kind === "split") {
+          var r2 = db.addToRound(u().id, h.bet); if (r2.error) { busyB = false; return ctx.msg(r2.error); } renderHeader(); ctx.refresh();
+          var aces = h.cards[0].rank === 1;
+          return draw(2).then(function (cs) {
+            S.hands = [{ cards: [h.cards[0], cs[0]], bet: h.bet, done: aces }, { cards: [h.cards[1], cs[1]], bet: h.bet, done: aces }];
+            S.hands.forEach(function (x) { if (bjTotal(x.cards).t === 21) x.done = true; });
+            busyB = false; if (S.hands[0].done) { S.active = 0; return nextHand(); } persist(); render();
+          });
+        }
+        draw(1).then(function (c) {
+          h.cards.push(c[0]); var v = bjTotal(h.cards).t;
+          if (kind === "double" || v >= 21) h.done = true;
+          busyB = false; nextHand();
+        });
+      }
+      ["hit", "stand", "double", "split"].forEach(function (k) { $("#bj-" + k).addEventListener("click", function () { act(k); }); });
+      function start() {
+        var a = ctx.amount(), us = ctx.validate(a); if (!us) return;
+        var r = db.startRound(us.id, "blackjack", a, {}); if (r.error) return ctx.msg(r.error);
+        renderHeader(); ctx.refresh(); ctx.lock(true); $("#bj-result").className = "bj-result hidden";
+        S = { cursor: 0, dealer: [], hands: [{ cards: [], bet: a, done: false }], active: 0, over: false };
+        draw(4).then(function (c) {
+          S.hands[0].cards = [c[0], c[2]]; S.dealer = [c[1], c[3]];
+          var p = bjTotal(S.hands[0].cards).t, d = bjTotal(S.dealer).t;
+          persist(); render();
+          if (p === 21 || (d === 21 && (S.dealer[0].rank === 1 || bjVal(S.dealer[0].rank) === 10))) { busyB = true; return setTimeout(finish, 500); }
+        });
+      }
+      render();
+      return {
+        refresh: function () {},
+        click: function () { if (!S) start(); },
+        resume: function () {
+          var us = u(), r = us && db.activeRound(us.id);
+          if (r && r.game === "blackjack" && r.state && r.state.hands) { S = r.state; $("#og-amt").value = S.hands[0].bet.toFixed(2); ctx.lock(true); render(); }
+        }
+      };
+    }
+  };
+
+  /* ---------- ROULETTE (europeia, um zero) ---------- */
+  var RL_RED = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
+  var RL_ORDER = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
+  function rlWins(key, n) {
+    if (key.indexOf("n:") === 0) return +key.slice(2) === n;
+    if (n === 0) return false;
+    if (key === "red") return RL_RED.indexOf(n) > -1; if (key === "black") return RL_RED.indexOf(n) < 0;
+    if (key === "even") return n % 2 === 0; if (key === "odd") return n % 2 === 1;
+    if (key === "low") return n <= 18; if (key === "high") return n >= 19;
+    if (key.indexOf("doz:") === 0) return Math.ceil(n / 12) === +key.slice(4);
+    if (key.indexOf("col:") === 0) return ((n - 1) % 3) + 1 === +key.slice(4);
+    return false;
+  }
+  function rlPays(key) { return key.indexOf("n:") === 0 ? 36 : key.indexOf("doz:") === 0 || key.indexOf("col:") === 0 ? 3 : 2; }
+  function rlColor(n) { return n === 0 ? "g" : RL_RED.indexOf(n) > -1 ? "r" : "b"; }
+  OG.roulette = {
+    label: function (b) { var n = b.detail.result; return '<b class="rl-n ' + rlColor(n) + '">' + n + "</b>"; },
+    cfg: function () {
+      var cell = function (key, txt, cls, st) { return '<button class="rl-cell ' + (cls || "") + '" data-rl="' + key + '"' + (st ? ' style="' + st + '"' : "") + "><span>" + txt + '</span><i class="rl-chip hidden"></i></button>'; };
+      var grid = cell("n:0", "0", "g", "grid-row:1/4;grid-column:1");
+      for (var c = 0; c < 12; c++) for (var r = 0; r < 3; r++) { var n = c * 3 + (3 - r); grid += cell("n:" + n, n, rlColor(n), "grid-row:" + (r + 1) + ";grid-column:" + (c + 2)); }
+      for (var k = 0; k < 3; k++) grid += cell("col:" + (3 - k), "2:1", "o", "grid-row:" + (k + 1) + ";grid-column:14");
+      for (var d = 1; d <= 3; d++) grid += cell("doz:" + d, ["1 to 12", "13 to 24", "25 to 36"][d - 1], "o", "grid-row:4;grid-column:" + (2 + (d - 1) * 4) + "/span 4");
+      [["low", "1 to 18"], ["even", "Even"], ["red", "", "r"], ["black", "", "b"], ["odd", "Odd"], ["high", "19 to 36"]].forEach(function (x, i) { grid += cell(x[0], x[1], "o " + (x[2] || ""), "grid-row:5;grid-column:" + (2 + i * 2) + "/span 2"); });
+      return {
+        auto: true, amountLabel: "Chip value",
+        side: '<div><div class="ogx-label">Total bet</div><div class="ogx-input ro"><span class="cur">$</span><input id="rl-total" readonly value="0.00"></div></div>',
+        after: '<div class="ogx-row2"><button class="btn btn-secondary" style="height:42px" id="rl-undo">Undo</button><button class="btn btn-secondary" style="height:42px" id="rl-clear">Clear</button></div>',
+        center: '<div class="rl"><div class="rl-top"><div class="rl-wheel"><div class="wh-pointer"></div><svg viewBox="-110 -110 220 220"><g id="rl-rot"></g></svg><div class="rl-out" id="rl-out"></div></div></div><div class="rl-table" id="rl-table">' + grid + "</div></div>"
+      };
+    },
+    bind: function (ctx) {
+      var bets = {}, hist = [], rot = 0, spinning = false;
+      (function wheel() {
+        var out = "", N = 37, R = 104, r = 74;
+        RL_ORDER.forEach(function (n, i) {
+          var a0 = (i / N) * 2 * Math.PI - Math.PI / 2, a1 = ((i + 1) / N) * 2 * Math.PI - Math.PI / 2, am = (a0 + a1) / 2;
+          out += '<path d="M' + (R * Math.cos(a0)).toFixed(2) + " " + (R * Math.sin(a0)).toFixed(2) + " A" + R + " " + R + " 0 0 1 " + (R * Math.cos(a1)).toFixed(2) + " " + (R * Math.sin(a1)).toFixed(2) + " L" + (r * Math.cos(a1)).toFixed(2) + " " + (r * Math.sin(a1)).toFixed(2) + " A" + r + " " + r + " 0 0 0 " + (r * Math.cos(a0)).toFixed(2) + " " + (r * Math.sin(a0)).toFixed(2) + 'Z" fill="' + (n === 0 ? "#16a34a" : RL_RED.indexOf(n) > -1 ? "#d61f45" : "#1a1218") + '" stroke="#c9a24a" stroke-width=".6"/>' +
+            '<text x="' + (89 * Math.cos(am)).toFixed(2) + '" y="' + (89 * Math.sin(am)).toFixed(2) + '" font-size="7" font-weight="800" fill="#fff" text-anchor="middle" dominant-baseline="central" transform="rotate(' + ((am * 180) / Math.PI + 90).toFixed(1) + " " + (89 * Math.cos(am)).toFixed(2) + " " + (89 * Math.sin(am)).toFixed(2) + ')">' + n + "</text>";
+        });
+        $("#rl-rot").innerHTML = '<circle r="108" fill="#c9a24a"/><circle r="105" fill="#2a1a12"/>' + out + '<circle r="74" fill="#3a2214"/><circle r="50" fill="#4a2c1a"/><circle r="16" fill="#c9a24a"/>';
+      })();
+      function total() { var t = 0; for (var k in bets) t += bets[k]; return Math.round(t * 100) / 100; }
+      function paintChips(winKeys) {
+        $$("#rl-table [data-rl]").forEach(function (c) {
+          var k = c.getAttribute("data-rl"), v = bets[k], chipEl = c.querySelector(".rl-chip");
+          chipEl.classList.toggle("hidden", !v); chipEl.textContent = v ? (v >= 1000 ? (v / 1000).toFixed(1) + "k" : v >= 10 ? Math.round(v) : v.toFixed(v < 1 ? 2 : 1)) : "";
+          c.classList.toggle("win", !!winKeys && winKeys.indexOf(k) > -1);
+        });
+        $("#rl-total").value = total().toFixed(2);
+      }
+      $("#rl-table").addEventListener("click", function (e) {
+        var c = e.target.closest("[data-rl]"); if (!c || spinning) return;
+        var k = c.getAttribute("data-rl"), v = ctx.amount(); if (v < 0.01) return ctx.msg("Set a chip value first.");
+        bets[k] = Math.round(((bets[k] || 0) + v) * 100) / 100; hist.push([k, v]); ctx.msg(""); paintChips();
+      });
+      $("#rl-undo").addEventListener("click", function () { if (spinning) return; var h = hist.pop(); if (!h) return; bets[h[0]] = Math.round((bets[h[0]] - h[1]) * 100) / 100; if (bets[h[0]] <= 0) delete bets[h[0]]; paintChips(); });
+      $("#rl-clear").addEventListener("click", function () { if (spinning) return; bets = {}; hist = []; paintChips(); });
+      function play() {
+        var t = total(); if (!t) { ctx.msg("Place chips on the table first."); return Promise.resolve(null); }
+        var u = ctx.validate(t); if (!u || spinning) return Promise.resolve(null);
+        var s = db.seeds(u.id), nonce = s.nonce, client = s.client; spinning = true; ctx.lock(true);
+        return floats(s.server, client, nonce, 1).then(function (fs) {
+          var n = Math.floor(fs[0] * 37), payout = 0, wins = [];
+          for (var k in bets) if (rlWins(k, n)) { payout += bets[k] * rlPays(k); wins.push(k); }
+          var mult = capMult(t, Math.round((payout / t) * 10000) / 10000);
+          var b = db.placeBet(u.id, "roulette", t, mult, payout > 0, { result: n, bets: JSON.parse(JSON.stringify(bets)), nonce: nonce, client: client });
+          var i = RL_ORDER.indexOf(n), segA = 360 / 37, target = -((i + 0.5) * segA);
+          rot = rot - (rot % 360) + 360 * 4 + target; if (rot <= 0) rot += 360 * 5;
+          var g = $("#rl-rot"); g.style.transition = "transform 2.6s cubic-bezier(.12,.75,.12,1)"; g.style.transform = "rotate(" + rot + "deg)";
+          $("#rl-out").className = "rl-out"; $("#rl-out").textContent = "";
+          return new Promise(function (res) {
+            setTimeout(function () {
+              spinning = false; ctx.lock(false); if (!$("#rl-out")) return res({ win: payout > t });
+              g.style.transition = "none"; $("#rl-out").className = "rl-out show " + rlColor(n); $("#rl-out").textContent = n;
+              paintChips(wins); ctx.record(b); res({ win: payout > t });
+            }, 2650);
+          });
+        });
+      }
+      paintChips();
+      return { refresh: function () { if ($("#og-mult-lbl")) ctx.setProfit(1); }, play: play, cooldown: 100 };
     }
   };
 
@@ -933,8 +1283,8 @@
       ["What traffic is not allowed?", "Brand bidding, incentivized or spam traffic, and any traffic from restricted countries. Players from restricted territories can't register and generate no commission."]
     ];
     return '<div class="container">' +
-      '<section class="aff-hero">' + media({ img: RD.img.heroAffiliate, c1: "#1d4ed8", c2: "#0a1730" }) + '<div class="shade"></div>' +
-        '<div class="copy"><span class="badge" style="background:#fff;color:#0f1923">RDCasino Partners</span><h1 style="margin-top:14px">Refer friends. Earn for life.</h1><p>Up to 50% revenue share, no negative carryover and real-time stats for every link you share.</p>' +
+      '<section class="aff-hero">' + media({ img: RD.img.heroAffiliate, art: RD.img.heroArt }) + '<div class="shade"></div>' +
+        '<div class="copy"><span class="badge" style="background:#fff;color:#160a10">RDCasino Partners</span><h1 style="margin-top:14px">Refer friends. Earn for life.</h1><p>Up to 50% revenue share, no negative carryover and real-time stats for every link you share.</p>' +
         '<div class="row wrap">' + (me() ? '<a class="btn btn-primary btn-lg" href="#/affiliate/overview">Open dashboard</a>' : '<button class="btn btn-primary btn-lg" data-open="register">Become a partner</button><button class="btn btn-secondary btn-lg" data-open="login">Sign in</button>') + "</div>" +
         '<div class="aff-hero-stats"><div><strong>50%</strong><small>max revenue share</small></div><div><strong>$0</strong><small>negative carryover</small></div><div><strong>Instant</strong><small>commission to balance</small></div></div></div></section>' +
       '<div class="section">' + sectionHead("How it works") + '<div class="steps">' +
@@ -1080,8 +1430,8 @@
     return '<div class="container prose"><h1>Provably fair</h1><p class="muted" style="margin-top:8px">Every RD Originals result can be verified by you. We commit to the server seed (showing its hash) before you bet, so nobody can change a result afterwards.</p>' +
       "<h2>How results are made</h2><ul>" +
       "<li><strong>Dice / Limbo / Crash:</strong> <code>HMAC_SHA256(server_seed, client_seed:nonce)</code> → first 4 bytes → number between 0 and 1. Dice: <code>floor(n × 10001) / 100</code>. Limbo and Crash: <code>floor(0.99 / n × 100) / 100</code> (min 1.00×).</li>" +
-      "<li><strong>Plinko / Mines / Hi-Lo:</strong> need several numbers, made with <code>HMAC_SHA256(server_seed, client_seed:nonce:cursor)</code>, 8 numbers per cursor. Plinko: each row goes right if <code>n ≥ 0.5</code>. Mines: Fisher–Yates shuffle of the 25 tiles, the first N are mines. Hi-Lo: card = <code>floor(n × 52)</code>.</li></ul>" +
-      '<h2>Verify a bet</h2><div class="card card-pad"><div class="row wrap" style="gap:0 12px;align-items:flex-start"><div class="field grow" style="min-width:160px"><label>Game</label><select class="select" id="v-game"><option value="dice">Dice</option><option value="limbo">Limbo</option><option value="crash">Crash</option><option value="plinko">Plinko</option><option value="mines">Mines</option><option value="hilo">Hi-Lo</option></select></div>' +
+      "<li><strong>Plinko / Mines / Hi-Lo / Keno / Wheel / Roulette / Blackjack:</strong> need several numbers, made with <code>HMAC_SHA256(server_seed, client_seed:nonce:cursor)</code>, 8 numbers per cursor. Plinko: each row goes right if <code>n ≥ 0.5</code>. Mines: Fisher–Yates shuffle of the 25 tiles, the first N are mines. Hi-Lo and Blackjack: card = <code>floor(n × 52)</code> (infinite deck). Keno: shuffle of 1–40, first 10 are drawn. Wheel: segment = <code>floor(n × segments)</code>. Roulette: number = <code>floor(n × 37)</code>.</li></ul>" +
+      '<h2>Verify a bet</h2><div class="card card-pad"><div class="row wrap" style="gap:0 12px;align-items:flex-start"><div class="field grow" style="min-width:160px"><label>Game</label><select class="select" id="v-game"><option value="dice">Dice</option><option value="limbo">Limbo</option><option value="crash">Crash</option><option value="plinko">Plinko</option><option value="mines">Mines</option><option value="hilo">Hi-Lo</option><option value="keno">Keno</option><option value="wheel">Wheel</option><option value="roulette">Roulette</option><option value="blackjack">Blackjack</option></select></div>' +
       '<div class="field grow" style="min-width:160px" id="v-extra-wrap"><label id="v-extra-l">—</label><input class="input" id="v-extra" disabled></div></div>' +
       '<div class="field"><label>Server seed (revealed)</label><input class="input" id="v-server"></div><div class="field"><label>Client seed</label><input class="input" id="v-client"></div><div class="field"><label>Nonce</label><input class="input" id="v-nonce" type="number" value="0" min="0"></div><button class="btn btn-primary" data-action="verify">Verify</button><div id="v-out" style="margin-top:16px"></div></div>' +
       '<p class="faint" style="font-size:13px;margin-top:12px">Open "Provably fair" in the bottom bar of any RD Original and rotate your seed to reveal the server seed used for your past bets.</p></div>';
@@ -1089,7 +1439,7 @@
   pages.fairness.after = function () {
     var g = $("#v-game"), ex = $("#v-extra"), lb = $("#v-extra-l");
     function upd() {
-      var v = g.value, cfg = { plinko: ["Rows / risk (e.g. 16 high)", "16 high"], mines: ["Number of mines", "3"], hilo: ["Cards to show", "8"] }[v];
+      var v = g.value, cfg = { plinko: ["Rows / risk (e.g. 16 high)", "16 high"], mines: ["Number of mines", "3"], hilo: ["Cards to show", "8"], blackjack: ["Cards to show", "8"], wheel: ["Segments / risk (e.g. 30 medium)", "30 medium"] }[v];
       ex.disabled = !cfg; lb.textContent = cfg ? cfg[0] : "—"; ex.value = cfg ? cfg[1] : "";
     }
     g.addEventListener("change", upd); upd();
@@ -1146,7 +1496,7 @@
     var parts = path.split("/"), name = parts[0] || "home", arg = parts[1];
     var fn = pages[name] || pages.notfound, u = me();
     currentPath = path;
-    var banner = u && u.status !== "Active" ? '<div class="container" style="padding-bottom:0"><div class="notice" style="background:var(--danger-soft);border-color:rgba(240,86,106,.3);color:var(--danger)">' + ic("ban", 16) + "<span><strong>Your account is suspended.</strong> Deposits, bets and withdrawals are disabled. Contact support.</span></div></div>" : "";
+    var banner = u && u.status !== "Active" ? '<div class="container" style="padding-bottom:0"><div class="notice" style="background:var(--danger-soft);border-color:rgba(255,122,89,.3);color:var(--danger)">' + ic("ban", 16) + "<span><strong>Your account is suspended.</strong> Deposits, bets and withdrawals are disabled. Contact support.</span></div></div>" : "";
     $("#view").innerHTML = banner + fn(arg);
     if (fn.after) fn.after(arg);
     closeAll(); markActive(path); countdown();
@@ -1228,6 +1578,14 @@
         } else if (game === "mines") {
           var mc = Math.max(1, Math.min(24, parseInt(extra, 10) || 3));
           floats(sv, cl, n, 24).then(function (fs) { show("Mines at tiles: <strong>" + minesFrom(fs, mc).map(function (x) { return x + 1; }).sort(function (a, b) { return a - b; }).join(", ") + "</strong> (1–25, left to right, top to bottom)"); });
+        } else if (game === "keno") {
+          floats(sv, cl, n, 10).then(function (fs) { show("Drawn numbers: <strong>" + kenoFrom(fs).sort(function (a, b) { return a - b; }).join(", ") + "</strong>"); });
+        } else if (game === "wheel") {
+          var wp = extra.split(/\s+/), segs = +wp[0] || 30, wr = (wp[1] || "medium").toLowerCase();
+          if ([10, 20, 30, 40, 50].indexOf(segs) < 0 || ["low", "medium", "high"].indexOf(wr) < 0) { $("#v-out").innerHTML = errorBox("Use 10–50 segments and low, medium or high."); return; }
+          floats(sv, cl, n, 1).then(function (fs) { var sg = Math.floor(fs[0] * segs); show("Segment " + (sg + 1) + " of " + segs + " → <strong>" + wheelTable(segs, wr)[sg].toFixed(2) + "×</strong>"); });
+        } else if (game === "roulette") {
+          floats(sv, cl, n, 1).then(function (fs) { show("Number: <strong>" + Math.floor(fs[0] * 37) + "</strong>"); });
         } else {
           var cnt = Math.max(1, Math.min(52, parseInt(extra, 10) || 8));
           floats(sv, cl, n, cnt).then(function (fs) { show("Cards: <strong>" + fs.map(function (f) { var c = cardFrom(f); return RANKS[c.rank] + SUITS[c.suit]; }).join(" ") + "</strong>"); });
