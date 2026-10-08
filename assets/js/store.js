@@ -148,9 +148,11 @@
     seeds: function (pid) { return byId(pid).seeds; },
     rotateSeed: function (pid, newClient) {
       var p = byId(pid), s = p.seeds;
+      if (p.activeRound) return { error: "Finish your current round before rotating seeds." };
       s.revealed.unshift({ server: s.server, client: s.client, lastNonce: s.nonce - 1, at: nowIso() });
       s.revealed = s.revealed.slice(0, 20);
       s.server = rnd(32); s.client = newClient || rnd(8); s.nonce = 0; save();
+      return { ok: true };
     },
     placeBet: function (pid, game, amount, multiplier, win, detail) {
       var p = byId(pid), g = RD.games.filter(function (x) { return x.id === game; })[0];
@@ -177,6 +179,32 @@
       p.claimedTiers.push(tierName); p.balance = round(p.balance + t.reward); p.bonusTotal = round(p.bonusTotal + t.reward);
       addTx(p, "Level reward", t.reward, "Completed", { note: tierName }); log(p.username, "Resgatou prêmio de nível " + tierName); save();
       return { amount: t.reward };
+    },
+    /* Rodadas com várias etapas (Mines, Hi-Lo, Crash): a aposta sai do saldo no
+       início e a rodada fica salva até ser liquidada — recarregar não cancela. */
+    activeRound: function (pid) { var p = byId(pid); return p ? p.activeRound || null : null; },
+    startRound: function (pid, game, amount, state) {
+      var p = byId(pid), s = p.seeds;
+      if (p.activeRound) return { error: "Finish your current round first." };
+      if (!(amount > 0) || amount > p.balance) return { error: "Insufficient balance." };
+      p.balance = round(p.balance - amount);
+      p.activeRound = { game: game, amount: round(amount), server: s.server, client: s.client, nonce: s.nonce, state: state || {}, started: nowIso() };
+      s.nonce++; save();
+      return { round: p.activeRound };
+    },
+    updateRound: function (pid, state) { var p = byId(pid); if (p.activeRound) { p.activeRound.state = state; save(); } },
+    settleRound: function (pid, multiplier, win, detail) {
+      var p = byId(pid), r = p.activeRound; if (!r) return null;
+      var g = RD.games.filter(function (x) { return x.id === r.game; })[0] || {};
+      var payout = win ? round(r.amount * multiplier) : 0;
+      p.balance = round(p.balance + payout);
+      p.wagered = round(p.wagered + r.amount); p.profit = round(p.profit + payout - r.amount); p.bets++;
+      p.rakeback = p.rakeback + r.amount * ((g.edge || 1) / 100) * RD.config.rakebackRate;
+      var b = { id: id("B-"), userId: p.id, user: p.username, game: r.game, amount: r.amount, multiplier: win ? multiplier : 0, payout: payout, date: nowIso(), detail: detail || {} };
+      b.detail.nonce = r.nonce; b.detail.client = r.client;
+      D.bets.unshift(b); D.bets = D.bets.slice(0, 2000);
+      p.activeRound = null; save();
+      return b;
     },
     betsOf: function (pid) { return D.bets.filter(function (b) { return b.userId === pid; }); },
     recentBets: function (n) { return D.bets.slice(0, n || 20); },
