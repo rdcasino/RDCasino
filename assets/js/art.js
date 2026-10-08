@@ -178,6 +178,21 @@ window.RD = window.RD || {};
   }
 
   /* Mascote do Chicken: galinha com boné e lenço RD (viewBox 0 0 48 48) */
+
+  /* Mãos do Pedra-papel-tesoura (desenho próprio: igual em qualquer aparelho, ao contrário dos emojis) */
+  var SKIN = "#f6c39d", SKIN_D = "#d9946a", SKIN_L = "#ffe0c8";
+  function fing(x, y, w, h, r) { return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="' + (w / 2) + '" fill="' + SKIN + '" stroke="' + SKIN_D + '" stroke-width="2.5"' + (r ? ' transform="rotate(' + r + ' ' + (x + w / 2) + ' ' + (y + h) + ')"' : "") + "/>"; }
+  function rpsHand(k) {
+    var palm = '<rect x="24" y="46" width="54" height="44" rx="17" fill="' + SKIN + '" stroke="' + SKIN_D + '" stroke-width="2.5"/>';
+    var cuff = '<rect x="30" y="86" width="42" height="12" rx="4" fill="#ff2e55"/><rect x="30" y="86" width="42" height="4" rx="2" fill="#ff7d96"/>';
+    var knuck = function (n) { var o = ""; for (var i = 0; i < n; i++) o += '<rect x="' + (25 + i * 13) + '" y="34" width="14" height="24" rx="7" fill="' + SKIN + '" stroke="' + SKIN_D + '" stroke-width="2.5"/>'; return o; };
+    var thumb = '<rect x="14" y="52" width="34" height="15" rx="7.5" fill="' + SKIN + '" stroke="' + SKIN_D + '" stroke-width="2.5" transform="rotate(-18 31 60)"/>';
+    var body;
+    if (k === "paper") body = fing(26, 12, 12, 48, -8) + fing(38, 5, 12, 52, -2) + fing(51, 6, 12, 50, 4) + fing(63, 15, 11, 42, 10) + '<rect x="24" y="44" width="54" height="46" rx="17" fill="' + SKIN + '" stroke="' + SKIN_D + '" stroke-width="2.5"/>' + '<rect x="6" y="50" width="30" height="14" rx="7" fill="' + SKIN + '" stroke="' + SKIN_D + '" stroke-width="2.5" transform="rotate(-38 30 60)"/>' + '<path d="M36 62 q14 6 30 0" stroke="' + SKIN_D + '" stroke-width="2" fill="none" opacity=".6"/>';
+    else if (k === "scissors") body = fing(31, 6, 13, 50, -14) + fing(49, 6, 13, 50, 14) + palm + '<rect x="51" y="40" width="14" height="20" rx="7" fill="' + SKIN + '" stroke="' + SKIN_D + '" stroke-width="2.5"/><rect x="63" y="44" width="13" height="18" rx="6.5" fill="' + SKIN + '" stroke="' + SKIN_D + '" stroke-width="2.5"/>' + thumb;
+    else body = knuck(4) + palm + '<path d="M32 46 h40" stroke="' + SKIN_D + '" stroke-width="2" opacity=".5"/>' + thumb;
+    return '<svg viewBox="0 0 100 100" class="rps-svg" aria-hidden="true"><ellipse cx="44" cy="40" rx="14" ry="8" fill="' + SKIN_L + '" opacity="0"/>' + body + cuff + "</svg>";
+  }
   function hen() { return '<ellipse cx="24" cy="44.5" rx="11" ry="2.3" fill="#000" opacity=".3"/> <path d="M19.5 38v5.5M27.5 38v5.5M17.3 43.6h4.4M25.3 43.6h4.4" stroke="#ff9d1a" stroke-width="2.2" stroke-linecap="round"/> <ellipse cx="24" cy="30" rx="12.5" ry="10.8" fill="#fff"/> <path d="M11.8 29.5c-3.4-1.2-5.6 1.2-5.2 4.4 3.2.2 5.4-1 6.6-2.4z" fill="#e8edf7"/> <path d="M16.5 30.5c3 4.2 9.6 4.4 12.6 1" stroke="#dfe6f5" stroke-width="2" fill="none" stroke-linecap="round"/> <circle cx="27" cy="16.5" r="8.2" fill="#fff"/> <path d="M34.6 17.8l5.2 1.7-5.2 1.6z" fill="#ffb020"/> <circle cx="30.2" cy="17.4" r="1.6" fill="#1a1205"/><circle cx="30.7" cy="16.9" r=".5" fill="#fff"/>  <path d="M19.4 21.6c4.6 2.6 10 2.6 14.6-.3l.4 3.1c-5 3-10.6 3-15.4.3z" fill="#ff2e55"/> <path d="M22 23.6l3.6 6.2 3.4-6.4z" fill="#ff2e55"/> <path d="M22.6 24.4l3 4.8 2.8-5" fill="none" stroke="#c2133a" stroke-width=".6"/> <circle cx="23.4" cy="22.9" r=".45" fill="#fff" opacity=".8"/><circle cx="28.6" cy="23.4" r=".45" fill="#fff" opacity=".8"/><circle cx="32" cy="22.4" r=".45" fill="#fff" opacity=".8"/><circle cx="25.6" cy="26.2" r=".4" fill="#fff" opacity=".8"/> <path d="M19.6 22.4l-3.6 2.6 2.4 1.6z M19.8 23.6l-2 4.2 2.8-1z" fill="#c2133a"/>  <path d="M18.9 15.2c-.2-5.6 3.6-8.4 8.1-8.4s8.3 2.8 8.1 8.2z" fill="#ff2e55"/> <path d="M18.9 15.2h16.2" stroke="#c2133a" stroke-width="1.2"/> <path d="M33.6 14.4h7.2c1.4 0 1.4 2.2 0 2.2h-7.4z" fill="#c2133a"/> <circle cx="27" cy="6.9" r="1" fill="#c2133a"/> <path d="M21.5 9.5c1.6-1.6 3.4-2.1 5.5-2.1" stroke="#ff8fa3" stroke-width="1" fill="none" stroke-linecap="round" opacity=".8"/> <text x="27.4" y="13.6" text-anchor="middle" font-size="5" font-weight="900" fill="#ffc85c" style="font-family:var(--font-display,Arial)" letter-spacing="-.2">RD</text>'; }
 
   /* ---------- Capas (300×400) ---------- */
@@ -263,20 +278,23 @@ window.RD = window.RD || {};
         '<path d="M128 96c8 6 14 0 22 4s14 2 22-4" stroke="#e08a00" stroke-width="3" fill="none"/>' + spark(222, 58, 11) + spark(74, 92, 8);
     } },
     chicken: { a: "#ffc23a", b: "#7a2e00", draw: function () {
-      var lanes = "";
-      for (var i = 0; i < 4; i++) lanes += '<rect x="' + (18 + i * 70) + '" y="64" width="64" height="226" rx="10" fill="#2a1a12" opacity="' + (0.55 + i * 0.08) + '"/><path d="M' + (85 + i * 70) + ' 74 v206" stroke="#fff" stroke-opacity=".35" stroke-width="3" stroke-dasharray="14 12"/>';
-      var car = '<g transform="translate(232 70)"><rect x="0" y="0" width="40" height="66" rx="11" fill="#ff2e55"/><rect x="6" y="12" width="28" height="14" rx="4" fill="#2a1a24"/><rect x="6" y="44" width="28" height="10" rx="3" fill="#2a1a24"/><rect x="6" y="1" width="8" height="4" rx="2" fill="#fff4c2"/><rect x="26" y="1" width="8" height="4" rx="2" fill="#fff4c2"/></g>';
-      var chick = '<g transform="translate(88 118) scale(2.6)">' + hen() + '</g>';
-      return lanes + car + '<rect x="160" y="236" width="56" height="26" rx="13" fill="#22e08a"/><text x="188" y="254" text-anchor="middle" font-size="14" font-weight="900" fill="#05301c" style="font-family:var(--font-display,Arial)">2.46×</text>' + chick + coinFront(252, 210, 18) + spark(54, 62, 10);
+      // rua com faixa de pedestre, carro vindo e a galinha grande atravessando
+      var road = '<g transform="translate(0 -26)"><path d="M0 214 L300 184 L300 300 L0 300Z" fill="#2a1d24"/><path d="M0 214 L300 184" stroke="#fff" stroke-opacity=".5" stroke-width="4"/>' +
+        '<path d="M0 262 L300 236" stroke="#ffd23f" stroke-width="4" stroke-dasharray="22 16"/>';
+      var zebra = ""; for (var i = 0; i < 5; i++) zebra += '<path d="M' + (96 + i * 24) + ' ' + (206 - i * 2.4) + ' l14 -1.4 l10 98 l-14 1.4z" fill="#fff" opacity=".85"/>';
+      var car = '<g transform="translate(206 196) rotate(-6)"><rect x="0" y="16" width="96" height="34" rx="12" fill="#ff2e55"/><path d="M18 18 L30 0 H70 L84 18Z" fill="#ff2e55"/><path d="M28 16 L36 5 H50 V16Z M56 16 V5 H66 L76 16Z" fill="#2a1a24"/><circle cx="24" cy="50" r="11" fill="#1b1220"/><circle cx="24" cy="50" r="4.5" fill="#9aa3b2"/><circle cx="76" cy="50" r="11" fill="#1b1220"/><circle cx="76" cy="50" r="4.5" fill="#9aa3b2"/><rect x="0" y="26" width="8" height="8" rx="3" fill="#fff4c2"/><path d="M-4 30 L-40 20 L-40 40Z" fill="#fff4c2" opacity=".35"/></g>';
+      var chick = '<g transform="translate(44 18) scale(3.6)">' + hen() + "</g>";
+      var chip = '<g transform="translate(196 40)"><rect width="74" height="32" rx="16" fill="#22e08a"/><text x="37" y="22" text-anchor="middle" font-size="16" font-weight="900" fill="#05301c" style="font-family:var(--font-display,Arial)">2.46×</text></g>';
+      return road + zebra + car + "</g>" + chick + chip + coinFront(40, 70, 16) + spark(254, 112, 11) + spark(276, 140, 8);
     } },
     coinflip: { a: "#ffc23a", b: "#7a4a00", draw: function () {
       return '<ellipse cx="150" cy="300" rx="92" ry="14" fill="#000" opacity=".3"/><g transform="translate(150 178) scale(.95)">' + coinSide("heads") + "</g>" +
         '<g transform="translate(250 92) scale(.22) rotate(18)">' + coinSide("tails") + "</g>" + spark(56, 84, 12) + spark(246, 270, 9);
     } },
     rps: { a: "#7c5cff", b: "#21124f", draw: function () {
-      var t = function (x, y, e, sz, r) { return '<text x="' + x + '" y="' + y + '" font-size="' + sz + '" text-anchor="middle" dominant-baseline="central" transform="rotate(' + r + " " + x + " " + y + ')">' + e + "</text>"; };
-      return '<circle cx="150" cy="180" r="92" fill="#fff" opacity=".08"/>' + t(150, 112, "✌️", 84, 180) + t(150, 236, "✊", 96, 0) +
-        '<path d="M96 168 L126 176 L104 192 M204 168 L174 176 L196 192" stroke="#ffd23f" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' + spark(70, 90, 12) + spark(236, 260, 10);
+      var h = function (k, x, y, sc, r) { return '<g transform="translate(' + x + " " + y + ") rotate(" + r + ") scale(" + sc + ') translate(-50 -50)">' + rpsHand(k).replace(/^<svg[^>]*>|<\/svg>$/g, "") + "</g>"; };
+      return '<circle cx="150" cy="178" r="96" fill="#fff" opacity=".07"/>' + h("scissors", 150, 112, 1.25, 180) + h("rock", 150, 238, 1.35, 0) +
+        '<g transform="translate(150 176)"><circle r="20" fill="#ffd23f"/><text y="6" text-anchor="middle" font-size="15" font-weight="900" fill="#5a2a00" style="font-family:var(--font-display,Arial)">VS</text></g>' + spark(64, 90, 12) + spark(240, 262, 10);
     } },
     baccarat: { a: "#ff2e55", b: "#4a0716", draw: function () {
       return card(112, 172, 104, -12, "9", "♦", true) + card(190, 166, 104, 10, "K", "♠", false) + chip(238, 282, 28, "#ffd23f", 4) + chip(70, 290, 24, "#1d4ed8", 3) +
@@ -290,7 +308,7 @@ window.RD = window.RD || {};
     soccer: { a: "#22b35e", b: "#062a16", draw: function () {
       var net = ""; for (var x = 50; x <= 250; x += 20) net += '<path d="M' + x + ' 74 V190" stroke="#fff" stroke-opacity=".18"/>'; for (var y = 84; y <= 190; y += 18) net += '<path d="M44 ' + y + ' H256" stroke="#fff" stroke-opacity=".18"/>';
       return '<rect x="44" y="70" width="212" height="122" fill="#000" opacity=".25"/>' + net + '<path d="M40 194 V66 H260 V194" fill="none" stroke="#fff" stroke-width="9" stroke-linejoin="round"/>' +
-        '<g transform="translate(110 150) rotate(-28)"><rect x="-20" y="-22" width="40" height="40" rx="11" fill="#ff2e55"/><text x="0" y="4" text-anchor="middle" font-size="14" font-weight="900" fill="#fff" style="font-family:var(--font-display,Arial)">RD</text><circle cx="0" cy="-36" r="13" fill="#e8b48a"/><path d="M-20 -14 L-44 -40 M20 -14 L40 -44" stroke="#ff2e55" stroke-width="9" stroke-linecap="round"/><circle cx="-46" cy="-43" r="8" fill="#ffd23f"/><circle cx="42" cy="-48" r="8" fill="#ffd23f"/></g>' +
+        '<g transform="translate(110 150) rotate(-28)"><rect x="-20" y="-22" width="40" height="40" rx="11" fill="#3b82f6"/><circle cx="0" cy="-36" r="13" fill="#e8b48a"/><path d="M-13 -40 a13 11 0 0 1 26 0 v-1 h8 v4 h-34z" fill="#ff2e55"/><text x="0" y="-42" text-anchor="middle" font-size="7" font-weight="900" fill="#fff" style="font-family:var(--font-display,Arial)">RD</text><path d="M-20 -14 L-44 -40 M20 -14 L40 -44" stroke="#3b82f6" stroke-width="9" stroke-linecap="round"/><circle cx="-46" cy="-43" r="8" fill="#ffd23f"/><circle cx="42" cy="-48" r="8" fill="#ffd23f"/></g>' +
         '<g transform="translate(206 112)"><circle r="24" fill="#fff"/><path d="M0 -9 l9 6 -3 10 h-12 l-3 -10z" fill="#111"/><path d="M0 -24 v15 M9 -3 l14 -4 M6 7 l8 12 M-6 7 l-8 12 M-9 -3 l-14 -4" stroke="#111" stroke-width="3"/></g>' +
         '<path d="M206 140 q-40 70 -70 120" stroke="#fff" stroke-opacity=".35" stroke-width="5" stroke-dasharray="2 12" stroke-linecap="round" fill="none"/>' + spark(60, 240, 10) + spark(250, 240, 12);
     } },
@@ -372,6 +390,7 @@ window.RD = window.RD || {};
       return generic(o || {});
     },
     hen: hen,
+    rpsHand: rpsHand,
     tierBadge: tierBadge,
     rewardIcon: rewardIcon,
     coinSide: coinSide,

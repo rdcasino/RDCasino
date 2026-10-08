@@ -873,6 +873,7 @@
         tiles().forEach(function (t, i) {
           var open = round && round.revealed.indexOf(i) > -1, isMine = final && final.mines.indexOf(i) > -1;
           t.classList.toggle("open", open || !!final); t.classList.toggle("dim", !!final && !open);
+          if (!final) t.classList.remove("boom");
           t.innerHTML = open ? GEM : final ? (isMine ? MINE : GEM) : "";
           t.disabled = !round || open;
         });
@@ -889,6 +890,7 @@
         var b = db.settleRound(u.id, G, mult, win, { mines: round.m, revealed: round.revealed.slice(), minePos: minesPos });
         var shown = round; round = null; paint({ mines: minesPos }); round = null;
         tiles().forEach(function (t, i) { if (shown.revealed.indexOf(i) > -1) { t.classList.remove("dim"); t.innerHTML = GEM; } });
+        if (document.activeElement && document.activeElement.closest && document.activeElement.closest("#mn-grid")) document.activeElement.blur();
         setLive(false); ctx.record(b);
         if (win) ctx.msg(""); 
       }
@@ -1777,11 +1779,12 @@
   /* Chute nº k: embaralha os 5 alvos com os números 4k…4k+3 (Fisher–Yates); os primeiros "block" são defendidos */
   function soccerFrom(fs, kick, block) { var a = [0, 1, 2, 3, 4], f = fs.slice(kick * 4, kick * 4 + 4); for (var j = 0; j < 4; j++) { var x = j + Math.floor(f[j] * (5 - j)), t = a[j]; a[j] = a[x]; a[x] = t; } return a.slice(0, block); }
   RD.fair.soccer = SOCCER; RD.fair.soccerFrom = soccerFrom;
+  var SC_KIT = { easy: "#22c55e", medium: "#3b82f6", hard: "#f59e0b", expert: "#a855f7" }; // cor do uniforme do goleiro por dificuldade
   var SC_Z = [[160, 78], [300, 66], [440, 78], [160, 164], [440, 164]]; // centro de cada alvo no gol (viewBox 600×360)
   function soccerScene() {
     var net = ""; for (var x = 96; x <= 504; x += 24) net += '<path d="M' + x + ' 34 V212" stroke="#fff" stroke-opacity=".09"/>'; for (var y = 46; y <= 212; y += 22) net += '<path d="M96 ' + y + ' H504" stroke="#fff" stroke-opacity=".09"/>';
     var tg = SC_Z.map(function (z, i) { return '<g class="sc-tg" data-sc="' + i + '" transform="translate(' + z[0] + " " + z[1] + ')"><circle r="30" class="sc-ring"/><circle r="19" class="sc-dot"/><g class="sc-glove"><path d="M-12 8 v-16 a4 4 0 0 1 8 0 v6 v-9 a4 4 0 0 1 8 0 v9 v-6 a4 4 0 0 1 8 0 v16 a10 10 0 0 1 -10 10 h-4 a10 10 0 0 1 -10 -10z" fill="#ffd23f"/></g></g>'; }).join("");
-    var keeper = '<g class="sc-keeper" id="sc-keeper"><g transform="translate(300 172) scale(.82)"><ellipse cx="0" cy="40" rx="34" ry="6" fill="#000" opacity=".35"/><rect x="-14" y="8" width="11" height="30" rx="5" fill="#1b1220"/><rect x="3" y="8" width="11" height="30" rx="5" fill="#1b1220"/><rect x="-22" y="-26" width="44" height="40" rx="12" fill="#ff2e55"/><text x="0" y="0" text-anchor="middle" font-size="15" font-weight="900" fill="#fff" style="font-family:var(--font-display,Arial)">RD</text><path d="M-22 -18 L-44 -40 M22 -18 L44 -40" stroke="#ff2e55" stroke-width="10" stroke-linecap="round"/><circle cx="-46" cy="-43" r="8" fill="#ffd23f"/><circle cx="46" cy="-43" r="8" fill="#ffd23f"/><circle cx="0" cy="-42" r="15" fill="#e8b48a"/><path d="M-16 -46 a16 14 0 0 1 32 0 v-2 h6 v4 h-38z" fill="#ff2e55"/><text x="0" y="-48" text-anchor="middle" font-size="7" font-weight="900" fill="#fff">RD</text></g></g>';
+    var keeper = '<g class="sc-keeper" id="sc-keeper"><g transform="translate(300 172) scale(.82)"><ellipse cx="0" cy="40" rx="34" ry="6" fill="#000" opacity=".35"/><rect x="-14" y="8" width="11" height="30" rx="5" fill="#1b1220"/><rect x="3" y="8" width="11" height="30" rx="5" fill="#1b1220"/><rect x="-22" y="-26" width="44" height="40" rx="12" style="fill:var(--kit,#3b82f6)"/><path d="M-22 -18 L-44 -40 M22 -18 L44 -40" stroke-width="10" stroke-linecap="round" style="stroke:var(--kit,#3b82f6)"/><circle cx="-46" cy="-43" r="8" fill="#ffd23f"/><circle cx="46" cy="-43" r="8" fill="#ffd23f"/><circle cx="0" cy="-42" r="15" fill="#e8b48a"/><path d="M-16 -46 a16 14 0 0 1 32 0 v-2 h6 v4 h-38z" fill="#ff2e55"/><text x="0" y="-48" text-anchor="middle" font-size="7" font-weight="900" fill="#fff">RD</text></g></g>';
     var ball = '<g class="sc-ball" id="sc-ball"><g transform="translate(300 312)"><ellipse cx="0" cy="16" rx="16" ry="4" fill="#000" opacity=".35"/><circle r="15" fill="#fff"/><path d="M0 -6 l6 4 -2 7 h-8 l-2 -7z" fill="#1b1220"/><path d="M0 -15 v9 M6 -2 l9 -3 M4 5 l5 8 M-4 5 l-5 8 M-6 -2 l-9 -3" stroke="#1b1220" stroke-width="2"/></g></g>';
     return '<svg viewBox="0 0 600 360" class="sc-svg" id="sc-svg" preserveAspectRatio="xMidYMid meet"><defs><linearGradient id="sc-grass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a1d2b"/><stop offset="1" stop-color="#160f17"/></linearGradient></defs>' +
       '<rect y="212" width="600" height="148" fill="url(#sc-grass)"/><path d="M40 360 L170 212 H430 L560 360" fill="none" stroke="#fff" stroke-opacity=".08" stroke-width="3"/><ellipse cx="300" cy="312" rx="5" ry="2" fill="#fff" opacity=".4"/>' +
@@ -1802,7 +1805,8 @@
       function diff() { return $("#sc-diff").value; }
       function T() { return SOCCER[round ? round.diff : diff()]; }
       function ladder() {
-        var t = T(), g = round ? round.goals : 0, box = $("#sc-ladder"); if (!box) return;
+        var t = T(), g = round ? round.goals : 0, box = $("#sc-ladder"), kp = $("#sc-keeper"); if (!box) return;
+        if (kp) kp.style.setProperty("--kit", SC_KIT[round ? round.diff : diff()]);
         box.innerHTML = t.mult.slice(1).map(function (m, i) { return '<span class="' + (i < g ? "done" : i === g && round ? "next" : "") + '">' + m.toFixed(2) + "×</span>"; }).join("");
         var nx = box.querySelector(".next") || box.querySelector(".done:last-of-type"); if (nx && box.scrollWidth > box.clientWidth) box.scrollTo({ left: Math.max(0, nx.offsetLeft - box.clientWidth / 2), behavior: "smooth" });
         $("#sc-note").textContent = "Keeper covers " + t.block + " of 5 corners · " + Math.round((5 - t.block) / 5 * 100) + "% to score · up to " + t.mult[t.kicks].toLocaleString("en-US") + "×";
@@ -2069,7 +2073,8 @@
   };
 
   /* ---------- PEDRA, PAPEL E TESOURA (sequência de vitórias, RTP 98%) ---------- */
-  var RPS = ["rock", "paper", "scissors"], RPS_E = { rock: "✊", paper: "✋", scissors: "✌️" };
+  var RPS = ["rock", "paper", "scissors"], RPS_E = { rock: RD.art.rpsHand("rock"), paper: RD.art.rpsHand("paper"), scissors: RD.art.rpsHand("scissors") };
+  var RPS_FX = { cut: '<svg viewBox="0 0 48 48" class="rps-svg"><circle cx="12" cy="36" r="7" fill="none" stroke="#ff2e55" stroke-width="4"/><circle cx="36" cy="36" r="7" fill="none" stroke="#ff2e55" stroke-width="4"/><path d="M16 31 L34 4 M32 31 L14 4" stroke="#e9e2ea" stroke-width="5" stroke-linecap="round"/></svg>', smash: '<svg viewBox="0 0 48 48" class="rps-svg"><path d="M24 2 l5 13 13-6 -6 13 12 5 -13 5 6 13 -13-6 -4 13 -5-13 -13 6 6-13 -12-5 13-5 -6-13 13 6z" fill="#ffd23f"/><path d="M24 12 l3 8 8-3 -4 8 7 3 -8 3 4 8 -8-4 -2 8 -3-8 -8 4 4-8 -7-3 8-3 -4-8 8 3z" fill="#ff7a1a"/></svg>' };
   function rpsMult(k) { return Math.round(0.98 * Math.pow(2, k) * 100) / 100; }
   function rpsBeats(a, b) { return (a === "rock" && b === "scissors") || (a === "scissors" && b === "paper") || (a === "paper" && b === "rock"); }
   function rpsFrom(f) { return RPS[Math.floor(f * 3)]; }
@@ -2123,7 +2128,7 @@
               var winEl = res === "win" ? you : house, loseEl = res === "win" ? house : you, wk = res === "win" ? p : h;
               var fxName = wk === "scissors" ? "cut" : wk === "rock" ? "smash" : "wrap";
               hand(winEl, wk, "attack " + (winEl === you ? "up" : "down")); hand(loseEl, res === "win" ? h : p, "hit " + fxName);
-              fx.className = "rps-fx " + fxName + " " + (res === "win" ? "at-house" : "at-you"); fx.textContent = fxName === "cut" ? "✂" : fxName === "smash" ? "💥" : "";
+              fx.className = "rps-fx " + fxName + " " + (res === "win" ? "at-house" : "at-you"); fx.innerHTML = RPS_FX[fxName] || "";
               $("#rps-vs").className = "rps-vs " + res; $("#rps-vs").textContent = res === "win" ? "WIN" : "LOSE";
               setTimeout(done, 750);
             }, 280);
@@ -2394,7 +2399,7 @@
       ["How are rewards paid?", "Each level has a one-time cash reward. Claim it on this page and it goes straight to your balance, with no wagering requirement."],
       ["What is rakeback?", "A share of the house edge of every bet you place comes back to you. It builds up as you play and you can claim it whenever you want."],
       ["Do levels expire?", "No. Your level is based on your lifetime wager and never goes down."],
-      ["Daily, weekly and monthly bonuses", "They return part of the house edge from your recent play: daily from Bronze 2, weekly and monthly from Silver. The more you play, the bigger the bonus."],
+      ["Daily, weekly and monthly bonuses", "They return part of the house edge from your recent play: daily every 24h from Bronze 2; weekly every Thursday at 12:00 (BRT) and monthly on the 1st at 12:00 (BRT) from Silver. The more you play, the bigger the bonus."],
       ["VIP Reload", "A special reload our VIP team gives to selected Gold players and above. When you have one, it shows up in your rewards with how many claims are left."]
     ].map(function (q) { return '<div class="vip2-qa"><h4>' + q[0] + "</h4><p>" + q[1] + "</p></div>"; }).join("") + "</div></details></div>";
     return '<div class="container">' + hero + cards + table + faq + "</div>";
@@ -2712,7 +2717,7 @@
     ["How long do withdrawals take?", "Request it in Wallet → Withdraw with your address and the amount. The amount is reserved right away and our team sends it, usually within a few hours. Withdrawals above $2,000 need identity verification first."],
     ["How does the VIP program work?", "Every dollar you wager counts toward your level, from Bronze 1 to Amethyst 3. Each level pays a one-time reward you claim on the VIP page. Your level never goes down."],
     ["What is rakeback?", "A share of the house edge of every bet you place comes back to you instantly. It builds up as you play and you can claim it any time in Rewards."],
-    ["Daily, weekly and monthly bonuses", "They return part of the house edge from your recent play: daily from Bronze 2, weekly and monthly from Silver. Claim them in Rewards when they are ready."],
+    ["Daily, weekly and monthly bonuses", "They return part of the house edge from your recent play: daily every 24h from Bronze 2; weekly every Thursday at 12:00 (BRT) and monthly on the 1st at 12:00 (BRT) from Silver. Claim them in Rewards when they are ready."],
     ["How do I redeem a code?", "Open the VIP Club (crown icon) and type the code in \"Have a code?\" under Rewards. Each code can be used once per account."],
     ["What is the Rain?", "Every hour a pot is split between everyone who clicks Join in the chat before the timer ends. Players can add to the pot too."],
     ["What is provably fair?", "Every RD Originals result comes from your seeds and our server seed. After you rotate your seeds you can check any bet on the Provably Fair page."],

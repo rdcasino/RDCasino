@@ -1,6 +1,6 @@
 # Guia de imagens
 
-O site procura cada imagem num caminho fixo. Se o arquivo existir, ele aparece. Se não existir, o site mostra a **ilustração vetorial própria** (de `assets/js/art.js`) — veja todas em `design/artes.html`. Ou seja: o site já está completo sem fotos; os arquivos aqui servem para substituir as ilustrações por artes finais (3D, IA ou designer). Para trocar uma foto, salve o arquivo **com o nome exato** na pasta certa e publique.
+O site procura cada imagem num caminho fixo. Se o arquivo existir, ele aparece. Se não existir, o site mostra a **ilustração vetorial própria** (de `assets/js/art.js`) — veja todas em `design/artes.html`. Ou seja: o site já está completo sem fotos; os arquivos aqui servem para substituir as ilustrações por artes finais (3D, IA ou designer). Para trocar uma foto, salve o arquivo **com o nome exato** na pasta certa, **adicione o caminho na lista `RD.imgFiles` em `assets/js/data.js`** e publique. Sem estar na lista, o site nem tenta carregar a foto (assim não gera dezenas de erros 404 a cada visita).
 
 O painel admin (`admin/` → Banners & Imagens) lista todos os espaços e marca quais já têm arquivo (OK) e quais estão faltando.
 

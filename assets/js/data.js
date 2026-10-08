@@ -217,11 +217,16 @@ RD.esc = function (s) {
   return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; });
 };
 
+/* Fotos enviadas para assets/img: liste o caminho aqui ao subir uma (ex.: "assets/img/games/chicken.jpg").
+   Sem estar na lista, o site usa a ilustração própria e não faz pedido nenhum ao servidor (evita dezenas de 404 por página). */
+RD.imgFiles = [];
+RD.hasImg = function (src) { return !!src && (/^(https?|data|blob):/.test(src) || RD.imgFiles.indexOf(src) > -1); };
+
 RD.media = function (o, cls, label) {
   var key = o.art || (o.cat === "originals" ? "cover:" + o.id : ""), art = key && RD.art && RD.art.has(key) ? RD.art.render(key, o.artPalette) : "";
   return '<div class="media ' + (cls || "") + (art ? " has-art" : "") + '" style="--c1:' + (o.c1 || "#20161e") + ";--c2:" + (o.c2 || "#0e090d") + '">' +
     (art ? '<div class="media-art">' + art + "</div>" : label ? '<div class="media-fallback">' + label + "</div>" : "") +
-    (o.img ? '<img src="' + (RD.imgBase || "") + o.img + '" alt="" loading="lazy" data-rm-err>' : "") +
+    (RD.hasImg(o.img) ? '<img src="' + (/^(https?|data|blob):/.test(o.img) ? "" : RD.imgBase || "") + o.img + '" alt="" loading="lazy" data-rm-err>' : "") +
     "</div>";
 };
 

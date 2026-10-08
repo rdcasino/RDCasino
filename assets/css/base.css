@@ -10,18 +10,18 @@
    Verde = ganho, coral = erro/perda (para o vermelho da marca nunca ser lido como prejuízo). */
 :root {
   /* Surfaces */
-  --bg: #0e090d;
-  --bg-2: #090609;
-  --surface: #171016;
-  --surface-2: #20161e;
-  --surface-3: #2d1f2a;
-  --line: rgba(255, 255, 255, 0.06);
+  --bg: #1a141d;
+  --bg-2: #211924;
+  --surface: #241b27;
+  --surface-2: #2f2533;
+  --surface-3: #3c3041;
+  --line: rgba(255, 255, 255, 0.07);
   --line-2: rgba(255, 255, 255, 0.1);
 
   /* Text */
   --text: #ffffff;
-  --text-2: #c9b8c2;
-  --text-3: #8c7784;
+  --text-2: #d2c3cc;
+  --text-3: #9a8693;
 
   /* Brand & status */
   --brand: #ff2e55;

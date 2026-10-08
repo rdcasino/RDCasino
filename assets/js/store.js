@@ -87,14 +87,27 @@
   function monthKey(iso) { return (iso || nowIso()).slice(0, 7); }
 
   /* Vantagem da casa gerada pelo jogador desde "since" (valor apostado × vantagem do jogo) */
-  function edgeSince(p, since) {
-    var t0 = new Date(since).getTime(), e = 0;
+  function edgeSince(p, since, until) {
+    var t0 = new Date(since).getTime(), t1 = until || Infinity, e = 0;
     D.bets.forEach(function (b) {
-      if (b.userId !== p.id || new Date(b.date).getTime() < t0) return;
+      var t = new Date(b.date).getTime();
+      if (b.userId !== p.id || t < t0 || t >= t1) return;
       var g = RD.games.filter(function (x) { return x.id === b.game; })[0] || {};
       e += b.amount * ((g.edge || 1) / 100);
     });
     return e;
+  }
+  /* Semanal: quinta 12:00; mensal: dia 1 12:00 — horário de Brasília (UTC−3), igual ao servidor */
+  function bonusWindow(k, now) {
+    var BRT = 3 * 3600e3, l = new Date(now - BRT), d;
+    if (k === "weekly") {
+      d = Date.UTC(l.getUTCFullYear(), l.getUTCMonth(), l.getUTCDate() - ((l.getUTCDay() + 3) % 7), 12);
+      if (d > l.getTime()) d -= 7 * 864e5;
+      return { cur: d + BRT, prev: d - 7 * 864e5 + BRT, next: d + 7 * 864e5 + BRT };
+    }
+    var y = l.getUTCFullYear(), m = l.getUTCMonth(); d = Date.UTC(y, m, 1, 12);
+    if (d > l.getTime()) { m -= 1; d = Date.UTC(y, m, 1, 12); }
+    return { cur: d + BRT, prev: Date.UTC(y, m - 1, 1, 12) + BRT, next: Date.UTC(y, m + 1, 1, 12) + BRT };
   }
   function tierIndex(name) { var i = -1; RD.vipTiers.forEach(function (t, k) { if (t.name === name) i = k; }); return i; }
   function bonusState(p) {
@@ -112,8 +125,17 @@
       }
       var need = tierIndex(c.minTier), item = { key: k, label: c.label, minTier: c.minTier, amount: 0, status: "locked", availableAt: null };
       if (ci < need) { out.push(item); return; }
-      var period = c.hours * 3600e3;
       var last = p.bonus[k] ? new Date(p.bonus[k]).getTime() : 0;
+      if (k !== "daily") {
+        var w = bonusWindow(k, now);
+        if (last >= w.cur) { item.status = "wait"; item.availableAt = new Date(w.next).toISOString(); }
+        else {
+          item.amount = Math.floor(edgeSince(p, new Date(Math.max(last, w.prev)).toISOString(), w.cur) * c.rate * 100) / 100;
+          if (item.amount >= 0.01) item.status = "ready"; else { item.status = "wait"; item.amount = 0; item.availableAt = new Date(w.next).toISOString(); }
+        }
+        out.push(item); return;
+      }
+      var period = c.hours * 3600e3;
       if (last && now - last < period) { item.status = "wait"; item.availableAt = new Date(last + period).toISOString(); }
       var from = Math.max(last, now - period);
       item.amount = Math.floor(edgeSince(p, new Date(from).toISOString()) * c.rate * 100) / 100;
