@@ -103,14 +103,13 @@
   function coin() { return RD.wallet.coins.filter(function (c) { return c.sym === state.coin; })[0]; }
   /* Tip: manda parte do saldo para outro jogador (chega na hora) */
   function tipForm(u) {
-    return '<div class="tip-box"><div id="tip-msg"></div><p class="muted tip-intro">' + ic("gift", 16) + "<span>Send part of your balance to another player. It arrives instantly.</span></p>" +
+    return '<div class="tip-box"><div id="tip-msg"></div>' +
       '<div class="field"><label>Recipient username</label><input class="input" id="tip-to" placeholder="username" autocomplete="off" value="' + esc(state.tipTo || "") + '"></div>' +
       '<div class="field"><label>Amount (USD)</label><div class="input-group"><input type="number" min="1" step="0.01" id="tip-amt" placeholder="Min. $1"><button class="btn btn-ghost btn-sm" data-action="tip-max">Max</button></div>' +
       '<div class="tip-quick">' + [1, 5, 10, 25, 50].map(function (v) { return '<button class="chip" data-action="tip-set" data-v="' + v + '">$' + v + "</button>"; }).join("") + "</div>" +
       '<span class="hint">Available: ' + fmt.usd(u.balance) + "</span></div>" +
       '<label class="check tip-pub"><input type="checkbox" id="tip-pub" checked><span>Show in chat</span></label>' +
-      '<button class="btn btn-primary btn-block btn-lg" data-action="tip">Send tip</button>' +
-      '<div class="wallet-foot">' + ic("lock", 14) + "Tips can't be reversed. Check the username before sending.</div></div>";
+      '<button class="btn btn-primary btn-block btn-lg" data-action="tip">Send tip</button></div>';
   }
   /* Caixa no modo real: endereços da casa (cadastrados no banco) e pedido com hash da transação */
   var COIN_COLORS = { USDT: "#26a17b", USDC: "#2775ca", BTC: "#f7931a", ETH: "#627eea", SOL: "#9945ff", LTC: "#345d9d", TRX: "#ff060a", BNB: "#f3ba2f" };
@@ -2265,7 +2264,7 @@
   function seedsModal() {
     var u = me(); if (needLogin()) return;
     var s = db.seeds(u.id);
-    sha256(s.server).then(function (hash) {
+    (s.hash ? Promise.resolve(s.hash) : sha256(s.server)).then(function (hash) {
       openGeneric('<div class="modal-head"><h3>Fairness</h3><button class="icon-btn" data-close>' + ic("x") + '</button></div><div class="modal-body">' +
         '<p class="muted" style="font-size:13px;margin-bottom:16px">Each result = HMAC-SHA256(server seed, client seed:nonce). The server seed stays hidden (only its hash is shown) until you rotate it, so you can verify every past bet.</p>' +
         '<div class="field"><label>Active server seed (SHA-256 hash)</label><div class="copy-field"><code>' + hash + '</code></div></div>' +
@@ -2677,7 +2676,7 @@
       if (m.kind === "tip") return '<div class="chat-sys tip">' + ic("gift", 14) + "<span>" + esc(m.text) + "</span></div>";
       if (m.kind === "rain" || m.kind === "system") return '<div class="chat-sys">' + (m.kind === "rain" ? rainIcon().replace('width="40" height="40"', 'width="20" height="20"') : ic("alert", 14)) + "<span>" + esc(m.text) + "</span></div>";
       var pl = db.findByName(m.user), mine = u && u.username === m.user, h = hue(m.user || "?");
-      return '<div class="chat-msg' + (mine ? " mine" : "") + (m.pending ? " pending" : "") + '"><span class="avatar" style="background:hsl(' + h + ',55%,32%);color:hsl(' + h + ',90%,88%)">' + initials(m.user) + '</span><div class="chat-bubble"><div class="chat-meta">' + uBadge(m.user, pl ? pl.wagered : 0, 16) + (mine || !u ? "<strong>" + esc(m.user) + "</strong>" : '<button class="chat-name" data-tip-user="' + esc(m.user) + '" title="Tip ' + esc(m.user) + '">' + esc(m.user) + "</button>") + (isStaff(m.user) ? '<span class="staff-tag">Owner</span>' : "") + '<time>' + (m.at ? new Date(m.at).toTimeString().slice(0, 5) : "") + "</time></div><p>" + esc(m.text) + "</p></div></div>";
+      return '<div class="chat-msg' + (mine ? " mine" : "") + (m.pending ? " pending" : "") + '"><span class="avatar" style="background:hsl(' + h + ',55%,32%);color:hsl(' + h + ',90%,88%)">' + initials(m.user) + '</span><div class="chat-bubble"><div class="chat-meta">' + uBadge(m.user, pl ? pl.wagered : 0, 16) + (mine || !u ? "<strong>" + esc(m.user) + "</strong>" : '<button class="chat-name" data-tip-user="' + esc(m.user) + '" title="Tip ' + esc(m.user) + '">' + esc(m.user) + "</button>") + '<time>' + (m.at ? new Date(m.at).toTimeString().slice(0, 5) : "") + "</time></div><p>" + esc(m.text) + "</p></div></div>";
     }).join("") : '<div class="empty" style="padding:40px 10px"><h3>No messages yet</h3><p>Say hi to the community.</p></div>';
     if (atBottom || !renderChat.seen) box.scrollTop = box.scrollHeight;
     renderChat.seen = true;
@@ -2858,7 +2857,7 @@
       }
       case "rakeback": { if (needLogin()) return; t.disabled = true; Promise.resolve(db.claimRakeback(u.id)).then(function (rb) { if ($("#drawer-vip").classList.contains("open")) renderVipDrawer(); RD.toast(rb.error || "Claimed " + fmt.usd(rb.amount), rb.error ? "error" : ""); renderHeader(); route(true); }); return; }
       case "seeds": return seedsModal();
-      case "rotate": { var rs = db.rotateSeed(u.id, ($("#new-client").value || "").trim()); if (rs && rs.error) return RD.toast(rs.error, "error"); RD.toast("Seeds rotated — previous server seed revealed"); return seedsModal(); }
+      case "rotate": { t.disabled = true; Promise.resolve(db.rotateSeed(u.id, ($("#new-client").value || "").trim())).then(function (rs) { t.disabled = false; if (rs && rs.error) return RD.toast(rs.error, "error"); RD.toast("Seeds rotated — previous server seed revealed"); seedsModal(); }); return; }
       case "open-withdraw": state.walletTab = "withdraw"; openModal("wallet"); return renderWallet();
       case "wd-max": $("#wd-amt").value = u.balance.toFixed(2); return;
       case "live-deposit": {

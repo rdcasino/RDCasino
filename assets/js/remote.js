@@ -384,6 +384,46 @@
   db.onAdminSupport = function (fn) {
     sb.channel("rd-support-admin").on("postgres_changes", { event: "INSERT", schema: "public", table: "support_messages" }, function (ev) { fn(ev.new); }).subscribe();
   };
+  /* ---------- Provably fair: trocar seeds no servidor ---------- */
+  db.rotateSeed = function (pid, client) {
+    return sb.rpc("rotate_seed", { p_client: client || null }).then(function (r) {
+      if (r.error) return { error: msg(r.error) };
+      var me = db.current(); if (me) me.seeds = { server: "", hash: r.data.hash, client: r.data.client, nonce: +r.data.nonce, revealed: r.data.revealed || [] };
+      return { ok: true };
+    });
+  };
+  /* ---------- Configurações do site (servidor) ---------- */
+  var site = {};
+  function applySettings(rows) {
+    rows.forEach(function (x) {
+      if (x.key === "max_profit") RD.config.maxProfit = +x.value || 0;
+      if (x.key === "restricted_countries" && Array.isArray(x.value)) RD.config.restrictedCountries = x.value;
+      if (x.key === "site") { site = x.value || {}; if (site.license) RD.config.license = site.license; if (site.leaderboardPrize != null) RD.config.leaderboardPrize = +site.leaderboardPrize; }
+      if (x.key === "games") { var gs = x.value || {}; RD.games.forEach(function (g) { var o = gs[g.id]; if (o) { if (o.enabled != null) g.enabled = o.enabled; if (o.tag != null) g.tag = o.tag; } }); state.gamesCfg = gs; }
+      if (x.key === "promotions" && Array.isArray(x.value) && x.value.length) { RD.promotions.length = 0; Array.prototype.push.apply(RD.promotions, x.value); }
+    });
+  }
+  sb.from("settings").select("*").then(function (r) { if (r.data) { applySettings(r.data); db.emit(); } });
+  function setSetting(key, value) { return adminCall("admin_set_setting", { p_key: key, p_value: value }); }
+  db.setSettings = function (f) {
+    var jobs = [];
+    if (f.maxProfit != null) { RD.config.maxProfit = +f.maxProfit || 0; jobs.push(setSetting("max_profit", +f.maxProfit || 0)); }
+    if (f.restricted) { RD.config.restrictedCountries = f.restricted; jobs.push(setSetting("restricted_countries", f.restricted)); }
+    if (f.license || f.leaderboardPrize != null) {
+      if (f.license) { site.license = f.license; RD.config.license = f.license; }
+      if (f.leaderboardPrize != null) { site.leaderboardPrize = +f.leaderboardPrize; RD.config.leaderboardPrize = +f.leaderboardPrize; }
+      jobs.push(setSetting("site", site));
+    }
+    return Promise.all(jobs);
+  };
+  db.setGame = function (gid, fields) {
+    var gs = state.gamesCfg = state.gamesCfg || {}; gs[gid] = Object.assign({}, gs[gid] || {}, fields);
+    var g = RD.games.filter(function (x) { return x.id === gid; })[0]; if (g) Object.assign(g, fields);
+    return setSetting("games", gs);
+  };
+  db.savePromotions = function () { return setSetting("promotions", JSON.parse(JSON.stringify(RD.promotions))); };
+  db.adminSetup = function (email, pass) { return sb.auth.updateUser({ password: pass }).then(function (r) { if (r.error) { RD.toast(msg(r.error), "error"); throw r.error; } return { ok: true }; }); };
+  db.resetBets = function () { RD.toast("No modo real o histórico de apostas não é apagado (fica para auditoria).", "error"); return { error: "live" }; };
   db.grantReload = function (pid, per, claims, hours, note) { return adminCall("admin_grant_reload", { p_user: pid, p_per: per, p_claims: claims, p_hours: hours, p_note: note || null }); };
   db.cancelReload = function (pid) { return adminCall("admin_cancel_reload", { p_user: pid }); };
   db.rainAuto = function () { return state.rainAuto; };
