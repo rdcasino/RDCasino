@@ -30,7 +30,7 @@
 
 ## Status
 - [x] Banco de dados aplicado no Supabase (migrações 0001, 0002 e 0003).
-- [x] Cadastro com convite e login.
+- [x] Cadastro aberto e login (o código de convite é opcional e serve para criar a conta de admin).
 - [x] Caixa manual com várias moedas: depósito por TxID e saque, com aprovação ou rejeição no admin.
 - [x] Admin no modo real: jogadores, transações e convites.
 - [ ] Jogos sorteados no servidor (Edge Function `play`).

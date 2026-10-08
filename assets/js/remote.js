@@ -113,7 +113,6 @@
     var username = String(f.username || "").trim(), email = String(f.email || "").trim().toLowerCase();
     if (!/^[A-Za-z0-9_]{3,16}$/.test(username)) return Promise.resolve({ error: "Username: 3–16 letters, numbers or _." });
     if (String(f.pass || "").length < 8) return Promise.resolve({ error: "Password must have at least 8 characters." });
-    if (!String(f.invite || "").trim()) return Promise.resolve({ error: "Enter your invite code." });
     return sb.rpc("username_available", { p_username: username }).then(function (a) {
       if (a.data === false) return { error: "This username is already taken." };
       return sb.auth.signUp({ email: email, password: f.pass, options: { data: { username: username, country: f.country, invite: String(f.invite).trim().toUpperCase(), ref: String(f.ref || "").trim().toUpperCase() } } }).then(function (r) {

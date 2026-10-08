@@ -2334,9 +2334,10 @@
 
   /* ---------- Boot ---------- */
   if (RD.live) {
-    $("#reg-invite-wrap").classList.remove("hidden"); $("#reg-invite").required = true;
     $("#login-user-label").textContent = "Email";
-    var inv = location.search.match(/[?&]invite=([A-Za-z0-9]+)/); if (inv) $("#reg-invite").value = inv[1].toUpperCase();
+    // Cadastro aberto. O campo de código só aparece com link de convite (ex.: criar a conta de admin)
+    var inv = location.search.match(/[?&]invite=([A-Za-z0-9]+)/);
+    if (inv) { $("#reg-invite-wrap").classList.remove("hidden"); $("#reg-invite").value = inv[1].toUpperCase(); }
   }
   hydrateIcons(document);
   renderSidebar(); renderHeader(); renderFooter(); fillCountries();
