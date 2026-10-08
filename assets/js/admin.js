@@ -27,6 +27,7 @@
       { group: "Operação" },
       { id: "players", label: "Jogadores", icon: "users", count: db.players().length },
       { id: "transactions", label: "Transações", icon: "coins", badge: pendingWd().length },
+      { id: "support", label: "Suporte", icon: "chat", badge: supUnreadTotal },
       { id: "kyc", label: "KYC & Risco", icon: "id", badge: pendingKyc().length },
       { id: "bets", label: "Apostas", icon: "bars" },
       { group: "Produto" },
@@ -318,6 +319,61 @@
         "</tbody></table></div>" : empty("Nenhuma chuva ainda", "Comece a primeira acima.");
     });
   };
+
+  /* ---------- Suporte ao vivo: conversas dos jogadores ---------- */
+  var supUnreadTotal = 0, supSel = null, supThreads = [];
+  function supRefreshCount() {
+    if (!db.adminSupportThreads) return;
+    Promise.resolve(db.adminSupportThreads()).then(function (list) {
+      supThreads = list; var n = list.reduce(function (a, t) { return a + (t.unread || 0); }, 0);
+      if (n !== supUnreadTotal) { supUnreadTotal = n; renderNav(location.hash.replace("#/", "").split("/")[0] || "dashboard"); }
+      document.title = (n ? "(" + n + ") " : "") + "RDCasino Admin";
+      if (/^#\/support/.test(location.hash)) supDraw();
+    });
+  }
+  function beep() { try { var c = new (window.AudioContext || window.webkitAudioContext)(), o = c.createOscillator(), g = c.createGain(); o.frequency.value = 880; o.connect(g); g.connect(c.destination); g.gain.setValueAtTime(0.15, c.currentTime); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.4); o.start(); o.stop(c.currentTime + 0.4); } catch (x) {} }
+  P.support = function () {
+    return head("Suporte ao vivo", "Mensagens dos jogadores pelo botão de suporte do site. Responda aqui; o jogador recebe na hora.") +
+      '<div class="sup-admin"><div class="card sup-a-list" id="sup-a-list"><div class="card-pad faint">Carregando…</div></div><div class="card sup-a-chat" id="sup-a-chat"><div class="empty" style="padding:60px 20px"><h3>Escolha uma conversa</h3><p>As mensagens novas aparecem com um aviso e um som.</p></div></div></div>';
+  };
+  function supDraw() {
+    var box = $("#sup-a-list"); if (!box) return;
+    box.innerHTML = supThreads.length ? supThreads.map(function (t) {
+      return '<button class="sup-a-item' + (t.userId === supSel ? " active" : "") + '" data-sup-user="' + t.userId + '"><span class="avatar">' + initials(t.user) + '</span><span class="grow"><b>' + esc(t.user) + (t.status === "closed" ? ' <small class="faint">· resolvida</small>' : "") + '</b><small>' + esc(t.lastText || "") + '</small></span><span class="sup-a-meta"><small class="faint">' + fmt.date(t.lastAt).slice(-5) + "</small>" + (t.unread ? '<span class="badge badge-brand">' + t.unread + "</span>" : "") + "</span></button>";
+    }).join("") : empty("Nenhuma conversa ainda", "Quando um jogador escrever no suporte, aparece aqui.");
+  }
+  function supOpen(uid) {
+    supSel = uid; supDraw();
+    var t = supThreads.filter(function (x) { return x.userId === uid; })[0] || {}, chat = $("#sup-a-chat");
+    Promise.resolve(db.adminSupportMessages(uid)).then(function (msgs) {
+      chat.innerHTML = '<div class="card-head"><div><h3>' + esc(t.user || "") + '</h3><small class="faint">' + (t.status === "closed" ? "Resolvida" : "Aberta") + '</small></div><div class="row" style="gap:6px"><button class="btn btn-secondary btn-sm" data-player="' + uid + '">Ver jogador</button><button class="btn btn-secondary btn-sm" data-sup-status="' + (t.status === "closed" ? "open" : "closed") + '">' + (t.status === "closed" ? "Reabrir" : "Marcar resolvida") + "</button></div></div>" +
+        '<div class="sup-a-thread" id="sup-a-thread">' + msgs.map(function (m) { return '<div class="sup-a-msg' + (m.fromStaff ? " staff" : "") + '"><p>' + esc(m.text) + "</p><small>" + (m.fromStaff ? esc(m.staff || "Equipe") + " · " : "") + fmt.date(m.at) + "</small></div>"; }).join("") + "</div>" +
+        '<form class="sup-a-form" id="sup-a-form"><textarea name="t" rows="2" placeholder="Responder em inglês (o jogador vê na hora)…" required></textarea><button class="btn btn-primary">Enviar</button></form>';
+      var th = $("#sup-a-thread"); th.scrollTop = th.scrollHeight;
+      $("#sup-a-form").addEventListener("submit", function (e) {
+        e.preventDefault(); var f = e.target, v = f.t.value.trim(); if (!v) return; f.querySelector("button").disabled = true;
+        Promise.resolve(db.adminSupportReply(uid, v)).then(function (r) { if (r && r.error) { RD.toast(r.error, "error"); f.querySelector("button").disabled = false; return; } supRefreshCount(); supOpen(uid); });
+      });
+      $("#sup-a-form").t.addEventListener("keydown", function (e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("#sup-a-form").requestSubmit(); } });
+      if (t.unread) Promise.resolve(db.adminSupportSeen(uid)).then(supRefreshCount);
+    });
+  }
+  P.support.after = function () {
+    supDraw(); supRefreshCount();
+    $("#sup-a-list").addEventListener("click", function (e) { var b = e.target.closest("[data-sup-user]"); if (b) supOpen(b.getAttribute("data-sup-user")); });
+    $("#sup-a-chat").addEventListener("click", function (e) { var b = e.target.closest("[data-sup-status]"); if (!b) return; Promise.resolve(db.adminSupportStatus(supSel, b.getAttribute("data-sup-status"))).then(function () { supRefreshCount(); setTimeout(function () { supOpen(supSel); }, 300); }); });
+    if (supSel) supOpen(supSel);
+  };
+  /* Mensagem nova: som + aviso, em qualquer página do admin */
+  function supIncoming(row) {
+    if (row && row.from_staff) return;
+    if (Date.now() - (supIncoming.last || 0) > 4000) { supIncoming.last = Date.now(); beep(); RD.toast("Nova mensagem no suporte"); }
+    supRefreshCount();
+    if (supSel && row && row.user_id === supSel && /^#\/support/.test(location.hash)) supOpen(supSel);
+  }
+  if (db.onAdminSupport) db.onAdminSupport(supIncoming);
+  setInterval(function () { var before = supUnreadTotal; supRefreshCount(); setTimeout(function () { if (supUnreadTotal > before) supIncoming(null); }, 1200); }, 8000);
+  setTimeout(supRefreshCount, 1500);
 
   /* Códigos promocionais: você cria e posta (Telegram, X...); o jogador digita em Rewards */
   P.codes = function () {

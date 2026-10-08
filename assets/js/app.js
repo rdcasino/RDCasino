@@ -24,16 +24,17 @@
   var NAV = [
     [{ route: "", label: "Lobby", icon: "home" }, { route: "casino/originals", label: "RD Originals", icon: "star" }, { route: "casino/slots", label: "Slots", icon: "cherry" }, { route: "casino/live", label: "Live Casino", icon: "play" }, { route: "casino/gameshows", label: "Game Shows", icon: "tv" }],
     [{ route: "promotions", label: "Promotions", icon: "gift" }, { route: "vip", label: "VIP Club", icon: "crown" }, { route: "leaderboard", label: "Leaderboard", icon: "trophy" }],
-    [{ route: "affiliate", label: "Affiliate", icon: "link" }, { route: "fairness", label: "Provably Fair", icon: "shield" }, { route: "responsible", label: "Responsible Gaming", icon: "help" }]
+    [{ route: "affiliate", label: "Affiliate", icon: "link" }, { route: "fairness", label: "Provably Fair", icon: "shield" }, { route: "responsible", label: "Responsible Gaming", icon: "help" }, { action: "open-support", label: "Live Support", icon: "headset" }]
   ];
   function renderSidebar() {
     var h = vipWidget() + '<a class="sb-promo" href="#/leaderboard" title="Monthly leaderboard">' + ic("trophy", 18) + '<span class="eyebrow">Monthly leaderboard</span><strong>' + fmt.usd(RD.config.leaderboardPrize, { dec: 0 }) + '</strong><small>Ends in <span data-countdown-short></span></small></a>';
     NAV.forEach(function (box) {
       h += '<div class="sb-box">' + box.map(function (n) {
+        if (n.action) return '<a class="sb-link" href="#" data-action="' + n.action + '" title="' + n.label + '">' + ic(n.icon) + "<span>" + n.label + '</span><span class="badge badge-brand hidden" data-sup-badge></span></a>';
         return '<a class="sb-link" href="#/' + n.route + '" data-route="' + n.route + '" title="' + n.label + '">' + ic(n.icon) + "<span>" + n.label + "</span>" + (n.badge ? '<span class="badge badge-brand">' + n.badge + "</span>" : "") + "</a>";
       }).join("") + "</div>";
     });
-    $("#sb-nav").innerHTML = h;
+    $("#sb-nav").innerHTML = h; if (typeof supBadge === "function" && $("#sup-fab")) supBadge();
   }
   function markActive(path) {
     var parts = path.split("/"), base = parts[0] === "casino" ? parts.slice(0, 2).join("/") : parts[0];
@@ -47,6 +48,9 @@
   /* Saldo mostrado = saldo real menos os prêmios de apostas cuja animação ainda não terminou.
      Assim a aposta sai na hora e o prêmio só "entra" quando a bolinha cai / a roda para. */
   var inFlight = {};
+  /* Dono/equipe (lista vem do servidor) ganha a tag de diamante no lugar do nível */
+  function isStaff(name) { return !!name && (RD.staff || []).some(function (x) { return x.toLowerCase() === String(name).toLowerCase(); }); }
+  function uBadge(name, wagered, size) { return isStaff(name) ? RD.art.ownerBadge(size) : RD.art.tierBadge(db.tierOf(wagered || 0), size); }
   function shownBal(u) { var t = 0; for (var k in inFlight) t += inFlight[k]; return Math.round((u.balance - t) * 100) / 100; }
   function hold(b) { if (b && !b.error && b.payout > 0) inFlight[b.id] = b.payout; renderHeader(); }
   function release(b) {
@@ -63,7 +67,7 @@
     if (typeof vipDot === "function") vipDot();
     var t = db.tierOf(u.wagered);
     $("#user-menu").innerHTML =
-      '<div class="menu-head row" style="gap:10px">' + RD.art.tierBadge(t, 30) + '<div><strong>' + esc(u.username) + '</strong><small class="faint">' + (t ? t.name : "Unranked") + "</small></div></div>" +
+      '<div class="menu-head row" style="gap:10px">' + uBadge(u.username, u.wagered, 30) + '<div><strong>' + esc(u.username) + '</strong><small class="faint">' + (isStaff(u.username) ? "Owner" : t ? t.name : "Unranked") + "</small></div></div>" +
       '<button data-open="wallet">' + ic("wallet", 16) + "Wallet</button>" +
       '<a href="#/account">' + ic("user", 16) + "Account & verification</a>" +
       '<a href="#/account/bets">' + ic("chart", 16) + "My bets</a>" +
@@ -497,7 +501,9 @@
     function stopAuto() { auto = false; ctx.lock(false); var btn = ctx.btn(); if (btn) { btn.textContent = mode === "auto" ? "Start autobet" : "Bet"; btn.classList.remove("stop"); } }
 
     amt.addEventListener("input", ctx.refresh);
-    $$("[data-og]").forEach(function (b) { b.addEventListener("click", function () { ctx.setAmt(b.getAttribute("data-og") === "half" ? ctx.amount() / 2 : ctx.amount() * 2); }); });
+    /* 2×: dobra, mas nunca passa do saldo (como na Shuffle) */
+    function doubled() { var u = me(), x = ctx.amount() * 2; if (!u) return x; var bal = Math.floor(shownBal(u) * 100) / 100; return bal > 0 ? Math.min(x, bal) : ctx.amount(); }
+    $$("[data-og]").forEach(function (b) { b.addEventListener("click", function () { ctx.setAmt(b.getAttribute("data-og") === "half" ? ctx.amount() / 2 : doubled()); }); });
     $$("[data-mode]").forEach(function (b) {
       b.addEventListener("click", function () {
         if (auto) return; mode = b.getAttribute("data-mode");
@@ -545,7 +551,7 @@
         document.addEventListener("pointermove", move); document.addEventListener("pointerup", up);
       });
     }
-    ogKeys = { bet: function () { if (mode === "manual") manual(); }, half: function () { if (!amt.disabled) ctx.setAmt(ctx.amount() / 2); }, double: function () { if (!amt.disabled) ctx.setAmt(ctx.amount() * 2); } };
+    ogKeys = { bet: function () { if (mode === "manual") manual(); }, half: function () { if (!amt.disabled) ctx.setAmt(ctx.amount() / 2); }, double: function () { if (!amt.disabled) ctx.setAmt(doubled()); } };
     ctx.refresh(); history(); stats(); ogTab(g, "about");
     if (api.resume) api.resume();
   }
@@ -2294,7 +2300,7 @@
   function vipWidget() {
     var u = me(); if (!u) return "";
     var v = vipState(u);
-    return '<a class="sb-vip" href="#/vip">' + badge(v.cur, 34) + '<div class="grow"><div class="row between"><strong>' + (v.cur ? v.cur.name : "Unranked") + "</strong><small>" + v.pct.toFixed(0) + '%</small></div><div class="progress sm"><span style="width:' + v.pct + '%"></span></div><small class="faint">' + (v.next ? fmt.usd(v.next.wager - v.w, { dec: 0 }) + " to " + v.next.name : "Top level reached") + "</small></div>" + (v.pending.length ? '<span class="sb-vip-dot" title="Reward ready"></span>' : "") + "</a>";
+    return '<a class="sb-vip" href="#/vip">' + (isStaff(u.username) ? RD.art.ownerBadge(34) : badge(v.cur, 34)) + '<div class="grow"><div class="row between"><strong>' + (isStaff(u.username) ? "Owner" : v.cur ? v.cur.name : "Unranked") + "</strong><small>" + v.pct.toFixed(0) + '%</small></div><div class="progress sm"><span style="width:' + v.pct + '%"></span></div><small class="faint">' + (v.next ? fmt.usd(v.next.wager - v.w, { dec: 0 }) + " to " + v.next.name : "Top level reached") + "</small></div>" + (v.pending.length ? '<span class="sb-vip-dot" title="Reward ready"></span>' : "") + "</a>";
   }
   /* Cards de recompensa (iguais na janela VIP e na página VIP) */
   function untilTxt(iso) {
@@ -2317,7 +2323,7 @@
   /* Códigos promocionais: o jogador digita e ganha o bônus na hora */
   function codeBox() {
     return '<form class="code-box" data-code-form><span class="code-ic">' + ic("gift", 18) + '</span><div class="grow"><b>Have a code?</b><small>Enter it to claim your bonus.</small></div>' +
-      '<div class="code-row"><input class="input" name="code" placeholder="Enter code" maxlength="24" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn btn-primary">Redeem</button></div></form>';
+      '<div class="code-row"><input class="input" name="code" placeholder="Code" maxlength="24" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn btn-primary">Redeem</button></div></form>';
   }
   document.addEventListener("submit", function (e) {
     var f = e.target.closest && e.target.closest("[data-code-form]"); if (!f) return;
@@ -2389,7 +2395,7 @@
         rows.map(function (p, i) {
           var isMe = p && mine && p.userId === mine.userId;
           return "<tr" + (isMe ? ' style="background:var(--brand-soft)"' : "") + '><td><span class="rank-pill">' + (i + 1) + "</span></td>" +
-            (p ? '<td class="strong"><span class="row" style="gap:8px">' + RD.art.tierBadge(db.tierOf(db.player(p.userId) ? db.player(p.userId).wagered : 0), 22) + esc(p.user) + '</span></td><td class="right num">' + fmt.usd(p.wagered) + "</td>"
+            (p ? '<td class="strong"><span class="row" style="gap:8px">' + uBadge(p.user, db.player(p.userId) ? db.player(p.userId).wagered : 0, 22) + esc(p.user) + '</span></td><td class="right num">' + fmt.usd(p.wagered) + "</td>"
               : '<td class="faint">Open spot</td><td class="right faint">—</td>') +
             '<td class="right num strong' + (prizes[i] ? " gold" : " faint") + '">' + (prizes[i] ? fmt.usd(prizes[i], { dec: 0 }) : "—") + "</td></tr>";
         }).join("") + "</tbody></table></div></div></div></div>";
@@ -2671,13 +2677,104 @@
       if (m.kind === "tip") return '<div class="chat-sys tip">' + ic("gift", 14) + "<span>" + esc(m.text) + "</span></div>";
       if (m.kind === "rain" || m.kind === "system") return '<div class="chat-sys">' + (m.kind === "rain" ? rainIcon().replace('width="40" height="40"', 'width="20" height="20"') : ic("alert", 14)) + "<span>" + esc(m.text) + "</span></div>";
       var pl = db.findByName(m.user), mine = u && u.username === m.user, h = hue(m.user || "?");
-      return '<div class="chat-msg' + (mine ? " mine" : "") + (m.pending ? " pending" : "") + '"><span class="avatar" style="background:hsl(' + h + ',55%,32%);color:hsl(' + h + ',90%,88%)">' + initials(m.user) + '</span><div class="chat-bubble"><div class="chat-meta">' + RD.art.tierBadge(pl ? db.tierOf(pl.wagered) : null, 16) + (mine || !u ? "<strong>" + esc(m.user) + "</strong>" : '<button class="chat-name" data-tip-user="' + esc(m.user) + '" title="Tip ' + esc(m.user) + '">' + esc(m.user) + "</button>") + '<time>' + (m.at ? new Date(m.at).toTimeString().slice(0, 5) : "") + "</time></div><p>" + esc(m.text) + "</p></div></div>";
+      return '<div class="chat-msg' + (mine ? " mine" : "") + (m.pending ? " pending" : "") + '"><span class="avatar" style="background:hsl(' + h + ',55%,32%);color:hsl(' + h + ',90%,88%)">' + initials(m.user) + '</span><div class="chat-bubble"><div class="chat-meta">' + uBadge(m.user, pl ? pl.wagered : 0, 16) + (mine || !u ? "<strong>" + esc(m.user) + "</strong>" : '<button class="chat-name" data-tip-user="' + esc(m.user) + '" title="Tip ' + esc(m.user) + '">' + esc(m.user) + "</button>") + (isStaff(m.user) ? '<span class="staff-tag">Owner</span>' : "") + '<time>' + (m.at ? new Date(m.at).toTimeString().slice(0, 5) : "") + "</time></div><p>" + esc(m.text) + "</p></div></div>";
     }).join("") : '<div class="empty" style="padding:40px 10px"><h3>No messages yet</h3><p>Say hi to the community.</p></div>';
     if (atBottom || !renderChat.seen) box.scrollTop = box.scrollHeight;
     renderChat.seen = true;
   }
 
 
+
+  /* ---------- Suporte ao vivo (estilo Shuffle): Início · Mensagens · Ajuda ---------- */
+  var HELP = [
+    ["How do deposits work?", "Open Wallet → Deposit, choose the coin and network and send to the address shown. Send only that coin on that network. Our team confirms it on the blockchain and credits your balance — message us here with your transaction ID (TxID) if it takes longer than expected. Minimum deposit is $10."],
+    ["How long do withdrawals take?", "Request it in Wallet → Withdraw with your address and the amount. The amount is reserved right away and our team sends it, usually within a few hours. Withdrawals above $2,000 need identity verification first."],
+    ["How does the VIP program work?", "Every dollar you wager counts toward your level, from Bronze 1 to Amethyst 3. Each level pays a one-time reward you claim on the VIP page. Your level never goes down."],
+    ["What is rakeback?", "A share of the house edge of every bet you place comes back to you instantly. It builds up as you play and you can claim it any time in Rewards."],
+    ["Daily, weekly and monthly bonuses", "They return part of the house edge from your recent play: daily from Bronze 2, weekly and monthly from Silver. Claim them in Rewards when they are ready."],
+    ["How do I redeem a code?", "Open the VIP Club (crown icon) and type the code in \"Have a code?\" under Rewards. Each code can be used once per account."],
+    ["What is the Rain?", "Every hour a pot is split between everyone who clicks Join in the chat before the timer ends. Players can add to the pot too."],
+    ["What is provably fair?", "Every RD Originals result comes from your seeds and our server seed. After you rotate your seeds you can check any bet on the Provably Fair page."],
+    ["Why verify my identity?", "Identity verification (KYC) keeps accounts safe and is required for withdrawals above $2,000. Send it in Account → Verification; reviews usually take less than 24 hours."],
+    ["Responsible gaming", "Only play with money you can afford to lose. If you want to take a break or close your account, message us here and we will help right away."]
+  ];
+  var sup = { open: false, tab: "home", article: null, q: "" };
+  function supUnread() { return me() && db.supportUnread ? db.supportUnread(me().id) : 0; }
+  function supBadge() {
+    var n = supUnread();
+    $$("[data-sup-badge]").forEach(function (b) { b.textContent = n; b.classList.toggle("hidden", !n); });
+  }
+  function supMount() {
+    if ($("#sup-fab")) return;
+    var fab = document.createElement("button"); fab.id = "sup-fab"; fab.className = "sup-fab"; fab.setAttribute("aria-label", "Live support");
+    fab.innerHTML = ic("headset", 24) + '<span class="sup-dot hidden" data-sup-badge></span>';
+    var pn = document.createElement("div"); pn.id = "sup-panel"; pn.className = "sup-panel"; pn.setAttribute("role", "dialog");
+    document.body.appendChild(fab); document.body.appendChild(pn);
+    fab.addEventListener("click", function () { supToggle(); });
+    pn.addEventListener("click", supClick);
+    pn.addEventListener("submit", function (e) {
+      e.preventDefault(); var f = e.target, inp = f.querySelector("textarea, input");
+      if (f.id === "sup-form") { var v = inp.value.trim(); if (!v || !me()) return; inp.value = ""; Promise.resolve(db.supportSend(me().id, v)).then(function (r) { if (r && r.error) { RD.toast(r.error, "error"); inp.value = v; } supRender(); }); }
+    });
+    pn.addEventListener("input", function (e) { if (e.target.id === "sup-q") { sup.q = e.target.value; var box = $("#sup-hits"); if (box) box.innerHTML = supHits(sup.tab === "home" && sup.article == null ? 4 : 0); } });
+    pn.addEventListener("keydown", function (e) { if (e.target.id === "sup-text" && e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("#sup-form").requestSubmit(); } });
+    (db.onSupport || db.onChange)(function () { supBadge(); if (sup.open) { if (sup.tab === "messages" && me()) db.supportSeen(me().id); supRender(true); } });
+    supBadge();
+  }
+  function supToggle(force, tab) {
+    sup.open = force != null ? force : !sup.open; if (tab) { sup.tab = tab; sup.article = null; }
+    $("#sup-panel").classList.toggle("open", sup.open); $("#sup-fab").classList.toggle("on", sup.open);
+    $("#sup-fab").innerHTML = (sup.open ? ic("x", 22) : ic("headset", 24)) + '<span class="sup-dot hidden" data-sup-badge></span>';
+    if (sup.open) { supRender(); if (sup.tab === "messages" && me()) db.supportSeen(me().id); }
+    supBadge();
+  }
+  function supHits(limit) {
+    var q = sup.q.trim().toLowerCase(), list = HELP.map(function (h, i) { return [h, i]; }).filter(function (x) { return !q || (x[0][0] + " " + x[0][1]).toLowerCase().indexOf(q) > -1; });
+    if (limit && !q) list = list.slice(0, limit);
+    return list.length ? list.map(function (x) { return '<button class="sup-art" data-sup-art="' + x[1] + '"><span>' + esc(x[0][0]) + "</span>" + ic("chevronRight", 16) + "</button>"; }).join("") : '<p class="faint sup-none">No articles found. Send us a message instead.</p>';
+  }
+  function supTime(iso) { var d = new Date(iso), diff = (Date.now() - d) / 6e4; return diff < 1 ? "now" : diff < 60 ? Math.floor(diff) + "m" : diff < 1440 ? Math.floor(diff / 60) + "h" : Math.floor(diff / 1440) + "d"; }
+  function supRender(soft) {
+    var pn = $("#sup-panel"); if (!pn || !sup.open) return;
+    var u = me(), msgs = u && db.supportMessages ? db.supportMessages(u.id) : [], last = msgs[msgs.length - 1], body;
+    if (sup.article != null) {
+      var a = HELP[sup.article];
+      body = '<div class="sup-body"><button class="sup-back" data-sup-tab="help">' + ic("chevronLeft", 16) + 'Help</button><article class="sup-article"><h3>' + esc(a[0]) + "</h3><p>" + esc(a[1]) + '</p></article><div class="sup-ask"><span>Still need help?</span><button class="btn btn-primary btn-sm" data-sup-tab="messages">Send us a message</button></div></div>';
+    } else if (sup.tab === "messages") {
+      if (soft && $("#sup-thread")) { var th = $("#sup-thread"), atB = th.scrollHeight - th.scrollTop - th.clientHeight < 60; th.innerHTML = supThread(msgs); if (atB) th.scrollTop = th.scrollHeight; return; }
+      body = !u ? '<div class="sup-body sup-guest">' + ic("headset", 34) + "<h3>Chat with our team</h3><p class=\"muted\">Sign in to send us a message. We reply 24/7.</p><button class=\"btn btn-primary\" data-open=\"login\">Sign in</button></div>"
+        : '<div class="sup-chat"><div class="sup-thread" id="sup-thread">' + supThread(msgs) + '</div><form class="sup-form" id="sup-form"><textarea id="sup-text" rows="1" maxlength="1000" placeholder="Write a message…"></textarea><button class="sup-send" aria-label="Send">' + ic("send", 18) + "</button></form></div>";
+    } else if (sup.tab === "help") {
+      body = '<div class="sup-body"><div class="sup-search">' + ic("search", 16) + '<input id="sup-q" placeholder="Search for help" value="' + esc(sup.q) + '"></div><div class="sup-list" id="sup-hits">' + supHits() + "</div></div>";
+    } else {
+      body = '<div class="sup-body">' +
+        (u && last ? '<button class="sup-card sup-recent" data-sup-tab="messages"><small>Recent message</small><span class="row" style="gap:10px"><span class="sup-av">RD</span><span class="grow"><b>' + (last.fromStaff ? esc(last.staff || "RD Support") : "You") + '</b><span class="sup-prev">' + esc(last.text) + '</span></span><small class="faint">' + supTime(last.at) + "</small></span></button>" : "") +
+        '<div class="sup-card"><div class="sup-search">' + ic("search", 16) + '<input id="sup-q" placeholder="Search for help" value="' + esc(sup.q) + '"></div><div class="sup-list" id="sup-hits">' + supHits(4) + "</div></div>" +
+        '<button class="sup-card sup-cta" data-sup-tab="messages"><span><b>Send us a message</b><small>We usually reply in a few minutes</small></span>' + ic("send", 18) + "</button></div>";
+    }
+    var n = supUnread();
+    pn.innerHTML = '<div class="sup-head' + (sup.tab === "home" && sup.article == null ? " big" : "") + '"><div class="row between"><span class="sup-logo">RD<span>Casino</span></span><button class="sup-x" data-sup-close aria-label="Close">' + ic("x", 18) + "</button></div>" +
+      (sup.tab === "home" && sup.article == null ? "<h2>Hi " + esc(u ? u.username : "there") + ' 👋<br>How can we help?</h2>' : '<h3 class="sup-title">' + (sup.tab === "messages" ? "Messages" : "Help") + "</h3>") + "</div>" + body +
+      '<nav class="sup-tabs">' + [["home", "home", "Home"], ["messages", "chat", "Messages"], ["help", "help", "Help"]].map(function (t) { return '<button class="' + (sup.tab === t[0] && sup.article == null ? "active" : "") + '" data-sup-tab="' + t[0] + '">' + ic(t[1], 20) + "<span>" + t[2] + "</span>" + (t[0] === "messages" && n ? '<i class="sup-count">' + n + "</i>" : "") + "</button>"; }).join("") + "</nav>";
+    var th2 = $("#sup-thread"); if (th2) th2.scrollTop = th2.scrollHeight;
+  }
+  function supThread(msgs) {
+    var intro = '<div class="sup-msg staff"><span class="sup-av">RD</span><div><b>RD Support</b><p>Hi! 👋 How can we help you today? Our team replies 24/7.</p></div></div>';
+    return intro + msgs.map(function (m) {
+      return m.fromStaff ? '<div class="sup-msg staff"><span class="sup-av">RD</span><div><b>' + esc(m.staff || "RD Support") + "</b><p>" + esc(m.text) + "</p><time>" + supTime(m.at) + "</time></div></div>"
+        : '<div class="sup-msg me' + (m.pending ? " pending" : "") + '"><div><p>' + esc(m.text) + "</p><time>" + (m.pending ? "Sending…" : supTime(m.at)) + "</time></div></div>";
+    }).join("");
+  }
+  function supClick(e) {
+    var t = e.target.closest("[data-sup-tab],[data-sup-art],[data-sup-close]"); if (!t) return;
+    if (t.hasAttribute("data-sup-close")) return supToggle(false);
+    if (t.hasAttribute("data-sup-art")) { sup.article = +t.getAttribute("data-sup-art"); return supRender(); }
+    sup.tab = t.getAttribute("data-sup-tab"); sup.article = null;
+    if (sup.tab === "messages" && me()) db.supportSeen(me().id);
+    supRender(); supBadge();
+    if (sup.tab === "messages") { var tx = $("#sup-text"); if (tx) tx.focus(); }
+  }
+  supMount();
 
   /* ---------- Countdown ---------- */
   function countdown() {
@@ -2806,6 +2903,7 @@
         });
         return;
       }
+      case "open-support": { e.preventDefault(); document.body.classList.remove("sb-open"); supToggle(true, "home"); return; }
       case "tip-max": { $("#tip-amt").value = Math.floor(u.balance * 100) / 100; return; }
       case "tip-set": { $("#tip-amt").value = t.getAttribute("data-v"); return; }
       case "verify": {

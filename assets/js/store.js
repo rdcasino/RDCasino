@@ -218,6 +218,30 @@
       save();
       return { ok: true };
     },
+    /* ---------- Suporte ao vivo (demonstração: fica neste navegador) ---------- */
+    supportMessages: function (pid) { D.support = D.support || {}; return (D.support[pid] || []).slice(); },
+    supportUnread: function (pid) { var t = (D.supportThreads || {})[pid]; return t ? t.unreadUser : 0; },
+    supportSend: function (pid, text) {
+      var p = byId(pid), v = String(text || "").trim().slice(0, 1000); if (!v) return { error: "Type a message." };
+      D.support = D.support || {}; D.supportThreads = D.supportThreads || {};
+      (D.support[pid] = D.support[pid] || []).push({ id: id("SM-"), fromStaff: false, text: v, at: nowIso() });
+      var t = D.supportThreads[pid] = D.supportThreads[pid] || { unreadStaff: 0, unreadUser: 0 }; t.status = "open"; t.lastAt = nowIso(); t.lastText = v.slice(0, 140); t.unreadStaff++;
+      save(); return { ok: true };
+    },
+    supportSeen: function (pid) { var t = (D.supportThreads || {})[pid]; if (t && t.unreadUser) { t.unreadUser = 0; save(); } },
+    adminSupportThreads: function () {
+      var T = D.supportThreads || {};
+      return Object.keys(T).map(function (k) { var p = byId(k), t = T[k]; return { userId: k, user: p ? p.username : "?", status: t.status, lastAt: t.lastAt, lastText: t.lastText, unread: t.unreadStaff }; })
+        .sort(function (a, b) { return a.lastAt < b.lastAt ? 1 : -1; });
+    },
+    adminSupportMessages: function (pid) { return db.supportMessages(pid); },
+    adminSupportReply: function (pid, text) {
+      var v = String(text || "").trim(); if (!v) return { error: "Digite a mensagem." };
+      (D.support[pid] = D.support[pid] || []).push({ id: id("SM-"), fromStaff: true, staff: "RD Support", text: v, at: nowIso() });
+      var t = D.supportThreads[pid]; t.lastAt = nowIso(); t.lastText = v.slice(0, 140); t.unreadUser++; t.unreadStaff = 0; save(); return { ok: true };
+    },
+    adminSupportStatus: function (pid, st) { var t = (D.supportThreads || {})[pid]; if (t) { t.status = st; if (st === "closed") t.unreadStaff = 0; save(); } return { ok: true }; },
+    adminSupportSeen: function (pid) { var t = (D.supportThreads || {})[pid]; if (t) { t.unreadStaff = 0; save(); } },
     /* ---------- Códigos promocionais (demonstração) ---------- */
     redeemCode: function (pid, code) {
       var p = byId(pid), k = String(code || "").trim().toUpperCase(); D.codes = D.codes || [];

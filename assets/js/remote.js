@@ -70,7 +70,7 @@
       Object.keys(rounds).forEach(function (k) { delete rounds[k]; });
       (r[7].data || []).forEach(function (x) { rounds[x.game] = { game: x.game, amount: n(x.amount), nonce: +x.nonce, client: x.client_seed, server: "", state: x.state || {}, started: x.started_at }; });
       me.rounds = rounds;
-      loadAff();
+      loadAff(); if (!sup.loaded) supLoad();
       fill(D.players, [me]); fill(D.tx, txs);
       fill(D.bets, (r[2].data || []).map(function (b) { return { id: "B-" + b.id, userId: b.user_id, user: prof.username, game: b.game, amount: n(b.amount), multiplier: +b.multiplier, payout: n(b.payout), date: b.created_at, detail: Object.assign({ nonce: +b.nonce, client: b.client_seed }, b.detail || {}) }; }));
       state.wallets = r[4].data || [];
@@ -287,6 +287,71 @@
   db.adminCodes = function () { return sb.from("promo_codes").select("*").order("created_at", { ascending: false }).then(function (r) { return r.data || []; }); };
   db.saveCode = function (c) { return adminCall("admin_save_code", { p_code: c.code, p_amount: c.amount, p_max_uses: c.maxUses, p_min_wager: c.minWager, p_hours: c.hours, p_active: true }); };
   db.toggleCode = function (code, active) { return adminCall("admin_toggle_code", { p_code: code, p_active: active }); };
+  /* ---------- Equipe (tag de diamante) ---------- */
+  RD.staff = [];
+  sb.rpc("public_staff").then(function (r) { if (r.data) { RD.staff = r.data; db.emit(); chatNotify(); } });
+  /* ---------- Suporte ao vivo ---------- */
+  var sup = { msgs: [], unread: 0, subs: [], loaded: false, ch: null, rt: false };
+  function supMap(m) { return { id: m.id, fromStaff: m.from_staff, staff: m.staff_name, text: m.text, at: m.created_at }; }
+  function supNotify() { sup.subs.forEach(function (fn) { fn(); }); }
+  function supAdd(row) {
+    if (sup.msgs.some(function (x) { return x.id === row.id; })) return;
+    var mine = !row.from_staff && sup.msgs.filter(function (x) { return x.pending && x.text === row.text; })[0];
+    if (mine) { mine.id = row.id; mine.at = row.created_at; mine.pending = false; return; }
+    sup.msgs.push(supMap(row));
+  }
+  function supLoad() {
+    if (!state.user) { sup.msgs = []; sup.unread = 0; supNotify(); return Promise.resolve(); }
+    var uid = state.user.id;
+    return Promise.all([
+      sb.from("support_messages").select("*").eq("user_id", uid).order("id").limit(300),
+      sb.from("support_threads").select("*").eq("user_id", uid).maybeSingle()
+    ]).then(function (r) {
+      sup.msgs = (r[0].data || []).map(supMap); sup.unread = r[1].data ? r[1].data.unread_user : 0; sup.loaded = true; supNotify();
+      if (!sup.ch && !RD.isAdminPage) {
+        sup.ch = sb.channel("rd-support-" + uid)
+          .on("postgres_changes", { event: "INSERT", schema: "public", table: "support_messages", filter: "user_id=eq." + uid }, function (ev) { supAdd(ev.new); if (ev.new.from_staff) sup.unread++; supNotify(); })
+          .subscribe(function (st) { sup.rt = st === "SUBSCRIBED"; });
+      }
+    });
+  }
+  db.ready.then(supLoad);
+  setInterval(function () {
+    if (sup.rt || document.hidden || !state.user || RD.isAdminPage) return;
+    var last = sup.msgs.filter(function (x) { return !x.pending; }).slice(-1)[0], lastId = last ? last.id : 0;
+    sb.from("support_messages").select("*").eq("user_id", state.user.id).gt("id", lastId).order("id").then(function (r) {
+      var fresh = r.data || []; if (!fresh.length) return;
+      fresh.forEach(function (m) { supAdd(m); if (m.from_staff) sup.unread++; }); supNotify();
+    });
+  }, 4000);
+  db.onSupport = function (fn) { sup.subs.push(fn); };
+  db.supportMessages = function () { return sup.msgs.slice(); };
+  db.supportUnread = function () { return sup.unread; };
+  db.supportSend = function (pid, text) {
+    var v = String(text || "").trim(); if (!v) return Promise.resolve({ error: "Type a message." });
+    var tmp = { id: "tmp-" + Date.now(), fromStaff: false, text: v, at: new Date().toISOString(), pending: true };
+    sup.msgs.push(tmp); supNotify();
+    return sb.rpc("support_send", { p_text: v }).then(function (r) {
+      if (r.error) { sup.msgs.splice(sup.msgs.indexOf(tmp), 1); supNotify(); return { error: msg(r.error) }; }
+      if (tmp.pending) { if (sup.msgs.some(function (x) { return x.id === r.data; })) sup.msgs.splice(sup.msgs.indexOf(tmp), 1); else { tmp.id = r.data; tmp.pending = false; } }
+      supNotify(); return { ok: true };
+    });
+  };
+  db.supportSeen = function () { if (!sup.unread) return; sup.unread = 0; supNotify(); sb.rpc("support_seen"); };
+  /* Admin */
+  db.adminSupportThreads = function () {
+    return sb.from("support_threads").select("*").order("last_at", { ascending: false }).then(function (r) {
+      var names = {}; D.players.forEach(function (p) { names[p.id] = p.username; });
+      return (r.data || []).map(function (t) { return { userId: t.user_id, user: names[t.user_id] || "?", status: t.status, lastAt: t.last_at, lastText: t.last_text, unread: t.unread_staff }; });
+    });
+  };
+  db.adminSupportMessages = function (uid) { return sb.from("support_messages").select("*").eq("user_id", uid).order("id").limit(500).then(function (r) { return (r.data || []).map(supMap); }); };
+  db.adminSupportReply = function (uid, text) { return sb.rpc("admin_support_reply", { p_user: uid, p_text: text }).then(function (r) { return r.error ? { error: msg(r.error) } : { ok: true }; }); };
+  db.adminSupportStatus = function (uid, st) { return sb.rpc("admin_support_status", { p_user: uid, p_status: st }).then(function (r) { return r.error ? { error: msg(r.error) } : { ok: true }; }); };
+  db.adminSupportSeen = function (uid) { return sb.rpc("admin_support_seen", { p_user: uid }); };
+  db.onAdminSupport = function (fn) {
+    sb.channel("rd-support-admin").on("postgres_changes", { event: "INSERT", schema: "public", table: "support_messages" }, function (ev) { fn(ev.new); }).subscribe();
+  };
   db.grantReload = function (pid, per, claims, hours, note) { return adminCall("admin_grant_reload", { p_user: pid, p_per: per, p_claims: claims, p_hours: hours, p_note: note || null }); };
   db.cancelReload = function (pid) { return adminCall("admin_cancel_reload", { p_user: pid }); };
   db.rainAuto = function () { return state.rainAuto; };
