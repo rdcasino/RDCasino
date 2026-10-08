@@ -192,7 +192,7 @@ window.RD = window.RD || {};
 
   /* Pedra, papel e tesoura como objetos (ícones lisos, uma cor + recortes): limpos e iguais em qualquer aparelho */
   function rpsHand(k) {
-    var cut = "var(--rps-cut, #241b27)", body;
+    var cut = "var(--rps-cut, #111e35)", body;
     if (k === "paper") body = '<path d="M27 12 H61 L77 28 V88 H27 Z" fill="currentColor"/><path d="M61 12 V28 H77" fill="none" stroke="' + cut + '" stroke-width="3.5" stroke-linejoin="round"/>' +
       '<path d="M36 44 H68 M36 54 H68 M36 64 H68 M36 74 H56" stroke="' + cut + '" stroke-width="4" stroke-linecap="round"/>';
     else if (k === "scissors") body = '<g stroke="currentColor" stroke-linecap="round"><path d="M41 64 L66 11 M59 64 L34 11" stroke-width="9"/><circle cx="33" cy="78" r="11" fill="none" stroke-width="7"/><circle cx="67" cy="78" r="11" fill="none" stroke-width="7"/><path d="M41 64 L37 70 M59 64 L63 70" stroke-width="7"/></g><circle cx="50" cy="45" r="4.5" fill="' + cut + '"/>';
@@ -309,16 +309,25 @@ window.RD = window.RD || {};
         '<g transform="translate(150 168) rotate(-14) scale(.92 .78)"><ellipse cx="0" cy="18" rx="100" ry="100" fill="#7a4e06"/><ellipse cx="0" cy="11" rx="100" ry="100" fill="#a8700a"/>' + coinSide("heads") + "</g>" + spark(68, 72, 12) + spark(246, 220, 10) + spark(104, 40, 7);
     } },
     rps: { a: "#7c5cff", b: "#1d0f4a", draw: function () {
-      // os três objetos em triângulo, com setas mostrando quem vence quem
-      var gR = U("rr"), gP = U("rp"), gS = U("rs");
-      var badge = function (k, x, y, rr, fill, cut) { return '<g transform="translate(' + x + " " + y + ')"><circle r="' + rr + '" fill="#000" opacity=".25" cy="6"/><circle r="' + rr + '" fill="url(#' + fill + ')"/><circle r="' + rr + '" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="2"/>' +
-        '<g transform="scale(' + (rr / 72).toFixed(3) + ') translate(-50 -50)" color="#fff" style="--rps-cut:' + cut + '">' + rpsHand(k).replace(/^<svg[^>]*>|<\/svg>$/g, "") + "</g></g>"; };
-      var arrow = function (d) { return '<path d="' + d + '" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="5" stroke-linecap="round" marker-end="none"/>'; };
-      return "<defs>" + lin(gR, [[0, "#ff5a7a"], [1, "#c8103a"]], 0, 0, 1, 1) + lin(gP, [[0, "#3fd0ff"], [1, "#1a6fd6"]], 0, 0, 1, 1) + lin(gS, [[0, "#ffd84d"], [1, "#e39400"]], 0, 0, 1, 1) + "</defs>" +
-        arrow("M118 94 Q78 120 78 170") + '<path d="M70 160 L78 174 L88 162" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>' +
-        arrow("M108 246 Q150 270 192 246") + '<path d="M180 240 L194 246 L184 258" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>' +
-        arrow("M222 170 Q222 120 182 94") + '<path d="M196 92 L180 92 L186 106" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>' +
-        badge("paper", 150, 84, 46, gP, "#1f7de0") + badge("rock", 76, 222, 46, gR, "#d61f45") + badge("scissors", 224, 222, 46, gS, "#eaa000") + spark(262, 70, 11) + spark(40, 100, 9);
+      // ilustração: folha de papel ao fundo, pedra com volume à esquerda e tesoura metálica aberta à direita
+      var pg = U("pp"), rk = U("rk"), bl = U("bl"), hd = U("hd"), gw = U("rg");
+      var paper = '<g transform="translate(150 104) rotate(-9)"><path d="M-52 -66 H34 L56 -44 V70 H-52 Z" fill="#000" opacity=".22" transform="translate(6 8)"/>' +
+        '<path d="M-52 -66 H34 L56 -44 V70 H-52 Z" fill="url(#' + pg + ')"/><path d="M34 -66 V-44 H56 Z" fill="#c3cde0"/>' +
+        '<path d="M-36 -36 H32 M-36 -20 H38 M-36 -4 H38 M-36 12 H38 M-36 28 H38 M-36 44 H14" stroke="#b5c1d6" stroke-width="4" stroke-linecap="round"/></g>';
+      var rock = '<g transform="translate(92 226)"><ellipse cx="4" cy="44" rx="62" ry="10" fill="#000" opacity=".3"/>' +
+        '<path d="M-58 22 L-46 -24 L-12 -48 L30 -42 L58 -12 L54 26 L18 44 L-30 42 Z" fill="url(#' + rk + ')"/>' +
+        '<path d="M-12 -48 L-8 -6 L30 -42 Z" fill="#fff" opacity=".22"/><path d="M-46 -24 L-8 -6 L-12 -48 Z" fill="#fff" opacity=".12"/>' +
+        '<path d="M-8 -6 L58 -12 L54 26 L18 44 Z" fill="#000" opacity=".18"/><path d="M-8 -6 L18 44 L-30 42 L-58 22 Z" fill="#000" opacity=".1"/>' +
+        '<path d="M-46 -24 L-8 -6 L58 -12 M-8 -6 L18 44" fill="none" stroke="#fff" stroke-opacity=".18" stroke-width="1.5"/><path d="M8 10 l10 8 -4 9" fill="none" stroke="#000" stroke-opacity=".3" stroke-width="2" stroke-linecap="round"/></g>';
+      var sc = '<g transform="translate(214 196) rotate(-24)">' +
+        '<path d="M-6 4 L-34 -102 Q-27 -110 -20 -102 L8 -4 Z" fill="url(#' + bl + ')"/><path d="M6 4 L34 -102 Q27 -110 20 -102 L-8 -4 Z" fill="url(#' + bl + ')"/>' +
+        '<path d="M-6 4 L-34 -102" stroke="#fff" stroke-opacity=".6" stroke-width="1.5"/><path d="M6 4 L34 -102" stroke="#fff" stroke-opacity=".35" stroke-width="1.5"/>' +
+        '<path d="M-6 2 L-16 22 M6 2 L16 22" stroke="url(#' + hd + ')" stroke-width="10" stroke-linecap="round"/>' +
+        '<ellipse cx="-22" cy="44" rx="15" ry="19" fill="none" stroke="url(#' + hd + ')" stroke-width="9"/><ellipse cx="22" cy="44" rx="15" ry="19" fill="none" stroke="url(#' + hd + ')" stroke-width="9"/>' +
+        '<circle r="6.5" fill="#dfe4ec" stroke="#7d8798" stroke-width="2"/><circle r="2" fill="#7d8798"/></g>';
+      return "<defs>" + lin(pg, [[0, "#ffffff"], [1, "#dbe3f0"]], 0, 0, 0, 1) + rad(rk, [[0, "#c9ced8"], [0.6, "#8d95a3"], [1, "#5a6170"]], 0.35, 0.3, 0.85) +
+        lin(bl, [[0, "#ffffff"], [0.5, "#c3cbd8"], [1, "#7f8a9c"]], 0, 0, 1, 1) + lin(hd, [[0, "#ff5a7a"], [1, "#c8103a"]], 0, 0, 1, 1) + rad(gw, [[0, "#a78bfa", 0.55], [1, "#a78bfa", 0]]) + "</defs>" +
+        '<circle cx="150" cy="160" r="130" fill="url(#' + gw + ')"/>' + paper + rock + sc + spark(262, 62, 12) + spark(40, 90, 9) + spark(258, 262, 8);
     } },
     baccarat: { a: "#ff2e55", b: "#4a0716", draw: function () {
       return card(112, 172, 104, -12, "9", "♦", true) + card(190, 166, 104, 10, "K", "♠", false) + chip(238, 282, 28, "#ffd23f", 4) + chip(70, 290, 24, "#1d4ed8", 3) +
@@ -361,14 +370,15 @@ window.RD = window.RD || {};
 
   function cover(id) {
     var c = COVERS[id]; if (!c) return "";
-    var bg = U("bg"), gl = U("gw"), fd = U("fd"), name = { dice: "DICE", limbo: "LIMBO", crash: "CRASH", mines: "MINES", plinko: "PLINKO", hilo: "HI-LO", blackjack: "BLACKJACK", roulette: "ROULETTE", wheel: "WHEEL", keno: "KENO", tower: "TOWER", chicken: "CHICKEN", coinflip: "COINFLIP", rps: "RPS", baccarat: "BACCARAT", double: "DOUBLE", soccer: "SOCCER", door: "DOOR" }[id];
+    var bg = U("bg"), gl = U("gw"), fd = U("fd"), name = { dice: "DICE", limbo: "LIMBO", crash: "CRASH", mines: "MINES", plinko: "PLINKO", hilo: "HI-LO", blackjack: "BLACKJACK", roulette: "ROULETTE", wheel: "WHEEL", keno: "KENO", tower: "TOWER", chicken: "CHICKEN", coinflip: "COINFLIP", rps: "ROCK PAPER SCISSORS", baccarat: "BACCARAT", double: "DOUBLE", soccer: "SOCCER", door: "DOOR" }[id];
     return '<svg class="art" viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + name + '"><defs>' +
       lin(bg, [[0, c.a], [1, c.b]]) + rad(gl, [[0, "#ffffff", 0.35], [1, "#ffffff", 0]]) + lin(fd, [[0, "#000", 0], [1, "#000", 0.55]]) + "</defs>" +
       '<rect width="300" height="400" fill="url(#' + bg + ')"/>' +
       '<g opacity=".08" fill="#fff"><rect x="-60" y="40" width="420" height="22" transform="rotate(-24 150 200)"/><rect x="-60" y="120" width="420" height="8" transform="rotate(-24 150 200)"/><rect x="-60" y="300" width="420" height="40" transform="rotate(-24 150 200)"/></g>' +
       '<circle cx="150" cy="180" r="150" fill="url(#' + gl + ')"/>' + c.draw() +
       '<rect y="270" width="300" height="130" fill="url(#' + fd + ')"/>' +
-      '<text x="150" y="356" text-anchor="middle" font-size="' + (name.length > 7 ? 34 : 40) + '" font-weight="900" fill="#fff" letter-spacing="-0.5" style="font-family:var(--font-display,Arial)">' + name + "</text>" +
+      (name.indexOf(" ") > -1 ? '<text x="150" y="330" text-anchor="middle" font-size="30" font-weight="900" fill="#fff" letter-spacing="-0.5" style="font-family:var(--font-display,Arial)">' + name.split(" ").slice(0, -1).join(" ") + '</text><text x="150" y="362" text-anchor="middle" font-size="30" font-weight="900" fill="#fff" letter-spacing="-0.5" style="font-family:var(--font-display,Arial)">' + name.split(" ").slice(-1)[0] + "</text>"
+        : '<text x="150" y="356" text-anchor="middle" font-size="' + (name.length > 7 ? 34 : 40) + '" font-weight="900" fill="#fff" letter-spacing="-0.5" style="font-family:var(--font-display,Arial)">' + name + "</text>") +
       '<text x="150" y="381" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" fill-opacity=".7" letter-spacing="3" style="font-family:var(--font,Arial)">RD ORIGINALS</text></svg>';
   }
 
@@ -382,26 +392,26 @@ window.RD = window.RD || {};
       '<circle cx="' + (w - h * 0.62) + '" cy="' + h * 0.5 + '" r="' + h * 0.55 + '" fill="url(#' + gl + ')"/>' + body + "</svg>";
   }
   var SCENES = {
-    welcome: function (p) { p = p || {}; return scene(p.a || "#ff2e55", p.b || "#4a0716", gift(890, 300, 1.75) + coinFront(1080, 170, 58) + coinFront(720, 470, 42) + coin(1070, 470, 52) + spark(760, 140, 22) + spark(1120, 330, 14) + spark(990, 90, 12)); },
-    leaderboard: function (p) { p = p || {}; return scene(p.a || "#8a1f5c", p.b || "#1f0618", trophy(900, 300, 1.85) + coinFront(1090, 450, 50, "1") + coinFront(715, 180, 36) + stars(3, 30, 1200, 600, "#ffd23f") + spark(1080, 150, 20) + spark(740, 450, 16)); },
+    welcome: function (p) { p = p || {}; return scene(p.a || "#1f6fff", p.b || "#071a44", gift(890, 300, 1.75) + coinFront(1080, 170, 58) + coinFront(720, 470, 42) + coin(1070, 470, 52) + spark(760, 140, 22) + spark(1120, 330, 14) + spark(990, 90, 12)); },
+    leaderboard: function (p) { p = p || {}; return scene(p.a || "#1d4ed8", p.b || "#0a1640", trophy(900, 300, 1.85) + coinFront(1090, 450, 50, "1") + coinFront(715, 180, 36) + stars(3, 30, 1200, 600, "#ffd23f") + spark(1080, 150, 20) + spark(740, 450, 16)); },
     affiliate: function (p) { p = p || {};
       var id = U("ch");
-      return scene(p.a || "#5b2a86", p.b || "#170a2e", "<defs>" + lin(id, [[0, "#ffffff"], [1, "#b9e9f5"]], 0, 0, 1, 1) + "</defs>" +
+      return scene(p.a || "#0e7490", p.b || "#06263a", "<defs>" + lin(id, [[0, "#ffffff"], [1, "#b9e9f5"]], 0, 0, 1, 1) + "</defs>" +
         '<g transform="translate(880 300) rotate(-35)"><rect x="-210" y="-58" width="230" height="116" rx="58" fill="none" stroke="url(#' + id + ')" stroke-width="34"/><rect x="-20" y="-58" width="230" height="116" rx="58" fill="none" stroke="#ffd23f" stroke-width="34"/></g>' +
         coinFront(1090, 150, 50) + coinFront(700, 470, 40) + coin(1060, 480, 46) + spark(760, 130, 18) + spark(1140, 330, 12));
     },
-    reload: function (p) { p = p || {}; return scene(p.a || "#e0457b", p.b || "#3d0a24", '<g transform="translate(900 300)"><path d="M-150 -20 A150 150 0 0 1 120 -90" fill="none" stroke="#fff" stroke-width="34" stroke-linecap="round"/><path d="M150 20 A150 150 0 0 1 -120 90" fill="none" stroke="#ffd23f" stroke-width="34" stroke-linecap="round"/><path d="M150 -150 l14 92 l-88 -30z" fill="#fff"/><path d="M-150 150 l-14 -92 l88 30z" fill="#ffd23f"/></g>' + coinFront(900, 300, 70) + spark(1110, 120, 18)); },
-    rakeback: function (p) { p = p || {}; return scene(p.a || "#6b21a8", p.b || "#1f0638", coinFront(900, 300, 150, "") + '<path d="M915 180 L840 320 h55 l-25 110 l95 -150 h-58 z" fill="#b46f00"/><path d="M910 170 L835 310 h55 l-25 110 l95 -150 h-58 z" fill="#fff5c2"/>' + spark(1100, 140, 20) + spark(720, 470, 16)); },
+    reload: function (p) { p = p || {}; return scene(p.a || "#2563eb", p.b || "#0b1d4f", '<g transform="translate(900 300)"><path d="M-150 -20 A150 150 0 0 1 120 -90" fill="none" stroke="#fff" stroke-width="34" stroke-linecap="round"/><path d="M150 20 A150 150 0 0 1 -120 90" fill="none" stroke="#ffd23f" stroke-width="34" stroke-linecap="round"/><path d="M150 -150 l14 92 l-88 -30z" fill="#fff"/><path d="M-150 150 l-14 -92 l88 30z" fill="#ffd23f"/></g>' + coinFront(900, 300, 70) + spark(1110, 120, 18)); },
+    rakeback: function (p) { p = p || {}; return scene(p.a || "#4338ca", p.b || "#120f45", coinFront(900, 300, 150, "") + '<path d="M915 180 L840 320 h55 l-25 110 l95 -150 h-58 z" fill="#b46f00"/><path d="M910 170 L835 310 h55 l-25 110 l95 -150 h-58 z" fill="#fff5c2"/>' + spark(1100, 140, 20) + spark(720, 470, 16)); },
     vip: function (p) { p = p || {};
       var crown = '<g transform="translate(900 300)"><path d="M-170 90 L-190 -90 L-90 0 L0 -130 L90 0 L190 -90 L170 90 Z" fill="#ffd23f" stroke="#b46f00" stroke-width="10" stroke-linejoin="round"/><rect x="-175" y="90" width="350" height="46" rx="14" fill="#ffb020" stroke="#b46f00" stroke-width="10"/><circle cx="-190" cy="-96" r="20" fill="#fff5c2"/><circle cx="190" cy="-96" r="20" fill="#fff5c2"/><circle cx="0" cy="-138" r="22" fill="#fff5c2"/><path d="M0 -40 L32 0 L0 52 L-32 0 Z" fill="#ff2e55"/><path d="M0 -40 L14 0 L0 52 L-14 0 Z" fill="#ff7d96"/></g>';
-      return scene(p.a || "#8a1f5c", p.b || "#1f0618", crown + coinFront(1100, 470, 46) + coinFront(700, 160, 34) + spark(1110, 140, 20) + spark(720, 470, 14) + stars(5, 24, 1200, 600, "#ffd23f")); },
+      return scene(p.a || "#1d4ed8", p.b || "#0a1640", crown + coinFront(1100, 470, 46) + coinFront(700, 160, 34) + spark(1110, 140, 20) + spark(720, 470, 14) + stars(5, 24, 1200, 600, "#ffd23f")); },
     rain: function (p) { p = p || {};
       var drops = ""; [[780, 380], [860, 450], [940, 400], [1020, 470], [1100, 410]].forEach(function (d, i) { drops += coinFront(d[0], d[1], 26 - (i % 2) * 4); });
       var cloud = '<g transform="translate(940 230)"><ellipse cx="0" cy="40" rx="250" ry="70" fill="#000" opacity=".18"/><path d="M-200 60 a80 80 0 0 1 30 -150 a130 130 0 0 1 240 -40 a100 100 0 0 1 140 110 a70 70 0 0 1 -30 80 z" fill="#e8f1ff"/><path d="M-200 60 a80 80 0 0 1 30 -150 a130 130 0 0 1 240 -40" fill="none" stroke="#fff" stroke-width="10" opacity=".7"/></g>';
       return scene(p.a || "#2f6bff", p.b || "#0b1d4f", cloud + drops + spark(720, 150, 18) + spark(1140, 160, 14)); },
     codes: function (p) { p = p || {};
       var tk = '<g transform="translate(920 300) rotate(-12)"><path d="M-230 -110 H230 V-36 a36 36 0 0 0 0 72 V110 H-230 V36 a36 36 0 0 0 0 -72 Z" fill="#fff" stroke="#ffd6de" stroke-width="8"/><path d="M-120 -110 V110" stroke="#ff2e55" stroke-width="6" stroke-dasharray="14 12"/><text x="50" y="22" text-anchor="middle" font-size="76" font-weight="900" fill="#ff2e55" style="font-family:var(--font-display,Arial)">CODE</text><text x="-176" y="20" text-anchor="middle" font-size="44" font-weight="900" fill="#ff2e55" style="font-family:var(--font-display,Arial)" transform="rotate(-90 -176 8)">RD</text></g>';
-      return scene(p.a || "#ff2e55", p.b || "#4a0716", tk + coinFront(1110, 470, 44) + coinFront(700, 150, 32) + spark(1120, 120, 18) + spark(730, 470, 14)); },
+      return scene(p.a || "#1f6fff", p.b || "#071a44", tk + coinFront(1110, 470, 44) + coinFront(700, 150, 32) + spark(1120, 120, 18) + spark(730, 470, 14)); },
     race: function (p) { p = p || {}; return scene(p.a || "#ffb020", p.b || "#6b2100", trophy(900, 300, 1.75) + spark(1080, 140, 22) + spark(720, 160, 14) + stars(9, 22, 1200, 600, "#fff")); },
     hero: function (p) { p = p || {}; var bars = ""; [120, 180, 150, 240, 300, 380].forEach(function (hh, i) { bars += '<rect x="' + (1180 + i * 90) + '" y="' + (700 - hh) + '" width="62" height="' + hh + '" rx="10" fill="#fff" opacity="' + (0.25 + i * 0.12) + '"/>'; });
       return scene(p.a || "#ff2e55", p.b || "#22040c", bars + '<path d="M1170 560 L1300 470 L1390 500 L1480 380 L1570 330 L1680 210" fill="none" stroke="#ffd23f" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>' + coinFront(1700, 200, 60) + coinFront(1100, 250, 44) + coin(1560, 640, 56) + spark(1300, 160, 20), 1920, 800); }

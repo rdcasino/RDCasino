@@ -10,25 +10,29 @@
    Verde = ganho, coral = erro/perda (para o vermelho da marca nunca ser lido como prejuízo). */
 :root {
   /* Surfaces */
-  --bg: #1a141d;
-  --bg-2: #211924;
-  --surface: #241b27;
-  --surface-2: #2f2533;
-  --surface-3: #3c3041;
+  --bg: #0a1322;
+  --bg-2: #0f1b2f;
+  --surface: #111e35;
+  --surface-2: #182a47;
+  --surface-3: #213759;
   --line: rgba(255, 255, 255, 0.07);
   --line-2: rgba(255, 255, 255, 0.1);
 
   /* Text */
   --text: #ffffff;
-  --text-2: #d2c3cc;
-  --text-3: #9a8693;
+  --text-2: #c6d5ec;
+  --text-3: #7e93b4;
 
   /* Brand & status */
-  --brand: #ff2e55;
-  --brand-hover: #e8204a;
+  --brand: #1f8fff;
+  --brand-hover: #1a7fe6;
   --brand-ink: #ffffff;
-  --brand-soft: rgba(255, 46, 85, 0.14);
-  --brand-light: #ff8fa3;
+  --brand-soft: rgba(31, 143, 255, 0.16);
+  --brand-rgb: 31, 143, 255;
+  --brand-2: #22d3ee;
+  --brand-deep: #0b3d91;
+  --brand-grad: linear-gradient(90deg, #1f6fff 0%, #1f8fff 45%, #22d3ee 100%);
+  --brand-light: #22d3ee;
   --success: #22e08a;
   --success-soft: rgba(34, 224, 138, 0.14);
   --gold: #ffc85c;
@@ -103,7 +107,7 @@ h3 { font-size: 15px; font-weight: 600; }
 }
 .btn:active { transform: translateY(1px); }
 .btn svg { width: 16px; height: 16px; }
-.btn-primary { background: var(--brand); color: var(--brand-ink); box-shadow: 0 4px 14px rgba(255, 46, 85, 0.28); }
+.btn-primary { background: var(--brand-grad); color: var(--brand-ink); box-shadow: 0 6px 18px rgba(var(--brand-rgb), 0.32); }
 .btn-primary:hover { background: var(--brand-hover); }
 .btn-secondary { background: var(--surface-2); color: var(--text); border-color: var(--line-2); }
 .btn-secondary:hover { background: var(--surface-3); }
@@ -280,7 +284,7 @@ h3 { font-size: 15px; font-weight: 600; }
 
 /* Simple bar chart */
 .bars { display: flex; align-items: flex-end; gap: 4px; height: 180px; padding-top: 10px; }
-.bars .bar { flex: 1; background: rgba(255, 46, 85, 0.45); border-radius: 4px 4px 0 0; position: relative; min-height: 2px; transition: background 0.15s; }
+.bars .bar { flex: 1; background: rgba(var(--brand-rgb), 0.45); border-radius: 4px 4px 0 0; position: relative; min-height: 2px; transition: background 0.15s; }
 .bars .bar:hover { background: var(--brand); }
 .bars .bar.neg { background: rgba(255, 122, 89, 0.4); }
 .bars .bar[data-tip]:hover::after {
