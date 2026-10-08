@@ -29,16 +29,15 @@
 .sb-link.active { background: var(--surface-3); color: var(--text); }
 .sb-link.active svg { color: var(--text); }
 .sb-link .badge { margin-left: auto; }
-.sb-promo {
-  display: block; margin: 0 0 8px; padding: 14px; border-radius: 10px;
-  background: linear-gradient(135deg, rgba(245, 200, 66, 0.16), rgba(245, 200, 66, 0.03)); border: 1px solid rgba(245, 200, 66, 0.22);
-}
+.sb-promo { display: block; padding: 10px 14px; margin-bottom: 10px; border-radius: 12px; background: linear-gradient(135deg, rgba(255, 200, 92, 0.12), rgba(255, 200, 92, 0.03)); border: 1px solid rgba(255, 200, 92, 0.28); }
 .sb-promo .eyebrow { color: var(--gold); }
-.sb-promo strong { display: block; font-family: var(--font-display); font-size: 22px; font-weight: 800; color: var(--gold); margin-top: 2px; }
-.sb-promo small { color: var(--text-3); font-size: 12px; }
+.sb-promo strong { display: block; font-family: var(--font-display); font-size: 17px; font-weight: 800; color: var(--gold); margin-top: 1px; }
+.sb-promo small { color: var(--text-3); font-size: 11px; }
+.sb-promo .eyebrow { font-size: 10px; }
 .sb-foot { padding: 12px 14px 18px; }
 .sb-lang { display: flex; align-items: center; gap: 8px; color: var(--text-3); background: var(--surface); border-radius: 8px; padding: 0 12px; height: 40px; }
-.sb-lang-select { flex: 1; background: transparent; border: none; color: var(--text-2); font-size: 13px; font-weight: 600; outline: none; cursor: pointer; }
+.sb-lang-select { flex: 1; background: transparent; border: 0 !important; box-shadow: none !important; outline: none !important; -webkit-appearance: none; appearance: none; color: var(--text-2); font-size: 13px; font-weight: 600; cursor: pointer; padding: 0 18px 0 0; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a89aa4' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right center; }
+.sb-lang-select:focus, .sb-lang-select:focus-visible { border: 0; outline: none; box-shadow: none; }
 .sb-lang-select option { background: var(--surface); }
 .sb-backdrop { display: none; }
 
