@@ -2167,8 +2167,7 @@
     if (left <= 0) { box.innerHTML = '<div class="rain-card ending"><div class="rain-ic">' + rainIcon() + '</div><div class="grow"><b>Rain ending…</b><small>Splitting the pot</small></div></div>'; if (!renderRain.settling) { renderRain.settling = true; db.rainSettle().then(function () { renderRain.settling = false; renderRain(); }); } return; }
     box.innerHTML = '<div class="rain-card"><div class="rain-ic">' + rainIcon() + '</div><div class="grow"><b>' + (r.auto ? "Hourly Rain" : "Rain in progress") + '</b><div class="rain-stats"><span>' + ic("users", 13) + r.participants + '</span><span class="rain-timer">' + ic("clock", 13) + '<i data-until="' + r.ends_at + '">' + untilTxt(r.ends_at) + "</i></span></div></div>" +
       '<div class="rain-act">' + (r.joined ? '<button class="btn btn-sm rain-joined" disabled>' + ic("check", 14) + "Joined</button>" : '<button class="btn btn-primary btn-sm" data-rain="join">Join</button>') +
-      '<div class="rain-pot"><span>' + fmt.usd(+r.amount) + '</span><button data-rain="add" aria-label="Add to rain">' + ic("plus", 13) + "</button></div></div></div>" +
-      '<p class="rain-note">Split equally between everyone who joins before the timer ends' + (r.auto ? ", every hour" : "") + ". Wager at least " + fmt.usd(+r.min_wager, { dec: 0 }) + " to join.</p>";
+      '<div class="rain-pot"><span>' + fmt.usd(+r.amount) + '</span><button data-rain="add" aria-label="Add to rain">' + ic("plus", 13) + "</button></div></div></div>";
   }
   function rainIcon() { return '<svg viewBox="0 0 48 48" width="40" height="40"><path d="M14 30a9 9 0 0 1 1-18 12 12 0 0 1 22 4 7 7 0 0 1-1 14z" fill="#cfe3ff"/><path d="M14 30a9 9 0 0 1 1-18 12 12 0 0 1 22 4" fill="none" stroke="#fff" stroke-width="2" opacity=".6"/><path d="M17 35l-2 5M25 35l-2 5M33 35l-2 5" stroke="#4da3ff" stroke-width="3" stroke-linecap="round"/></svg>'; }
   function renderChat() {
