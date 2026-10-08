@@ -1171,3 +1171,31 @@ button.sup-card:hover { border-color: rgba(255,255,255,.18); }
 /* Escada de multiplicadores: faixa centralizada que rola, com as pontas esfumadas */
 .ladder { max-width: 560px; width: 100%; margin: 0 auto; padding: 4px 28px 2px; scroll-snap-type: x proximity; -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); }
 .ladder span { scroll-snap-align: center; padding: 5px 10px; font-size: 12px; }
+
+/* ---------- Promoções (estilo Shuffle) ---------- */
+.pr-tabs { display: inline-flex; gap: 4px; padding: 4px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); margin-bottom: 22px; }
+.pr-tabs button { display: inline-flex; align-items: center; gap: 8px; padding: 9px 18px; border-radius: 10px; border: 0; background: none; color: var(--text-2); font: inherit; font-weight: 700; font-size: 14px; cursor: pointer; }
+.pr-tabs button.active { background: var(--surface-2); color: var(--text); box-shadow: inset 0 0 0 1px var(--line-2); }
+.pr-art { position: relative; border-radius: 16px; overflow: hidden; aspect-ratio: 16 / 9; background: var(--surface); }
+.pr-art .media { position: absolute; inset: 0; border-radius: 0; }
+.pr-art .media .art, .pr-art .media img { width: 100%; height: 100%; object-fit: cover; }
+.pr-copy { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; gap: 6px; padding: 18px 20px; background: linear-gradient(90deg, rgba(0,0,0,.55), rgba(0,0,0,.08) 70%); }
+.pr-copy h3 { font-family: var(--font-display, sans-serif); font-weight: 900; text-transform: uppercase; line-height: .95; font-size: clamp(22px, 2.6vw, 34px); max-width: 70%; letter-spacing: -.01em; color: #fff; text-shadow: 0 3px 12px rgba(0,0,0,.35); }
+.pr-art.big .pr-copy h3 { font-size: clamp(30px, 4.4vw, 60px); }
+.pr-copy p { color: #fff; opacity: .92; font-size: 13.5px; max-width: 60%; font-weight: 600; }
+.pr-art.big .pr-copy p { font-size: 16px; }
+.pr-chip { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 8px; background: #fff; color: #160a10; font-size: 12px; font-weight: 800; margin-bottom: auto; }
+.pr-feature { display: grid; grid-template-columns: 1.05fr 1fr; gap: 24px; align-items: start; color: inherit; text-decoration: none; }
+.pr-info h1, .pr-info h2 { font-size: clamp(22px, 2.4vw, 32px); line-height: 1.15; }
+.pr-info p { color: var(--text-2); line-height: 1.6; margin-top: 12px; font-size: 15px; }
+.pr-meta { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 13.5px; font-weight: 600; color: var(--text); }
+.pr-live { padding: 3px 8px; border-radius: 6px; background: #16a34a; color: #fff; font-size: 11px; font-weight: 900; letter-spacing: .04em; }
+.pr-divider { height: 1px; background: var(--line); margin: 26px 0; }
+.pr-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.pr-card { color: inherit; text-decoration: none; }
+.pr-card h3 { margin-top: 10px; font-size: 17px; }
+.pr-card:hover .pr-art { transform: translateY(-2px); }
+.pr-card .pr-art { transition: transform .15s; }
+.pr-back { display: inline-flex; align-items: center; gap: 4px; color: var(--text-2); font-size: 14px; margin: 6px 0 16px; text-decoration: none; }
+@media (max-width: 900px) { .pr-feature { grid-template-columns: 1fr; } .pr-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .pr-grid { grid-template-columns: 1fr; } .pr-copy p { max-width: 80%; } }

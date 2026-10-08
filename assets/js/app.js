@@ -112,7 +112,7 @@
       '<button class="btn btn-primary btn-block btn-lg" data-action="tip">Send tip</button></div>';
   }
   /* Caixa no modo real: endereços da casa (cadastrados no banco) e pedido com hash da transação */
-  var COIN_COLORS = { USDT: "#26a17b", USDC: "#2775ca", BTC: "#f7931a", ETH: "#627eea", SOL: "#9945ff", LTC: "#345d9d", TRX: "#ff060a", BNB: "#f3ba2f" };
+  var COIN_COLORS = { USDT: "#26a17b", USDC: "#2775ca", BTC: "#f7931a", ETH: "#627eea", SOL: "#9945ff", LTC: "#345d9d", DOGE: "#c2a633", TRX: "#ff060a", BNB: "#f3ba2f" };
   function renderLiveWallet() {
     var u = me(), ws = db.wallets(), coinsL = [];
     ws.forEach(function (w) { if (coinsL.indexOf(w.coin) < 0) coinsL.push(w.coin); });
@@ -2278,15 +2278,37 @@
     });
   }
 
-  pages.promotions = function () {
-    return '<div class="container"><div class="page-head"><h1>Promotions</h1><p>Clear terms, no hidden conditions.</p></div>' +
-      '<div class="promo-grid">' + RD.promotions.filter(function (p) { return p.status !== "draft"; }).map(function (p) {
-        return '<div class="card promo">' + media(p, "", esc(p.title)) +
-          '<div class="promo-body"><div class="row between"><span class="badge">' + esc(p.badge) + "</span>" + (p.status === "scheduled" ? '<span class="badge badge-info">Coming soon</span>' : "") + "</div>" +
-          "<h3>" + esc(p.title) + '</h3><div class="promo-value">' + esc(p.value) + "</div><p>" + esc(p.desc) + "</p>" +
-          '<div class="promo-foot"><button class="btn btn-primary btn-sm grow" data-promo="' + p.id + '">Get it</button><a class="btn btn-secondary btn-sm" href="#/legal/bonus">Terms</a></div></div></div>';
-      }).join("") + "</div></div>";
+  /* ---------- Promoções (estilo Shuffle: abas, destaque e grade; cada uma tem página própria) ---------- */
+  var promoCat = "all";
+  function promoEnds(p) {
+    if (p.ends === "month") { var n = new Date(); return new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth() + 1, 1) - 60000); }
+    return p.ends ? new Date(p.ends) : null;
+  }
+  function promoArt(p, big) {
+    return '<div class="pr-art' + (big ? " big" : "") + '">' + media(p, "", "") + '<div class="pr-copy"><span class="pr-chip">' + ic("spark", 13) + esc(p.badge || "") + "</span><h3>" + esc(p.value || p.title) + "</h3>" + (p.sub ? "<p>" + esc(p.sub) + "</p>" : "") + "</div></div>";
+  }
+  function promoMeta(p) {
+    var e = promoEnds(p);
+    return '<div class="pr-meta"><span class="pr-live">LIVE</span><span>' + (e ? "Ends " + e.toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" }) : "Always on") + "</span></div>";
+  }
+  pages.promotions = function (id) {
+    var list = RD.promotions.filter(function (p) { return p.status !== "draft"; });
+    if (id) {
+      var p = list.filter(function (x) { return x.id === id; })[0]; if (!p) { location.hash = "#/promotions"; return ""; }
+      return '<div class="container"><a class="pr-back" href="#/promotions">' + ic("chevronLeft", 16) + 'All promotions</a><div class="pr-feature">' + promoArt(p, true) +
+        '<div class="pr-info"><h1>' + esc(p.title) + "</h1>" + promoMeta(p) + "<p>" + esc(p.desc) + '</p><div class="row wrap" style="gap:8px;margin-top:18px"><button class="btn btn-primary" data-promo="' + p.id + '">' + esc(p.cta || "Learn more") + '</button><a class="btn btn-secondary" href="#/legal/bonus">Terms</a></div></div></div></div>';
+    }
+    var shown = list.filter(function (p) { return promoCat === "all" || (p.cat || "casino") === promoCat; }), feat = shown.filter(function (p) { return p.featured; })[0] || shown[0], rest = shown.filter(function (p) { return p !== feat; });
+    var tabs = '<div class="pr-tabs">' + [["all", "grid", "All"], ["casino", "cherry", "Casino"], ["sports", "ball", "Sports"]].map(function (t) { return '<button class="' + (promoCat === t[0] ? "active" : "") + '" data-prcat="' + t[0] + '">' + ic(t[1], 16) + t[2] + "</button>"; }).join("") + "</div>";
+    return '<div class="container"><div class="page-head"><h1>Promotions</h1></div>' + tabs +
+      (!feat ? '<div class="card empty" style="padding:56px 20px">' + ic("ball", 34) + '<h3 style="margin-top:12px">Sports promotions are coming</h3><p>They launch together with the sportsbook.</p></div>' :
+        '<a class="pr-feature" href="#/promotions/' + feat.id + '">' + promoArt(feat, true) + '<div class="pr-info"><h2>' + esc(feat.title) + "</h2>" + promoMeta(feat) + "<p>" + esc(feat.desc) + "</p></div></a>" +
+        (rest.length ? '<div class="pr-divider"></div><div class="pr-grid">' + rest.map(function (p) { return '<a class="pr-card" href="#/promotions/' + p.id + '">' + promoArt(p) + "<h3>" + esc(p.title) + "</h3></a>"; }).join("") + "</div>" : "")) + "</div>";
   };
+  pages.promotions.after = function () {
+    $$("[data-prcat]").forEach(function (b) { b.addEventListener("click", function () { promoCat = b.getAttribute("data-prcat"); route(true); }); });
+  };
+
 
   /* ---------- VIP ---------- */
   function badge(t, size) { return RD.art.tierBadge(t, size); }
@@ -2662,7 +2684,7 @@
     if (!r) { box.innerHTML = ""; return; }
     var left = new Date(r.ends_at).getTime() - Date.now();
     if (left <= 0) { box.innerHTML = '<div class="rain-card ending"><div class="rain-ic">' + rainIcon() + '</div><div class="grow"><b>Rain ending…</b><small>Splitting the pot</small></div></div>'; if (!renderRain.settling) { renderRain.settling = true; db.rainSettle().then(function () { renderRain.settling = false; renderRain(); }); } return; }
-    box.innerHTML = '<div class="rain-card"><div class="rain-ic">' + rainIcon() + '</div><div class="grow"><b>' + (r.auto ? "Hourly Rain" : "Rain in progress") + '</b><div class="rain-stats"><span>' + ic("users", 13) + r.participants + '</span><span class="rain-timer">' + ic("clock", 13) + '<i data-until="' + r.ends_at + '">' + untilTxt(r.ends_at) + "</i></span></div></div>" +
+    box.innerHTML = '<div class="rain-card"><div class="rain-ic">' + rainIcon() + '</div><div class="grow"><b>Rain</b><div class="rain-stats"><span>' + ic("users", 13) + r.participants + '</span><span class="rain-timer">' + ic("clock", 13) + '<i data-until="' + r.ends_at + '">' + untilTxt(r.ends_at) + "</i></span></div></div>" +
       '<div class="rain-act">' + (r.joined ? '<button class="btn btn-sm rain-joined" disabled>' + ic("check", 14) + "Joined</button>" : '<button class="btn btn-primary btn-sm" data-rain="join">Join</button>') +
       '<div class="rain-pot"><span>' + fmt.usd(+r.amount) + '</span><button data-rain="add" aria-label="Add to rain">' + ic("plus", 13) + "</button></div></div></div>";
   }
@@ -2676,7 +2698,7 @@
       if (m.kind === "tip") return '<div class="chat-sys tip">' + ic("gift", 14) + "<span>" + esc(m.text) + "</span></div>";
       if (m.kind === "rain" || m.kind === "system") return '<div class="chat-sys">' + (m.kind === "rain" ? rainIcon().replace('width="40" height="40"', 'width="20" height="20"') : ic("alert", 14)) + "<span>" + esc(m.text) + "</span></div>";
       var pl = db.findByName(m.user), mine = u && u.username === m.user, h = hue(m.user || "?");
-      return '<div class="chat-msg' + (mine ? " mine" : "") + (m.pending ? " pending" : "") + '"><span class="avatar" style="background:hsl(' + h + ',55%,32%);color:hsl(' + h + ',90%,88%)">' + initials(m.user) + '</span><div class="chat-bubble"><div class="chat-meta">' + uBadge(m.user, pl ? pl.wagered : 0, 16) + (mine || !u ? "<strong>" + esc(m.user) + "</strong>" : '<button class="chat-name" data-tip-user="' + esc(m.user) + '" title="Tip ' + esc(m.user) + '">' + esc(m.user) + "</button>") + '<time>' + (m.at ? new Date(m.at).toTimeString().slice(0, 5) : "") + "</time></div><p>" + esc(m.text) + "</p></div></div>";
+      return '<div class="chat-msg' + (mine ? " mine" : "") + (m.pending ? " pending" : "") + '"><div class="chat-bubble"><div class="chat-meta">' + uBadge(m.user, pl ? pl.wagered : 0, 16) + (mine || !u ? "<strong>" + esc(m.user) + "</strong>" : '<button class="chat-name" data-tip-user="' + esc(m.user) + '" title="Tip ' + esc(m.user) + '">' + esc(m.user) + "</button>") + '<time>' + (m.at ? new Date(m.at).toTimeString().slice(0, 5) : "") + "</time></div><p>" + esc(m.text) + "</p></div></div>";
     }).join("") : '<div class="empty" style="padding:40px 10px"><h3>No messages yet</h3><p>Say hi to the community.</p></div>';
     if (atBottom || !renderChat.seen) box.scrollTop = box.scrollHeight;
     renderChat.seen = true;
@@ -2824,9 +2846,10 @@
     if (t.hasAttribute("data-level")) { t.disabled = true; Promise.resolve(db.claimLevel(me().id, t.getAttribute("data-level"))).then(function (r1) { RD.toast(r1.error || "Claimed " + fmt.usd(r1.amount), r1.error ? "error" : ""); renderHeader(); renderSidebar(); markActive(currentPath); route(true); }); return; }
     if (t.hasAttribute("data-promo")) {
       var pid = t.getAttribute("data-promo");
+      var pr = RD.promotions.filter(function (x) { return x.id === pid; })[0];
+      if (pr && pr.route === "chat") { closeAll(); renderChat(); $("#drawer-chat").classList.add("open"); return; }
+      if (pr && pr.route) { location.hash = "#/" + pr.route; return; }
       if (needLogin()) return;
-      if (pid === "rakeback") { location.hash = "#/vip"; return; }
-      if (pid === "race") { location.hash = "#/leaderboard"; return; }
       openModal("wallet"); state.walletTab = "deposit"; renderWallet();
       return RD.toast("Deposit to activate. Support credits the bonus after review.");
     }
