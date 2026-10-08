@@ -24,7 +24,30 @@
     };
   }
   function read() { try { var r = localStorage.getItem(KEY); return r ? JSON.parse(r) : null; } catch (e) { return null; } }
-  var D = read() || empty();
+  /* Ajustes em dados antigos: rodada única → uma rodada por jogo; correções pontuais pedidas pelo dono */
+  function migrate(d) {
+    if (!d) return d;
+    d.fixes = d.fixes || {};
+    RD.games.forEach(function (g) { if (!d.games.some(function (x) { return x.id === g.id; })) d.games.push({ id: g.id, enabled: true, tag: g.tag || "" }); });
+    d.players.forEach(function (p) {
+      p.rounds = p.rounds || {};
+      if (p.activeRound) { p.rounds[p.activeRound.game] = p.activeRound; }
+      delete p.activeRound;
+    });
+    if (!d.fixes.resetFlamengo10) {
+      d.players.forEach(function (p) { if (p.username.toLowerCase() === "flamengo10") resetBetsOf(d, p, "Sistema"); });
+      d.fixes.resetFlamengo10 = true;
+    }
+    return d;
+  }
+  /* Zera o histórico de apostas e as estatísticas de jogo (o saldo não muda) */
+  function resetBetsOf(d, p, who) {
+    d.bets = d.bets.filter(function (b) { return b.userId !== p.id; });
+    var open = p.rounds || {}; Object.keys(open).forEach(function (k) { p.balance = round(p.balance + open[k].amount); });
+    p.rounds = {}; p.wagered = 0; p.profit = 0; p.bets = 0; p.rakeback = 0;
+    d.audit.unshift({ at: nowIso(), who: who, what: "Zerou as apostas de " + p.username });
+  }
+  var D = migrate(read()) || empty();
 
   function apply() {
     D.games.forEach(function (s) { var g = RD.games.filter(function (x) { return x.id === s.id; })[0]; if (g) { g.enabled = s.enabled; g.tag = s.tag; } });
@@ -148,19 +171,25 @@
     seeds: function (pid) { return byId(pid).seeds; },
     rotateSeed: function (pid, newClient) {
       var p = byId(pid), s = p.seeds;
-      if (p.activeRound) return { error: "Finish your current round before rotating seeds." };
+      if (Object.keys(p.rounds || {}).length) return { error: "Finish your open rounds before rotating seeds." };
       s.revealed.unshift({ server: s.server, client: s.client, lastNonce: s.nonce - 1, at: nowIso() });
       s.revealed = s.revealed.slice(0, 20);
       s.server = rnd(32); s.client = newClient || rnd(8); s.nonce = 0; save();
       return { ok: true };
     },
+    /* Reserva o próximo nonce na hora (síncrono): duas apostas seguidas nunca
+       usam o mesmo número, mesmo com bolas de Plinko em paralelo. */
+    reserve: function (pid) {
+      var s = byId(pid).seeds, r = { server: s.server, client: s.client, nonce: s.nonce };
+      s.nonce++; save(); return r;
+    },
     placeBet: function (pid, game, amount, multiplier, win, detail) {
-      var p = byId(pid), g = RD.games.filter(function (x) { return x.id === game; })[0];
+      var p = byId(pid), g = RD.games.filter(function (x) { return x.id === game; })[0] || {};
+      if (!(amount > 0) || amount > p.balance + 1e-9) return { error: "Insufficient balance." };
       var payout = win ? round(amount * multiplier) : 0;
       p.balance = round(p.balance - amount + payout);
       p.wagered = round(p.wagered + amount); p.profit = round(p.profit + payout - amount); p.bets++;
       p.rakeback = p.rakeback + amount * ((g.edge || 1) / 100) * RD.config.rakebackRate;
-      p.seeds.nonce++;
       var b = { id: id("B-"), userId: p.id, user: p.username, game: game, amount: round(amount), multiplier: win ? multiplier : 0, payout: payout, date: nowIso(), detail: detail };
       D.bets.unshift(b); D.bets = D.bets.slice(0, 2000);
       save();
@@ -180,28 +209,30 @@
       addTx(p, "Level reward", t.reward, "Completed", { note: tierName }); log(p.username, "Resgatou prêmio de nível " + tierName); save();
       return { amount: t.reward };
     },
-    /* Rodadas com várias etapas (Mines, Hi-Lo, Crash): a aposta sai do saldo no
-       início e a rodada fica salva até ser liquidada — recarregar não cancela. */
-    activeRound: function (pid) { var p = byId(pid); return p ? p.activeRound || null : null; },
+    /* Rodadas com várias etapas (Mines, Hi-Lo, Crash, Blackjack, Tower, Chicken):
+       a aposta sai do saldo no início e fica salva até ser liquidada.
+       Cada jogo tem a sua rodada — dá para ter Mines aberto e jogar Dice. */
+    activeRound: function (pid, game) { var p = byId(pid); return p && p.rounds ? p.rounds[game] || null : null; },
+    activeRounds: function (pid) { var p = byId(pid), r = (p && p.rounds) || {}; return Object.keys(r).map(function (k) { return r[k]; }); },
     startRound: function (pid, game, amount, state) {
-      var p = byId(pid), s = p.seeds;
-      if (p.activeRound) return { error: "Finish your current round first." };
-      if (!(amount > 0) || amount > p.balance) return { error: "Insufficient balance." };
+      var p = byId(pid), s = p.seeds; p.rounds = p.rounds || {};
+      if (p.rounds[game]) return { error: "You already have a round open in this game." };
+      if (!(amount > 0) || amount > p.balance + 1e-9) return { error: "Insufficient balance." };
       p.balance = round(p.balance - amount);
-      p.activeRound = { game: game, amount: round(amount), server: s.server, client: s.client, nonce: s.nonce, state: state || {}, started: nowIso() };
+      var r = p.rounds[game] = { game: game, amount: round(amount), server: s.server, client: s.client, nonce: s.nonce, state: state || {}, started: nowIso() };
       s.nonce++; save();
-      return { round: p.activeRound };
+      return { round: r };
     },
-    addToRound: function (pid, extra) {
-      var p = byId(pid), r = p.activeRound;
+    addToRound: function (pid, game, extra) {
+      var p = byId(pid), r = p.rounds && p.rounds[game];
       if (!r) return { error: "No active round." };
-      if (extra > p.balance) return { error: "Insufficient balance." };
+      if (extra > p.balance + 1e-9) return { error: "Insufficient balance." };
       p.balance = round(p.balance - extra); r.amount = round(r.amount + extra); save();
       return { round: r };
     },
-    updateRound: function (pid, state) { var p = byId(pid); if (p.activeRound) { p.activeRound.state = state; save(); } },
-    settleRound: function (pid, multiplier, win, detail) {
-      var p = byId(pid), r = p.activeRound; if (!r) return null;
+    updateRound: function (pid, game, state) { var p = byId(pid), r = p.rounds && p.rounds[game]; if (r) { r.state = state; save(); } },
+    settleRound: function (pid, game, multiplier, win, detail) {
+      var p = byId(pid), r = p.rounds && p.rounds[game]; if (!r) return null;
       var g = RD.games.filter(function (x) { return x.id === r.game; })[0] || {};
       var payout = win ? round(r.amount * multiplier) : 0;
       p.balance = round(p.balance + payout);
@@ -210,7 +241,7 @@
       var b = { id: id("B-"), userId: p.id, user: p.username, game: r.game, amount: r.amount, multiplier: win ? multiplier : 0, payout: payout, date: nowIso(), detail: detail || {} };
       b.detail.nonce = r.nonce; b.detail.client = r.client;
       D.bets.unshift(b); D.bets = D.bets.slice(0, 2000);
-      p.activeRound = null; save();
+      delete p.rounds[game]; save();
       return b;
     },
     betsOf: function (pid) { return D.bets.filter(function (b) { return b.userId === pid; }); },
@@ -307,6 +338,7 @@
     setStatus: function (pid, status) { var p = byId(pid); p.status = status; log("admin", (status === "Suspended" ? "Suspendeu " : "Reativou ") + p.username); save(); },
     setAffShare: function (pid, share) { var p = byId(pid); p.affShare = share === "" || share == null ? null : Math.max(0, Math.min(70, +share)); log("admin", "Comissão de afiliado de " + p.username + ": " + (p.affShare == null ? "plano padrão" : p.affShare + "%")); save(); },
     setNote: function (pid, note) { byId(pid).note = note; save(); },
+    resetBets: function (pid) { resetBetsOf(D, byId(pid), "admin"); save(); },
     setGame: function (gid, fields) {
       var s = D.games.filter(function (x) { return x.id === gid; })[0]; for (var k in fields) s[k] = fields[k]; apply();
       log("admin", "Jogo " + gid + ": " + JSON.stringify(fields)); save();
@@ -358,7 +390,7 @@
 
   window.addEventListener("storage", function (e) {
     if (e.key !== KEY && e.key !== SESSION) return;
-    if (e.key === KEY) { D = read() || empty(); apply(); }
+    if (e.key === KEY) { D = migrate(read()) || empty(); apply(); }
     listeners.forEach(function (fn) { fn(e.key); });
   });
 })();

@@ -197,7 +197,7 @@
     if (g.playable) return originalPage(g);
     return '<div class="container">' +
       '<div class="game-frame">' + media(g, "", "") + '<div class="game-frame-cta"><h2>' + esc(g.name) + '</h2><p class="muted">' + esc(g.provider) + '</p><span class="badge">Coming soon</span>' +
-      '<p class="muted" style="max-width:420px">' + (g.provider === "RD Originals" ? "This RD Original is in development. Dice and Limbo are live now." : "Third-party games go live once the game aggregator is integrated.") + '</p><a class="btn btn-primary" href="#/game/dice">Play Dice now</a></div></div>' +
+      '<p class="muted" style="max-width:420px">' + (g.provider === "RD Originals" ? "This RD Original is in development. Try Dice, Mines or Chicken in the meantime." : "Third-party games go live once the game aggregator is integrated.") + '</p><a class="btn btn-primary" href="#/game/dice">Play Dice now</a></div></div>' +
       '<div class="section">' + sectionHead("More like this", "", "#/casino/" + g.cat) + '<div class="game-row">' + gamesOf(g.cat).filter(function (x) { return x.id !== g.id; }).map(gameCard).join("") + "</div></div></div>";
   };
   pages.game.after = function (id) { var g = gameOf(id); if (g && g.playable) bindOriginal(g); };
@@ -245,11 +245,19 @@
   RD.fair = { hmac: hmac, sha256: sha256, floatFrom: floatFrom, outcome: outcome, floats: floats, minesFrom: minesFrom, cardFrom: cardFrom };
 
   /* ---------- Tabelas e fórmulas ---------- */
+  /* Tabelas iguais às da Stake (8 a 16 linhas, RTP ≈ 99%) */
   var PLINKO = {
     8: { low: [5.6, 2.1, 1.1, 1, 0.5, 1, 1.1, 2.1, 5.6], medium: [13, 3, 1.3, 0.7, 0.4, 0.7, 1.3, 3, 13], high: [29, 4, 1.5, 0.3, 0.2, 0.3, 1.5, 4, 29] },
+    9: { low: [5.6, 2, 1.6, 1, 0.7, 0.7, 1, 1.6, 2, 5.6], medium: [18, 4, 1.7, 0.9, 0.5, 0.5, 0.9, 1.7, 4, 18], high: [43, 7, 2, 0.6, 0.2, 0.2, 0.6, 2, 7, 43] },
+    10: { low: [8.9, 3, 1.4, 1.1, 1, 0.5, 1, 1.1, 1.4, 3, 8.9], medium: [22, 5, 2, 1.4, 0.6, 0.4, 0.6, 1.4, 2, 5, 22], high: [76, 10, 3, 0.9, 0.3, 0.2, 0.3, 0.9, 3, 10, 76] },
+    11: { low: [8.4, 3, 1.9, 1.3, 1, 0.7, 0.7, 1, 1.3, 1.9, 3, 8.4], medium: [24, 6, 3, 1.8, 0.7, 0.5, 0.5, 0.7, 1.8, 3, 6, 24], high: [120, 14, 5.2, 1.4, 0.4, 0.2, 0.2, 0.4, 1.4, 5.2, 14, 120] },
     12: { low: [10, 3, 1.6, 1.4, 1.1, 1, 0.5, 1, 1.1, 1.4, 1.6, 3, 10], medium: [33, 11, 4, 2, 1.1, 0.6, 0.3, 0.6, 1.1, 2, 4, 11, 33], high: [170, 24, 8.1, 2, 0.7, 0.2, 0.2, 0.2, 0.7, 2, 8.1, 24, 170] },
+    13: { low: [8.1, 4, 3, 1.9, 1.2, 0.9, 0.7, 0.7, 0.9, 1.2, 1.9, 3, 4, 8.1], medium: [43, 13, 6, 3, 1.3, 0.7, 0.4, 0.4, 0.7, 1.3, 3, 6, 13, 43], high: [260, 37, 11, 4, 1, 0.2, 0.2, 0.2, 0.2, 1, 4, 11, 37, 260] },
+    14: { low: [7.1, 4, 1.9, 1.4, 1.3, 1.1, 1, 0.5, 1, 1.1, 1.3, 1.4, 1.9, 4, 7.1], medium: [58, 15, 7, 4, 1.9, 1, 0.5, 0.2, 0.5, 1, 1.9, 4, 7, 15, 58], high: [420, 56, 18, 5, 1.9, 0.3, 0.2, 0.2, 0.2, 0.3, 1.9, 5, 18, 56, 420] },
+    15: { low: [15, 8, 3, 2, 1.5, 1.1, 1, 0.7, 0.7, 1, 1.1, 1.5, 2, 3, 8, 15], medium: [88, 18, 11, 5, 3, 1.3, 0.5, 0.3, 0.3, 0.5, 1.3, 3, 5, 11, 18, 88], high: [620, 83, 27, 8, 3, 0.5, 0.2, 0.2, 0.2, 0.2, 0.5, 3, 8, 27, 83, 620] },
     16: { low: [16, 9, 2, 1.4, 1.4, 1.2, 1.1, 1, 0.5, 1, 1.1, 1.2, 1.4, 1.4, 2, 9, 16], medium: [110, 41, 10, 5, 3, 1.5, 1, 0.5, 0.3, 0.5, 1, 1.5, 3, 5, 10, 41, 110], high: [1000, 130, 26, 9, 4, 2, 0.2, 0.2, 0.2, 0.2, 0.2, 2, 4, 9, 26, 130, 1000] }
   };
+
   RD.fair.plinko = PLINKO;
   function minesMult(k, m) { var x = 0.99; for (var i = 0; i < k; i++) x *= (25 - i) / (25 - m - i); return Math.floor(x * 100) / 100; }
   var RANKS = ["", "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"], SUITS = ["♠", "♥", "♦", "♣"];
@@ -308,15 +316,17 @@
   }
 
   var ABOUT = {
-    dice: "<p><strong>Dice</strong> is the classic crypto casino game. Pick a number between 2 and 98 and choose to roll over or under it. The lower your win chance, the higher the multiplier.</p><p>Every roll lands between 0.00 and 100.00.</p>",
+    dice: "<p><strong>Dice</strong> is the classic crypto casino game. Set your win chance anywhere from 0.01% to 98% and roll over or under the target. The lower your win chance, the higher the multiplier — up to 9,900×.</p><p>Every roll lands between 0.00 and 100.00.</p>",
     limbo: "<p><strong>Limbo</strong>: set a target multiplier and bet. If the result reaches your target, you win your bet times the target. Targets go from 1.01× to 1,000,000×.</p>",
-    plinko: "<p><strong>Plinko</strong>: drop the ball and watch it bounce down the pegs. Where it lands sets your multiplier. Choose 8, 12 or 16 rows and low, medium or high risk — high risk pays up to 1,000× on the edges.</p>",
+    plinko: "<p><strong>Plinko</strong>: drop the ball and watch it bounce down the pegs. Where it lands sets your multiplier. Choose 8 to 16 rows and low, medium or high risk — 16 rows on high risk pays up to 1,000× on the edges.</p>",
     crash: "<p><strong>Crash</strong>: the multiplier starts at 1.00× and climbs until it crashes. Cash out before the crash to win your bet times the multiplier. Set an automatic cashout to lock in a target.</p>",
     mines: "<p><strong>Mines</strong>: a 5×5 grid hides gems and mines. Choose how many mines (1–24), then reveal tiles. Every gem raises your multiplier — cash out any time, but hit a mine and the round is lost.</p>",
     wheel: "<p><strong>Wheel</strong>: spin the wheel and win the multiplier it stops on. Choose 10 to 50 segments and low, medium or high risk — high risk has a single big segment worth up to 49.5×.</p>",
-    keno: "<p><strong>Keno</strong>: pick 1 to 10 numbers from 40. We draw 10. The more of your numbers are drawn, the bigger the multiplier — the payout table updates as you pick.</p>",
+    keno: "<p><strong>Keno</strong>: pick 1 to 10 numbers from 40. We draw 10. The more of your numbers are drawn, the bigger the multiplier — up to 1,000×. Choose Classic, Low, Medium or High risk; the payout table updates as you pick.</p>",
     blackjack: "<p><strong>Blackjack</strong>: get closer to 21 than the dealer without going over. Blackjack pays 3 to 2, the dealer stands on all 17s, and you can double, or split a pair once. Cards are dealt from an infinite deck. RTP shown assumes basic strategy (approximate).</p>",
     roulette: "<p><strong>Roulette</strong>: European wheel with a single zero. Place chips on numbers or outside bets — a number pays 35 to 1, dozens and columns 2 to 1, and red/black, even/odd and 1–18/19–36 pay 1 to 1.</p>",
+    tower: "<p><strong>Tower</strong>: climb 9 floors. On every floor pick a tile — find the egg and you go up, hit the skull and the round ends. Cash out whenever you want. Five difficulties, from Easy (3 eggs in 4 tiles) to Master (1 egg in 4 tiles, up to 256,901×).</p>",
+    chicken: "<p><strong>Chicken</strong>: help the chicken cross the road, one lane at a time. Every lane you cross raises your multiplier, but some lanes hide a car. Cash out before you get hit. Easy hides 1 car in 20 lanes, Expert hides 10.</p>",
     hilo: "<p><strong>Hi-Lo</strong>: guess whether the next card is higher or lower than the current one. Each correct guess multiplies your win. Skip cards you don't like and cash out whenever you want. Aces are low, kings are high.</p>"
   };
   function ogTab(g, tab) {
@@ -366,7 +376,7 @@
         $$("[data-mode]").forEach(function (b) { b.disabled = on; });
       },
       record: function (b) {
-        if (!b) return;
+        if (!b || b.error) return;
         var st = sess(g.id), delta = b.payout - b.amount;
         st.profit = Math.round((st.profit + delta) * 100) / 100; st.wagered += b.amount; st[b.payout > b.amount ? "wins" : "losses"]++; st.series.push(st.profit); if (st.series.length > 200) st.series.shift();
         renderHeader(); ctx.refresh(); history(); stats(); if (tab !== "about") ogTab(g, tab);
@@ -466,7 +476,7 @@
     cfg: function () {
       return {
         auto: true, side: '<div class="og-manual-only">' + profitField() + "</div>",
-        center: '<div class="dx" id="dx" style="--t:50.5%"><div class="dx-frame"><span class="dx-res hidden" id="dx-res">0.00</span><div class="dx-bar"></div><input type="range" id="dx-range" min="2" max="98" step="0.01" value="50.5" aria-label="Roll target"></div>' +
+        center: '<div class="dx" id="dx" style="--t:50.5%"><div class="dx-frame"><span class="dx-res hidden" id="dx-res">0.00</span><div class="dx-bar"></div><input type="range" id="dx-range" min="0.01" max="99.99" step="0.01" value="50.5" aria-label="Roll target"></div>' +
           '<div class="dx-ticks">' + [0, 25, 50, 75, 100].map(function (v) { return '<span style="left:' + v + '%">' + v + "</span>"; }).join("") + "</div></div>",
         fields: '<div class="ogx-fields"><div><div class="ogx-label">Multiplier</div><div class="ogx-input"><input id="dx-mult" inputmode="decimal"><span class="sfx">×</span></div></div>' +
           '<div><div class="ogx-label" id="dx-mode-lbl">Roll over</div><button class="ogx-input" id="dx-mode" title="Switch over / under"><span id="dx-target">50.50</span><span class="sfx">' + ic("swap", 16) + "</span></button></div>" +
@@ -475,7 +485,9 @@
     },
     bind: function (ctx) {
       var dr = $("#dx-range"), over = true;
-      function params() { var t = parseFloat(dr.value), c = over ? 100 - t : t; return { target: t, chance: c, mult: Math.floor((99 / c) * 10000) / 10000 }; }
+      /* Como na Stake: chance de 0,01% a 98% (multiplicador de 1,0102× a 9.900×) */
+      function clampT() { var t = parseFloat(dr.value), lo = over ? 2 : 0.01, hi = over ? 99.99 : 98; if (t < lo || t > hi) dr.value = Math.max(lo, Math.min(hi, t)).toFixed(2); }
+      function params() { clampT(); var t = parseFloat(dr.value), c = Math.round((over ? 100 - t : t) * 100) / 100; return { target: t, chance: c, mult: Math.floor((99 / c) * 10000) / 10000 }; }
       function refresh() {
         var p = params(); ctx.setProfit(p.mult);
         $("#dx").style.setProperty("--t", p.target + "%"); $("#dx").classList.toggle("under", !over);
@@ -485,16 +497,16 @@
       }
       dr.addEventListener("input", refresh);
       $("#dx-mode").addEventListener("click", function () { over = !over; dr.value = (100 - parseFloat(dr.value)).toFixed(2); refresh(); });
-      $("#dx-mult").addEventListener("change", function () { var m = Math.max(1.0102, Math.min(49.5, parseFloat(this.value) || 2)), c = 99 / m; dr.value = (over ? 100 - c : c).toFixed(2); this.blur(); refresh(); });
-      $("#dx-chance").addEventListener("change", function () { var c = Math.max(2, Math.min(98, parseFloat(this.value) || 49.5)); dr.value = (over ? 100 - c : c).toFixed(2); this.blur(); refresh(); });
+      $("#dx-mult").addEventListener("change", function () { var m = Math.max(1.0102, Math.min(9900, parseFloat(this.value) || 2)), c = Math.round((99 / m) * 100) / 100; dr.value = (over ? 100 - c : c).toFixed(2); this.blur(); refresh(); });
+      $("#dx-chance").addEventListener("change", function () { var c = Math.max(0.01, Math.min(98, parseFloat(this.value) || 49.5)); dr.value = (over ? 100 - c : c).toFixed(2); this.blur(); refresh(); });
       return {
         refresh: refresh,
         play: function () {
           var a = ctx.amount(), p = params(), u = ctx.validate(a, p.mult); if (!u) return Promise.resolve(null);
-          var s = db.seeds(u.id), nonce = s.nonce, client = s.client;
+          var s = db.reserve(u.id), nonce = s.nonce, client = s.client;
           return hmac(s.server, client + ":" + nonce).then(function (buf) {
             var res = outcome("dice", floatFrom(buf)), win = over ? res > p.target : res < p.target;
-            var b = db.placeBet(u.id, "dice", a, p.mult, win, { result: res, target: p.target, mode: over ? "over" : "under", nonce: nonce, client: client });
+            var b = db.placeBet(u.id, "dice", a, p.mult, win, { result: res, target: p.target, mode: over ? "over" : "under", nonce: nonce, client: client }); if (b.error) { ctx.msg(b.error); return null; }
             var r = $("#dx-res"); if (r) { r.classList.remove("hidden", "w", "l", "pop"); void r.offsetWidth; r.textContent = res.toFixed(2); r.style.left = "calc(var(--pad) + (100% - 2 * var(--pad)) * " + (res / 100) + ")"; r.classList.add(win ? "w" : "l", "pop"); }
             ctx.record(b); return { win: win };
           });
@@ -527,10 +539,10 @@
         refresh: refresh, cooldown: 320,
         play: function () {
           var a = ctx.amount(), m = target(), u = ctx.validate(a, m); if (!u) return Promise.resolve(null);
-          var s = db.seeds(u.id), nonce = s.nonce, client = s.client;
+          var s = db.reserve(u.id), nonce = s.nonce, client = s.client;
           return hmac(s.server, client + ":" + nonce).then(function (buf) {
             var res = outcome("limbo", floatFrom(buf)), win = res >= m;
-            var b = db.placeBet(u.id, "limbo", a, m, win, { result: res, target: m, nonce: nonce, client: client });
+            var b = db.placeBet(u.id, "limbo", a, m, win, { result: res, target: m, nonce: nonce, client: client }); if (b.error) { ctx.msg(b.error); return null; }
             var el = $("#lb-num"), t0 = performance.now();
             if (el) { el.classList.remove("w", "l"); (function step(t) { var k = Math.min(1, (t - t0) / 280); el.textContent = (1 + (res - 1) * k).toFixed(2) + "×"; if (k < 1) requestAnimationFrame(step); else el.classList.add(win ? "w" : "l"); })(t0); }
             ctx.record(b); return { win: win };
@@ -547,7 +559,7 @@
       return {
         auto: true,
         side: selectField("pk-risk", "Risk", [["low", "Low"], ["medium", "Medium"], ["high", "High"]], ogPrefs.pkRisk || "medium") +
-          selectField("pk-rows", "Rows", [[8, "8"], [12, "12"], [16, "16"]], ogPrefs.pkRows || 16),
+          selectField("pk-rows", "Rows", [8, 9, 10, 11, 12, 13, 14, 15, 16].map(function (r) { return [r, r]; }), ogPrefs.pkRows || 16),
         center: '<div class="pk" id="pk"></div>'
       };
     },
@@ -592,11 +604,13 @@
       draw();
       function play() {
         var a = ctx.amount(), t = table(), R = rows(), rk = risk(), u = ctx.validate(a, Math.max.apply(null, t)); if (!u) return Promise.resolve(null);
-        var s = db.seeds(u.id), nonce = s.nonce, client = s.client;
+        var s = db.reserve(u.id), nonce = s.nonce, client = s.client;
         live++;
         return floats(s.server, client, nonce, R).then(function (fs) {
           var path = fs.map(function (f) { return Math.floor(f * 2); }), slot = path.reduce(function (x, y) { return x + y; }, 0), m = t[slot];
           var b = db.placeBet(u.id, "plinko", a, m, true, { result: m, rows: R, risk: rk, slot: slot, path: path.join(""), nonce: nonce, client: client });
+          if (b.error) { live--; ctx.msg(b.error); return null; }
+          renderHeader(); ctx.refresh();
           return drop(path, slot).then(function () { live--; ctx.record(b); return { win: m > 1 }; });
         });
       }
@@ -618,7 +632,7 @@
       };
     },
     bind: function (ctx) {
-      var K = 0.00015, run = null;
+      var G = "crash", K = 0.00015, run = null;
       function target() { return Math.max(1.01, Math.min(1000000, parseFloat($("#cr-target").value) || 2)); }
       function multAt(ms) { return Math.floor(Math.exp(K * ms) * 100) / 100; }
       function canvas() {
@@ -645,32 +659,34 @@
         x.beginPath(); x.arc(X(ms), Y(ms), 6 * d, 0, Math.PI * 2); x.fillStyle = "#fff"; x.fill();
       }
       function setNum(text, cls, sub) { var n = $("#cr-num"); if (!n) return; n.textContent = text; n.className = "cr-num" + (cls ? " " + cls : ""); $("#cr-sub").textContent = sub || ""; }
+      var box = null;
       function finish(resolveRound, auto) {
-        if (!auto) { ctx.lock(false); $("#cr-target").disabled = false; var b = ctx.btn(); if (b) { b.disabled = false; b.classList.remove("stop"); b.textContent = "Bet"; } }
+        if (!auto && document.contains(box)) { ctx.lock(false); $("#cr-target").disabled = false; var b = ctx.btn(); if (b) { b.disabled = false; b.classList.remove("stop"); b.textContent = "Bet"; } }
         resolveRound();
       }
       function start() {
         var a = ctx.amount(), tg = target(), u = ctx.validate(a, tg); if (!u) return Promise.resolve(null);
-        var s = db.seeds(u.id), nonce = s.nonce, client = s.client;
-        return hmac(s.server, client + ":" + nonce).then(function (buf) {
+        var r = db.startRound(u.id, G, a, { target: tg }); if (r.error) { ctx.msg(r.error); return Promise.resolve(null); }
+        renderHeader(); ctx.refresh(); ctx.lock(true); $("#cr-target").disabled = true;
+        box = $("#cr");
+        return hmac(r.round.server, r.round.client + ":" + r.round.nonce).then(function (buf) {
           var crash = outcome("crash", floatFrom(buf));
-          var r = db.startRound(u.id, "crash", a, { target: tg, crash: crash }); if (r.error) { ctx.msg(r.error); return null; }
-          renderHeader(); ctx.refresh(); ctx.lock(true); $("#cr-target").disabled = true;
+          db.updateRound(u.id, G, { target: tg, crash: crash });
           return new Promise(function (resolve) {
             var t0 = performance.now(), cashed = null, auto = !!$("[data-mode=auto].active");
             var btn = ctx.btn(); if (!auto) { btn.textContent = "Cash out"; btn.classList.add("stop"); }
             run = { cashout: function () {
               if (cashed) return; var m = multAt(performance.now() - t0); if (m >= crash) return;
-              cashed = capMult(a, m); var bet = db.settleRound(u.id, cashed, true, { crash: crash, cashout: cashed, target: tg });
+              cashed = capMult(a, m); var bet = db.settleRound(u.id, G, cashed, true, { crash: crash, cashout: cashed, target: tg });
               ctx.record(bet); btn.disabled = true; btn.textContent = "Cashed out @ " + cashed.toFixed(2) + "×";
             } };
             (function step(now) {
-              if (!$("#cr")) { if (!cashed) { var w2 = tg < crash; db.settleRound(u.id, w2 ? capMult(a, tg) : 0, w2, { crash: crash, cashout: w2 ? tg : null, target: tg }); } run = null; return resolve({ win: !!cashed }); }
+              if (!document.contains(box)) { if (!cashed) { var w2 = tg < crash; db.settleRound(u.id, G, w2 ? capMult(a, tg) : 0, w2, { crash: crash, cashout: w2 ? tg : null, target: tg }); } run = null; return resolve({ win: !!cashed }); }
               var ms = now - t0, m = multAt(ms);
-              if (!cashed && m >= tg && tg < crash) { cashed = capMult(a, tg); var bw = db.settleRound(u.id, cashed, true, { crash: crash, cashout: cashed, target: tg }); ctx.record(bw); if (!auto) { btn.disabled = true; btn.textContent = "Cashed out @ " + cashed.toFixed(2) + "×"; btn.classList.remove("stop"); } }
+              if (!cashed && m >= tg && tg < crash) { cashed = capMult(a, tg); var bw = db.settleRound(u.id, G, cashed, true, { crash: crash, cashout: cashed, target: tg }); ctx.record(bw); if (!auto) { btn.disabled = true; btn.textContent = "Cashed out @ " + cashed.toFixed(2) + "×"; btn.classList.remove("stop"); } }
               if (m >= crash) {
                 paint(Math.log(crash) / K, true); setNum(crash.toFixed(2) + "×", "l", cashed ? "You cashed out at " + cashed.toFixed(2) + "× · +" + fmt.usd(a * cashed - a) : "Crashed");
-                if (!cashed) { var bl = db.settleRound(u.id, 0, false, { crash: crash, target: tg }); ctx.record(bl); }
+                if (!cashed) { var bl = db.settleRound(u.id, G, 0, false, { crash: crash, target: tg }); ctx.record(bl); }
                 run = null; return setTimeout(function () { finish(function () { resolve({ win: !!cashed }); }, auto); }, auto ? 300 : 700);
               }
               paint(ms, false); setNum(m.toFixed(2) + "×", cashed ? "w" : "", cashed ? "Cashed out at " + cashed.toFixed(2) + "×" : "Cash out before it crashes");
@@ -686,8 +702,14 @@
         click: function () { if (run) return run.cashout(); start(); },
         play: start,
         resume: function () {
-          var u = me(), r = u && db.activeRound(u.id);
-          if (r && r.game === "crash") { var win = r.state.target < r.state.crash, m = capMult(r.amount, r.state.target); var b = db.settleRound(u.id, win ? m : 0, win, { crash: r.state.crash, cashout: win ? m : null, target: r.state.target }); ctx.record(b); RD.toast("Previous round settled: crashed at " + r.state.crash.toFixed(2) + "×"); }
+          var u = me(), r = u && db.activeRound(u.id, G);
+          if (!r || run) return;
+          hmac(r.server, r.client + ":" + r.nonce).then(function (buf) {
+            var crash = outcome("crash", floatFrom(buf)), tg = r.state.target, win = tg < crash, m = capMult(r.amount, tg);
+            if (!db.activeRound(u.id, G)) return;
+            var b = db.settleRound(u.id, G, win ? m : 0, win, { crash: crash, cashout: win ? m : null, target: tg }); ctx.record(b);
+            RD.toast("Previous round settled: crashed at " + crash.toFixed(2) + "×" + (win ? " · cashed out at " + tg.toFixed(2) + "×" : ""));
+          });
         }
       };
     }
@@ -708,9 +730,10 @@
       };
     },
     bind: function (ctx) {
-      var round = null; // { amount, m, revealed:[], mines:[] }
+      var G = "mines", round = null, pending = false; // { amount, m, revealed:[] }
       function m() { return +$("#mn-count").value; }
       function refresh() {
+        if (!$("#mn-gems")) return;
         $("#mn-gems").value = 25 - m();
         if (round) { var k = round.revealed.length, cur = k ? minesMult(k, round.m) : 1; ctx.setProfit(cur, cur.toFixed(2)); $("#og-profit").value = (round.amount * (cur - 1)).toFixed(2); }
       }
@@ -733,21 +756,24 @@
       }
       function end(win, minesPos) {
         var u = me(), k = round.revealed.length, mult = win ? capMult(round.amount, minesMult(k, round.m)) : 0;
-        var b = db.settleRound(u.id, mult, win, { mines: round.m, revealed: round.revealed.slice(), minePos: minesPos });
+        var b = db.settleRound(u.id, G, mult, win, { mines: round.m, revealed: round.revealed.slice(), minePos: minesPos });
         var shown = round; round = null; paint({ mines: minesPos }); round = null;
         tiles().forEach(function (t, i) { if (shown.revealed.indexOf(i) > -1) { t.classList.remove("dim"); t.innerHTML = GEM; } });
         setLive(false); ctx.record(b);
         if (win) ctx.msg(""); 
       }
       function reveal(i) {
-        if (!round || round.revealed.indexOf(i) > -1) return;
-        var u = me(), r = db.activeRound(u.id);
+        if (!round || pending || round.revealed.indexOf(i) > -1) return;
+        var u = me(), r = db.activeRound(u.id, G); if (!r) return;
+        pending = true;
         floats(r.server, r.client, r.nonce, 24).then(function (fs) {
+          pending = false; if (!round) return;
           var pos = minesFrom(fs, round.m);
-          if (pos.indexOf(i) > -1) { round.revealed.push(i); var t = tiles()[i]; end(false, pos); t.classList.remove("dim"); t.innerHTML = MINE; t.classList.add("boom"); return; }
-          round.revealed.push(i); db.updateRound(u.id, { m: round.m, revealed: round.revealed });
+          if (pos.indexOf(i) > -1) { round.revealed.push(i); var t = tiles()[i]; end(false, pos); if (!t || !document.contains(t)) return; t.classList.remove("dim"); t.innerHTML = MINE; t.classList.add("boom"); return; }
+          round.revealed.push(i); db.updateRound(u.id, G, { m: round.m, revealed: round.revealed });
+          if (round.revealed.length === 25 - round.m) return end(true, pos);
+          if (!$("#mn-grid")) return;
           paint(); refresh(); ctx.btn().disabled = false;
-          if (round.revealed.length === 25 - round.m) end(true, pos);
         });
       }
       $("#mn-grid").addEventListener("click", function (e) { var t = e.target.closest("[data-tile]"); if (t && !t.disabled) reveal(+t.getAttribute("data-tile")); });
@@ -755,7 +781,7 @@
       $("#mn-count").addEventListener("change", function () { ogPrefs.mines = m(); savePrefs(); refresh(); });
       function start() {
         var a = ctx.amount(), u = ctx.validate(a); if (!u) return;
-        var r = db.startRound(u.id, "mines", a, { m: m(), revealed: [] }); if (r.error) return ctx.msg(r.error);
+        var r = db.startRound(u.id, G, a, { m: m(), revealed: [] }); if (r.error) return ctx.msg(r.error);
         round = { amount: a, m: m(), revealed: [] }; renderHeader(); ctx.refresh(); paint(); setLive(true); refresh();
       }
       refresh(); paint();
@@ -763,13 +789,14 @@
         refresh: refresh,
         click: function () {
           if (!round) return start();
-          if (!round.revealed.length) return;
-          var u = me(), r = db.activeRound(u.id);
-          floats(r.server, r.client, r.nonce, 24).then(function (fs) { end(true, minesFrom(fs, round.m)); });
+          if (!round.revealed.length || pending) return;
+          var u = me(), r = db.activeRound(u.id, G); if (!r) return;
+          pending = true;
+          floats(r.server, r.client, r.nonce, 24).then(function (fs) { pending = false; if (round) end(true, minesFrom(fs, round.m)); });
         },
         resume: function () {
-          var u = me(), r = u && db.activeRound(u.id);
-          if (r && r.game === "mines") { round = { amount: r.amount, m: r.state.m, revealed: r.state.revealed.slice() }; $("#mn-count").value = r.state.m; $("#og-amt").value = r.amount.toFixed(2); paint(); setLive(true); refresh(); }
+          var u = me(), r = u && db.activeRound(u.id, G);
+          if (r) { round = { amount: r.amount, m: r.state.m, revealed: r.state.revealed.slice() }; $("#mn-count").value = r.state.m; $("#og-amt").value = r.amount.toFixed(2); paint(); setLive(true); refresh(); }
         }
       };
     }
@@ -788,7 +815,7 @@
       };
     },
     bind: function (ctx) {
-      var round = null, preview = null, busyCard = false; // round: {amount, cards:[{rank,suit,res}], mult, idx}
+      var G = "hilo", round = null, preview = null, busyCard = false; // round: {amount, cards:[{rank,suit,res}], mult, idx}
       function current() { return round ? round.cards[round.cards.length - 1] : preview; }
       function show() {
         var c = current(); if (!c || !$("#hl-card")) return;
@@ -811,7 +838,7 @@
       }
       function draw(kind) {
         if (!round || busyCard) return; busyCard = true;
-        var u = me(), r = db.activeRound(u.id), idx = round.cards.length;
+        var u = me(), r = db.activeRound(u.id, G), idx = round.cards.length;
         floats(r.server, r.client, r.nonce, idx + 1).then(function (fs) {
           var next = cardFrom(fs[idx]), cur = current(), o = hiloOpts(cur.rank);
           if (kind === "skip") { next.res = "skip"; round.cards.push(next); }
@@ -819,8 +846,10 @@
             var opt = kind === "up" ? o.up : o.down, ok = opt.ok(next.rank);
             next.res = ok ? "good" : "bad"; round.cards.push(next);
             if (!ok) {
-              var b = db.settleRound(u.id, 0, false, { cards: round.cards.map(function (c) { return RANKS[c.rank] + SUITS[c.suit]; }).join(" "), mult: round.mult });
-              var last = round; round = null; ctx.lock(false);
+              var b = db.settleRound(u.id, G, 0, false, { cards: round.cards.map(function (c) { return RANKS[c.rank] + SUITS[c.suit]; }).join(" "), mult: round.mult });
+              var last = round; round = null; busyCard = false;
+              if (!$("#hl-card")) return;
+              ctx.lock(false);
               $("#hl-card").innerHTML = cardHtml(next, "lose"); $("#hl-hist").innerHTML = last.cards.map(function (k, i) { return miniCard(k, i === 0 ? "" : k.res); }).join("");
               ["up", "down"].forEach(function (x) { $("#hl-" + x).disabled = true; }); $("#hl-skip").disabled = true; $("#hl-live").classList.add("hidden");
               ctx.btn().textContent = "Bet"; ctx.btn().disabled = false; ctx.record(b); busyCard = false;
@@ -829,15 +858,16 @@
             }
             round.mult = Math.floor(round.mult * (0.99 / opt.p) * 100) / 100;
           }
-          db.updateRound(u.id, { cards: round.cards, mult: round.mult }); show(); busyCard = false;
+          db.updateRound(u.id, G, { cards: round.cards, mult: round.mult }); busyCard = false; show();
         });
       }
       function start() {
         var a = ctx.amount(), u = ctx.validate(a); if (!u) return;
-        var s = db.seeds(u.id);
-        floats(s.server, s.client, s.nonce, 1).then(function (fs) {
-          var first = cardFrom(fs[0]), r = db.startRound(u.id, "hilo", a, { cards: [first], mult: 1 }); if (r.error) return ctx.msg(r.error);
-          round = { amount: a, cards: [first], mult: 1 }; renderHeader(); ctx.refresh(); ctx.lock(true); show();
+        var r = db.startRound(u.id, G, a, { cards: [], mult: 1 }); if (r.error) return ctx.msg(r.error);
+        renderHeader(); ctx.refresh(); ctx.lock(true); busyCard = true;
+        floats(r.round.server, r.round.client, r.round.nonce, 1).then(function (fs) {
+          var first = cardFrom(fs[0]); busyCard = false;
+          round = { amount: a, cards: [first], mult: 1 }; db.updateRound(u.id, G, { cards: round.cards, mult: 1 }); show();
         });
       }
       $("#hl-up").addEventListener("click", function () { draw("up"); });
@@ -850,39 +880,34 @@
           if (!round) return start();
           if (round.mult <= 1) return;
           var u = me(), mult = capMult(round.amount, round.mult);
-          var b = db.settleRound(u.id, mult, true, { cards: round.cards.map(function (c) { return RANKS[c.rank] + SUITS[c.suit]; }).join(" "), mult: mult });
+          var b = db.settleRound(u.id, G, mult, true, { cards: round.cards.map(function (c) { return RANKS[c.rank] + SUITS[c.suit]; }).join(" "), mult: mult });
           round = null; ctx.lock(false); ctx.record(b); loadPreview();
         },
         resume: function () {
-          var u = me(), r = u && db.activeRound(u.id);
-          if (r && r.game === "hilo") { round = { amount: r.amount, cards: r.state.cards.slice(), mult: r.state.mult }; $("#og-amt").value = r.amount.toFixed(2); ctx.lock(true); show(); }
+          var u = me(), r = u && db.activeRound(u.id, G);
+          if (r && !(r.state.cards && r.state.cards.length)) {
+            busyCard = true; ctx.lock(true);
+            return floats(r.server, r.client, r.nonce, 1).then(function (fs) { busyCard = false; round = { amount: r.amount, cards: [cardFrom(fs[0])], mult: 1 }; db.updateRound(u.id, G, { cards: round.cards, mult: 1 }); $("#og-amt").value = r.amount.toFixed(2); show(); });
+          }
+          if (r) { round = { amount: r.amount, cards: r.state.cards.slice(), mult: r.state.mult }; $("#og-amt").value = r.amount.toFixed(2); ctx.lock(true); show(); }
         }
       };
     }
   };
 
   /* ---------- Tabelas: Wheel e Keno (RTP ≈ 99%, conferidas) ---------- */
+  /* Tabelas de Wheel iguais às da Stake (RTP 99% em todas as combinações) */
+  var WHEEL_MED = {"10":[0,1.9,0,1.5,0,2,0,1.5,0,3],"20":[1.5,0,2,0,2,0,2,0,1.5,0,3,0,1.8,0,2,0,2,0,2,0],"30":[1.5,0,1.5,0,2,0,1.5,0,2,0,2,0,1.5,0,3,0,1.5,0,2,0,2,0,1.7,0,4,0,1.5,0,2,0],"40":[2,0,3,0,2,0,1.5,0,3,0,1.5,0,1.5,0,2,0,1.5,0,3,0,1.5,0,2,0,2,0,1.6,0,2,0,1.5,0,3,0,1.5,0,2,0,1.5,0],"50":[2,0,1.5,0,2,0,1.5,0,3,0,1.5,0,1.5,0,2,0,1.5,0,3,0,1.5,0,2,0,1.5,0,2,0,2,0,1.5,0,3,0,1.5,0,2,0,1.5,0,1.5,0,5,0,1.5,0,2,0,1.5,0]};
   function wheelTable(n, risk) {
-    var base = { low: [1.5, 1.2, 1.2, 1.2, 0, 1.2, 1.2, 1.2, 1.2, 0], medium: [0, 1.9, 0, 1.5, 0, 2, 0, 1.5, 0, 3] }[risk], t = [];
-    for (var i = 0; i < n; i++) t.push(risk === "high" ? (i === 0 ? Math.round(0.99 * n * 100) / 100 : 0) : base[i % 10]);
+    if (risk === "medium") return WHEEL_MED[n].slice();
+    var low = [1.5, 1.2, 1.2, 1.2, 0, 1.2, 1.2, 1.2, 1.2, 0], t = [];
+    for (var i = 0; i < n; i++) t.push(risk === "high" ? (i === n - 1 ? Math.round(0.99 * n * 100) / 100 : 0) : low[i % 10]);
     return t;
   }
   function comb(n, k) { if (k < 0 || k > n) return 0; var r = 1; for (var i = 1; i <= k; i++) r = r * (n - k + i) / i; return r; }
-  function kenoTable(k, risk) {
-    var P = []; for (var h = 0; h <= k; h++) P.push(comb(k, h) * comb(40 - k, 10 - h) / comb(40, 10));
-    var hmin = risk === "low" ? Math.max(1, Math.floor(k * 0.3)) : risk === "medium" ? Math.max(1, Math.ceil(k * 0.4)) : Math.max(1, Math.ceil(k * 0.55));
-    var r = { low: 1.9, medium: 3, high: 5.5 }[risk], cap = { low: 500, medium: 2000, high: 10000 }[risk];
-    var w = P.map(function (_, x) { return x >= hmin ? Math.pow(r, x - hmin) : 0; }), fixed = {}, pay = [];
-    for (var it = 0; it < 12; it++) {
-      var rest = 0.99, den = 0;
-      P.forEach(function (p, x) { if (fixed[x] != null) rest -= p * fixed[x]; else den += p * w[x]; });
-      var c = rest / den, over = false;
-      pay = P.map(function (_, x) { return fixed[x] != null ? fixed[x] : c * w[x]; });
-      for (var y = k; y >= 0; y--) if (fixed[y] == null && pay[y] > cap) { fixed[y] = cap; over = true; break; }
-      if (!over) break;
-    }
-    return pay.map(function (v) { return Math.floor(v * 100) / 100; });
-  }
+  /* Tabelas de Keno iguais às da Stake (multiplicador por acertos, RTP ≈ 99%) */
+  var KENO = {"classic":[[0,3.96],[0,1.9,4.5],[0,1,3.1,10.4],[0,0.8,1.8,5,22.5],[0,0.25,1.4,4.1,16.5,36],[0,0,1,3.68,7,16.5,40],[0,0,0.47,3,4.5,14,31,60],[0,0,0,2.2,4,13,22,55,70],[0,0,0,1.55,3,8,15,44,60,85],[0,0,0,1.4,2.25,4.5,8,17,50,80,100]],"low":[[0.7,1.85],[0,2,3.8],[0,1.1,1.38,26],[0,0,2.2,7.9,90],[0,0,1.5,4.2,13,300],[0,0,1.1,2,6.2,100,700],[0,0,1.1,1.6,3.5,15,225,700],[0,0,1.1,1.5,2,5.5,39,100,800],[0,0,1.1,1.3,1.7,2.5,7.5,50,250,1000],[0,0,1.1,1.2,1.3,1.8,3.5,13,50,250,1000]],"medium":[[0.4,2.75],[0,1.8,5.1],[0,0,2.8,50],[0,0,1.7,10,100],[0,0,1.4,4,14,390],[0,0,0,3,9,180,710],[0,0,0,2,7,30,400,800],[0,0,0,2,4,11,67,400,900],[0,0,0,2,2.5,5,15,100,500,1000],[0,0,0,1.6,2,4,7,26,100,500,1000]],"high":[[0,3.96],[0,0,17.1],[0,0,0,81.5],[0,0,0,10,259],[0,0,0,4.5,48,450],[0,0,0,0,11,350,710],[0,0,0,0,7,90,400,800],[0,0,0,0,5,20,270,600,900],[0,0,0,0,4,11,56,500,800,1000],[0,0,0,0,3.5,8,13,63,500,800,1000]]};
+  function kenoTable(k, risk) { return (KENO[risk] || KENO.classic)[k - 1].slice(); }
   function kenoFrom(fs) { var a = []; for (var i = 1; i <= 40; i++) a.push(i); for (var j = 0; j < 10; j++) { var k = j + Math.floor(fs[j] * (40 - j)), t = a[j]; a[j] = a[k]; a[k] = t; } return a.slice(0, 10); }
   RD.fair.wheelTable = wheelTable; RD.fair.kenoTable = kenoTable; RD.fair.kenoFrom = kenoFrom;
   function multColor(m, high) { return m === 0 ? "#3a2a35" : high ? "#ff2e55" : m < 1.4 ? "#c9b8c2" : m < 1.6 ? "#22e08a" : m < 1.95 ? "#7aa7ff" : m < 2.5 ? "#ffc85c" : "#a07bff"; }
@@ -918,10 +943,11 @@
       draw();
       function play() {
         var a = ctx.amount(), t = wheelTable(n(), risk()), N = t.length, u = ctx.validate(a, Math.max.apply(null, t)); if (!u || spinning) return Promise.resolve(null);
-        var s = db.seeds(u.id), nonce = s.nonce, client = s.client; spinning = true; ctx.lock(true);
+        var s = db.reserve(u.id), nonce = s.nonce, client = s.client; spinning = true; ctx.lock(true);
         return floats(s.server, client, nonce, 1).then(function (fs) {
           var seg = Math.floor(fs[0] * N), m = t[seg];
           var b = db.placeBet(u.id, "wheel", a, m, m > 0, { result: m, segment: seg, segments: N, risk: risk(), nonce: nonce, client: client });
+          if (b.error) { spinning = false; ctx.lock(false); ctx.msg(b.error); return null; }
           var segA = 360 / N, jitter = (Math.random() - 0.5) * segA * 0.6, target = -((seg + 0.5) * segA) + jitter;
           rot = rot - (rot % 360) + 360 * 4 + target; if (rot <= 0) rot += 360 * 5;
           var g = $("#wh-rot"); g.style.transition = "transform 2.4s cubic-bezier(.12,.75,.12,1)"; g.style.transform = "rotate(" + rot + "deg)";
@@ -946,7 +972,7 @@
       var tiles = ""; for (var i = 1; i <= 40; i++) tiles += '<button class="kn-tile" data-kn="' + i + '">' + i + "</button>";
       return {
         auto: true,
-        side: selectField("kn-risk", "Risk", [["low", "Low"], ["medium", "Medium"], ["high", "High"]], ogPrefs.knRisk || "medium"),
+        side: selectField("kn-risk", "Risk", [["classic", "Classic"], ["low", "Low"], ["medium", "Medium"], ["high", "High"]], ogPrefs.knRisk || "classic"),
         after: '<div class="ogx-row2"><button class="btn btn-secondary" style="height:42px" id="kn-auto">Auto pick</button><button class="btn btn-secondary" style="height:42px" id="kn-clear">Clear</button></div>',
         center: '<div class="kn"><div class="kn-grid" id="kn-grid">' + tiles + '</div><div class="kn-pay" id="kn-pay"></div></div>'
       };
@@ -984,10 +1010,11 @@
         if (busyK) return Promise.resolve(null);
         if (!picks.length) { ctx.msg("Select at least 1 number."); return Promise.resolve(null); }
         var a = ctx.amount(), t = kenoTable(picks.length, risk()), u = ctx.validate(a); if (!u) return Promise.resolve(null);
-        var s = db.seeds(u.id), nonce = s.nonce, client = s.client; busyK = true; ctx.lock(true);
+        var s = db.reserve(u.id), nonce = s.nonce, client = s.client; busyK = true; ctx.lock(true);
         return floats(s.server, client, nonce, 10).then(function (fs) {
           var drawn = kenoFrom(fs), hits = drawn.filter(function (n) { return picks.indexOf(n) > -1; }).length, m = capMult(a, t[hits]);
           var b = db.placeBet(u.id, "keno", a, m, m > 0, { result: hits, hits: hits, picks: picks.length, drawn: drawn, risk: risk(), nonce: nonce, client: client });
+          if (b.error) { busyK = false; ctx.lock(false); ctx.msg(b.error); return null; }
           paint([]);
           return new Promise(function (res) {
             var i = 0;
@@ -1021,9 +1048,9 @@
       };
     },
     bind: function (ctx) {
-      var S = null, busyB = false; // S: {cursor, dealer, hands:[{cards,bet,done,doubled}], active, over}
+      var G = "blackjack", S = null, busyB = false; // S: {cursor, dealer, hands:[{cards,bet,done,doubled}], active, over}
       function u() { return me(); }
-      function draw(n) { var r = db.activeRound(u().id); return floats(r.server, r.client, r.nonce, S.cursor + n).then(function (fs) { var out = []; for (var i = 0; i < n; i++) out.push(cardFrom(fs[S.cursor + i])); S.cursor += n; return out; }); }
+      function draw(n) { var r = db.activeRound(u().id, G); return floats(r.server, r.client, r.nonce, S.cursor + n).then(function (fs) { var out = []; for (var i = 0; i < n; i++) out.push(cardFrom(fs[S.cursor + i])); S.cursor += n; return out; }); }
       function render(reveal) {
         if (!$("#bj-dealer")) return;
         var dCards = S ? S.dealer : [];
@@ -1037,7 +1064,7 @@
         $("#bj-split").disabled = !(h && S.hands.length === 1 && h.cards.length === 2 && bjVal(h.cards[0].rank) === bjVal(h.cards[1].rank) && bal >= h.bet);
         var b = ctx.btn(); b.disabled = !!(S && !S.over);
       }
-      function persist() { db.updateRound(u().id, S); }
+      function persist() { db.updateRound(u().id, G, S); }
       function finish() {
         S.over = true;
         var d = bjTotal(S.dealer).t, total = 0, base = S.hands[0].bet, natural = S.hands.length === 1 && S.hands[0].cards.length === 2 && bjTotal(S.hands[0].cards).t === 21;
@@ -1054,11 +1081,11 @@
         });
         var amount = S.hands.reduce(function (a, h) { return a + h.bet; }, 0), mult = capMult(amount, Math.round((total / amount) * 10000) / 10000);
         var outcome = natural && !dealerBJ ? "Blackjack" : total > amount ? "Win" : total === amount ? "Push" : "Lose";
-        var bet = db.settleRound(u().id, mult, total > 0, { outcome: outcome, player: S.hands.map(function (h) { return bjTotal(h.cards).t; }).join("/"), dealer: d });
+        var bet = db.settleRound(u().id, G, mult, total > 0, { outcome: outcome, player: S.hands.map(function (h) { return bjTotal(h.cards).t; }).join("/"), dealer: d });
         render(true);
         var r = $("#bj-result"); if (!r) { S = null; busyB = false; return; } r.className = "bj-result " + (total > amount ? "w" : total === amount ? "p" : "l");
         r.textContent = outcome === "Blackjack" ? "Blackjack! +" + fmt.usd(total - amount) : outcome === "Win" ? "You win +" + fmt.usd(total - amount) : outcome === "Push" ? "Push" : "Dealer wins";
-        S = null; busyB = false; ctx.lock(false); ctx.btn().disabled = false; ctx.record(bet);
+        S = null; busyB = false; ctx.lock(false); if (ctx.btn()) ctx.btn().disabled = false; ctx.record(bet);
       }
       function dealerPlay() {
         render(true);
@@ -1070,17 +1097,17 @@
         })();
       }
       function nextHand() {
-        var h = S.hands[S.active];
-        if (h.done) { if (S.active < S.hands.length - 1) { S.active++; persist(); render(); return; } busyB = true; return dealerPlay(); }
+        while (S.hands[S.active].done && S.active < S.hands.length - 1) S.active++;
+        if (S.hands[S.active].done) { busyB = true; persist(); return dealerPlay(); }
         persist(); render();
       }
       function act(kind) {
         if (!S || S.over || busyB) return; busyB = true;
         var h = S.hands[S.active];
         if (kind === "stand") { h.done = true; busyB = false; return nextHand(); }
-        if (kind === "double") { var r1 = db.addToRound(u().id, h.bet); if (r1.error) { busyB = false; return ctx.msg(r1.error); } h.bet *= 2; renderHeader(); ctx.refresh(); }
+        if (kind === "double") { var r1 = db.addToRound(u().id, G, h.bet); if (r1.error) { busyB = false; return ctx.msg(r1.error); } h.bet *= 2; renderHeader(); ctx.refresh(); }
         if (kind === "split") {
-          var r2 = db.addToRound(u().id, h.bet); if (r2.error) { busyB = false; return ctx.msg(r2.error); } renderHeader(); ctx.refresh();
+          var r2 = db.addToRound(u().id, G, h.bet); if (r2.error) { busyB = false; return ctx.msg(r2.error); } renderHeader(); ctx.refresh();
           var aces = h.cards[0].rank === 1;
           return draw(2).then(function (cs) {
             S.hands = [{ cards: [h.cards[0], cs[0]], bet: h.bet, done: aces }, { cards: [h.cards[1], cs[1]], bet: h.bet, done: aces }];
@@ -1097,10 +1124,14 @@
       ["hit", "stand", "double", "split"].forEach(function (k) { $("#bj-" + k).addEventListener("click", function () { act(k); }); });
       function start() {
         var a = ctx.amount(), us = ctx.validate(a); if (!us) return;
-        var r = db.startRound(us.id, "blackjack", a, {}); if (r.error) return ctx.msg(r.error);
-        renderHeader(); ctx.refresh(); ctx.lock(true); $("#bj-result").className = "bj-result hidden";
+        var r = db.startRound(us.id, G, a, {}); if (r.error) return ctx.msg(r.error);
+        renderHeader(); ctx.refresh(); deal(a);
+      }
+      function deal(a) {
+        ctx.lock(true); $("#bj-result").className = "bj-result hidden"; busyB = true;
         S = { cursor: 0, dealer: [], hands: [{ cards: [], bet: a, done: false }], active: 0, over: false };
         draw(4).then(function (c) {
+          busyB = false;
           S.hands[0].cards = [c[0], c[2]]; S.dealer = [c[1], c[3]];
           var p = bjTotal(S.hands[0].cards).t, d = bjTotal(S.dealer).t;
           persist(); render();
@@ -1112,8 +1143,13 @@
         refresh: function () {},
         click: function () { if (!S) start(); },
         resume: function () {
-          var us = u(), r = us && db.activeRound(us.id);
-          if (r && r.game === "blackjack" && r.state && r.state.hands) { S = r.state; $("#og-amt").value = S.hands[0].bet.toFixed(2); ctx.lock(true); render(); }
+          var us = u(), r = us && db.activeRound(us.id, G);
+          if (!r) return;
+          if (!(r.state && r.state.hands && r.state.hands[0].cards.length)) { $("#og-amt").value = r.amount.toFixed(2); return deal(r.amount); }
+          S = r.state; $("#og-amt").value = S.hands[0].bet.toFixed(2); ctx.lock(true); render();
+          var p0 = bjTotal(S.hands[0].cards).t, d0 = bjTotal(S.dealer).t;
+          if (S.hands.length === 1 && S.hands[0].cards.length === 2 && S.dealer.length === 2 && (p0 === 21 || (d0 === 21 && (S.dealer[0].rank === 1 || bjVal(S.dealer[0].rank) === 10)))) { busyB = true; return setTimeout(finish, 400); }
+          if (S.hands.every(function (h) { return h.done; })) { busyB = true; dealerPlay(); }
         }
       };
     }
@@ -1180,12 +1216,13 @@
       function play() {
         var t = total(); if (!t) { ctx.msg("Place chips on the table first."); return Promise.resolve(null); }
         var u = ctx.validate(t); if (!u || spinning) return Promise.resolve(null);
-        var s = db.seeds(u.id), nonce = s.nonce, client = s.client; spinning = true; ctx.lock(true);
+        var s = db.reserve(u.id), nonce = s.nonce, client = s.client; spinning = true; ctx.lock(true);
         return floats(s.server, client, nonce, 1).then(function (fs) {
           var n = Math.floor(fs[0] * 37), payout = 0, wins = [];
           for (var k in bets) if (rlWins(k, n)) { payout += bets[k] * rlPays(k); wins.push(k); }
           var mult = capMult(t, Math.round((payout / t) * 10000) / 10000);
           var b = db.placeBet(u.id, "roulette", t, mult, payout > 0, { result: n, bets: JSON.parse(JSON.stringify(bets)), nonce: nonce, client: client });
+          if (b.error) { spinning = false; ctx.lock(false); ctx.msg(b.error); return null; }
           var i = RL_ORDER.indexOf(n), segA = 360 / 37, target = -((i + 0.5) * segA);
           rot = rot - (rot % 360) + 360 * 4 + target; if (rot <= 0) rot += 360 * 5;
           var g = $("#rl-rot"); g.style.transition = "transform 2.6s cubic-bezier(.12,.75,.12,1)"; g.style.transform = "rotate(" + rot + "deg)";
@@ -1201,6 +1238,211 @@
       }
       paintChips();
       return { refresh: function () { if ($("#og-mult-lbl")) ctx.setProfit(1); }, play: play, cooldown: 100 };
+    }
+  };
+
+  /* ---------- TOWER (tabelas da Stake: 9 andares, RTP 98%) ---------- */
+  var TOWER = {
+    easy: { tiles: 4, eggs: 3, mult: [1.31, 1.74, 2.32, 3.1, 4.13, 5.51, 7.34, 9.79, 13.05] },
+    medium: { tiles: 3, eggs: 2, mult: [1.47, 2.21, 3.31, 4.96, 7.44, 11.16, 16.74, 25.11, 37.67] },
+    hard: { tiles: 2, eggs: 1, mult: [1.96, 3.92, 7.84, 15.68, 31.36, 62.72, 125.44, 250.88, 501.76] },
+    expert: { tiles: 3, eggs: 1, mult: [2.94, 8.82, 26.46, 79.38, 238.14, 714.42, 2143.26, 6429.78, 19289.34] },
+    master: { tiles: 4, eggs: 1, mult: [3.92, 15.68, 62.72, 250.88, 1003.52, 4014.08, 16056.32, 64225.28, 256901.12] }
+  };
+  /* Cada andar: embaralha as casas (Fisher–Yates) com (casas − 1) números; as primeiras "eggs" são seguras */
+  function towerFrom(fs, level) {
+    var L = TOWER[level], out = [], c = 0;
+    for (var row = 0; row < 9; row++) {
+      var a = []; for (var i = 0; i < L.tiles; i++) a.push(i);
+      for (var j = 0; j < L.tiles - 1; j++) { var k = j + Math.floor(fs[c++] * (L.tiles - j)), t = a[j]; a[j] = a[k]; a[k] = t; }
+      out.push(a.slice(0, L.eggs));
+    }
+    return out;
+  }
+  RD.fair.tower = TOWER; RD.fair.towerFrom = towerFrom;
+  var EGG = '<svg viewBox="0 0 24 24"><ellipse cx="12" cy="13.5" rx="7" ry="8.5" fill="#ffc85c"/><ellipse cx="9.5" cy="10" rx="2.2" ry="3" fill="#fff4cf" opacity=".85"/><path d="M6.5 15c2 1.6 4 .2 5.5 1.4s3.6.6 5.5-1" stroke="#e58f00" stroke-width="1.2" fill="none"/></svg>';
+  var SKULL = '<svg viewBox="0 0 24 24"><path d="M12 3C7.6 3 4.5 6.1 4.5 10.2c0 2.6 1.2 4.4 3 5.4V19a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1v-3.4c1.8-1 3-2.8 3-5.4C19.5 6.1 16.4 3 12 3z" fill="#ff7a59"/><circle cx="9" cy="11" r="2" fill="#2a0d10"/><circle cx="15" cy="11" r="2" fill="#2a0d10"/><path d="M10.5 16.5v2M13.5 16.5v2" stroke="#2a0d10" stroke-width="1.4"/></svg>';
+  OG.tower = {
+    label: function (b) { return b.multiplier ? b.multiplier.toFixed(2) + "×" : "0.00×"; },
+    cfg: function () {
+      return {
+        side: selectField("tw-level", "Difficulty", [["easy", "Easy"], ["medium", "Medium"], ["hard", "Hard"], ["expert", "Expert"], ["master", "Master"]], ogPrefs.twLevel || "easy") +
+          '<div id="tw-live" class="hidden">' + profitField("Total profit") + "</div>",
+        after: '<button class="btn btn-secondary btn-block hidden" id="tw-random" style="height:42px">Pick random tile</button>',
+        center: '<div class="tw" id="tw"></div>'
+      };
+    },
+    bind: function (ctx) {
+      var G = "tower", round = null, pending = false; // round: { amount, level, picks:[] }
+      function level() { return $("#tw-level").value; }
+      function cur() { return round ? round.picks.length : 0; }
+      function multNow() { return round && round.picks.length ? TOWER[round.level].mult[round.picks.length - 1] : 1; }
+      function paint(final) {
+        var box = $("#tw"); if (!box) return;
+        var lv = round ? round.level : (final ? final.level : level()), L = TOWER[lv], rows = "";
+        for (var r = 8; r >= 0; r--) {
+          var src = round || final, safeRows = src ? src.picks.length - (final && final.lost ? 1 : 0) : 0;
+          var active = round && r === cur(), passed = r < safeRows, cells = "";
+          for (var i = 0; i < L.tiles; i++) {
+            var picked = !!src && src.picks[r] === i, safe = final && final.eggs[r].indexOf(i) > -1, cls = "tw-tile";
+            var inner = "";
+            if (passed && picked) { cls += " open"; inner = EGG; }
+            else if (final && picked) { cls += " open boom"; inner = SKULL; }
+            else if (final) { cls += " dim"; inner = safe ? EGG : SKULL; }
+            cells += '<button class="' + cls + '" data-tw="' + r + ":" + i + '"' + (active && !pending ? "" : " disabled") + ">" + inner + "</button>";
+          }
+          rows += '<div class="tw-row' + (active ? " active" : "") + (passed ? " passed" : "") + '"><span class="tw-m">' + L.mult[r].toFixed(2) + '×</span><div class="tw-cells" style="grid-template-columns:repeat(' + L.tiles + ',minmax(0,1fr))">' + cells + "</div></div>";
+        }
+        box.innerHTML = rows;
+      }
+      function refresh() {
+        if (round) { var m = multNow(); ctx.setProfit(m, m.toFixed(2)); var p = $("#og-profit"); if (p) p.value = (round.amount * (m - 1)).toFixed(2); }
+        else ctx.setProfit(TOWER[level()].mult[0], TOWER[level()].mult[0].toFixed(2));
+      }
+      function setLive(on) {
+        if (!$("#tw-live")) return;
+        $("#tw-live").classList.toggle("hidden", !on); $("#tw-random").classList.toggle("hidden", !on); ctx.lock(on);
+        var b = ctx.btn(); b.textContent = on ? "Cashout" : "Bet"; b.disabled = on && (!round || !round.picks.length);
+      }
+      function layout(r) { return floats(r.server, r.client, r.nonce, 27).then(function (fs) { return towerFrom(fs, round.level); }); }
+      function end(win, eggs) {
+        var u = me(), k = round.picks.length, mult = win ? capMult(round.amount, TOWER[round.level].mult[k - 1]) : 0;
+        var b = db.settleRound(u.id, G, mult, win, { level: round.level, picks: round.picks.slice(), rows: k - (win ? 0 : 1) });
+        var shown = { level: round.level, picks: round.picks.slice(), eggs: eggs, lost: !win }; round = null;
+        paint(shown); setLive(false); refresh(); ctx.record(b);
+      }
+      function pick(i) {
+        if (!round || pending) return;
+        var u = me(), r = db.activeRound(u.id, G); if (!r) return;
+        pending = true;
+        layout(r).then(function (eggs) {
+          pending = false; if (!round) return;
+          var row = round.picks.length; round.picks.push(i);
+          if (eggs[row].indexOf(i) < 0) return end(false, eggs);
+          db.updateRound(u.id, G, { level: round.level, picks: round.picks });
+          if (round.picks.length === 9) return end(true, eggs);
+          if (!$("#tw")) return;
+          paint(); refresh(); ctx.btn().disabled = false;
+        });
+      }
+      $("#tw").addEventListener("click", function (e) { var t = e.target.closest("[data-tw]"); if (t && !t.disabled) pick(+t.getAttribute("data-tw").split(":")[1]); });
+      $("#tw-random").addEventListener("click", function () { if (round) pick(Math.floor(Math.random() * TOWER[round.level].tiles)); });
+      $("#tw-level").addEventListener("change", function () { ogPrefs.twLevel = level(); savePrefs(); paint(); refresh(); });
+      function start() {
+        var a = ctx.amount(), u = ctx.validate(a); if (!u) return;
+        var r = db.startRound(u.id, G, a, { level: level(), picks: [] }); if (r.error) return ctx.msg(r.error);
+        round = { amount: a, level: level(), picks: [] }; renderHeader(); ctx.refresh(); paint(); setLive(true); refresh();
+      }
+      paint(); refresh();
+      return {
+        refresh: refresh,
+        click: function () {
+          if (!round) return start();
+          if (!round.picks.length || pending) return;
+          var r = db.activeRound(me().id, G); if (!r) return;
+          pending = true; layout(r).then(function (eggs) { pending = false; if (round) end(true, eggs); });
+        },
+        resume: function () {
+          var u = me(), r = u && db.activeRound(u.id, G);
+          if (r) { round = { amount: r.amount, level: r.state.level, picks: r.state.picks.slice() }; $("#tw-level").value = r.state.level; $("#og-amt").value = r.amount.toFixed(2); paint(); setLive(true); refresh(); }
+        }
+      };
+    }
+  };
+
+  /* ---------- CHICKEN (tabelas da Stake: 20 faixas, RTP 98%) ---------- */
+  var CHICKEN = {
+    easy: { bones: 1, mult: [1, 1.03, 1.09, 1.15, 1.23, 1.31, 1.4, 1.51, 1.63, 1.78, 1.96, 2.18, 2.45, 2.8, 3.27, 3.92, 4.9, 6.53, 9.8, 19.6] },
+    medium: { bones: 3, mult: [1, 1.15, 1.37, 1.64, 2, 2.46, 3.07, 3.91, 5.08, 6.77, 9.31, 13.3, 19.95, 31.92, 55.86, 111.72, 279.3, 1117.2] },
+    hard: { bones: 5, mult: [1, 1.31, 1.77, 2.46, 3.48, 5.06, 7.59, 11.81, 19.18, 32.89, 60.29, 120.59, 271.32, 723.52, 2532.32, 15193.92] },
+    expert: { bones: 10, mult: [1, 1.96, 4.14, 9.31, 22.61, 60.29, 180.88, 633.08, 2743.35, 16460.08, 181060.88] }
+  };
+  /* Embaralha as 20 faixas (Fisher–Yates, 19 números); as primeiras "bones" escondem um carro */
+  function chickenFrom(fs, diff) { var a = []; for (var i = 0; i < 20; i++) a.push(i); for (var j = 0; j < 19; j++) { var k = j + Math.floor(fs[j] * (20 - j)), t = a[j]; a[j] = a[k]; a[k] = t; } return a.slice(0, CHICKEN[diff].bones); }
+  RD.fair.chicken = CHICKEN; RD.fair.chickenFrom = chickenFrom;
+  var HEN = '<svg viewBox="0 0 48 48" class="ck-hen"><ellipse cx="24" cy="44" rx="11" ry="2.5" fill="#000" opacity=".3"/><path d="M19 38v5M27 38v5M17 43h4M25 43h4" stroke="#ff9d1a" stroke-width="2.2" stroke-linecap="round"/><ellipse cx="24" cy="29" rx="12" ry="11" fill="#fff"/><path d="M13 28c-3-1-5 1-5 4 3 0 5-1 6-2z" fill="#e8edf7"/><circle cx="27" cy="16" r="8" fill="#fff"/><path d="M23 9c0-3 2-4 3-2 1-3 3-3 4-1 2-1 3 1 2 3z" fill="#ff2e55"/><path d="M34 16l5 1.5-5 1.5z" fill="#ffb020"/><path d="M33 20c0 3-2 4-3 2 0-1 1-2 3-2z" fill="#ff2e55"/><circle cx="29.5" cy="15" r="1.6" fill="#1a1205"/><path d="M17 27c3 4 9 4 12 1" stroke="#dfe6f5" stroke-width="2" fill="none" stroke-linecap="round"/></svg>';
+  var CAR = '<svg viewBox="0 0 48 64" class="ck-car"><rect x="8" y="4" width="32" height="56" rx="9" fill="#ff2e55"/><rect x="12" y="14" width="24" height="12" rx="3" fill="#2a1a24"/><rect x="12" y="40" width="24" height="9" rx="3" fill="#2a1a24"/><rect x="5" y="12" width="4" height="10" rx="2" fill="#111"/><rect x="39" y="12" width="4" height="10" rx="2" fill="#111"/><rect x="5" y="44" width="4" height="10" rx="2" fill="#111"/><rect x="39" y="44" width="4" height="10" rx="2" fill="#111"/><rect x="13" y="5" width="6" height="3" rx="1.5" fill="#fff4c2"/><rect x="29" y="5" width="6" height="3" rx="1.5" fill="#fff4c2"/></svg>';
+  OG.chicken = {
+    label: function (b) { return b.multiplier ? b.multiplier.toFixed(2) + "×" : "0.00×"; },
+    cfg: function () {
+      return {
+        side: selectField("ck-diff", "Difficulty", [["easy", "Easy"], ["medium", "Medium"], ["hard", "Hard"], ["expert", "Expert"]], ogPrefs.ckDiff || "easy") +
+          '<div id="ck-live" class="hidden">' + profitField("Total profit") + "</div>",
+        after: '<button class="btn btn-secondary btn-block hidden" id="ck-go" style="height:42px">Cross next lane</button>',
+        center: '<div class="ck"><div class="ck-road" id="ck-road"></div><div class="ck-note" id="ck-note"></div></div>'
+      };
+    },
+    bind: function (ctx) {
+      var G = "chicken", round = null, pending = false; // round: { amount, diff, steps }
+      function diff() { return $("#ck-diff").value; }
+      function multNow() { return round ? CHICKEN[round.diff].mult[round.steps] : 1; }
+      function paint(final) {
+        var road = $("#ck-road"); if (!road) return;
+        var d = round ? round.diff : final ? final.diff : diff(), T = CHICKEN[d], lanes = T.mult.length - 1, steps = round ? round.steps : final ? final.steps : 0, html = '<div class="ck-lane ck-start">' + (steps === 0 && !(final && final.dead) ? HEN : "") + "</div>";
+        for (var i = 1; i <= lanes; i++) {
+          var here = i === steps, done = i < steps, dead = final && final.dead && i === final.steps, bone = final && final.bones.indexOf(i - 1) > -1;
+          var next = round && !pending && i === steps + 1;
+          html += '<button class="ck-lane' + (done ? " done" : "") + (here ? " here" : "") + (next ? " next" : "") + (dead ? " dead" : "") + (final && bone && !dead ? " reveal" : "") + '" data-ck="' + i + '"' + (next ? "" : " disabled") + ">" +
+            '<span class="ck-m">' + T.mult[i].toFixed(2) + "×</span>" + (dead ? CAR : here ? HEN : final && bone ? CAR : "") + "</button>";
+        }
+        road.innerHTML = html + '<div class="ck-lane ck-end"></div>';
+        var at = road.querySelector(".here, .dead") || road.querySelector(".ck-start");
+        if (at && road.scrollWidth > road.clientWidth) road.scrollTo({ left: Math.max(0, at.offsetLeft - road.clientWidth / 2 + at.offsetWidth / 2), behavior: "smooth" });
+        $("#ck-note").textContent = round ? "Next lane pays " + (T.mult[steps + 1] ? T.mult[steps + 1].toFixed(2) + "×" : "—") + " · " + T.bones + " of 20 lanes hide a car" : T.bones + " of 20 lanes hide a car · up to " + T.mult[lanes].toLocaleString("en-US") + "×";
+      }
+      function refresh() {
+        if (round) { var m = multNow(); ctx.setProfit(m, m.toFixed(2)); var p = $("#og-profit"); if (p) p.value = (round.amount * (m - 1)).toFixed(2); }
+        else { var T = CHICKEN[diff()]; ctx.setProfit(T.mult[1], T.mult[1].toFixed(2)); }
+      }
+      function setLive(on) {
+        if (!$("#ck-live")) return;
+        $("#ck-live").classList.toggle("hidden", !on); $("#ck-go").classList.toggle("hidden", !on); ctx.lock(on);
+        var b = ctx.btn(); b.textContent = on ? "Cashout" : "Bet"; b.disabled = on && (!round || !round.steps);
+        $("#ck-go").disabled = !on;
+      }
+      function layout(r) { return floats(r.server, r.client, r.nonce, 19).then(function (fs) { return chickenFrom(fs, round.diff); }); }
+      function end(win, bones, dead) {
+        var u = me(), k = round.steps, mult = win ? capMult(round.amount, CHICKEN[round.diff].mult[k]) : 0;
+        var b = db.settleRound(u.id, G, mult, win, { diff: round.diff, lanes: win ? k : k - 1, bones: bones.map(function (x) { return x + 1; }) });
+        var shown = { diff: round.diff, steps: k, bones: bones, dead: dead }; round = null;
+        paint(shown); setLive(false); refresh(); ctx.record(b);
+      }
+      function go() {
+        if (!round || pending) return;
+        var u = me(), r = db.activeRound(u.id, G); if (!r) return;
+        pending = true; paint();
+        layout(r).then(function (bones) {
+          pending = false; if (!round) return;
+          round.steps++;
+          if (bones.indexOf(round.steps - 1) > -1) return end(false, bones, true);
+          db.updateRound(u.id, G, { diff: round.diff, steps: round.steps });
+          if (round.steps === CHICKEN[round.diff].mult.length - 1) return end(true, bones, false);
+          if (!$("#ck-road")) return;
+          paint(); refresh(); ctx.btn().disabled = false;
+        });
+      }
+      $("#ck-road").addEventListener("click", function (e) { var t = e.target.closest("[data-ck]"); if (t && !t.disabled) go(); });
+      $("#ck-go").addEventListener("click", go);
+      $("#ck-diff").addEventListener("change", function () { ogPrefs.ckDiff = diff(); savePrefs(); paint(); refresh(); });
+      function start() {
+        var a = ctx.amount(), u = ctx.validate(a); if (!u) return;
+        var r = db.startRound(u.id, G, a, { diff: diff(), steps: 0 }); if (r.error) return ctx.msg(r.error);
+        round = { amount: a, diff: diff(), steps: 0 }; renderHeader(); ctx.refresh(); paint(); setLive(true); refresh();
+      }
+      paint(); refresh();
+      return {
+        refresh: refresh,
+        click: function () {
+          if (!round) return start();
+          if (!round.steps || pending) return;
+          var r = db.activeRound(me().id, G); if (!r) return;
+          pending = true; layout(r).then(function (bones) { pending = false; if (round) end(true, bones, false); });
+        },
+        resume: function () {
+          var u = me(), r = u && db.activeRound(u.id, G);
+          if (r) { round = { amount: r.amount, diff: r.state.diff, steps: r.state.steps }; $("#ck-diff").value = r.state.diff; $("#og-amt").value = r.amount.toFixed(2); paint(); setLive(true); refresh(); }
+        }
+      };
     }
   };
 
@@ -1430,8 +1672,8 @@
     return '<div class="container prose"><h1>Provably fair</h1><p class="muted" style="margin-top:8px">Every RD Originals result can be verified by you. We commit to the server seed (showing its hash) before you bet, so nobody can change a result afterwards.</p>' +
       "<h2>How results are made</h2><ul>" +
       "<li><strong>Dice / Limbo / Crash:</strong> <code>HMAC_SHA256(server_seed, client_seed:nonce)</code> → first 4 bytes → number between 0 and 1. Dice: <code>floor(n × 10001) / 100</code>. Limbo and Crash: <code>floor(0.99 / n × 100) / 100</code> (min 1.00×).</li>" +
-      "<li><strong>Plinko / Mines / Hi-Lo / Keno / Wheel / Roulette / Blackjack:</strong> need several numbers, made with <code>HMAC_SHA256(server_seed, client_seed:nonce:cursor)</code>, 8 numbers per cursor. Plinko: each row goes right if <code>n ≥ 0.5</code>. Mines: Fisher–Yates shuffle of the 25 tiles, the first N are mines. Hi-Lo and Blackjack: card = <code>floor(n × 52)</code> (infinite deck). Keno: shuffle of 1–40, first 10 are drawn. Wheel: segment = <code>floor(n × segments)</code>. Roulette: number = <code>floor(n × 37)</code>.</li></ul>" +
-      '<h2>Verify a bet</h2><div class="card card-pad"><div class="row wrap" style="gap:0 12px;align-items:flex-start"><div class="field grow" style="min-width:160px"><label>Game</label><select class="select" id="v-game"><option value="dice">Dice</option><option value="limbo">Limbo</option><option value="crash">Crash</option><option value="plinko">Plinko</option><option value="mines">Mines</option><option value="hilo">Hi-Lo</option><option value="keno">Keno</option><option value="wheel">Wheel</option><option value="roulette">Roulette</option><option value="blackjack">Blackjack</option></select></div>' +
+      "<li><strong>Plinko / Mines / Hi-Lo / Keno / Wheel / Roulette / Blackjack / Tower / Chicken:</strong> need several numbers, made with <code>HMAC_SHA256(server_seed, client_seed:nonce:cursor)</code>, 8 numbers per cursor. Plinko: each row goes right if <code>n ≥ 0.5</code>. Mines: Fisher–Yates shuffle of the 25 tiles, the first N are mines. Hi-Lo and Blackjack: card = <code>floor(n × 52)</code> (infinite deck). Keno: shuffle of 1–40, first 10 are drawn. Wheel: segment = <code>floor(n × segments)</code>. Roulette: number = <code>floor(n × 37)</code>. Tower: on each of the 9 floors, Fisher–Yates shuffle of the tiles, the first ones are eggs. Chicken: Fisher–Yates shuffle of the 20 lanes, the first ones hide a car.</li></ul>" +
+      '<h2>Verify a bet</h2><div class="card card-pad"><div class="row wrap" style="gap:0 12px;align-items:flex-start"><div class="field grow" style="min-width:160px"><label>Game</label><select class="select" id="v-game"><option value="dice">Dice</option><option value="limbo">Limbo</option><option value="crash">Crash</option><option value="plinko">Plinko</option><option value="mines">Mines</option><option value="hilo">Hi-Lo</option><option value="keno">Keno</option><option value="wheel">Wheel</option><option value="roulette">Roulette</option><option value="blackjack">Blackjack</option><option value="tower">Tower</option><option value="chicken">Chicken</option></select></div>' +
       '<div class="field grow" style="min-width:160px" id="v-extra-wrap"><label id="v-extra-l">—</label><input class="input" id="v-extra" disabled></div></div>' +
       '<div class="field"><label>Server seed (revealed)</label><input class="input" id="v-server"></div><div class="field"><label>Client seed</label><input class="input" id="v-client"></div><div class="field"><label>Nonce</label><input class="input" id="v-nonce" type="number" value="0" min="0"></div><button class="btn btn-primary" data-action="verify">Verify</button><div id="v-out" style="margin-top:16px"></div></div>' +
       '<p class="faint" style="font-size:13px;margin-top:12px">Open "Provably fair" in the bottom bar of any RD Original and rotate your seed to reveal the server seed used for your past bets.</p></div>';
@@ -1439,7 +1681,7 @@
   pages.fairness.after = function () {
     var g = $("#v-game"), ex = $("#v-extra"), lb = $("#v-extra-l");
     function upd() {
-      var v = g.value, cfg = { plinko: ["Rows / risk (e.g. 16 high)", "16 high"], mines: ["Number of mines", "3"], hilo: ["Cards to show", "8"], blackjack: ["Cards to show", "8"], wheel: ["Segments / risk (e.g. 30 medium)", "30 medium"] }[v];
+      var v = g.value, cfg = { plinko: ["Rows / risk (e.g. 16 high)", "16 high"], mines: ["Number of mines", "3"], hilo: ["Cards to show", "8"], blackjack: ["Cards to show", "8"], wheel: ["Segments / risk (e.g. 30 medium)", "30 medium"], tower: ["Difficulty", "easy"], chicken: ["Difficulty", "easy"] }[v];
       ex.disabled = !cfg; lb.textContent = cfg ? cfg[0] : "—"; ex.value = cfg ? cfg[1] : "";
     }
     g.addEventListener("change", upd); upd();
@@ -1573,7 +1815,7 @@
           hmac(sv, cl + ":" + n).then(function (buf) { var o = outcome(game, floatFrom(buf)); show("Result: <strong>" + (game === "dice" ? o.toFixed(2) : o.toFixed(2) + "×") + "</strong>"); });
         } else if (game === "plinko") {
           var pr = extra.split(/\s+/), rows = +pr[0] || 16, rk = (pr[1] || "high").toLowerCase();
-          if (!PLINKO[rows] || !PLINKO[rows][rk]) { $("#v-out").innerHTML = errorBox("Use 8, 12 or 16 rows and low, medium or high."); return; }
+          if (!PLINKO[rows] || !PLINKO[rows][rk]) { $("#v-out").innerHTML = errorBox("Use 8 to 16 rows and low, medium or high."); return; }
           floats(sv, cl, n, rows).then(function (fs) { var path = fs.map(function (f) { return Math.floor(f * 2); }), slot = path.reduce(function (a, b) { return a + b; }, 0); show("Path: <code>" + path.map(function (x) { return x ? "R" : "L"; }).join("") + "</code> → slot " + (slot + 1) + " of " + (rows + 1) + " → <strong>" + PLINKO[rows][rk][slot] + "×</strong>"); });
         } else if (game === "mines") {
           var mc = Math.max(1, Math.min(24, parseInt(extra, 10) || 3));
@@ -1584,6 +1826,12 @@
           var wp = extra.split(/\s+/), segs = +wp[0] || 30, wr = (wp[1] || "medium").toLowerCase();
           if ([10, 20, 30, 40, 50].indexOf(segs) < 0 || ["low", "medium", "high"].indexOf(wr) < 0) { $("#v-out").innerHTML = errorBox("Use 10–50 segments and low, medium or high."); return; }
           floats(sv, cl, n, 1).then(function (fs) { var sg = Math.floor(fs[0] * segs); show("Segment " + (sg + 1) + " of " + segs + " → <strong>" + wheelTable(segs, wr)[sg].toFixed(2) + "×</strong>"); });
+        } else if (game === "tower") {
+          var tl = extra.toLowerCase(); if (!TOWER[tl]) { $("#v-out").innerHTML = errorBox("Use easy, medium, hard, expert or master."); return; }
+          floats(sv, cl, n, 27).then(function (fs) { show("Egg tiles per floor (bottom to top, 1 = left): <strong>" + towerFrom(fs, tl).map(function (r) { return r.map(function (x) { return x + 1; }).sort().join("+"); }).join(" · ") + "</strong>"); });
+        } else if (game === "chicken") {
+          var cd = extra.toLowerCase(); if (!CHICKEN[cd]) { $("#v-out").innerHTML = errorBox("Use easy, medium, hard or expert."); return; }
+          floats(sv, cl, n, 19).then(function (fs) { show("Cars in lanes: <strong>" + chickenFrom(fs, cd).map(function (x) { return x + 1; }).sort(function (a, b) { return a - b; }).join(", ") + "</strong> (1–20)"); });
         } else if (game === "roulette") {
           floats(sv, cl, n, 1).then(function (fs) { show("Number: <strong>" + Math.floor(fs[0] * 37) + "</strong>"); });
         } else {

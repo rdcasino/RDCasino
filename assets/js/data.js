@@ -57,6 +57,8 @@ RD.games = [
   { id: "hilo", name: "Hi-Lo", provider: "RD Originals", cat: "originals", rtp: 99, edge: 1, playable: true, c1: "#b45309", c2: "#451a03" },
   { id: "wheel", name: "Wheel", provider: "RD Originals", cat: "originals", rtp: 99, edge: 1, playable: true, c1: "#4338ca", c2: "#1e1b4b" },
   { id: "blackjack", name: "Blackjack", provider: "RD Originals", cat: "originals", rtp: 99.4, edge: 0.6, playable: true, tag: "new", c1: "#22b35e", c2: "#063a1c" },
+  { id: "tower", name: "Tower", provider: "RD Originals", cat: "originals", rtp: 98, edge: 2, playable: true, tag: "new", c1: "#16c98d", c2: "#06352a" },
+  { id: "chicken", name: "Chicken", provider: "RD Originals", cat: "originals", rtp: 98, edge: 2, playable: true, tag: "new", c1: "#ffb020", c2: "#6b2a00" },
   { id: "roulette", name: "Roulette", provider: "RD Originals", cat: "originals", rtp: 97.3, edge: 2.7, playable: true, tag: "new", c1: "#5b5bf0", c2: "#15124a" },
   { id: "gates-olympus", name: "Gates of Olympus 1000", provider: "Pragmatic Play", cat: "slots", rtp: 96.5, tag: "hot", c1: "#a16207", c2: "#3f2a04" },
   { id: "sweet-bonanza", name: "Sweet Bonanza 1000", provider: "Pragmatic Play", cat: "slots", rtp: 96.53, c1: "#db2777", c2: "#500724" },

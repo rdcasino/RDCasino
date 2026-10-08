@@ -122,7 +122,7 @@
         '<button class="btn btn-secondary btn-sm" data-act="adjust" data-id="' + p.id + '">' + ic("sliders", 14) + "Ajustar saldo</button>" +
         '<button class="btn btn-secondary btn-sm" data-act="bonus" data-id="' + p.id + '">' + ic("gift", 14) + "Dar bônus</button>" +
         '<button class="btn btn-secondary btn-sm" data-act="aff-share" data-id="' + p.id + '">' + ic("link", 14) + "Comissão afiliado</button>" +
-        (p.status === "Suspended" ? '<button class="btn btn-primary btn-sm" data-act="unsuspend" data-id="' + p.id + '">Reativar</button>' : '<button class="btn btn-danger btn-sm" data-act="suspend" data-id="' + p.id + '">' + ic("ban", 14) + "Suspender</button>") + "</div>" +
+        ('<button class="btn btn-secondary btn-sm" data-act="resetbets" data-id="' + p.id + '">Zerar apostas</button>') + (p.status === "Suspended" ? '<button class="btn btn-primary btn-sm" data-act="unsuspend" data-id="' + p.id + '">Reativar</button>' : '<button class="btn btn-danger btn-sm" data-act="suspend" data-id="' + p.id + '">' + ic("ban", 14) + "Suspender</button>") + "</div>" +
       '<div class="field" style="margin-top:20px"><label>Nota interna (só a equipe vê)</label><textarea class="textarea" id="pl-note" data-id="' + p.id + '">' + esc(p.note) + "</textarea></div>" +
       '<h3 style="margin:20px 0 10px">Transações</h3><div class="card">' + txTable(db.txOf(p.id).slice(0, 20), true) + "</div>" +
       '<h3 style="margin:20px 0 10px">Últimas apostas</h3><div class="card">' + betsTable(db.betsOf(p.id).slice(0, 20)) + "</div>");
@@ -290,6 +290,7 @@
       $("#kyc-rej").addEventListener("submit", function (ev) { ev.preventDefault(); db.setKyc(id, "Rejected", ev.target.why.value); closeAll(); RD.toast("KYC rejeitado", "error"); refreshAfter(); });
       return;
     }
+    if (a === "resetbets") { if (!confirm("Zerar o histórico de apostas e as estatísticas deste jogador? O saldo não muda.")) return; db.resetBets(id); RD.toast("Apostas zeradas"); return refreshAfter(id); }
     if (a === "suspend" || a === "unsuspend") { db.setStatus(id, a === "suspend" ? "Suspended" : "Active"); RD.toast("Status atualizado"); return refreshAfter(id); }
     if (a === "adjust" || a === "bonus") {
       var pl = db.player(id), isBonus = a === "bonus";
