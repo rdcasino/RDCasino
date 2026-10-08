@@ -9,7 +9,7 @@ window.RD = window.RD || {};
 /* Modo REAL (servidor Supabase) x modo demonstração (dados no navegador).
    Por enquanto o modo real fica escondido: abra o site com ?live=1 para ligar
    e ?live=0 para voltar. Quando lançar, troque LIVE_DEFAULT para true. */
-var LIVE_DEFAULT = false;
+var LIVE_DEFAULT = true; // modo real é o padrão (?live=0 abre a demonstração)
 RD.supabaseConfig = {
   url: "https://szhmaytfipnzcdulotli.supabase.co",
   anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6aG1heXRmaXBuemNkdWxvdGxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0NDYxMDksImV4cCI6MjA4NzAyMjEwOX0.l9DkjbnR-5AcFiSvz4jmNuIWpEL2EdhV9HW6zMMmaEA" // chave pública (anon): pode ficar no site, o banco é protegido por RLS
@@ -61,7 +61,7 @@ RD.img = {
 };
 
 RD.banners = [
-  { id: "welcome", art: "scene:welcome", tag: "Welcome offer", title: "100% bonus up to $1,000", sub: "On your first crypto deposit.", cta: "Claim now", route: "promotions", img: "assets/img/banners/welcome.jpg", c1: "#1d4ed8", c2: "#0b2a6b" },
+  { id: "vip", art: "scene:vip", tag: "VIP Club", title: "Up to $20,000 in rewards", sub: "A cash reward at every VIP level.", cta: "Open VIP Club", route: "vip", img: "assets/img/banners/vip.jpg", c1: "#8a1f5c", c2: "#1f0618" },
   { id: "leaderboard", art: "scene:leaderboard", tag: "Monthly race", title: "$50,000 leaderboard", sub: "Top wagerers get paid every month.", cta: "See standings", route: "leaderboard", img: "assets/img/banners/leaderboard.jpg", c1: "#5b3fd6", c2: "#24135f" },
   { id: "affiliate", art: "scene:affiliate", tag: "Affiliates", title: "Earn 15% commission", sub: "Lifetime revenue share, paid in crypto.", cta: "Start earning", route: "affiliate", img: "assets/img/banners/affiliate.jpg", c1: "#0e7490", c2: "#083344" }
 ];
@@ -114,11 +114,23 @@ RD.games = [
 ];
 RD.games.forEach(function (g) { g.img = "assets/img/games/" + g.id + ".jpg"; g.enabled = true; });
 
+/* Promoções (todas reais e funcionando no site). value = título grande na arte; title = nome do card.
+   cat: casino | sports. route/cta = para onde o botão leva. featured = destaque no topo. */
 RD.promotions = [
-  { id: "welcome", art: "scene:welcome", title: "Welcome Bonus", value: "100% up to $1,000", desc: "Double your first deposit. Min. deposit $20. 35x wagering on bonus funds within 30 days.", badge: "New players", img: "assets/img/promos/welcome.jpg", c1: "#1d4ed8", c2: "#0b2a6b", status: "active" },
-  { id: "reload", art: "scene:reload", title: "Weekly Reload", value: "25% up to $500", desc: "Every Friday on your first deposit of the day. Available from Bronze.", badge: "Weekly", img: "assets/img/promos/reload.jpg", c1: "#0e7490", c2: "#083344", status: "active" },
-  { id: "rakeback", art: "scene:rakeback", title: "Instant Rakeback", value: "5% of house edge", desc: "Part of the house edge comes back on every bet. Claim it any time from VIP.", badge: "VIP", img: "assets/img/promos/rakeback.jpg", c1: "#5b3fd6", c2: "#24135f", status: "active" },
-  { id: "race", art: "scene:race", title: "Monthly Leaderboard", value: "$50,000 pool", desc: "Top 10 wagerers of the calendar month share the prize pool. No opt-in.", badge: "Monthly", img: "assets/img/promos/race.jpg", c1: "#a16207", c2: "#3f2a04", status: "active" }
+  { id: "race", art: "scene:race", cat: "casino", featured: true, badge: "Monthly race", value: "$50,000 Leaderboard", sub: "Top 10 wagerers get paid every month.", title: "$50,000 Monthly Leaderboard",
+    desc: "Every bet on RD Originals counts toward the monthly race — no opt-in. The top 10 wagerers of the calendar month (UTC) share a $50,000 prize pool: $15,000 for first place down to $1,000 for tenth. Prizes are paid to your balance after the month closes.", cta: "See the standings", route: "leaderboard", ends: "month", status: "active" },
+  { id: "vip", art: "scene:vip", cat: "casino", badge: "VIP Club", value: "Up to $20,000 in rewards", sub: "A cash reward at every VIP level.", title: "VIP Level-Up Rewards",
+    desc: "Climb from Bronze 1 to Amethyst 3 just by playing. Every level unlocks a one-time cash reward — from $2 at Bronze 1 to $20,000 at Amethyst 3 — paid straight to your balance with no wagering. Your level never goes down.", cta: "Open VIP Club", route: "vip", status: "active" },
+  { id: "rain", art: "scene:rain", cat: "casino", badge: "Every hour", value: "Hourly Rain", sub: "Free money splits in the chat every hour.", title: "Hourly Rain",
+    desc: "Every hour a rain pot drops in the chat. Click Join before the timer ends and the pot is split equally between everyone who joined. Players can add to the pot too.", cta: "Open the chat", route: "chat", status: "active" },
+  { id: "rakeback", art: "scene:rakeback", cat: "casino", badge: "Instant", value: "Instant Rakeback", sub: "Part of every bet comes back to you.", title: "Instant Rakeback",
+    desc: "2% of the house edge of every bet you place comes back as rakeback. It builds up as you play and you can claim it any time in Rewards.", cta: "Claim in Rewards", route: "vip", status: "active" },
+  { id: "bonuses", art: "scene:reload", cat: "casino", badge: "Daily · Weekly · Monthly", value: "Recurring Bonuses", sub: "Get paid back for playing — every day.", title: "Daily, Weekly & Monthly Bonuses",
+    desc: "Your recent play pays you back: the Daily Bonus unlocks at Bronze 2 and the Weekly and Monthly Bonuses at Silver 1. The more you play, the bigger they get. Claim them in Rewards when the timer is up.", cta: "Open Rewards", route: "vip", status: "active" },
+  { id: "codes", art: "scene:codes", cat: "casino", badge: "Social drops", value: "Bonus Codes", sub: "Grab our codes before they run out.", title: "Bonus Codes",
+    desc: "We drop bonus codes on our socials and in the chat. Type a code in \"Have a code?\" under Rewards to add it to your balance — first come, first served. Each code can be used once per account.", cta: "Redeem a code", route: "vip", status: "active" },
+  { id: "affiliate", art: "scene:affiliate", cat: "casino", badge: "Partners", value: "Earn 15% for life", sub: "Invite friends and earn from every bet.", title: "RD Partners — 15% Revenue Share",
+    desc: "Share your referral link and earn 15% of the net gaming revenue of every player you bring, for life. Track everything in real time and collect your commission to your balance any time.", cta: "Become a partner", route: "affiliate", status: "active" }
 ];
 
 /* Níveis VIP (mesmos nomes da versão original). wager = total apostado. */
@@ -173,7 +185,8 @@ RD.wallet = {
     { sym: "BTC", name: "Bitcoin", nets: ["Bitcoin"], color: "#f7931a" },
     { sym: "ETH", name: "Ethereum", nets: ["ERC20", "Arbitrum"], color: "#627eea" },
     { sym: "SOL", name: "Solana", nets: ["Solana"], color: "#9945ff" },
-    { sym: "LTC", name: "Litecoin", nets: ["Litecoin"], color: "#345d9d" }
+    { sym: "LTC", name: "Litecoin", nets: ["Litecoin"], color: "#345d9d" },
+    { sym: "DOGE", name: "Dogecoin", nets: ["Dogecoin"], color: "#c2a633" }
   ]
 };
 
@@ -208,9 +221,12 @@ RD.media = function (o, cls, label) {
   var key = o.art || (o.cat === "originals" ? "cover:" + o.id : ""), art = key && RD.art && RD.art.has(key) ? RD.art.render(key, o.artPalette) : "";
   return '<div class="media ' + (cls || "") + (art ? " has-art" : "") + '" style="--c1:' + (o.c1 || "#20161e") + ";--c2:" + (o.c2 || "#0e090d") + '">' +
     (art ? '<div class="media-art">' + art + "</div>" : label ? '<div class="media-fallback">' + label + "</div>" : "") +
-    (o.img ? '<img src="' + (RD.imgBase || "") + o.img + '" alt="" loading="lazy" onerror="this.remove()">' : "") +
+    (o.img ? '<img src="' + (RD.imgBase || "") + o.img + '" alt="" loading="lazy" data-rm-err>' : "") +
     "</div>";
 };
+
+// imagem quebrada some (sem onerror inline, para a CSP bloquear scripts inline)
+document.addEventListener("error", function (e) { var t = e.target; if (t && t.hasAttribute && t.hasAttribute("data-rm-err")) t.remove(); }, true);
 
 RD.toast = function (msg, type) {
   var box = document.querySelector(".toasts");
