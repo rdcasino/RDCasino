@@ -42,6 +42,7 @@
 - [x] KYC com documentos num cofre privado (Supabase Storage), aprovação no admin, saque acima de $2.000 exige KYC; admin credita depósito manualmente (migração 0010).
 - [x] Segurança (migração 0018): navegador não consegue gravar em nenhuma tabela/view; só via funções do servidor. vercel.json com CSP, HSTS e bloqueio de iframe.
 - [x] Bônus semanal (quinta 12h) e mensal (dia 1, 12h), horário de Brasília (migração 0019).
+- [x] Cotações das moedas no servidor (migração 0020, CoinGecko a cada 2 min via pg_net). Saldo continua em dólar; o jogador escolhe a moeda de exibição no cabeçalho.
 - [x] Provably fair no modo real: troca de seed revela a server seed (migração 0017). Configurações do admin (lucro máximo, países, licença, prêmio do leaderboard, jogos, promoções) salvas no servidor.
 - [x] Resgates no servidor (migração 0016): rakeback, prêmios de nível, bônus diário/semanal/mensal; feed público de apostas recentes. Atenção: se mudar RD.vipTiers ou RD.config.bonuses em data.js, atualize também game_tables (vip_tiers, bonuses).
 

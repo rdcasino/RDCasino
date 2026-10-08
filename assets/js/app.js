@@ -57,13 +57,34 @@
     if (!b || !(b.id in inFlight)) return; delete inFlight[b.id];
     var el = $("#hdr-bal"); if (el && b.payout > 0) { el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); }
   }
+  /* Moeda de exibição do saldo (estilo Shuffle). O saldo é em dólar; aqui só converte pela cotação. */
+  var disp = { coin: "USDT", fiat: true };
+  try { var dj = JSON.parse(localStorage.getItem("rd_disp") || "null"); if (dj && RD.prices[dj.coin]) disp = dj; } catch (e) {}
+  function saveDisp() { try { localStorage.setItem("rd_disp", JSON.stringify(disp)); } catch (e) {} }
+  function coinDec(c) { var p = RD.prices[c] || 1; return p >= 1000 ? 8 : p >= 50 ? 6 : p >= 5 ? 4 : 2; }
+  function inCoin(usd, c) { var p = RD.prices[c] || 1; return (usd / p).toLocaleString("en-US", { minimumFractionDigits: coinDec(c), maximumFractionDigits: coinDec(c) }); }
+  function coinDot(c, cls) { return '<span class="coin-dot' + (cls ? " " + cls : "") + '" style="background:' + (COIN_COLORS[c] || "#666") + '">' + (c === "USDT" ? "₮" : c === "BTC" ? "₿" : c === "ETH" ? "Ξ" : c[0]) + "</span>"; }
+  function paintBal(u) {
+    var v = shownBal(u), el = $("#hdr-bal"), dot = $("#hdr-coin");
+    el.textContent = disp.fiat ? fmt.usd(v) : inCoin(v, disp.coin);
+    if (dot) { dot.style.background = COIN_COLORS[disp.coin] || "#666"; dot.textContent = coinDot(disp.coin).replace(/<[^>]+>/g, ""); }
+    if (!$("#bal-menu").classList.contains("hidden")) renderBalMenu();
+  }
+  function renderBalMenu() {
+    var u = me(); if (!u) return; var v = shownBal(u);
+    $("#bal-menu").innerHTML = '<div class="bm-list">' + Object.keys(RD.coinNames).filter(function (c) { return RD.prices[c]; }).map(function (c) {
+      return '<button class="bm-row' + (c === disp.coin ? " active" : "") + '" data-disp-coin="' + c + '">' + coinDot(c) + '<span class="grow"><b>' + c + "</b><small>" + RD.coinNames[c] + '</small></span><span class="bm-amt"><b class="num">' + (disp.fiat ? fmt.usd(v) : inCoin(v, c)) + "</b><small>1 " + c + " = " + fmt.usd(RD.prices[c]) + "</small></span></button>";
+    }).join("") + '</div><label class="bm-fiat"><span>Display in fiat (USD)</span><input type="checkbox" data-disp-fiat' + (disp.fiat ? " checked" : "") + '><i class="sw"></i></label>';
+  }
+  document.addEventListener("change", function (e) { if (e.target.hasAttribute && e.target.hasAttribute("data-disp-fiat")) { disp.fiat = e.target.checked; saveDisp(); renderHeader(); } });
+  RD.onPrices = function () { var u = me(); if (u) paintBal(u); };
   function renderHeader() {
     var u = me();
     $("#hdr-guest").classList.toggle("hidden", !!u);
     $("#hdr-user").classList.toggle("hidden", !u);
     $("#hdr-wallet").classList.toggle("hidden", !u);
     if (!u) return;
-    $("#hdr-bal").textContent = fmt.usd(shownBal(u));
+    paintBal(u);
     if (typeof vipDot === "function") vipDot();
     var t = db.tierOf(u.wagered);
     $("#user-menu").innerHTML =
@@ -1636,7 +1657,7 @@
           var here = i === steps, done = i < steps, dead = final && final.dead && i === final.steps, bone = final && final.bones.indexOf(i - 1) > -1;
           var next = round && !pending && i === steps + 1;
           html += '<button class="ck-lane' + (done ? " done" : "") + (here ? " here" : "") + (next ? " next" : "") + (dead ? " dead" : "") + (final && bone && !dead ? " reveal" : "") + '" data-ck="' + i + '"' + (next ? "" : " disabled") + ">" +
-            '<span class="ck-m">' + T.mult[i].toFixed(2) + "×</span>" + (dead ? CAR : here ? HEN : final && bone ? CAR : "") + "</button>";
+            '<span class="ck-m">' + T.mult[i].toFixed(2) + "×</span>" + (dead ? '<span class="ck-hit">' + HEN + '<i class="ck-boom"></i></span>' + CAR : here ? HEN : final && bone ? CAR : "") + "</button>";
         }
         road.innerHTML = html + '<div class="ck-lane ck-end"><span class="ck-flag">RD FINISH</span></div>';
         var at = road.querySelector(".here, .dead") || road.querySelector(".ck-start");
@@ -2074,7 +2095,6 @@
 
   /* ---------- PEDRA, PAPEL E TESOURA (sequência de vitórias, RTP 98%) ---------- */
   var RPS = ["rock", "paper", "scissors"], RPS_E = { rock: RD.art.rpsHand("rock"), paper: RD.art.rpsHand("paper"), scissors: RD.art.rpsHand("scissors") };
-  var RPS_FX = { cut: '<svg viewBox="0 0 48 48" class="rps-svg"><circle cx="12" cy="36" r="7" fill="none" stroke="#ff2e55" stroke-width="4"/><circle cx="36" cy="36" r="7" fill="none" stroke="#ff2e55" stroke-width="4"/><path d="M16 31 L34 4 M32 31 L14 4" stroke="#e9e2ea" stroke-width="5" stroke-linecap="round"/></svg>', smash: '<svg viewBox="0 0 48 48" class="rps-svg"><path d="M24 2 l5 13 13-6 -6 13 12 5 -13 5 6 13 -13-6 -4 13 -5-13 -13 6 6-13 -12-5 13-5 -6-13 13 6z" fill="#ffd23f"/><path d="M24 12 l3 8 8-3 -4 8 7 3 -8 3 4 8 -8-4 -2 8 -3-8 -8 4 4-8 -7-3 8-3 -4-8 8 3z" fill="#ff7a1a"/></svg>' };
   function rpsMult(k) { return Math.round(0.98 * Math.pow(2, k) * 100) / 100; }
   function rpsBeats(a, b) { return (a === "rock" && b === "scissors") || (a === "scissors" && b === "paper") || (a === "paper" && b === "rock"); }
   function rpsFrom(f) { return RPS[Math.floor(f * 3)]; }
@@ -2128,7 +2148,7 @@
               var winEl = res === "win" ? you : house, loseEl = res === "win" ? house : you, wk = res === "win" ? p : h;
               var fxName = wk === "scissors" ? "cut" : wk === "rock" ? "smash" : "wrap";
               hand(winEl, wk, "attack " + (winEl === you ? "up" : "down")); hand(loseEl, res === "win" ? h : p, "hit " + fxName);
-              fx.className = "rps-fx " + fxName + " " + (res === "win" ? "at-house" : "at-you"); fx.innerHTML = RPS_FX[fxName] || "";
+              fx.className = "rps-fx impact " + (res === "win" ? "at-house" : "at-you"); fx.innerHTML = "";
               $("#rps-vs").className = "rps-vs " + res; $("#rps-vs").textContent = res === "win" ? "WIN" : "LOSE";
               setTimeout(done, 750);
             }, 280);
@@ -2629,8 +2649,8 @@
   /* ---------- Static pages ---------- */
   pages.sports = function () {
     var og = RD.games.filter(function (g) { return g.cat === "originals" && g.playable && g.enabled; });
-    return '<div class="container"><div class="sports-soon">' + ic("ball", 26) + '<div><h1>Sports is coming soon</h1><p class="muted">Meanwhile, play RD Originals.</p></div></div>' +
-      '<div class="section">' + sectionHead("RD Originals", "star") + '<div class="game-grid">' + og.map(function (g) { return gameCard(g); }).join("") + "</div></div></div>";
+    return '<div class="container"><section class="sports-soon"><div class="ss-art">' + ic("ball", 54) + '</div><span class="ss-tag">Coming soon</span><h1>Sports betting<br>is on the way</h1><p>Football, basketball, tennis, esports and more — with live odds. Until then, play RD Originals.</p><a class="btn btn-primary" href="#/casino/originals">Play RD Originals</a></section>' +
+      '<div class="section">' + sectionHead("RD Originals", "star", "#/casino/originals") + '<div class="game-row">' + og.map(function (g) { return gameCard(g); }).join("") + "</div></div></div>";
   };
   pages.fairness = function () {
     return '<div class="container prose"><h1>Provably fair</h1><p class="muted" style="margin-top:8px">Every RD Originals result can be verified by you. We commit to the server seed (showing its hash) before you bet, so nobody can change a result afterwards.</p>' +
@@ -2827,9 +2847,10 @@
 
   /* ---------- Events ---------- */
   document.addEventListener("click", function (e) {
-    var t = e.target.closest("[data-open],[data-close],[data-drawer],[data-close-drawer],[data-action],[data-copy],[data-auth],[data-wtab],[data-coin],[data-net],[data-btab],[data-level],[data-promo],[data-tip-user],#user-btn,#burger,#bn-menu,#sb-backdrop");
+    var t = e.target.closest("[data-open],[data-close],[data-drawer],[data-close-drawer],[data-action],[data-copy],[data-auth],[data-wtab],[data-coin],[data-net],[data-btab],[data-level],[data-promo],[data-tip-user],[data-disp-coin],#user-btn,#bal-btn,#burger,#bn-menu,#sb-backdrop");
     if (!t) {
       if (!e.target.closest(".menu-wrap")) $("#user-menu").classList.add("hidden");
+      if (!e.target.closest("#bal-menu")) $("#bal-menu").classList.add("hidden");
       if (e.target.classList.contains("overlay")) closeAll();
       return;
     }
@@ -2859,6 +2880,8 @@
       return RD.toast("Deposit to activate. Support credits the bonus after review.");
     }
     if (t.id === "user-btn") return $("#user-menu").classList.toggle("hidden");
+    if (t.id === "bal-btn") { var bm = $("#bal-menu"); bm.classList.toggle("hidden"); if (!bm.classList.contains("hidden")) renderBalMenu(); return; }
+    if (t.hasAttribute("data-disp-coin")) { disp.coin = t.getAttribute("data-disp-coin"); disp.fiat = false; saveDisp(); $("#bal-menu").classList.add("hidden"); return renderHeader(); }
     if (t.id === "burger" || t.id === "bn-menu") return document.body.classList.toggle("sb-open");
     if (t.id === "sb-backdrop") return closeAll();
 
