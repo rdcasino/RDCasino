@@ -37,6 +37,7 @@
 - [ ] Jogos com rodada no servidor: Mines, Crash, Hi-Lo, Blackjack, Tower, Chicken, RPS (no modo real mostram "abre em breve").
 - [x] Chat em tempo real e Chuva (Rain) no servidor (migrações 0005 e 0006, pg_cron divide a chuva a cada minuto).
 - [x] VIP Reload dado pelo admin, Tip entre jogadores e Chuva automática de hora em hora (migração 0008).
+- [x] KYC com documentos num cofre privado (Supabase Storage), aprovação no admin, saque acima de $2.000 exige KYC; admin credita depósito manualmente (migração 0010).
 - [ ] VIP (prêmios por nível), rakeback, bônus diário/semanal/mensal e leaderboard pagos no servidor.
 
 **Como ligar o modo real:** abra o site com `?live=1` (o navegador lembra a escolha) e com `?live=0` para voltar ao modo demonstração. O admin segue a mesma escolha. Para lançar para todos, troque `LIVE_DEFAULT` para `true` em `assets/js/data.js`.

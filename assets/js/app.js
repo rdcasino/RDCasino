@@ -63,13 +63,12 @@
     if (typeof vipDot === "function") vipDot();
     var t = db.tierOf(u.wagered);
     $("#user-menu").innerHTML =
-      '<div class="menu-head row" style="gap:10px">' + RD.art.tierBadge(t, 30) + '<div><strong>' + esc(u.username) + '</strong><small class="faint">' + (t ? t.name : "Unranked") + " · VIP</small></div></div>" +
+      '<div class="menu-head row" style="gap:10px">' + RD.art.tierBadge(t, 30) + '<div><strong>' + esc(u.username) + '</strong><small class="faint">' + (t ? t.name : "Unranked") + "</small></div></div>" +
       '<button data-open="wallet">' + ic("wallet", 16) + "Wallet</button>" +
       '<a href="#/account">' + ic("user", 16) + "Account & verification</a>" +
       '<a href="#/account/bets">' + ic("chart", 16) + "My bets</a>" +
       '<a href="#/vip">' + ic("crown", 16) + "VIP Club</a>" +
       '<a href="#/affiliate">' + ic("link", 16) + "Affiliate</a>" +
-      '<a href="#/fairness">' + ic("shield", 16) + "Provably fair</a>" +
       '<button class="danger" data-action="logout">' + ic("logout", 16) + "Sign out</button>";
   }
 
@@ -127,17 +126,11 @@
       h += '<div class="dep-box"><div class="notice" style="margin-bottom:12px;border-color:rgba(255,200,92,.35);background:var(--gold-soft)">' + ic("alert", 16) + "<span>Send only <b>" + esc(w.coin) + "</b> on the <b>" + esc(w.network) + "</b> network. Other coins or networks may be lost.</span></div>" +
         '<div class="field"><label>Deposit address</label><div class="addr-row"><code class="addr">' + esc(w.address) + '</code><button class="btn btn-secondary btn-sm" data-copy="' + esc(w.address) + '">' + ic("copy", 14) + "Copy</button></div></div>" +
         (w.memo ? '<div class="field"><label>Memo / tag (required)</label><div class="addr-row"><code class="addr">' + esc(w.memo) + '</code><button class="btn btn-secondary btn-sm" data-copy="' + esc(w.memo) + '">' + ic("copy", 14) + "Copy</button></div></div>" : "") +
-        '<p class="faint" style="font-size:12.5px;margin:-4px 0 14px">Minimum deposit: ' + fmt.usd(min, { dec: 0 }) + (stable ? "" : " in " + esc(w.coin)) + "</p></div>" +
-        '<div class="divider"></div><h4 style="margin:4px 0 10px">Already sent? Confirm your deposit</h4><div id="dep-msg"></div>' +
-        '<div class="field"><label>Amount sent (USD' + (stable ? "" : " value") + ')</label><input class="input" type="number" min="' + min + '" step="0.01" id="dep-amt" placeholder="Min. $' + min + '"></div>' +
-        '<div class="field"><label>Transaction hash (TxID)</label><input class="input" id="dep-hash" placeholder="Paste the transaction ID from your wallet or exchange"></div>' +
-        '<button class="btn btn-primary btn-block btn-lg" data-action="live-deposit">Confirm deposit</button>' +
-        '<div class="wallet-foot">' + ic("lock", 14) + "Our team checks the blockchain and credits your balance, usually within minutes.</div>";
+        '<p class="faint" style="font-size:12.5px;margin:-4px 0 4px">Minimum deposit: ' + fmt.usd(min, { dec: 0 }) + (stable ? "" : " in " + esc(w.coin)) + "</p></div>";
     } else {
       h += '<div id="wd-msg"></div><div class="field"><label>Your ' + esc(w.coin) + " address (" + esc(w.network) + ')</label><input class="input" id="wd-addr" placeholder="Paste your ' + esc(w.coin) + ' address"></div>' +
         '<div class="field"><label>Amount (USD)</label><div class="input-group"><input type="number" min="0" step="0.01" placeholder="0.00" id="wd-amt"><button class="btn btn-ghost btn-sm" data-action="wd-max">Max</button></div><span class="hint">Available: ' + fmt.usd(u.balance) + "</span></div>" +
-        '<button class="btn btn-primary btn-block btn-lg" data-action="withdraw">Request withdrawal</button>' +
-        '<div class="wallet-foot">' + ic("lock", 14) + "Withdrawals are reviewed and sent by our team. The amount is reserved from your balance until then.</div>";
+        '<button class="btn btn-primary btn-block btn-lg" data-action="withdraw">Request withdrawal</button>';
     }
     $("#wallet-body").innerHTML = h; hydrateIcons($("#wallet-body"));
   }
@@ -1908,10 +1901,7 @@
       (u ? (v.next ? '<div class="vip2-prog"><div class="row between"><span>' + fmt.usd(v.w, { dec: 0 }) + ' <small class="faint">/ ' + fmt.usd(v.next.wager, { dec: 0 }) + '</small></span><strong>' + v.pct.toFixed(1) + '%</strong></div><div class="progress"><span style="width:' + v.pct + '%"></span></div><small class="faint">Wager ' + fmt.usd(v.next.wager - v.w) + " more to reach <b>" + v.next.name + "</b> and unlock " + fmt.usd(v.next.reward, { dec: 0 }) + "</small></div>" : '<p class="muted">You reached the highest level. Our team will contact you about bespoke rewards.</p>')
         : '<p class="muted" style="margin:6px 0 14px">Every dollar you wager counts toward your level. No opt-in, no hidden rules.</p><button class="btn btn-primary" data-open="register">Join now</button>') +
       "</div></div>" + (v.next ? '<div class="vip2-next">' + badge(v.next, 54) + '<small class="faint">Next level</small><strong>' + v.next.name + '</strong><span class="vip2-amt">' + fmt.usd(v.next.reward, { dec: 0 }) + "</span></div>" : "") + "</div>";
-    var cards = '<div class="section">' + sectionHead("Rewards", "gift") + rewardCards(u) + "</div>" +
-      '<div class="vip2-cards" style="margin-top:14px">' +
-
-      '<div class="card vip2-card"><span class="vip2-ic">' + ic("trophy", 20) + '</span><h3>Monthly leaderboard</h3><p class="muted">Your wager also counts for the monthly race. Top ' + RD.config.leaderboardPrizes.length + ' get paid.</p><div class="vip2-val">' + fmt.usd(RD.config.leaderboardPrize, { dec: 0 }) + '</div><a class="btn btn-secondary btn-block" href="#/leaderboard">See the race</a></div></div>';
+    var cards = '<div class="section">' + sectionHead("Rewards", "gift") + rewardCards(u) + "</div>";
     var table = '<div class="section">' + sectionHead("Wager rewards", "crown") + '<div class="card vip2-table">' +
       '<div class="vip2-row head"><span>Level</span><span>Wager required</span><span class="right">Reward</span><span></span></div>' +
       RD.vipTiers.map(function (t, i) {
@@ -1924,8 +1914,8 @@
       ["How are rewards paid?", "Each level has a one-time cash reward. Claim it on this page and it goes straight to your balance, with no wagering requirement."],
       ["What is rakeback?", "A share of the house edge of every bet you place comes back to you. It builds up as you play and you can claim it whenever you want."],
       ["Do levels expire?", "No. Your level is based on your lifetime wager and never goes down."],
-      ["Daily, weekly and monthly bonuses", "They return part of the house edge from your recent play: daily from Bronze 2, weekly from Silver and monthly from Gold. The more you play, the bigger the bonus."],
-      ["VIP Reload", "A special reload our VIP team gives to selected players. When you have one, it shows up in your rewards with how many claims are left."]
+      ["Daily, weekly and monthly bonuses", "They return part of the house edge from your recent play: daily from Bronze 2, weekly and monthly from Silver. The more you play, the bigger the bonus."],
+      ["VIP Reload", "A special reload our VIP team gives to selected Gold players and above. When you have one, it shows up in your rewards with how many claims are left."]
     ].map(function (q) { return '<div class="vip2-qa"><h4>' + q[0] + "</h4><p>" + q[1] + "</p></div>"; }).join("") + "</div></details></div>";
     return '<div class="container">' + hero + cards + table + faq + "</div>";
   };
@@ -2067,7 +2057,9 @@
   /* ---------- Account ---------- */
   var KYC_LABEL = { "Not started": ["Not verified", ""], Pending: ["Under review", "badge-warn"], Verified: ["Verified", "badge-success"], Rejected: ["Rejected — resubmit", "badge-danger"] };
   pages.account = function (tab) {
-    var u = me(); if (!u) { setTimeout(function () { openAuth("login"); }, 0); return pages.home(); }
+    var u = me();
+    if (!u && RD.live && db.live && !db.live.ready) return '<div class="container"><div class="card empty" style="padding:60px 20px"><p>Loading your account…</p></div></div>'; /* sessão ainda carregando */
+    if (!u) { setTimeout(function () { openAuth("login"); }, 0); return pages.home(); }
     tab = tab || "overview";
     var k = KYC_LABEL[u.kyc] || [u.kyc, ""], txs = db.txOf(u.id);
     var pendingWd = txs.filter(function (t) { return t.type === "Withdrawal" && t.status === "Pending"; }).reduce(function (a, t) { return a + t.amount; }, 0);
@@ -2076,18 +2068,8 @@
       '<div class="pill-tabs" style="margin:20px 0">' + [["overview", "Transactions"], ["bets", "Bets"], ["verification", "Verification"], ["stats", "Statistics"]].map(function (t) { return '<a class="' + (t[0] === tab ? "active" : "") + '" href="#/account/' + t[0] + '">' + t[1] + "</a>"; }).join("") + "</div>";
     var body;
     if (tab === "bets") body = '<div class="card">' + betsTable(db.betsOf(u.id).slice(0, 50), "Your bets show up here.") + "</div>";
-    else if (tab === "verification") {
-      var kb;
-      if (u.kyc === "Verified") kb = '<p class="muted">Your identity is verified. No withdrawal limits apply.</p>';
-      else if (u.kyc === "Pending") kb = '<p class="muted">We received your documents. Reviews usually take less than 24 hours.</p>';
-      else kb = (u.kyc === "Rejected" ? errorBox("Your documents were rejected" + (u.kycReason ? ": " + u.kycReason : "") + ". Please send them again.") : '<p class="muted" style="margin-bottom:14px">Required for withdrawals above ' + fmt.usd(RD.config.kycWithdrawLimit, { dec: 0 }) + ".</p>") +
-        '<form id="kyc-form"><div class="field"><label>Full legal name</label><input class="input" name="name" required></div>' +
-        '<div class="row wrap" style="gap:0 12px;align-items:flex-start"><div class="field grow" style="min-width:150px"><label>Date of birth</label><input class="input" type="date" name="dob" required></div><div class="field grow" style="min-width:150px"><label>Document</label><select class="select" name="doc"><option>Passport</option><option>National ID</option><option>Driver\'s license</option></select></div></div>' +
-        '<div class="field"><label>Document photo</label><input class="input" type="file" accept="image/*,.pdf" style="padding-top:9px"></div>' +
-        '<div class="field"><label>Proof of address</label><input class="input" type="file" accept="image/*,.pdf" style="padding-top:9px"></div>' +
-        '<button class="btn btn-primary">Submit for review</button></form>';
-      body = '<div class="card card-pad" style="max-width:640px"><div class="row between" style="margin-bottom:12px"><h3>Identity verification</h3><span class="badge ' + k[1] + '">' + k[0] + "</span></div>" + kb + "</div>";
-    } else if (tab === "stats") {
+    else if (tab === "verification") body = kycView(u, k);
+    else if (tab === "stats") {
       var t = db.tierOf(u.wagered);
       body = '<div class="kpi-grid"><div class="kpi"><div class="kpi-label">Total wagered</div><div class="kpi-value num">' + fmt.usd(u.wagered) + '</div></div><div class="kpi"><div class="kpi-label">Bets</div><div class="kpi-value num">' + fmt.int(u.bets) + '</div></div><div class="kpi"><div class="kpi-label">Profit</div><div class="kpi-value num ' + (u.profit >= 0 ? "pos" : "neg") + '">' + fmt.usd(u.profit) + '</div></div><div class="kpi"><div class="kpi-label">VIP level</div><div class="kpi-value">' + (t ? t.name : "Unranked") + "</div></div></div>";
     } else {
@@ -2099,9 +2081,57 @@
     }
     return '<div class="container">' + head + body + "</div>";
   };
+  /* ---------- Verificação de identidade (KYC) ---------- */
+  var KYC_FILES = {
+    front: ["Front of document", "All four corners visible, no glare"],
+    back: ["Back of document", "Needed for ID cards and driver's licenses"],
+    selfie: ["Selfie with your document", "Hold the document next to your face"],
+    address: ["Proof of address", "Utility bill or bank statement from the last 3 months"]
+  };
+  function kycView(u, k) {
+    var info = u.kycInfo, steps = function (n) { return '<div class="kyc-steps">' + ["Personal details", "Documents", "Review"].map(function (t, i) { return '<div class="' + (i < n ? "done" : i === n ? "on" : "") + '"><span>' + (i < n ? ic("check", 13) : i + 1) + "</span>" + t + "</div>"; }).join("") + "</div>"; };
+    var head = '<div class="row between kyc-head"><div><h3>Identity verification</h3><p class="faint">Required for withdrawals above ' + fmt.usd(RD.config.kycWithdrawLimit, { dec: 0 }) + ".</p></div><span class=\"badge " + k[1] + '">' + k[0] + "</span></div>";
+    if (u.kyc === "Verified") return '<div class="card card-pad kyc">' + head + steps(3) + '<div class="kyc-state ok">' + ic("shield", 28) + "<div><b>You're verified</b><p class=\"muted\">No withdrawal limits apply to your account.</p></div></div></div>";
+    if (u.kyc === "Pending") return '<div class="card card-pad kyc">' + head + steps(2) + '<div class="kyc-state wait">' + ic("clock", 28) + "<div><b>Documents under review</b><p class=\"muted\">Sent " + esc(info ? info.sent : "") + ". Reviews usually take less than 24 hours. We'll update this page when it's done.</p></div></div></div>";
+    var f = info || {}, cc = f.country || u.country || "";
+    return '<div class="card card-pad kyc">' + head + steps(0) +
+      (u.kyc === "Rejected" ? errorBox("Your documents were rejected" + (u.kycReason ? ": " + esc(u.kycReason) : "") + ". Please send them again.") : "") +
+      '<form id="kyc-form" novalidate><div id="kyc-msg"></div><h4 class="kyc-h">1. Personal details</h4><p class="faint kyc-sub">Exactly as written on your document.</p>' +
+      '<div class="kyc-grid"><div class="field"><label>First name</label><input class="input" name="first_name" autocomplete="given-name" value="' + esc(f.first || "") + '"></div><div class="field"><label>Last name</label><input class="input" name="last_name" autocomplete="family-name" value="' + esc(f.last || "") + '"></div>' +
+      '<div class="field"><label>Date of birth</label><input class="input" type="date" name="dob" value="' + esc(f.dob || "") + '"></div><div class="field"><label>Country of residence</label><input class="input" name="country" value="' + esc(cc) + '"></div>' +
+      '<div class="field span2"><label>Address</label><input class="input" name="address" autocomplete="street-address" placeholder="Street and number" value="' + esc(f.address || "") + '"></div>' +
+      '<div class="field"><label>City</label><input class="input" name="city" autocomplete="address-level2" value="' + esc(f.city || "") + '"></div><div class="field"><label>Postal code</label><input class="input" name="postal" autocomplete="postal-code" value="' + esc(f.postal || "") + '"></div></div>' +
+      '<h4 class="kyc-h">2. Documents</h4><p class="faint kyc-sub">Clear photos or PDF, up to 10 MB each.</p>' +
+      '<div class="kyc-doc">' + [["passport", "Passport"], ["id_card", "National ID"], ["driver_license", "Driver's license"]].map(function (d, i) { return '<button type="button" class="' + (i === 0 ? "active" : "") + '" data-kdoc="' + d[0] + '">' + ic(i === 0 ? "globe" : "id", 16) + d[1] + "</button>"; }).join("") + "</div>" +
+      '<div class="kyc-files">' + Object.keys(KYC_FILES).map(function (key) { return '<label class="kyc-file' + (key === "back" ? " hidden" : "") + '" data-kfile="' + key + '"><input type="file" accept="image/jpeg,image/png,image/webp,image/heic,application/pdf" name="f_' + key + '"><span class="kyc-ic">' + ic(key === "selfie" ? "user" : key === "address" ? "home" : "id", 20) + '</span><span class="grow"><b>' + KYC_FILES[key][0] + "</b><small>" + KYC_FILES[key][1] + '</small></span><span class="kyc-pick">Upload</span></label>'; }).join("") + "</div>" +
+      '<button class="btn btn-primary btn-lg btn-block" style="margin-top:18px">Submit for review</button>' +
+      '<p class="kyc-safe">' + ic("lock", 14) + "Your documents are stored privately and only seen by our verification team.</p></form></div>";
+  }
   pages.account.after = function () {
     var f = $("#kyc-form"); if (!f) return;
-    f.addEventListener("submit", function (e) { e.preventDefault(); db.submitKyc(me().id, { name: f.name.value, dob: f.dob.value, doc: f.doc.value, sent: new Date().toISOString().slice(0, 10) }); RD.toast("Documents sent for review"); route(true); });
+    var docType = "passport";
+    $$("[data-kdoc]").forEach(function (b) { b.addEventListener("click", function () { docType = b.getAttribute("data-kdoc"); $$("[data-kdoc]").forEach(function (x) { x.classList.toggle("active", x === b); }); $('[data-kfile="back"]').classList.toggle("hidden", docType === "passport"); }); });
+    $$(".kyc-file input").forEach(function (inp) { inp.addEventListener("change", function () {
+      var box = inp.closest(".kyc-file"), file = inp.files[0];
+      if (file && file.size > 10485760) { inp.value = ""; file = null; RD.toast("Each file must be 10 MB or less.", "error"); }
+      box.classList.toggle("ok", !!file); box.querySelector(".kyc-pick").textContent = file ? (file.name.length > 18 ? file.name.slice(0, 15) + "…" : file.name) : "Upload";
+    }); });
+    f.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var need = ["first_name", "last_name", "dob", "country", "address", "city"].filter(function (n) { return !f[n].value.trim(); });
+      if (need.length) { $("#kyc-msg").innerHTML = errorBox("Fill in all personal details."); f[need[0]].focus(); return; }
+      var keys = docType === "passport" ? ["front", "selfie", "address"] : ["front", "back", "selfie", "address"], files = {};
+      var miss = keys.filter(function (k) { return !f["f_" + k].files[0]; });
+      if (miss.length) { $("#kyc-msg").innerHTML = errorBox("Upload: " + miss.map(function (k) { return KYC_FILES[k][0].toLowerCase(); }).join(", ") + "."); return; }
+      keys.forEach(function (k) { files[k] = f["f_" + k].files[0]; });
+      var info = { first_name: f.first_name.value.trim(), last_name: f.last_name.value.trim(), dob: f.dob.value, country: f.country.value.trim(), address: f.address.value.trim(), city: f.city.value.trim(), postal: f.postal.value.trim(), doc_type: docType };
+      var btn = f.querySelector("button.btn-primary"); btn.disabled = true; btn.textContent = "Uploading…";
+      var demoInfo = { name: info.first_name + " " + info.last_name, first: info.first_name, last: info.last_name, dob: info.dob, doc: { passport: "Passport", id_card: "National ID", driver_license: "Driver's license" }[docType], sent: new Date().toISOString().slice(0, 10), country: info.country, address: info.address, city: info.city, postal: info.postal };
+      Promise.resolve(RD.live ? db.submitKyc(me().id, info, files) : db.submitKyc(me().id, demoInfo)).then(function (r) {
+        if (r && r.error) { btn.disabled = false; btn.textContent = "Submit for review"; $("#kyc-msg").innerHTML = errorBox(r.error); return; }
+        RD.toast("Documents sent for review"); route(true);
+      });
+    });
   };
 
   /* ---------- Static pages ---------- */

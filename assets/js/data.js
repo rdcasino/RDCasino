@@ -40,15 +40,15 @@ RD.config = {
   maxProfit: 0, // lucro máximo por aposta nos originais (0 = sem limite; muda no admin)
   leaderboardPrizes: [15000, 9000, 6000, 4000, 3000, 2500, 2000, 1500, 1200, 1000],
   kycWithdrawLimit: 2000,
-  rakebackRate: 0.05, // 5% da vantagem da casa volta como rakeback instantâneo
+  rakebackRate: 0.02, // 2% da vantagem da casa volta como rakeback instantâneo
   /* Bônus recorrentes. Base de cálculo = vantagem da casa gerada pelo jogador no período
      (valor apostado × vantagem da casa de cada jogo). "rate" = fatia dessa vantagem que volta.
      minTier = nível VIP mínimo para liberar. Soma máxima (sem recarga): 5% + 5% + 7,5% + 10% = 27,5% da vantagem da casa. */
   bonuses: {
-    daily:   { label: "Daily Bonus",   rate: 0.05,  hours: 24,  minTier: "Bronze 2" },
-    weekly:  { label: "Weekly Bonus",  rate: 0.075, hours: 168, minTier: "Silver 1" },
-    monthly: { label: "Monthly Bonus", rate: 0.10,  hours: 720, minTier: "Gold 1" },
-    reload:  { label: "VIP Reload" }   // só aparece quando o admin dá (Jogadores → VIP Reload)
+    daily:   { label: "Daily Bonus",   rate: 0.03,  hours: 24,  minTier: "Bronze 2" },
+    weekly:  { label: "Weekly Bonus",  rate: 0.04,  hours: 168, minTier: "Silver 1" },
+    monthly: { label: "Monthly Bonus", rate: 0.05,  hours: 720, minTier: "Silver 1" },
+    reload:  { label: "VIP Reload", minTier: "Gold 1" }   // só aparece quando o admin dá (Jogadores → VIP Reload), a partir do Gold
   }
 };
 
