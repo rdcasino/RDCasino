@@ -1,6 +1,6 @@
 # Guia de imagens
 
-O site procura cada imagem num caminho fixo. Se o arquivo existir, ele aparece. Se não existir, o site mostra um degradê com o nome no lugar, sem ícone de imagem quebrada. Para trocar uma foto, salve o arquivo **com o nome exato** na pasta certa e publique.
+O site procura cada imagem num caminho fixo. Se o arquivo existir, ele aparece. Se não existir, o site mostra a **ilustração vetorial própria** (de `assets/js/art.js`) — veja todas em `design/artes.html`. Ou seja: o site já está completo sem fotos; os arquivos aqui servem para substituir as ilustrações por artes finais (3D, IA ou designer). Para trocar uma foto, salve o arquivo **com o nome exato** na pasta certa e publique.
 
 O painel admin (`admin/` → Banners & Imagens) lista todos os espaços e marca quais já têm arquivo (OK) e quais estão faltando.
 
@@ -26,7 +26,7 @@ Os IDs dos jogos estão em `assets/js/data.js` (campo `id`).
 ## Direção de arte (para manter a identidade)
 
 - **Banners (estilo Stake/Shuffle/Goated):** o texto fica no lado **esquerdo**, com uma sombra escura por cima. Coloque o elemento principal (personagem 3D, fichas, troféu, moedas cripto) no **lado direito**, recortado sobre um fundo de cor sólida ou degradê.
-- **Paleta:** fundo azul-ardósia escuro (#0F1923), destaque azul (#2F6BFF). Cada banner pode ter uma cor de fundo própria (azul, roxo, ciano), como os cards da Stake.
+- **Paleta (Rubi Real):** fundo preto quente (#0E090D), rubi (#FF2E55) e ouro (#FFC85C). Banners em tons de rubi, ameixa e ouro; capas dos jogos com cor própria e saturada, como na Shuffle.
 - **Capas de jogos:** formato vertical 3:4 com o nome do jogo escrito na arte, como nos sites de referência.
 - **Fotos de pessoas:** prefira cenas reais (celebração discreta, mãos com celular, lounge) a montagens com moedas voando.
 

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>RDCasino — Direções de identidade</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Unbounded:wght@600;800&family=Sora:wght@600;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#05070b;color:#fff;font-family:Inter,sans-serif;padding:28px}
+.dir{border-radius:20px;overflow:hidden;margin-bottom:28px;background:var(--bg);box-shadow:0 0 0 1px rgba(255,255,255,.08)}
+.top{display:grid;grid-template-columns:1.1fr 1fr;gap:28px;padding:28px}
+.tag{font-size:12px;font-weight:800;letter-spacing:.16em;color:var(--a1);text-transform:uppercase}
+h2{font-family:var(--fd);font-size:34px;margin:8px 0 10px;letter-spacing:-.01em}
+.desc{color:var(--t2);font-size:14.5px;line-height:1.6;max-width:540px}
+.sw{display:flex;gap:10px;margin-top:20px}.sw div{width:84px}.sw i{display:block;height:56px;border-radius:12px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}.sw small{display:block;font-size:11px;color:var(--t2);margin-top:6px;line-height:1.3}
+.type{margin-top:20px;font-family:var(--fd);font-size:22px}.type small{display:block;font-family:Inter;font-size:12px;color:var(--t2);margin-top:4px}
+.logo{display:flex;align-items:center;gap:14px;margin-bottom:6px}.logo b{font-family:var(--fd);font-size:30px;letter-spacing:-.02em}.logo b span{color:var(--a1)}
+/* mini UI */
+.ui{background:var(--s0);border-radius:16px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.06)}
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg)}
+.hdr .lg{font-family:var(--fd);font-weight:800;font-size:17px}.hdr .lg span{color:var(--a1)}
+.wal{display:flex;border-radius:9px;overflow:hidden}.wal span{background:var(--s1);padding:9px 14px;font-weight:700;font-size:14px}.wal b{background:var(--a1);color:var(--on);padding:9px 14px;font-size:13px}
+.body{display:grid;grid-template-columns:150px 1fr;gap:14px;padding:14px}
+.nav div{padding:9px 12px;border-radius:8px;font-size:13px;font-weight:600;color:var(--t2)}.nav .on{background:var(--s1);color:#fff;box-shadow:inset 3px 0 0 var(--a1)}
+.vip{margin-top:10px;padding:12px;border-radius:10px;background:linear-gradient(135deg,color-mix(in srgb,var(--a2) 25%,transparent),transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--a2) 40%,transparent)}.vip small{font-size:10px;letter-spacing:.14em;color:var(--a2);font-weight:800}.vip b{display:block;font-family:var(--fd);font-size:18px;color:var(--a2)}
+.ban{position:relative;border-radius:12px;overflow:hidden;height:150px;line-height:0}.ban svg{width:100%;height:100%}
+.ban .cp{position:absolute;left:18px;top:18px;line-height:1.2}.ban .cp i{font-style:normal;font-size:10px;font-weight:800;background:#fff;color:#111;padding:3px 7px;border-radius:5px}.ban .cp h3{font-family:var(--fd);font-size:20px;margin-top:10px;max-width:220px}
+.ban .cp em{display:inline-block;margin-top:12px;font-style:normal;font-size:12px;font-weight:700;background:var(--a1);color:var(--on);padding:7px 12px;border-radius:7px}
+.covers{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}.covers div{border-radius:10px;overflow:hidden;line-height:0}.covers svg{width:100%;height:auto}
+.row{display:flex;gap:10px;margin-top:12px}.btn{flex:1;text-align:center;padding:12px;border-radius:9px;font-weight:800;font-size:14px}.b1{background:var(--a1);color:var(--on)}.b2{background:var(--s1)}.win{color:#22e08a;font-weight:800}
+</style></head><body>
+<div id="out"></div>
+<script src="../assets/js/art.js"></script>
+<script>
+var D=[
+ {key:'rubi',tag:'Direção 1',name:'Rubi Real',fd:"'Unbounded',sans-serif",bg:'#0e090d',s0:'#160f15',s1:'#241821',t2:'#c4b3bd',a1:'#ff2e55',a2:'#ffc85c',on:'#fff',ban:['#ff2e55','#4a0716'],
+  desc:'Luxo com adrenalina. Vermelho rubi e ouro sobre um preto quente. Nenhum grande cassino cripto usa o vermelho como cor principal, então a marca fica reconhecível de cara. Combina com um posicionamento VIP / high roller. Cuidado: ganhos ficam em verde e perdas em cinza, para o vermelho nunca ser lido como prejuízo.',
+  sw:[['#ff2e55','Rubi · ação'],['#ffc85c','Ouro · VIP'],['#0e090d','Fundo'],['#241821','Superfície']],font:'Unbounded',
+  logo:'<svg width="52" height="52" viewBox="0 0 64 64"><defs><linearGradient id="r1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6b85"/><stop offset="1" stop-color="#b3001f"/></linearGradient></defs><path d="M32 4 58 22 32 60 6 22Z" fill="url(#r1)"/><path d="M6 22h52M20 22 32 4 44 22 32 60Z" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="1.5"/><text x="32" y="38" text-anchor="middle" font-size="15" font-weight="800" fill="#fff" font-family="Unbounded">RD</text></svg>'},
+ {key:'cobalto',tag:'Direção 2',name:'Cobalto & Coral',fd:"'Sora',sans-serif",bg:'#070b1f',s0:'#0d1330',s1:'#18214a',t2:'#aab4d8',a1:'#3d5afe',a2:'#ff7a59',on:'#fff',ban:['#3d5afe','#0a0f3a'],
+  desc:'Mantém o azul que você já gosta, mas num cobalto mais profundo e elétrico (não o azul-acinzentado da Stake), com um coral vibrante como segunda cor para VIP, destaques e prêmios. Moderna, confiável e com personalidade. É a transição mais segura a partir do que já existe.',
+  sw:[['#3d5afe','Cobalto · ação'],['#ff7a59','Coral · destaque'],['#070b1f','Fundo'],['#18214a','Superfície']],font:'Sora',
+  logo:'<svg width="52" height="52" viewBox="0 0 64 64"><rect width="64" height="64" rx="18" fill="#3d5afe"/><path d="M46 8 58 8 58 20Z" fill="#ff7a59"/><text x="31" y="42" text-anchor="middle" font-size="24" font-weight="800" fill="#fff" font-family="Sora" font-style="italic">RD</text></svg>'},
+ {key:'menta',tag:'Direção 3',name:'Menta Noturna',fd:"'Space Grotesk',sans-serif",bg:'#061316',s0:'#0b1e22',s1:'#123139',t2:'#a9c4c6',a1:'#19e6b4',a2:'#a07bff',on:'#03201a',ban:['#0fb894','#032a26'],
+  desc:'Fresca e tecnológica. Verde-menta luminoso com violeta sobre um petróleo escuro. Passa a ideia de "cripto nativo" e de ganho, já que o verde é a cor do lucro. Mais jovem e ousada. Risco: fica mais perto de cassinos verdes como Gamdom e BC.Game.',
+  sw:[['#19e6b4','Menta · ação'],['#a07bff','Violeta · VIP'],['#061316','Fundo'],['#123139','Superfície']],font:'Space Grotesk',
+  logo:'<svg width="52" height="52" viewBox="0 0 64 64"><path d="M32 3 57 17.5v29L32 61 7 46.5v-29Z" fill="#19e6b4"/><text x="32" y="40" text-anchor="middle" font-size="20" font-weight="700" fill="#03201a" font-family="Space Grotesk">RD</text></svg>'}
+];
+document.getElementById('out').innerHTML=D.map(function(d){
+ var st='--bg:'+d.bg+';--s0:'+d.s0+';--s1:'+d.s1+';--t2:'+d.t2+';--a1:'+d.a1+';--a2:'+d.a2+';--on:'+d.on+';--fd:'+d.fd+';--font-display:'+d.fd;
+ return '<section class="dir" id="'+d.key+'" style="'+st+'"><div class="top"><div><span class="tag">'+d.tag+'</span><div class="logo" style="margin-top:14px">'+d.logo+'<b>RD<span>Casino</span></b></div><h2>'+d.name+'</h2><p class="desc">'+d.desc+'</p>'+
+ '<div class="sw">'+d.sw.map(function(s){return '<div><i style="background:'+s[0]+'"></i><small>'+s[1]+'<br>'+s[0]+'</small></div>';}).join('')+'</div>'+
+ '<div class="type">Aa Bb 0123 · '+d.font+'<small>Fonte dos títulos e números grandes. Texto corrido continua em Inter.</small></div></div>'+
+ '<div class="ui"><div class="hdr"><span class="lg">RD<span>Casino</span></span><div class="wal"><span>$1,284.55</span><b>Wallet</b></div></div><div class="body"><div class="nav"><div class="on">Lobby</div><div>RD Originals</div><div>Slots</div><div>VIP Club</div><div class="vip"><small>LEADERBOARD</small><b>$50,000</b></div></div>'+
+ '<div><div class="ban">'+RD.art.render('scene:welcome',{a:d.ban[0],b:d.ban[1]})+'<div class="cp"><i>Welcome offer</i><h3>100% bonus up to $1,000</h3><em>Claim now</em></div></div>'+
+ '<div class="covers">'+['dice','crash','mines','plinko'].map(function(g){return '<div>'+RD.art.render('cover:'+g)+'</div>';}).join('')+'</div>'+
+ '<div class="row"><div class="btn b1">Bet</div><div class="btn b2">Cashout <span class="win">+$24.50</span></div></div></div></div></div></div></section>';
+}).join('');
+</script></body></html>

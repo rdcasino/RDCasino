@@ -28,13 +28,14 @@ RD.config = {
    Se o arquivo não existir, aparece um degradê (fallback). */
 RD.img = {
   logo: "assets/img/brand/logo.svg",
-  heroAffiliate: "assets/img/affiliate/hero.jpg"
+  heroAffiliate: "assets/img/affiliate/hero.jpg",
+  heroArt: "scene:hero"
 };
 
 RD.banners = [
-  { id: "welcome", tag: "Welcome offer", title: "100% bonus up to $1,000", sub: "On your first crypto deposit.", cta: "Claim now", route: "promotions", img: "assets/img/banners/welcome.jpg", c1: "#1d4ed8", c2: "#0b2a6b" },
-  { id: "leaderboard", tag: "Monthly race", title: "$50,000 leaderboard", sub: "Top wagerers get paid every month.", cta: "See standings", route: "leaderboard", img: "assets/img/banners/leaderboard.jpg", c1: "#5b3fd6", c2: "#24135f" },
-  { id: "affiliate", tag: "Affiliates", title: "Earn up to 50% commission", sub: "Lifetime revenue share, paid in crypto.", cta: "Start earning", route: "affiliate", img: "assets/img/banners/affiliate.jpg", c1: "#0e7490", c2: "#083344" }
+  { id: "welcome", art: "scene:welcome", tag: "Welcome offer", title: "100% bonus up to $1,000", sub: "On your first crypto deposit.", cta: "Claim now", route: "promotions", img: "assets/img/banners/welcome.jpg", c1: "#1d4ed8", c2: "#0b2a6b" },
+  { id: "leaderboard", art: "scene:leaderboard", tag: "Monthly race", title: "$50,000 leaderboard", sub: "Top wagerers get paid every month.", cta: "See standings", route: "leaderboard", img: "assets/img/banners/leaderboard.jpg", c1: "#5b3fd6", c2: "#24135f" },
+  { id: "affiliate", art: "scene:affiliate", tag: "Affiliates", title: "Earn up to 50% commission", sub: "Lifetime revenue share, paid in crypto.", cta: "Start earning", route: "affiliate", img: "assets/img/banners/affiliate.jpg", c1: "#0e7490", c2: "#083344" }
 ];
 
 RD.categories = [
@@ -52,9 +53,11 @@ RD.games = [
   { id: "crash", name: "Crash", provider: "RD Originals", cat: "originals", rtp: 99, edge: 1, playable: true, tag: "hot", c1: "#be123c", c2: "#4c0519" },
   { id: "mines", name: "Mines", provider: "RD Originals", cat: "originals", rtp: 99, edge: 1, playable: true, c1: "#047857", c2: "#022c22" },
   { id: "plinko", name: "Plinko", provider: "RD Originals", cat: "originals", rtp: 99, edge: 1, playable: true, c1: "#c026d3", c2: "#4a044e" },
-  { id: "keno", name: "Keno", provider: "RD Originals", cat: "originals", rtp: 99, c1: "#0369a1", c2: "#082f49" },
+  { id: "keno", name: "Keno", provider: "RD Originals", cat: "originals", rtp: 99, edge: 1, playable: true, c1: "#0369a1", c2: "#082f49" },
   { id: "hilo", name: "Hi-Lo", provider: "RD Originals", cat: "originals", rtp: 99, edge: 1, playable: true, c1: "#b45309", c2: "#451a03" },
-  { id: "wheel", name: "Wheel", provider: "RD Originals", cat: "originals", rtp: 99, c1: "#4338ca", c2: "#1e1b4b" },
+  { id: "wheel", name: "Wheel", provider: "RD Originals", cat: "originals", rtp: 99, edge: 1, playable: true, c1: "#4338ca", c2: "#1e1b4b" },
+  { id: "blackjack", name: "Blackjack", provider: "RD Originals", cat: "originals", rtp: 99.4, edge: 0.6, playable: true, tag: "new", c1: "#22b35e", c2: "#063a1c" },
+  { id: "roulette", name: "Roulette", provider: "RD Originals", cat: "originals", rtp: 97.3, edge: 2.7, playable: true, tag: "new", c1: "#5b5bf0", c2: "#15124a" },
   { id: "gates-olympus", name: "Gates of Olympus 1000", provider: "Pragmatic Play", cat: "slots", rtp: 96.5, tag: "hot", c1: "#a16207", c2: "#3f2a04" },
   { id: "sweet-bonanza", name: "Sweet Bonanza 1000", provider: "Pragmatic Play", cat: "slots", rtp: 96.53, c1: "#db2777", c2: "#500724" },
   { id: "sugar-rush", name: "Sugar Rush 1000", provider: "Pragmatic Play", cat: "slots", rtp: 96.53, c1: "#e11d48", c2: "#4c0519" },
@@ -76,10 +79,10 @@ RD.games = [
 RD.games.forEach(function (g) { g.img = "assets/img/games/" + g.id + ".jpg"; g.enabled = true; });
 
 RD.promotions = [
-  { id: "welcome", title: "Welcome Bonus", value: "100% up to $1,000", desc: "Double your first deposit. Min. deposit $20. 35x wagering on bonus funds within 30 days.", badge: "New players", img: "assets/img/promos/welcome.jpg", c1: "#1d4ed8", c2: "#0b2a6b", status: "active" },
-  { id: "reload", title: "Weekly Reload", value: "25% up to $500", desc: "Every Friday on your first deposit of the day. Available from Bronze.", badge: "Weekly", img: "assets/img/promos/reload.jpg", c1: "#0e7490", c2: "#083344", status: "active" },
-  { id: "rakeback", title: "Instant Rakeback", value: "5% of house edge", desc: "Part of the house edge comes back on every bet. Claim it any time from VIP.", badge: "VIP", img: "assets/img/promos/rakeback.jpg", c1: "#5b3fd6", c2: "#24135f", status: "active" },
-  { id: "race", title: "Monthly Leaderboard", value: "$50,000 pool", desc: "Top 10 wagerers of the calendar month share the prize pool. No opt-in.", badge: "Monthly", img: "assets/img/promos/race.jpg", c1: "#a16207", c2: "#3f2a04", status: "active" }
+  { id: "welcome", art: "scene:welcome", title: "Welcome Bonus", value: "100% up to $1,000", desc: "Double your first deposit. Min. deposit $20. 35x wagering on bonus funds within 30 days.", badge: "New players", img: "assets/img/promos/welcome.jpg", c1: "#1d4ed8", c2: "#0b2a6b", status: "active" },
+  { id: "reload", art: "scene:reload", title: "Weekly Reload", value: "25% up to $500", desc: "Every Friday on your first deposit of the day. Available from Bronze.", badge: "Weekly", img: "assets/img/promos/reload.jpg", c1: "#0e7490", c2: "#083344", status: "active" },
+  { id: "rakeback", art: "scene:rakeback", title: "Instant Rakeback", value: "5% of house edge", desc: "Part of the house edge comes back on every bet. Claim it any time from VIP.", badge: "VIP", img: "assets/img/promos/rakeback.jpg", c1: "#5b3fd6", c2: "#24135f", status: "active" },
+  { id: "race", art: "scene:race", title: "Monthly Leaderboard", value: "$50,000 pool", desc: "Top 10 wagerers of the calendar month share the prize pool. No opt-in.", badge: "Monthly", img: "assets/img/promos/race.jpg", c1: "#a16207", c2: "#3f2a04", status: "active" }
 ];
 
 /* Níveis VIP (mesmos nomes da versão original). wager = total apostado. */
@@ -139,8 +142,9 @@ RD.esc = function (s) {
 };
 
 RD.media = function (o, cls, label) {
-  return '<div class="media ' + (cls || "") + '" style="--c1:' + (o.c1 || "#1a2c38") + ";--c2:" + (o.c2 || "#0f212e") + '">' +
-    (label ? '<div class="media-fallback">' + label + "</div>" : "") +
+  var key = o.art || (o.cat === "originals" ? "cover:" + o.id : ""), art = key && RD.art && RD.art.has(key) ? RD.art.render(key, o.artPalette) : "";
+  return '<div class="media ' + (cls || "") + (art ? " has-art" : "") + '" style="--c1:' + (o.c1 || "#20161e") + ";--c2:" + (o.c2 || "#0e090d") + '">' +
+    (art ? '<div class="media-art">' + art + "</div>" : label ? '<div class="media-fallback">' + label + "</div>" : "") +
     (o.img ? '<img src="' + (RD.imgBase || "") + o.img + '" alt="" loading="lazy" onerror="this.remove()">' : "") +
     "</div>";
 };

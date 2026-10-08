@@ -192,6 +192,13 @@
       s.nonce++; save();
       return { round: p.activeRound };
     },
+    addToRound: function (pid, extra) {
+      var p = byId(pid), r = p.activeRound;
+      if (!r) return { error: "No active round." };
+      if (extra > p.balance) return { error: "Insufficient balance." };
+      p.balance = round(p.balance - extra); r.amount = round(r.amount + extra); save();
+      return { round: r };
+    },
     updateRound: function (pid, state) { var p = byId(pid); if (p.activeRound) { p.activeRound.state = state; save(); } },
     settleRound: function (pid, multiplier, win, detail) {
       var p = byId(pid), r = p.activeRound; if (!r) return null;
