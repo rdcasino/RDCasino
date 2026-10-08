@@ -40,6 +40,8 @@
 - [x] Chat em tempo real e Chuva (Rain) no servidor (migrações 0005 e 0006, pg_cron divide a chuva a cada minuto).
 - [x] VIP Reload dado pelo admin, Tip entre jogadores e Chuva automática de hora em hora (migração 0008).
 - [x] KYC com documentos num cofre privado (Supabase Storage), aprovação no admin, saque acima de $2.000 exige KYC; admin credita depósito manualmente (migração 0010).
+- [x] Segurança (migração 0018): navegador não consegue gravar em nenhuma tabela/view; só via funções do servidor. vercel.json com CSP, HSTS e bloqueio de iframe.
+- [x] Bônus semanal (quinta 12h) e mensal (dia 1, 12h), horário de Brasília (migração 0019).
 - [x] Provably fair no modo real: troca de seed revela a server seed (migração 0017). Configurações do admin (lucro máximo, países, licença, prêmio do leaderboard, jogos, promoções) salvas no servidor.
 - [x] Resgates no servidor (migração 0016): rakeback, prêmios de nível, bônus diário/semanal/mensal; feed público de apostas recentes. Atenção: se mudar RD.vipTiers ou RD.config.bonuses em data.js, atualize também game_tables (vip_tiers, bonuses).
 

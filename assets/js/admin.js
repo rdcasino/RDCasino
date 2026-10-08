@@ -216,7 +216,7 @@
     RD.games.forEach(function (g) { slots.push({ group: "Capas dos jogos", name: g.name, path: g.img, size: "600×800", o: g }); });
     var groups = {}; slots.forEach(function (s) { (groups[s.group] = groups[s.group] || []).push(s); });
     return head("Banners & Imagens", "Cada espaço do site que aceita foto. 'Faltando' = ainda sem arquivo.") +
-      '<div class="notice info" style="margin-bottom:20px">' + ic("upload", 16) + "<span>Para trocar uma imagem: salve o arquivo com o nome exato em <code>assets/img/…</code> e publique no GitHub. Com servidor, este painel terá upload direto.</span></div>" +
+      '<div class="notice info" style="margin-bottom:20px">' + ic("upload", 16) + "<span>Para trocar uma imagem: salve o arquivo com o nome exato em <code>assets/img/…</code>, adicione o caminho em <code>RD.imgFiles</code> (assets/js/data.js) e publique.</span></div>" +
       Object.keys(groups).map(function (g) {
         return '<div class="section-a"><h3 style="margin:8px 0 12px">' + g + '</h3><div class="adm-grid-4">' + groups[g].map(function (s) {
           return '<div class="card img-slot">' + media(s.o, "", ic("image", 22) + "<span>Sem imagem</span>") + '<div class="img-slot-body"><strong style="font-size:13px">' + esc(s.name) + "</strong><code>" + s.path + '</code><div class="row between"><span class="badge">' + s.size + '</span><span class="img-status" data-src="../' + s.path + '"><span class="badge">…</span></span></div></div></div>';
