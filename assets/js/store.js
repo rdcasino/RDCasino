@@ -18,6 +18,7 @@
   function empty() {
     return {
       players: [], tx: [], bets: [], chat: [], clicks: {}, audit: [], seq: 1000, admin: null,
+      fixes: { resetFlamengo10: true, vipV2: true }, // correções pontuais só valem para dados antigos
       games: RD.games.map(function (g) { return { id: g.id, enabled: true, tag: g.tag || "" }; }),
       promotions: JSON.parse(JSON.stringify(RD.promotions)),
       settings: { restricted: RD.config.restrictedCountries.slice(), license: JSON.parse(JSON.stringify(RD.config.license)), leaderboardPrize: RD.config.leaderboardPrize }
@@ -34,6 +35,11 @@
       if (p.activeRound) { p.rounds[p.activeRound.game] = p.activeRound; }
       delete p.activeRound;
     });
+    if (!d.fixes.vipV2) {
+      // Níveis VIP novos (Wood $10k … Jade 1 $500k): prêmios resgatados nos níveis antigos não contam mais
+      d.players.forEach(function (p) { p.claimedTiers = []; });
+      d.fixes.vipV2 = true;
+    }
     if (!d.fixes.resetFlamengo10) {
       d.players.forEach(function (p) { if (p.username.toLowerCase() === "flamengo10") resetBetsOf(d, p, "Sistema"); });
       d.fixes.resetFlamengo10 = true;

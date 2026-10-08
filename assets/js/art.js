@@ -118,6 +118,18 @@ window.RD = window.RD || {};
     return out;
   }
 
+  /* Selo de nível VIP: quadrado arredondado na cor da família, com a joia RD no centro */
+  function tierBadge(t, size) {
+    size = size || 40;
+    var f = t && RD.vipFamilies ? RD.vipFamilies[t.family] : null, c1 = f ? f.c1 : "#4a3a44", c2 = f ? f.c2 : "#241a20", g = U("tb"), h = U("th");
+    var sub = t && /\d$/.test(t.name) ? t.name.slice(-1) : "";
+    return '<svg class="tier-badge" width="' + size + '" height="' + size + '" viewBox="0 0 40 40" aria-hidden="true"><defs>' + lin(g, [[0, c1], [1, c2]], 0, 0, 1, 1) + lin(h, [[0, "#fff", 0.55], [1, "#fff", 0]]) + "</defs>" +
+      '<rect x="1" y="1" width="38" height="38" rx="11" fill="url(#' + g + ')"/><rect x="1" y="1" width="38" height="38" rx="11" fill="none" stroke="#fff" stroke-opacity=".35"/>' +
+      '<path d="M4 12 Q4 3 13 3 H27 Q36 3 36 12 V16 Q20 10 4 18Z" fill="url(#' + h + ')"/>' +
+      (f ? '<path d="M20 9 L29 16 L20 31 L11 16Z" fill="#fff" fill-opacity=".92"/><path d="M11 16 H29 M20 9 L16 16 L20 31 L24 16 Z" fill="none" stroke="' + c2 + '" stroke-opacity=".55" stroke-width="1.1" stroke-linejoin="round"/>' : '<path d="M20 11 L27 17 L20 29 L13 17Z" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="2" stroke-linejoin="round"/>') +
+      (sub ? '<circle cx="31.5" cy="31.5" r="7" fill="#0e090d" stroke="' + c1 + '" stroke-width="1.5"/><text x="31.5" y="35" text-anchor="middle" font-size="9.5" font-weight="900" fill="#fff" style="font-family:var(--font-display,Arial)">' + sub + "</text>" : "") + "</svg>";
+  }
+
   /* Mascote do Chicken: galinha com boné e lenço RD (viewBox 0 0 48 48) */
   function hen() { return '<ellipse cx="24" cy="44.5" rx="11" ry="2.3" fill="#000" opacity=".3"/> <path d="M19.5 38v5.5M27.5 38v5.5M17.3 43.6h4.4M25.3 43.6h4.4" stroke="#ff9d1a" stroke-width="2.2" stroke-linecap="round"/> <ellipse cx="24" cy="30" rx="12.5" ry="10.8" fill="#fff"/> <path d="M11.8 29.5c-3.4-1.2-5.6 1.2-5.2 4.4 3.2.2 5.4-1 6.6-2.4z" fill="#e8edf7"/> <path d="M16.5 30.5c3 4.2 9.6 4.4 12.6 1" stroke="#dfe6f5" stroke-width="2" fill="none" stroke-linecap="round"/> <circle cx="27" cy="16.5" r="8.2" fill="#fff"/> <path d="M34.6 17.8l5.2 1.7-5.2 1.6z" fill="#ffb020"/> <circle cx="30.2" cy="17.4" r="1.6" fill="#1a1205"/><circle cx="30.7" cy="16.9" r=".5" fill="#fff"/>  <path d="M19.4 21.6c4.6 2.6 10 2.6 14.6-.3l.4 3.1c-5 3-10.6 3-15.4.3z" fill="#ff2e55"/> <path d="M22 23.6l3.6 6.2 3.4-6.4z" fill="#ff2e55"/> <path d="M22.6 24.4l3 4.8 2.8-5" fill="none" stroke="#c2133a" stroke-width=".6"/> <circle cx="23.4" cy="22.9" r=".45" fill="#fff" opacity=".8"/><circle cx="28.6" cy="23.4" r=".45" fill="#fff" opacity=".8"/><circle cx="32" cy="22.4" r=".45" fill="#fff" opacity=".8"/><circle cx="25.6" cy="26.2" r=".4" fill="#fff" opacity=".8"/> <path d="M19.6 22.4l-3.6 2.6 2.4 1.6z M19.8 23.6l-2 4.2 2.8-1z" fill="#c2133a"/>  <path d="M18.9 15.2c-.2-5.6 3.6-8.4 8.1-8.4s8.3 2.8 8.1 8.2z" fill="#ff2e55"/> <path d="M18.9 15.2h16.2" stroke="#c2133a" stroke-width="1.2"/> <path d="M33.6 14.4h7.2c1.4 0 1.4 2.2 0 2.2h-7.4z" fill="#c2133a"/> <circle cx="27" cy="6.9" r="1" fill="#c2133a"/> <path d="M21.5 9.5c1.6-1.6 3.4-2.1 5.5-2.1" stroke="#ff8fa3" stroke-width="1" fill="none" stroke-linecap="round" opacity=".8"/> <text x="27.4" y="13.6" text-anchor="middle" font-size="5" font-weight="900" fill="#ffc85c" style="font-family:var(--font-display,Arial)" letter-spacing="-.2">RD</text>'; }
 
@@ -274,6 +286,7 @@ window.RD = window.RD || {};
       return generic(o || {});
     },
     hen: hen,
+    tierBadge: tierBadge,
     games: Object.keys(COVERS)
   };
 })();

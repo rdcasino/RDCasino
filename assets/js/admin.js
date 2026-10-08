@@ -34,6 +34,7 @@
       { id: "media", label: "Banners & Imagens", icon: "image" },
       { group: "Crescimento" },
       { id: "affiliates", label: "Afiliados", icon: "link" },
+      { id: "vip", label: "VIP & Recompensas", icon: "crown" },
       { group: "Sistema" },
       { id: "settings", label: "Configurações", icon: "settings" },
       { id: "audit", label: "Log de auditoria", icon: "file" }
@@ -220,6 +221,23 @@
       '</tbody></table></div><p class="faint" style="font-size:12px;margin-top:8px">Para um acordo diferente com um afiliado específico, use "Comissão afiliado" na ficha dele.</p></div>';
   };
 
+  /* VIP: quantos jogadores em cada nível, prêmios pagos e prêmios liberados ainda não resgatados */
+  P.vip = function () {
+    var ps = db.players(), txs = db.transactions();
+    var paid = function (type) { return txs.filter(function (t) { return t.type === type && t.status === "Completed"; }).reduce(function (a, t) { return a + t.amount; }, 0); };
+    var rows = RD.vipTiers.map(function (t, i) {
+      var nxt = RD.vipTiers[i + 1], at = ps.filter(function (p) { return p.wagered >= t.wager && (!nxt || p.wagered < nxt.wager); }).length;
+      var reached = ps.filter(function (p) { return p.wagered >= t.wager; }), claimed = reached.filter(function (p) { return p.claimedTiers.indexOf(t.name) > -1; }).length;
+      return { t: t, at: at, claimed: claimed, open: reached.length - claimed };
+    });
+    var owed = rows.reduce(function (a, r) { return a + r.open * r.t.reward; }, 0), rakeOpen = ps.reduce(function (a, p) { return a + p.rakeback; }, 0);
+    return head("VIP & Recompensas", "Níveis por valor apostado. O prêmio de cada nível é pago uma vez, quando o jogador resgata na página VIP.") +
+      '<div class="kpi-grid">' + kpi("Prêmios de nível pagos", fmt.usd(paid("Level reward"))) + kpi("Prêmios liberados, não resgatados", fmt.usd(owed), "o jogador ainda pode resgatar") + kpi("Rakeback pago", fmt.usd(paid("Rakeback"))) + kpi("Rakeback acumulado", fmt.usd(rakeOpen), "ainda não resgatado") + "</div>" +
+      '<div class="card mt"><div class="table-wrap"><table class="table"><thead><tr><th>Nível</th><th class="right">Apostado para chegar</th><th class="right">Prêmio</th><th class="right">Jogadores neste nível</th><th class="right">Resgataram</th><th class="right">Falta resgatar</th><th class="right">Prêmio ÷ apostado</th></tr></thead><tbody>' +
+      rows.map(function (r) { return '<tr><td><span class="row" style="gap:10px">' + RD.art.tierBadge(r.t, 26) + '<b>' + r.t.name + '</b></span></td><td class="right num">' + fmt.usd(r.t.wager, { dec: 0 }) + '</td><td class="right num strong">' + fmt.usd(r.t.reward, { dec: 0 }) + '</td><td class="right">' + r.at + '</td><td class="right">' + r.claimed + '</td><td class="right">' + (r.open ? '<span class="badge badge-warn">' + r.open + "</span>" : "0") + '</td><td class="right num faint">' + (((r.t.reward / r.t.wager) * 100).toFixed(2)) + "% do apostado</td></tr>"; }).join("") +
+      '</tbody></table></div></div><p class="faint" style="font-size:12.5px;margin-top:10px">Os prêmios de nível custam 0,4% do valor apostado. Com 1% de vantagem da casa e 5% de rakeback, o custo total do VIP fica em torno de 45% da vantagem da casa nos originais. Os valores ficam em <code>assets/js/data.js</code> (RD.vipTiers).</p>';
+  };
+
   P.settings = function () {
     var L = RD.config.license;
     return head("Configurações", "O que você muda aqui aparece no site na hora") +
@@ -256,7 +274,7 @@
   };
 
   /* ---------- Router ---------- */
-  var TITLES = { dashboard: "Dashboard", players: "Jogadores", transactions: "Transações", bets: "Apostas", kyc: "KYC & Risco", games: "Jogos", promotions: "Promoções", media: "Banners & Imagens", affiliates: "Afiliados", settings: "Configurações", audit: "Auditoria" };
+  var TITLES = { dashboard: "Dashboard", players: "Jogadores", transactions: "Transações", bets: "Apostas", kyc: "KYC & Risco", games: "Jogos", promotions: "Promoções", media: "Banners & Imagens", affiliates: "Afiliados", vip: "VIP & Recompensas", settings: "Configurações", audit: "Auditoria" };
   var current = "dashboard";
   function route() {
     var parts = (location.hash || "#/dashboard").replace(/^#\/?/, "").split("/");

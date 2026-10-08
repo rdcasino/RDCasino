@@ -272,7 +272,7 @@ h3 { font-size: 15px; font-weight: 600; }
   font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0; background: var(--surface-3);
 }
 .progress { height: 6px; background: var(--surface-3); border-radius: 999px; overflow: hidden; }
-.progress > span { display: block; height: 100%; background: linear-gradient(90deg, var(--brand), #5b8cff); border-radius: inherit; }
+.progress > span { display: block; height: 100%; background: linear-gradient(90deg, var(--brand), var(--gold)); border-radius: inherit; }
 .copy-field { min-width: 0; max-width: 100%; display: flex; align-items: center; gap: 8px; background: var(--bg-2); border: 1px solid var(--line-2); border-radius: var(--r-sm); padding: 4px 4px 4px 14px; }
 .copy-field code { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: var(--text); font-family: ui-monospace, "SF Mono", Menlo, monospace; }
 .hidden { display: none !important; }
