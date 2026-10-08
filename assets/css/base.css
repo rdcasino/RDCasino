@@ -4,34 +4,38 @@
    dourado reservado para VIP. Sem neon: confiança > hype.
    ========================================================================== */
 
+/* Paleta inspirada em Stake/Shuffle: azul-ardósia escuro + destaque azul.
+   Verde fica reservado a ganhos/valores positivos; dourado ao VIP. */
 :root {
   /* Surfaces */
-  --bg: #0a0d13;
-  --bg-2: #0e1219;
-  --surface: #131823;
-  --surface-2: #19202d;
-  --surface-3: #212938;
+  --bg: #0f1923;
+  --bg-2: #0a121a;
+  --surface: #172430;
+  --surface-2: #1e2f3d;
+  --surface-3: #2a3e4f;
   --line: rgba(255, 255, 255, 0.06);
-  --line-2: rgba(255, 255, 255, 0.11);
+  --line-2: rgba(255, 255, 255, 0.1);
 
   /* Text */
-  --text: #e8ebf1;
-  --text-2: #a4acbd;
-  --text-3: #6b7489;
+  --text: #ffffff;
+  --text-2: #b1bad3;
+  --text-3: #7486a0;
 
   /* Brand & status */
-  --brand: #1fc77f;
-  --brand-hover: #19b170;
-  --brand-ink: #03170d;
-  --brand-soft: rgba(31, 199, 127, 0.12);
-  --gold: #e6b450;
-  --gold-soft: rgba(230, 180, 80, 0.12);
-  --info: #4f86f7;
-  --info-soft: rgba(79, 134, 247, 0.12);
-  --danger: #f05a6e;
-  --danger-soft: rgba(240, 90, 110, 0.12);
+  --brand: #2f6bff;
+  --brand-hover: #2459e0;
+  --brand-ink: #ffffff;
+  --brand-soft: rgba(47, 107, 255, 0.16);
+  --success: #1fd17a;
+  --success-soft: rgba(31, 209, 122, 0.14);
+  --gold: #f5c842;
+  --gold-soft: rgba(245, 200, 66, 0.13);
+  --info: #4f9cf7;
+  --info-soft: rgba(79, 156, 247, 0.14);
+  --danger: #f0566a;
+  --danger-soft: rgba(240, 86, 106, 0.13);
   --warn: #f2a93b;
-  --warn-soft: rgba(242, 169, 59, 0.12);
+  --warn-soft: rgba(242, 169, 59, 0.13);
 
   /* Shape */
   --r-sm: 8px;
@@ -95,7 +99,7 @@ h3 { font-size: 16px; font-weight: 700; }
 }
 .btn:active { transform: translateY(1px); }
 .btn svg { width: 16px; height: 16px; }
-.btn-primary { background: var(--brand); color: var(--brand-ink); }
+.btn-primary { background: var(--brand); color: var(--brand-ink); box-shadow: 0 4px 14px rgba(47, 107, 255, 0.28); }
 .btn-primary:hover { background: var(--brand-hover); }
 .btn-secondary { background: var(--surface-2); color: var(--text); border-color: var(--line-2); }
 .btn-secondary:hover { background: var(--surface-3); }
@@ -122,7 +126,8 @@ h3 { font-size: 16px; font-weight: 700; }
   border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.02em; white-space: nowrap;
   background: var(--surface-3); color: var(--text-2);
 }
-.badge-brand { background: var(--brand-soft); color: var(--brand); }
+.badge-brand { background: var(--brand-soft); color: #8fb0ff; }
+.badge-success { background: var(--success-soft); color: var(--success); }
 .badge-gold { background: var(--gold-soft); color: var(--gold); }
 .badge-info { background: var(--info-soft); color: var(--info); }
 .badge-danger { background: var(--danger-soft); color: var(--danger); }
@@ -136,7 +141,7 @@ h3 { font-size: 16px; font-weight: 700; }
   transition: all 0.15s;
 }
 .chip:hover { color: var(--text); border-color: rgba(255, 255, 255, 0.2); }
-.chip.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+.chip.active { background: var(--surface-3); color: var(--text); border-color: var(--surface-3); }
 .chip svg { width: 15px; height: 15px; }
 
 /* ---------- Tabs ---------- */
@@ -195,7 +200,7 @@ h3 { font-size: 16px; font-weight: 700; }
 .table tbody tr:hover td { background: rgba(255, 255, 255, 0.015); }
 .table .right { text-align: right; }
 .table .strong { color: var(--text); font-weight: 600; }
-.pos { color: var(--brand); }
+.pos { color: var(--success); }
 .neg { color: var(--danger); }
 
 /* ---------- KPI ---------- */
@@ -242,7 +247,7 @@ h3 { font-size: 16px; font-weight: 700; }
 .toasts { position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 8px; }
 .toast {
   display: flex; align-items: center; gap: 10px; min-width: 240px; max-width: 360px; padding: 12px 16px;
-  background: var(--surface-2); border: 1px solid var(--line-2); border-left: 3px solid var(--brand);
+  background: var(--surface-2); border: 1px solid var(--line-2); border-left: 3px solid var(--success);
   border-radius: var(--r-sm); box-shadow: var(--shadow); font-size: 13px; animation: pop 0.2s ease;
 }
 .toast.error { border-left-color: var(--danger); }
@@ -261,7 +266,7 @@ h3 { font-size: 16px; font-weight: 700; }
   font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0; background: var(--surface-3);
 }
 .progress { height: 6px; background: var(--surface-3); border-radius: 999px; overflow: hidden; }
-.progress > span { display: block; height: 100%; background: var(--brand); border-radius: inherit; }
+.progress > span { display: block; height: 100%; background: linear-gradient(90deg, var(--brand), #5b8cff); border-radius: inherit; }
 .copy-field { min-width: 0; max-width: 100%; display: flex; align-items: center; gap: 8px; background: var(--bg-2); border: 1px solid var(--line-2); border-radius: var(--r-sm); padding: 4px 4px 4px 14px; }
 .copy-field code { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: var(--text); font-family: ui-monospace, "SF Mono", Menlo, monospace; }
 .hidden { display: none !important; }
@@ -269,8 +274,9 @@ h3 { font-size: 16px; font-weight: 700; }
 
 /* Simple bar chart */
 .bars { display: flex; align-items: flex-end; gap: 4px; height: 180px; padding-top: 10px; }
-.bars .bar { flex: 1; background: rgba(31, 199, 127, 0.3); border-radius: 4px 4px 0 0; position: relative; min-height: 2px; transition: background 0.15s; }
+.bars .bar { flex: 1; background: rgba(47, 107, 255, 0.45); border-radius: 4px 4px 0 0; position: relative; min-height: 2px; transition: background 0.15s; }
 .bars .bar:hover { background: var(--brand); }
+.bars .bar.neg { background: rgba(240, 86, 106, 0.4); }
 .bars .bar[data-tip]:hover::after {
   content: attr(data-tip); position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
   background: var(--surface-3); color: var(--text); font-size: 11px; padding: 4px 8px; border-radius: 6px; white-space: nowrap; z-index: 2;

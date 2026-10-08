@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RDCasino — Crypto Casino</title>
-<meta name="description" content="Crypto casino with RD Originals, slots, live tables and instant withdrawals.">
-<meta name="theme-color" content="#0a0d13">
+<meta name="description" content="Crypto casino with provably fair RD Originals, slots, live tables and fast withdrawals.">
+<meta name="theme-color" content="#0f1923">
 <link rel="icon" href="assets/img/brand/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,17 +18,14 @@
 <!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
   <a class="brand" href="#/">
-    <img src="assets/img/brand/logo.svg" alt="" class="brand-mark" onerror="this.outerHTML='<span class=\'brand-mark brand-mark-fb\'>RD</span>'">
+    <img src="assets/img/brand/logo.svg" alt="" class="brand-mark">
     <span class="brand-name">RD<span>Casino</span></span>
   </a>
-
   <div class="sb-switch">
     <a href="#/" class="active" data-switch="casino">Casino</a>
     <a href="#/sports" data-switch="sports">Sports</a>
   </div>
-
   <nav class="sb-nav" id="sb-nav"></nav>
-
   <div class="sb-foot">
     <div class="sb-lang">
       <span data-ic="globe"></span>
@@ -48,37 +45,34 @@
 <!-- MAIN -->
 <div class="main">
   <header class="header">
-    <button class="btn btn-ghost btn-icon hdr-burger" id="burger" aria-label="Menu"><span data-ic="menu"></span></button>
-    <a class="brand brand-mobile" href="#/"><span class="brand-name">RD<span>Casino</span></span></a>
+    <div class="hdr-left">
+      <button class="icon-btn hdr-burger" id="burger" aria-label="Menu"><span data-ic="menu"></span></button>
+      <a class="brand brand-mobile" href="#/"><span class="brand-name">RD<span>Casino</span></span></a>
+    </div>
 
-    <div class="hdr-search input-search">
-      <span data-ic="search"></span>
-      <input class="input" id="global-search" type="search" placeholder="Search games or providers" autocomplete="off">
-      <div class="search-pop hidden" id="search-pop"></div>
+    <div class="hdr-center hidden" id="hdr-wallet">
+      <div class="hdr-wallet">
+        <button class="hdr-balance" data-open="wallet"><span class="num" id="hdr-bal">$0.00</span><span class="coin-dot" style="background:#26a17b">₮</span></button>
+        <button class="btn btn-primary" data-open="wallet"><span data-ic="wallet"></span><span>Wallet</span></button>
+      </div>
     </div>
 
     <div class="hdr-right" id="hdr-guest">
       <button class="btn btn-ghost" data-open="login">Sign in</button>
-      <button class="btn btn-primary" data-open="register">Create account</button>
+      <button class="btn btn-primary" data-open="register">Register</button>
     </div>
 
     <div class="hdr-right hidden" id="hdr-user">
-      <button class="hdr-balance" data-open="wallet">
-        <span class="coin-dot" style="background:#26a17b">₮</span>
-        <span class="num" id="hdr-bal">$0.00</span>
-        <span data-ic="chevronDown"></span>
-      </button>
-      <button class="btn btn-primary hdr-deposit" data-open="wallet"><span data-ic="wallet"></span><span>Deposit</span></button>
-      <button class="btn btn-ghost btn-icon" data-drawer="chat" aria-label="Chat"><span data-ic="chat"></span></button>
+      <a class="icon-btn hide-sm" href="#/vip" aria-label="VIP"><span data-ic="crown"></span></a>
+      <button class="icon-btn hide-sm" data-drawer="chat" aria-label="Chat"><span data-ic="chat"></span></button>
       <div class="menu-wrap">
-        <button class="btn btn-ghost btn-icon" id="user-btn" aria-label="Account"><span data-ic="user"></span></button>
+        <button class="icon-btn" id="user-btn" aria-label="Account"><span data-ic="user"></span></button>
         <div class="menu hidden" id="user-menu"></div>
       </div>
     </div>
   </header>
 
   <main id="view" class="view"></main>
-
   <footer class="footer" id="footer"></footer>
 </div>
 
@@ -86,7 +80,7 @@
 <nav class="bottom-nav" id="bottom-nav">
   <button id="bn-menu"><span data-ic="menu"></span><span>Menu</span></button>
   <a href="#/casino/all"><span data-ic="grid"></span><span>Casino</span></a>
-  <a href="#/promotions"><span data-ic="gift"></span><span>Promos</span></a>
+  <a href="#/vip"><span data-ic="crown"></span><span>VIP</span></a>
   <a href="#/affiliate"><span data-ic="link"></span><span>Affiliate</span></a>
   <button data-drawer="chat"><span data-ic="chat"></span><span>Chat</span></button>
 </nav>
@@ -97,30 +91,25 @@
     <div class="modal-head">
       <div class="segmented" id="auth-tabs">
         <button data-auth="login" class="active">Sign in</button>
-        <button data-auth="register">Create account</button>
+        <button data-auth="register">Register</button>
       </div>
-      <button class="btn btn-ghost btn-icon btn-sm" data-close aria-label="Close"><span data-ic="x"></span></button>
+      <button class="icon-btn" data-close aria-label="Close"><span data-ic="x"></span></button>
     </div>
     <div class="modal-body">
       <form id="form-login" autocomplete="on">
-        <div class="field"><label>Email or username</label><input class="input" name="user" required placeholder="you@example.com"></div>
-        <div class="field"><label>Password</label><input class="input" name="pass" type="password" required placeholder="••••••••"></div>
-        <div class="row between" style="margin:-4px 0 16px"><span></span><a href="#" class="link-sm">Forgot password?</a></div>
+        <div id="login-error"></div>
+        <div class="field"><label>Email or username</label><input class="input" name="user" required autocomplete="username"></div>
+        <div class="field"><label>Password</label><input class="input" name="pass" type="password" required autocomplete="current-password"></div>
         <button class="btn btn-primary btn-block btn-lg" type="submit">Sign in</button>
-        <div class="or"><span>or continue with</span></div>
-        <div class="social-row">
-          <button type="button" class="btn btn-secondary">Google</button>
-          <button type="button" class="btn btn-secondary">Telegram</button>
-          <button type="button" class="btn btn-secondary">Wallet</button>
-        </div>
+        <p class="muted" style="text-align:center;font-size:13px;margin-top:16px">New here? <a href="#" class="link-sm" data-auth="register">Create an account</a></p>
       </form>
       <form id="form-register" class="hidden" autocomplete="on">
-        <div class="field"><label>Email</label><input class="input" type="email" name="email" required placeholder="you@example.com"></div>
-        <div class="field"><label>Username</label><input class="input" name="username" required minlength="3" placeholder="Visible to other players"></div>
-        <div class="field"><label>Password</label><input class="input" type="password" name="pass" required minlength="8" placeholder="Min. 8 characters"></div>
-        <div class="field"><label>Country of residence</label><select class="select" name="country" id="reg-country" required></select>
-          <span class="hint hidden" id="geo-block" style="color:var(--danger)">We can't accept players from this country.</span></div>
-        <div class="field"><label>Referral code <span class="faint">(optional)</span></label><input class="input" name="ref" id="reg-ref" placeholder="e.g. RDPLAYER"></div>
+        <div id="reg-error"></div>
+        <div class="field"><label>Email</label><input class="input" type="email" name="email" required autocomplete="email"></div>
+        <div class="field"><label>Username</label><input class="input" name="username" required minlength="3" maxlength="16" pattern="[A-Za-z0-9_]{3,16}" placeholder="3–16 letters, numbers or _" autocomplete="username"></div>
+        <div class="field"><label>Password</label><input class="input" type="password" name="pass" required minlength="8" placeholder="Min. 8 characters" autocomplete="new-password"></div>
+        <div class="field"><label>Country of residence</label><select class="select" name="country" id="reg-country" required></select></div>
+        <div class="field"><label>Referral code <span class="faint">(optional)</span></label><input class="input" name="ref" id="reg-ref" style="text-transform:uppercase"></div>
         <label class="check" style="margin-bottom:16px"><input type="checkbox" required> <span>I am at least 18 years old and accept the <a href="#/legal/terms" class="link-sm">Terms</a> and <a href="#/legal/privacy" class="link-sm">Privacy Policy</a>.</span></label>
         <button class="btn btn-primary btn-block btn-lg" type="submit">Create account</button>
       </form>
@@ -133,7 +122,7 @@
   <div class="modal">
     <div class="modal-head">
       <h3>Wallet</h3>
-      <button class="btn btn-ghost btn-icon btn-sm" data-close aria-label="Close"><span data-ic="x"></span></button>
+      <button class="icon-btn" data-close aria-label="Close"><span data-ic="x"></span></button>
     </div>
     <div class="tabs" style="padding:0 22px" id="wallet-tabs">
       <button class="tab active" data-wtab="deposit">Deposit</button>
@@ -144,14 +133,14 @@
   </div>
 </div>
 
+<!-- GENERIC MODAL -->
+<div class="overlay" id="modal-generic"><div class="modal modal-lg" id="modal-generic-box"></div></div>
+
 <!-- CHAT DRAWER -->
 <aside class="drawer" id="drawer-chat">
   <div class="drawer-head">
     <h3>Chat</h3>
-    <div class="row">
-      <select class="select" style="height:32px;width:auto;font-size:12px"><option>English</option><option>Español</option><option>Deutsch</option></select>
-      <button class="btn btn-ghost btn-icon btn-sm" data-close-drawer aria-label="Close"><span data-ic="x"></span></button>
-    </div>
+    <button class="icon-btn" data-close-drawer aria-label="Close"><span data-ic="x"></span></button>
   </div>
   <div class="drawer-body chat-list" id="chat-list"></div>
   <form class="chat-form" id="chat-form">
