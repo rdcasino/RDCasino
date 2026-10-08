@@ -987,3 +987,11 @@ input[type="range"] { width: 100%; accent-color: var(--brand); }
   .kyc-steps > div { font-size: 0; justify-content: center; }
   .kyc-steps > div span { font-size: 11.5px; }
 }
+
+/* ---------- Sports (em breve) ---------- */
+.sports-soon { display: flex; align-items: center; gap: 14px; padding: 18px 20px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); margin-bottom: 8px; }
+.sports-soon svg { color: var(--brand); flex: none; }
+.sports-soon h1 { font-size: 20px; margin: 0; }
+.sports-soon p { font-size: 13.5px; margin-top: 2px; }
+.held-note { display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; font-size: 12px; color: var(--gold); }
+.chat-msg.pending { opacity: .65; }

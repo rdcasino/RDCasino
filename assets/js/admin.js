@@ -18,7 +18,7 @@
 
   /* ---------- Navegação ---------- */
   function pendingWd() { return db.transactions().filter(function (t) { return (t.type === "Withdrawal" || t.type === "Deposit") && t.status === "Pending"; }); }
-  function after(p, okMsg, playerId, kind) { Promise.resolve(p).then(function () { RD.toast(okMsg, kind); refreshAfter(playerId); }, function () {}); }
+  function after(p, okMsg, playerId, kind) { Promise.resolve(p).then(function (r) { if (r && r.error) return RD.toast(r.error, "error"); RD.toast(okMsg, kind); refreshAfter(playerId); }, function () {}); }
   function pendingKyc() { return db.players().filter(function (p) { return p.kyc === "Pending"; }); }
   function NAV() {
     return [
@@ -126,9 +126,12 @@
         (p.kycInfo.files && Object.keys(p.kycInfo.files).length ? '<div class="kyc-docs" id="kyc-docs">' + Object.keys(p.kycInfo.files).map(function (k) { return '<div class="kyc-doc-item"><small>' + ({ front: "Frente", back: "Verso", selfie: "Selfie", address: "Comprovante" }[k] || k) + '</small><div class="kyc-thumb" data-kpath="' + esc(p.kycInfo.files[k]) + '">Carregando…</div></div>'; }).join("") + "</div>" : "") +
         (p.kyc === "Pending" ? '<div class="row" style="gap:8px;margin-top:10px"><button class="btn btn-primary btn-sm" data-act="kyc-ok" data-id="' + p.id + '">Aprovar</button><button class="btn btn-danger btn-sm" data-act="kyc-no" data-id="' + p.id + '">Rejeitar</button></div>' : "") : "") +
       (p.reloadGrant && p.reloadGrant.used < p.reloadGrant.claims ? '<div class="notice info" style="margin-top:16px">' + ic("bolt", 16) + "<span>VIP Reload ativo: <b>" + fmt.usd(p.reloadGrant.per) + "</b> por resgate, " + p.reloadGrant.used + " de " + p.reloadGrant.claims + " resgatados, 1 a cada " + p.reloadGrant.hours + "h.</span></div>" : "") +
+      (p.held > 0 ? '<div class="notice" style="margin-top:16px;border-color:rgba(255,200,92,.35)">' + ic("lock", 16) + "<span>Saldo retido: <b>" + fmt.usd(p.held) + "</b>. O jogador vê, mas não consegue usar nem sacar.</span></div>" : "") +
       '<h3 style="margin:20px 0 10px">Ações</h3><div class="row wrap" style="gap:8px">' +
         '<button class="btn btn-primary btn-sm" data-act="credit-dep" data-id="' + p.id + '">' + ic("arrowDown", 14) + "Creditar depósito</button>" +
         '<button class="btn btn-secondary btn-sm" data-act="adjust" data-id="' + p.id + '">' + ic("sliders", 14) + "Ajustar saldo</button>" +
+        '<button class="btn btn-secondary btn-sm" data-act="hold" data-id="' + p.id + '">' + ic("lock", 14) + "Reter saldo</button>" +
+        (p.held > 0 ? '<button class="btn btn-secondary btn-sm" data-act="release" data-id="' + p.id + '">Liberar retido</button><button class="btn btn-danger btn-sm" data-act="confiscate" data-id="' + p.id + '">Confiscar retido</button>' : "") +
         '<button class="btn btn-secondary btn-sm" data-act="bonus" data-id="' + p.id + '">' + ic("gift", 14) + "Dar bônus</button>" +
         '<button class="btn btn-secondary btn-sm" data-act="reload" data-id="' + p.id + '">' + ic("bolt", 14) + "VIP Reload</button>" +
         '<button class="btn btn-secondary btn-sm" data-act="aff-share" data-id="' + p.id + '">' + ic("link", 14) + "Comissão afiliado</button>" +
@@ -381,7 +384,8 @@
     }
     if (a === "reject") {
       var tx = db.transactions().filter(function (x) { return x.id === id; })[0];
-      openModal('<div class="modal-head"><h3>Rejeitar ' + ((tx && tx.type === "Deposit") ? "depósito " : "saque ") + id + '</h3><button class="btn btn-ghost btn-icon btn-sm" data-close>' + ic("x") + '</button></div><form id="rej-form"><div class="modal-body"><p class="muted" style="margin-bottom:14px">' + fmt.usd(tx.amount) + " volta para o saldo de <strong>" + esc(tx.user) + '</strong>.</p><div class="field"><label>Motivo (fica na auditoria)</label><input class="input" name="why" required placeholder="Ex.: endereço suspeito"></div></div><div class="modal-foot"><button type="button" class="btn btn-ghost" data-close>Cancelar</button><button class="btn btn-danger">Rejeitar e devolver</button></div></form>');
+      openModal('<div class="modal-head"><h3>Rejeitar ' + ((tx && tx.type === "Deposit") ? "depósito " : "saque ") + id + '</h3><button class="btn btn-ghost btn-icon btn-sm" data-close>' + ic("x") + '</button></div><form id="rej-form"><div class="modal-body"><p class="muted" style="margin-bottom:14px">' + fmt.usd(tx.amount) + " de <strong>" + esc(tx.user) + '</strong>: <b>devolver</b> volta para o saldo dele; <b>reter</b> trava o valor (ele vê como retido e não usa) até você liberar ou confiscar na ficha do jogador.</p><div class="field"><label>Motivo (fica na auditoria)</label><input class="input" name="why" required placeholder="Ex.: endereço suspeito"></div></div><div class="modal-foot"><button type="button" class="btn btn-ghost" data-close>Cancelar</button>' + (tx && tx.type === "Withdrawal" ? '<button type="button" class="btn btn-secondary" id="rej-hold">Rejeitar e reter</button>' : "") + '<button class="btn btn-danger">' + (tx && tx.type === "Withdrawal" ? "Rejeitar e devolver" : "Rejeitar") + '</button></div></form>');
+      if ($("#rej-hold")) $("#rej-hold").addEventListener("click", function () { var f = $("#rej-form"); if (!f.why.value.trim()) { f.why.focus(); return RD.toast("Escreva o motivo.", "error"); } closeAll(); after(db.decideWithdrawal(id, false, f.why.value, true), "Saque rejeitado e valor retido", null, "error"); });
       $("#rej-form").addEventListener("submit", function (ev) { ev.preventDefault(); closeAll(); after(db.decideWithdrawal(id, false, ev.target.why.value), tx && tx.type === "Deposit" ? "Depósito rejeitado" : "Saque rejeitado e valor devolvido", null, "error"); });
       return;
     }
@@ -399,6 +403,20 @@
         (isBonus ? '<input type="hidden" name="type" value="1">' : '<div class="field"><label>Tipo</label><select class="select" name="type"><option value="1">Adicionar saldo</option><option value="-1">Remover saldo</option></select></div>') +
         '<div class="field"><label>Valor (USD)</label><input class="input" name="amt" type="number" min="0.01" step="0.01" required></div><div class="field"><label>Motivo (o jogador vê no extrato, em inglês)</label><input class="input" name="why" required minlength="3" placeholder="' + (isBonus ? "Ex.: VIP reload bonus" : "Ex.: Compensation") + '"></div></div><div class="modal-foot"><button type="button" class="btn btn-ghost" data-close>Cancelar</button><button class="btn btn-primary">Confirmar</button></div></form>');
       $("#adj-form").addEventListener("submit", function (ev) { ev.preventDefault(); var f = ev.target; closeAll(); after(db.adjustBalance(pl.id, +f.amt.value * +f.type.value, f.why.value, isBonus ? "Bonus" : "Adjustment"), isBonus ? "Bônus enviado" : "Saldo ajustado", pl.id); });
+      return;
+    }
+    if (a === "hold" || a === "release" || a === "confiscate") {
+      var hp = db.player(id), M = { hold: ["Reter saldo", "Tira do saldo disponível e trava. Use quando suspeitar de bug, fraude ou bônus abusado.", hp.balance, "Reter", "btn-primary"], release: ["Liberar retido", "Volta para o saldo do jogador.", hp.held, "Liberar", "btn-primary"], confiscate: ["Confiscar retido", "O valor some do retido e não volta. Fica registrado na auditoria com o motivo.", hp.held, "Confiscar", "btn-danger"] }[a];
+      openModal('<div class="modal-head"><h3>' + M[0] + " · " + esc(hp.username) + '</h3><button class="btn btn-ghost btn-icon btn-sm" data-close>' + ic("x") + '</button></div><form id="hold-form"><div class="modal-body"><p class="muted" style="margin-bottom:14px">' + M[1] + "</p>" +
+        '<div class="field"><label>Valor (USD) — máximo ' + fmt.usd(M[2]) + '</label><div class="input-group"><input name="amt" type="number" min="0.01" step="0.01" max="' + M[2] + '" required><button type="button" class="btn btn-ghost btn-sm" id="hold-max">Tudo</button></div></div>' +
+        '<div class="field"><label>Motivo (fica na auditoria' + (a === "confiscate" ? "" : "; o jogador vê no extrato, em inglês") + ')</label><input class="input" name="why" required minlength="3" placeholder="' + (a === "confiscate" ? "Ex.: lucro de bug no jogo X" : "Ex.: Under review") + '"></div></div>' +
+        '<div class="modal-foot"><button type="button" class="btn btn-ghost" data-close>Cancelar</button><button class="btn ' + M[4] + '">' + M[3] + "</button></div></form>");
+      $("#hold-max").addEventListener("click", function () { $("#hold-form").amt.value = M[2]; });
+      $("#hold-form").addEventListener("submit", function (ev) {
+        ev.preventDefault(); var f = ev.target, v = +f.amt.value;
+        if (a === "confiscate" && !confirm("Confiscar " + fmt.usd(v) + " de " + hp.username + "? Não dá para desfazer.")) return;
+        closeAll(); after((a === "hold" ? db.holdBalance : a === "release" ? db.releaseHeld : db.confiscateHeld)(hp.id, v, f.why.value.trim()), a === "hold" ? "Saldo retido" : a === "release" ? "Retido liberado" : "Valor confiscado", hp.id);
+      });
       return;
     }
     if (a === "credit-dep") {

@@ -402,12 +402,27 @@
       addTx(p, type || "Adjustment", Math.abs(amount), "Completed", { note: reason, sign: amount < 0 ? -1 : 1 });
       log("admin", (type === "Bonus" ? "Bônus " : "Ajuste de saldo ") + p.username + ": " + RD.fmt.usd(amount, { sign: true }) + " — " + reason); save();
     },
-    decideWithdrawal: function (txId, approve, reason) {
+    decideWithdrawal: function (txId, approve, reason, hold) {
       var t = D.tx.filter(function (x) { return x.id === txId; })[0]; if (!t || t.status !== "Pending") return;
       var p = byId(t.userId);
-      t.status = approve ? "Completed" : "Rejected"; if (reason) t.note = reason;
-      if (approve) p.withdrawals = round(p.withdrawals + t.amount); else p.balance = round(p.balance + t.amount);
+      t.status = approve ? "Completed" : "Rejected"; if (reason) t.note = reason + (!approve && hold ? " (on hold)" : "");
+      if (approve) p.withdrawals = round(p.withdrawals + t.amount); else if (hold) p.held = round((p.held || 0) + t.amount); else p.balance = round(p.balance + t.amount);
       log("admin", (approve ? "Aprovou" : "Rejeitou") + " saque " + txId + " de " + p.username + " (" + RD.fmt.usd(t.amount) + ")" + (reason ? " — " + reason : "")); save();
+    },
+    /* Saldo retido: reter (sai do saldo), liberar (volta) ou confiscar (some) */
+    holdBalance: function (pid, amount, reason) {
+      var p = byId(pid), v = round(amount); if (!(v > 0) || v > p.balance) return { error: "O jogador não tem esse saldo disponível." };
+      p.balance = round(p.balance - v); p.held = round((p.held || 0) + v); addTx(p, "Adjustment", v, "Completed", { sign: -1, note: "On hold: " + reason });
+      log("admin", "Reteve " + RD.fmt.usd(v) + " de " + p.username + " — " + reason); save(); return { ok: true };
+    },
+    releaseHeld: function (pid, amount, reason) {
+      var p = byId(pid), v = round(amount); if (!(v > 0) || v > (p.held || 0)) return { error: "Valor maior que o retido." };
+      p.held = round(p.held - v); p.balance = round(p.balance + v); addTx(p, "Adjustment", v, "Completed", { note: "Released: " + reason });
+      log("admin", "Liberou " + RD.fmt.usd(v) + " retido de " + p.username + " — " + reason); save(); return { ok: true };
+    },
+    confiscateHeld: function (pid, amount, reason) {
+      var p = byId(pid), v = round(amount); if (!(v > 0) || v > (p.held || 0)) return { error: "Valor maior que o retido." };
+      p.held = round(p.held - v); log("admin", "Confiscou " + RD.fmt.usd(v) + " retido de " + p.username + " — " + reason); save(); return { ok: true };
     },
     setKyc: function (pid, status, reason) {
       var p = byId(pid); p.kyc = status; p.kycReason = reason || "";
