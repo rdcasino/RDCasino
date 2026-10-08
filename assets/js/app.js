@@ -97,7 +97,39 @@
 
   /* ---------- Wallet ---------- */
   function coin() { return RD.wallet.coins.filter(function (c) { return c.sym === state.coin; })[0]; }
+  /* Caixa no modo real: endereços da casa (cadastrados no banco) e pedido com hash da transação */
+  var COIN_COLORS = { USDT: "#26a17b", USDC: "#2775ca", BTC: "#f7931a", ETH: "#627eea", SOL: "#9945ff", LTC: "#345d9d", TRX: "#ff060a", BNB: "#f3ba2f" };
+  function renderLiveWallet() {
+    var u = me(), ws = db.wallets(), coinsL = [];
+    ws.forEach(function (w) { if (coinsL.indexOf(w.coin) < 0) coinsL.push(w.coin); });
+    if (coinsL.indexOf(state.coin) < 0) state.coin = coinsL[0];
+    var nets = ws.filter(function (w) { return w.coin === state.coin; });
+    var w = nets.filter(function (x) { return x.network === state.net; })[0] || nets[0]; if (w) state.net = w.network;
+    $$("#wallet-tabs .tab").forEach(function (t) { t.classList.toggle("active", t.getAttribute("data-wtab") === state.walletTab); t.classList.toggle("hidden", t.getAttribute("data-wtab") === "tip"); });
+    if (!w) { $("#wallet-body").innerHTML = empty("Wallet loading", "Try again in a moment."); return; }
+    var stable = /^(USDT|USDC)$/.test(w.coin), min = Math.max(+w.min_deposit || 0, RD.config.minDeposit || 0);
+    var h = '<div class="coin-select">' + coinsL.map(function (x) { return '<button class="coin-opt' + (x === state.coin ? " active" : "") + '" data-coin="' + x + '"><span class="coin-dot" style="background:' + (COIN_COLORS[x] || "#666") + '">' + x[0] + "</span>" + x + "</button>"; }).join("") + "</div>" +
+      '<div class="field"><label>Network</label><div class="net-row">' + nets.map(function (x) { return '<button class="chip' + (x.network === state.net ? " active" : "") + '" data-net="' + esc(x.network) + '">' + esc(x.network) + "</button>"; }).join("") + "</div></div>";
+    if (state.walletTab === "deposit") {
+      h += '<div class="dep-box"><div class="notice" style="margin-bottom:12px;border-color:rgba(255,200,92,.35);background:var(--gold-soft)">' + ic("alert", 16) + "<span>Send only <b>" + esc(w.coin) + "</b> on the <b>" + esc(w.network) + "</b> network. Other coins or networks may be lost.</span></div>" +
+        '<div class="field"><label>Deposit address</label><div class="addr-row"><code class="addr">' + esc(w.address) + '</code><button class="btn btn-secondary btn-sm" data-copy="' + esc(w.address) + '">' + ic("copy", 14) + "Copy</button></div></div>" +
+        (w.memo ? '<div class="field"><label>Memo / tag (required)</label><div class="addr-row"><code class="addr">' + esc(w.memo) + '</code><button class="btn btn-secondary btn-sm" data-copy="' + esc(w.memo) + '">' + ic("copy", 14) + "Copy</button></div></div>" : "") +
+        '<p class="faint" style="font-size:12.5px;margin:-4px 0 14px">Minimum deposit: ' + fmt.usd(min, { dec: 0 }) + (stable ? "" : " in " + esc(w.coin)) + "</p></div>" +
+        '<div class="divider"></div><h4 style="margin:4px 0 10px">Already sent? Confirm your deposit</h4><div id="dep-msg"></div>' +
+        '<div class="field"><label>Amount sent (USD' + (stable ? "" : " value") + ')</label><input class="input" type="number" min="' + min + '" step="0.01" id="dep-amt" placeholder="Min. $' + min + '"></div>' +
+        '<div class="field"><label>Transaction hash (TxID)</label><input class="input" id="dep-hash" placeholder="Paste the transaction ID from your wallet or exchange"></div>' +
+        '<button class="btn btn-primary btn-block btn-lg" data-action="live-deposit">Confirm deposit</button>' +
+        '<div class="wallet-foot">' + ic("lock", 14) + "Our team checks the blockchain and credits your balance, usually within minutes.</div>";
+    } else {
+      h += '<div id="wd-msg"></div><div class="field"><label>Your ' + esc(w.coin) + " address (" + esc(w.network) + ')</label><input class="input" id="wd-addr" placeholder="Paste your ' + esc(w.coin) + ' address"></div>' +
+        '<div class="field"><label>Amount (USD)</label><div class="input-group"><input type="number" min="0" step="0.01" placeholder="0.00" id="wd-amt"><button class="btn btn-ghost btn-sm" data-action="wd-max">Max</button></div><span class="hint">Available: ' + fmt.usd(u.balance) + "</span></div>" +
+        '<button class="btn btn-primary btn-block btn-lg" data-action="withdraw">Request withdrawal</button>' +
+        '<div class="wallet-foot">' + ic("lock", 14) + "Withdrawals are reviewed and sent by our team. The amount is reserved from your balance until then.</div>";
+    }
+    $("#wallet-body").innerHTML = h; hydrateIcons($("#wallet-body"));
+  }
   function renderWallet() {
+    if (RD.live) return renderLiveWallet();
     var u = me(), c = coin();
     if (c.nets.indexOf(state.net) < 0) state.net = c.nets[0];
     $$("#wallet-tabs .tab").forEach(function (t) { t.classList.toggle("active", t.getAttribute("data-wtab") === state.walletTab); });
@@ -2131,7 +2163,7 @@
 
     var u = me(), a = t.getAttribute("data-action");
     switch (a) {
-      case "logout": db.logout(); renderHeader(); closeAll(); location.hash = "#/"; route(); return RD.toast("Signed out");
+      case "logout": Promise.resolve(db.logout()).then(function () { renderHeader(); renderSidebar(); closeAll(); location.hash = "#/"; route(); RD.toast("Signed out"); }); return;
       case "new-campaign": return newCampaign();
       case "collect": { var c = db.collectCommission(u.id); RD.toast(c.error || fmt.usd(c.amount) + " added to your balance", c.error ? "error" : ""); renderHeader(); return route(true); }
       case "vip-claim-all": {
@@ -2144,6 +2176,18 @@
       case "rotate": { var rs = db.rotateSeed(u.id, ($("#new-client").value || "").trim()); if (rs && rs.error) return RD.toast(rs.error, "error"); RD.toast("Seeds rotated — previous server seed revealed"); return seedsModal(); }
       case "open-withdraw": state.walletTab = "withdraw"; openModal("wallet"); return renderWallet();
       case "wd-max": $("#wd-amt").value = u.balance.toFixed(2); return;
+      case "live-deposit": {
+        var lw = db.wallets().filter(function (x) { return x.coin === state.coin && x.network === state.net; })[0], la = parseFloat($("#dep-amt").value), lh = $("#dep-hash").value.trim();
+        if (!lw) return;
+        if (!(la > 0)) { $("#dep-msg").innerHTML = errorBox("Enter the amount you sent."); return; }
+        if (lh.length < 10) { $("#dep-msg").innerHTML = errorBox("Paste the transaction hash (TxID)."); return; }
+        t.disabled = true;
+        return db.requestDeposit(lw, la, lh).then(function (r) {
+          t.disabled = false;
+          if (r.error) { $("#dep-msg").innerHTML = errorBox(r.error); return; }
+          closeAll(); RD.toast("Deposit submitted — we'll credit it after checking the blockchain"); route(true);
+        });
+      }
       case "sim-deposit": {
         var d = parseFloat($("#dep-amt").value), r = db.deposit(u.id, d, state.coin);
         if (r.error) { $("#dep-msg").innerHTML = errorBox(r.error); return; }
@@ -2152,6 +2196,13 @@
       case "withdraw": {
         var amt = parseFloat($("#wd-amt").value), addr = $("#wd-addr").value.trim();
         if (addr.length < 20) { $("#wd-msg").innerHTML = errorBox("Enter a valid wallet address."); return; }
+        if (RD.live) {
+          if (!(amt > 0)) { $("#wd-msg").innerHTML = errorBox("Enter an amount."); return; }
+          return db.requestWithdrawal(u.id, amt, { coin: state.coin, network: state.net }, addr).then(function (r) {
+            if (r.error) { $("#wd-msg").innerHTML = errorBox(r.error); return; }
+            closeAll(); renderHeader(); RD.toast("Withdrawal of " + fmt.usd(amt) + " sent for review"); route(true);
+          });
+        }
         var w2 = db.requestWithdrawal(u.id, amt, state.coin, addr);
         if (w2.error) { $("#wd-msg").innerHTML = errorBox(w2.error, w2.kyc ? ' <a href="#/account/verification" class="link-sm" data-close>Verify now</a>' : ""); return; }
         closeAll(); renderHeader(); RD.toast("Withdrawal of " + fmt.usd(amt) + " sent for review"); return route(true);
@@ -2206,17 +2257,23 @@
   });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeAll(); });
 
+  function busyForm(f, on) { var b = f.querySelector("button[type=submit]"); if (b) { b.disabled = on; b.classList.toggle("loading", on); } }
   $("#form-login").addEventListener("submit", function (e) {
-    e.preventDefault(); var f = e.target, r = db.login(f.user.value.trim(), f.pass.value);
-    if (r.error) { $("#login-error").innerHTML = errorBox(r.error); return; }
-    f.reset(); closeAll(); renderHeader(); RD.toast("Welcome back, " + r.player.username); route(true);
+    e.preventDefault(); var f = e.target; busyForm(f, true);
+    Promise.resolve(db.login(f.user.value.trim(), f.pass.value)).then(function (r) {
+      busyForm(f, false);
+      if (r.error) { $("#login-error").innerHTML = errorBox(r.error); return; }
+      $("#login-error").innerHTML = ""; f.reset(); closeAll(); renderHeader(); renderSidebar(); RD.toast("Welcome back, " + r.player.username); route(true);
+    });
   });
   $("#form-register").addEventListener("submit", function (e) {
-    e.preventDefault(); var f = e.target;
-    var r = db.register({ email: f.email.value, username: f.username.value, pass: f.pass.value, country: f.country.value, ref: f.ref.value });
-    if (r.error) { $("#reg-error").innerHTML = errorBox(r.error); return; }
-    f.reset(); try { localStorage.removeItem("rd_ref"); } catch (x) {}
-    closeAll(); renderHeader(); RD.toast("Welcome, " + r.player.username + "! Make a deposit to start playing."); route(true);
+    e.preventDefault(); var f = e.target; busyForm(f, true);
+    Promise.resolve(db.register({ email: f.email.value, username: f.username.value, pass: f.pass.value, country: f.country.value, ref: f.ref.value, invite: f.invite ? f.invite.value : "" })).then(function (r) {
+      busyForm(f, false);
+      if (r.error) { $("#reg-error").innerHTML = errorBox(r.error); return; }
+      $("#reg-error").innerHTML = ""; f.reset(); try { localStorage.removeItem("rd_ref"); } catch (x) {}
+      closeAll(); renderHeader(); renderSidebar(); RD.toast("Welcome, " + r.player.username + "! Make a deposit to start playing."); route(true);
+    });
   });
   $("#chat-form").addEventListener("submit", function (e) {
     e.preventDefault(); var inp = this.querySelector("input");
@@ -2276,6 +2333,11 @@
   });
 
   /* ---------- Boot ---------- */
+  if (RD.live) {
+    $("#reg-invite-wrap").classList.remove("hidden"); $("#reg-invite").required = true;
+    $("#login-user-label").textContent = "Email";
+    var inv = location.search.match(/[?&]invite=([A-Za-z0-9]+)/); if (inv) $("#reg-invite").value = inv[1].toUpperCase();
+  }
   hydrateIcons(document);
   renderSidebar(); renderHeader(); renderFooter(); fillCountries();
   window.addEventListener("hashchange", function () { route(); });

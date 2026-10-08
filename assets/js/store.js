@@ -24,7 +24,8 @@
       settings: { restricted: RD.config.restrictedCountries.slice(), license: JSON.parse(JSON.stringify(RD.config.license)), leaderboardPrize: RD.config.leaderboardPrize }
     };
   }
-  function read() { try { var r = localStorage.getItem(KEY); return r ? JSON.parse(r) : null; } catch (e) { return null; } }
+  // No modo real (RD.live) os dados vêm do servidor: nada é lido nem gravado no navegador.
+  function read() { if (RD.live) return null; try { var r = localStorage.getItem(KEY); return r ? JSON.parse(r) : null; } catch (e) { return null; } }
   /* Ajustes em dados antigos: rodada única → uma rodada por jogo; correções pontuais pedidas pelo dono */
   function migrate(d) {
     if (!d) return d;
@@ -63,7 +64,7 @@
     RD.config.leaderboardPrize = D.settings.leaderboardPrize;
     RD.config.maxProfit = +D.settings.maxProfit || 0;
   }
-  function save() { try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (e) {} }
+  function save() { if (RD.live) return; try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (e) {} }
   function id(prefix) { D.seq++; return prefix + D.seq; }
   function log(who, what) { D.audit.unshift({ at: nowIso(), who: who, what: what }); D.audit = D.audit.slice(0, 500); }
   function byId(pid) { return D.players.filter(function (p) { return p.id === pid; })[0]; }
@@ -90,6 +91,7 @@
     data: function () { return D; },
     save: save,
     onChange: function (fn) { listeners.push(fn); },
+    emit: function () { listeners.forEach(function (fn) { fn("live"); }); },
     reset: function () { D = empty(); apply(); save(); try { localStorage.removeItem(SESSION); } catch (e) {} },
 
     /* ---------- sessão do jogador ---------- */
@@ -398,6 +400,7 @@
 
   window.addEventListener("storage", function (e) {
     if (e.key !== KEY && e.key !== SESSION) return;
+    if (RD.live) return;
     if (e.key === KEY) { D = migrate(read()) || empty(); apply(); }
     listeners.forEach(function (fn) { fn(e.key); });
   });

@@ -17,7 +17,8 @@
   function initials(u) { return String(u || "?").slice(0, 2).toUpperCase(); }
 
   /* ---------- Navegação ---------- */
-  function pendingWd() { return db.transactions().filter(function (t) { return t.type === "Withdrawal" && t.status === "Pending"; }); }
+  function pendingWd() { return db.transactions().filter(function (t) { return (t.type === "Withdrawal" || t.type === "Deposit") && t.status === "Pending"; }); }
+  function after(p, okMsg, playerId, kind) { Promise.resolve(p).then(function () { RD.toast(okMsg, kind); refreshAfter(playerId); }, function () {}); }
   function pendingKyc() { return db.players().filter(function (p) { return p.kyc === "Pending"; }); }
   function NAV() {
     return [
@@ -34,6 +35,7 @@
       { id: "media", label: "Banners & Imagens", icon: "image" },
       { group: "Crescimento" },
       { id: "affiliates", label: "Afiliados", icon: "link" },
+      RD.live ? { id: "invites", label: "Convites", icon: "gift" } : null,
       { id: "vip", label: "VIP & Recompensas", icon: "crown" },
       { group: "Sistema" },
       { id: "settings", label: "Configurações", icon: "settings" },
@@ -41,7 +43,7 @@
     ];
   }
   function renderNav(active) {
-    $("#adm-nav").innerHTML = NAV().map(function (n) {
+    $("#adm-nav").innerHTML = NAV().filter(Boolean).map(function (n) {
       if (n.group) return '<div class="adm-group">' + n.group + "</div>";
       return '<a class="adm-link' + (n.id === active ? " active" : "") + '" href="#/' + n.id + '">' + ic(n.icon, 17) + n.label +
         (n.badge ? '<span class="badge badge-warn">' + n.badge + "</span>" : n.count ? '<span class="badge">' + n.count + "</span>" : "") + "</a>";
@@ -63,8 +65,8 @@
     if (!list.length) return empty("Nada por aqui", "As transações aparecem conforme os jogadores usam o site.");
     return '<div class="table-wrap"><table class="table"><thead><tr><th>ID</th><th>Jogador</th><th>Tipo</th><th class="right">Valor</th><th>Status</th><th>Data</th>' + (actions ? "<th></th>" : "") + "</tr></thead><tbody>" +
       list.map(function (t) {
-        var act = actions ? (t.status === "Pending" && t.type === "Withdrawal" ? '<td class="right"><div class="row" style="gap:6px;justify-content:flex-end"><button class="btn btn-primary btn-sm" data-act="approve" data-id="' + t.id + '">Aprovar</button><button class="btn btn-danger btn-sm" data-act="reject" data-id="' + t.id + '">Rejeitar</button></div></td>' : "<td></td>") : "";
-        return '<tr><td class="strong">' + t.id + '</td><td><a href="#" data-player="' + t.userId + '" class="link">' + esc(t.user) + "</a></td><td>" + txType(t) + (t.coin ? ' <small class="faint">' + t.coin + "</small>" : "") + (t.address ? '<br><small class="faint" title="' + esc(t.address) + '">' + esc(t.address.slice(0, 10)) + "…</small>" : "") + (t.note ? '<br><small class="faint">' + esc(t.note) + "</small>" : "") + '</td><td class="right num strong">' + fmt.usd(t.amount) + "</td><td>" + badge(t.status) + '</td><td class="faint">' + fmt.date(t.date) + "</td>" + act + "</tr>";
+        var act = actions ? (t.status === "Pending" && (t.type === "Withdrawal" || t.type === "Deposit") ? '<td class="right"><div class="row" style="gap:6px;justify-content:flex-end"><button class="btn btn-primary btn-sm" data-act="approve" data-id="' + t.id + '">Aprovar</button><button class="btn btn-danger btn-sm" data-act="reject" data-id="' + t.id + '">Rejeitar</button></div></td>' : "<td></td>") : "";
+        return '<tr><td class="strong">' + t.id + '</td><td><a href="#" data-player="' + t.userId + '" class="link">' + esc(t.user) + "</a></td><td>" + txType(t) + (t.coin ? ' <small class="faint">' + t.coin + "</small>" : "") + (t.net ? ' <small class="faint">' + esc(t.net) + "</small>" : "") + (t.address ? '<br><small class="faint" title="' + esc(t.address) + '">Para: <span class="mono">' + esc(t.address) + "</span></small>" : "") + (t.txHash ? '<br><small class="faint">TxID: <span class="mono">' + esc(t.txHash) + "</span></small>" : "") + (t.note ? '<br><small class="faint">' + esc(t.note) + "</small>" : "") + '</td><td class="right num strong">' + fmt.usd(t.amount) + "</td><td>" + badge(t.status) + '</td><td class="faint">' + fmt.date(t.date) + "</td>" + act + "</tr>";
       }).join("") + "</tbody></table></div>";
   }
   function betsTable(list) {
@@ -132,9 +134,9 @@
 
   P.transactions = function (filter) {
     filter = filter || "all";
-    var list = db.transactions().filter(function (t) { return filter === "all" || (filter === "pending" && t.status === "Pending" && t.type === "Withdrawal") || (filter === "deposits" && t.type === "Deposit") || (filter === "withdrawals" && t.type === "Withdrawal") || (filter === "bonus" && ["Bonus", "Adjustment", "Rakeback", "Level reward", "Commission"].indexOf(t.type) > -1); });
-    var tabs = [["all", "Todas"], ["pending", "Saques pendentes (" + pendingWd().length + ")"], ["deposits", "Depósitos"], ["withdrawals", "Saques"], ["bonus", "Bônus e ajustes"]];
-    return head("Transações", "Saques só saem depois da sua aprovação. Rejeitar devolve o valor ao saldo do jogador.") +
+    var list = db.transactions().filter(function (t) { return filter === "all" || (filter === "pending" && t.status === "Pending" && (t.type === "Withdrawal" || t.type === "Deposit")) || (filter === "deposits" && t.type === "Deposit") || (filter === "withdrawals" && t.type === "Withdrawal") || (filter === "bonus" && ["Bonus", "Adjustment", "Rakeback", "Level reward", "Commission"].indexOf(t.type) > -1); });
+    var tabs = [["all", "Todas"], ["pending", "Pendentes (" + pendingWd().length + ")"], ["deposits", "Depósitos"], ["withdrawals", "Saques"], ["bonus", "Bônus e ajustes"]];
+    return head("Transações", RD.live ? "Depósitos: confira o TxID na Kraken e aprove para creditar. Saques: envie pela Kraken e aprove; rejeitar devolve o valor ao jogador." : "Saques só saem depois da sua aprovação. Rejeitar devolve o valor ao saldo do jogador.") +
       '<div class="tabs" style="margin-bottom:16px">' + tabs.map(function (t) { return '<a class="tab' + (t[0] === filter ? " active" : "") + '" href="#/transactions/' + t[0] + '">' + t[1] + "</a>"; }).join("") + "</div>" +
       '<div class="card">' + txTable(list, true) + "</div>";
   };
@@ -240,6 +242,25 @@
       '</tbody></table></div></div><p class="faint" style="font-size:12.5px;margin-top:10px">Custo acumulado = soma de todos os prêmios até o nível ÷ valor apostado para chegar nele. Chega a ' + peak.toFixed(2) + '% (mais ' + (RD.config.rakebackRate * 100) + '% da vantagem da casa em rakeback). Nos originais a casa ganha de 1% a 2% do apostado; em vermelho, os níveis em que o VIP custa 1% ou mais. Os valores ficam em <code>assets/js/data.js</code> (RD.vipTiers).</p>';
   };
 
+  /* Convites (modo real): só quem tem código consegue criar conta */
+  P.invites = function () {
+    var list = db.invites ? db.invites() : [], free = list.filter(function (i) { return !i.used_at; }).length;
+    var link = location.origin + location.pathname.replace(/admin\/?(index\.html)?$/, "") + "?live=1&invite=";
+    return head("Convites", "Gere códigos e mande para quem você quer no teste. Cada código vale para uma conta só.") +
+      '<div class="kpi-grid">' + kpi("Convites gerados", list.length) + kpi("Disponíveis", free) + kpi("Usados", list.length - free) + "</div>" +
+      '<div class="card card-pad mt"><form id="inv-form" class="row wrap" style="gap:12px;align-items:flex-end"><div class="field" style="margin:0;width:140px"><label>Quantidade</label><input class="input" type="number" name="n" min="1" max="200" value="10" required></div><div class="field grow" style="margin:0;min-width:200px"><label>Anotação (opcional)</label><input class="input" name="note" placeholder="ex.: amigos da RD"></div><button class="btn btn-primary">Gerar convites</button></form></div>' +
+      '<div class="card mt">' + (list.length ? '<div class="table-wrap"><table class="table"><thead><tr><th>Código</th><th>Anotação</th><th>Status</th><th>Usado por</th><th>Criado</th><th></th></tr></thead><tbody>' +
+        list.map(function (i) { return '<tr><td class="strong mono">' + esc(i.code) + (i.is_admin ? ' <span class="badge">admin</span>' : "") + "</td><td>" + esc(i.note || "") + "</td><td>" + (i.used_at ? '<span class="badge">Usado</span>' : '<span class="badge badge-success">Disponível</span>') + "</td><td>" + esc(i.used_by_username || "—") + '</td><td class="faint">' + fmt.date(i.created_at) + '</td><td class="right">' + (i.used_at ? "" : '<button class="btn btn-secondary btn-sm" data-copy-inv="' + esc(link + i.code) + '">Copiar link</button>') + "</td></tr>"; }).join("") +
+        "</tbody></table></div>" : empty("Nenhum convite ainda", "Gere os primeiros códigos acima.")) + "</div>";
+  };
+  P.invites.after = function () {
+    $("#inv-form").addEventListener("submit", function (e) {
+      e.preventDefault(); var f = e.target, b = f.querySelector("button"); b.disabled = true;
+      Promise.resolve(db.createInvites(+f.n.value, f.note.value)).then(function (codes) { RD.toast((codes || []).length + " convites gerados"); route(); }, function () { b.disabled = false; });
+    });
+    $$("[data-copy-inv]").forEach(function (b) { b.addEventListener("click", function () { RD.copy(b.getAttribute("data-copy-inv")); }); });
+  };
+
   P.settings = function () {
     var L = RD.config.license;
     return head("Configurações", "O que você muda aqui aparece no site na hora") +
@@ -276,7 +297,7 @@
   };
 
   /* ---------- Router ---------- */
-  var TITLES = { dashboard: "Dashboard", players: "Jogadores", transactions: "Transações", bets: "Apostas", kyc: "KYC & Risco", games: "Jogos", promotions: "Promoções", media: "Banners & Imagens", affiliates: "Afiliados", vip: "VIP & Recompensas", settings: "Configurações", audit: "Auditoria" };
+  var TITLES = { dashboard: "Dashboard", players: "Jogadores", transactions: "Transações", bets: "Apostas", kyc: "KYC & Risco", games: "Jogos", promotions: "Promoções", media: "Banners & Imagens", affiliates: "Afiliados", invites: "Convites", vip: "VIP & Recompensas", settings: "Configurações", audit: "Auditoria" };
   var current = "dashboard";
   function route() {
     var parts = (location.hash || "#/dashboard").replace(/^#\/?/, "").split("/");
@@ -293,17 +314,21 @@
     if (!t) { if (e.target.id === "adm-modal") closeAll(); return; }
     if (t.id === "adm-burger") return document.body.classList.toggle("adm-open");
     if (t.id === "adm-backdrop" || t.hasAttribute("data-close") || t.hasAttribute("data-close-drawer")) return closeAll();
-    if (t.id === "adm-logout") { try { sessionStorage.removeItem(SESSION); } catch (x) {} location.reload(); return; }
+    if (t.id === "adm-logout") { try { sessionStorage.removeItem(SESSION); } catch (x) {} Promise.resolve(RD.live && db.adminLogout()).then(function () { location.reload(); }); return; }
     if (t.hasAttribute("data-period")) { period = +t.getAttribute("data-period"); return route(); }
     if (t.hasAttribute("data-player")) { e.preventDefault(); return playerDrawer(t.getAttribute("data-player")); }
     if (t.hasAttribute("data-rm")) { var c = t.getAttribute("data-rm"); db.setSettings({ restricted: RD.config.restrictedCountries.filter(function (x) { return x !== c; }) }); return route(); }
 
     var a = t.getAttribute("data-act"), id = t.getAttribute("data-id");
-    if (a === "approve") { db.decideWithdrawal(id, true); RD.toast("Saque aprovado"); return refreshAfter(); }
+    if (a === "approve") {
+      var ta = db.transactions().filter(function (x) { return x.id === id; })[0] || {};
+      if (RD.live && !confirm(ta.type === "Deposit" ? "Confirmou na Kraken que " + fmt.usd(ta.amount) + " em " + (ta.coin || "") + " chegou (TxID " + (ta.txHash || "") + ")? O saldo será creditado." : "Já enviou " + fmt.usd(ta.amount) + " em " + (ta.coin || "") + " para " + (ta.address || "") + "? Marcar como pago.")) return;
+      return after(db.decideWithdrawal(id, true), ta.type === "Deposit" ? "Depósito aprovado e creditado" : "Saque aprovado");
+    }
     if (a === "reject") {
       var tx = db.transactions().filter(function (x) { return x.id === id; })[0];
-      openModal('<div class="modal-head"><h3>Rejeitar saque ' + id + '</h3><button class="btn btn-ghost btn-icon btn-sm" data-close>' + ic("x") + '</button></div><form id="rej-form"><div class="modal-body"><p class="muted" style="margin-bottom:14px">' + fmt.usd(tx.amount) + " volta para o saldo de <strong>" + esc(tx.user) + '</strong>.</p><div class="field"><label>Motivo (fica na auditoria)</label><input class="input" name="why" required placeholder="Ex.: endereço suspeito"></div></div><div class="modal-foot"><button type="button" class="btn btn-ghost" data-close>Cancelar</button><button class="btn btn-danger">Rejeitar e devolver</button></div></form>');
-      $("#rej-form").addEventListener("submit", function (ev) { ev.preventDefault(); db.decideWithdrawal(id, false, ev.target.why.value); closeAll(); RD.toast("Saque rejeitado e valor devolvido", "error"); refreshAfter(); });
+      openModal('<div class="modal-head"><h3>Rejeitar ' + ((tx && tx.type === "Deposit") ? "depósito " : "saque ") + id + '</h3><button class="btn btn-ghost btn-icon btn-sm" data-close>' + ic("x") + '</button></div><form id="rej-form"><div class="modal-body"><p class="muted" style="margin-bottom:14px">' + fmt.usd(tx.amount) + " volta para o saldo de <strong>" + esc(tx.user) + '</strong>.</p><div class="field"><label>Motivo (fica na auditoria)</label><input class="input" name="why" required placeholder="Ex.: endereço suspeito"></div></div><div class="modal-foot"><button type="button" class="btn btn-ghost" data-close>Cancelar</button><button class="btn btn-danger">Rejeitar e devolver</button></div></form>');
+      $("#rej-form").addEventListener("submit", function (ev) { ev.preventDefault(); closeAll(); after(db.decideWithdrawal(id, false, ev.target.why.value), tx && tx.type === "Deposit" ? "Depósito rejeitado" : "Saque rejeitado e valor devolvido", null, "error"); });
       return;
     }
     if (a === "kyc-ok") { db.setKyc(id, "Verified"); RD.toast("KYC aprovado"); return refreshAfter(id); }
@@ -313,13 +338,13 @@
       return;
     }
     if (a === "resetbets") { if (!confirm("Zerar o histórico de apostas e as estatísticas deste jogador? O saldo não muda.")) return; db.resetBets(id); RD.toast("Apostas zeradas"); return refreshAfter(id); }
-    if (a === "suspend" || a === "unsuspend") { db.setStatus(id, a === "suspend" ? "Suspended" : "Active"); RD.toast("Status atualizado"); return refreshAfter(id); }
+    if (a === "suspend" || a === "unsuspend") return after(db.setStatus(id, a === "suspend" ? "Suspended" : "Active"), "Status atualizado", id);
     if (a === "adjust" || a === "bonus") {
       var pl = db.player(id), isBonus = a === "bonus";
       openModal('<div class="modal-head"><h3>' + (isBonus ? "Dar bônus" : "Ajustar saldo") + " · " + esc(pl.username) + '</h3><button class="btn btn-ghost btn-icon btn-sm" data-close>' + ic("x") + '</button></div><form id="adj-form"><div class="modal-body"><p class="muted" style="margin-bottom:14px">Saldo atual: <strong>' + fmt.usd(pl.balance) + "</strong></p>" +
         (isBonus ? '<input type="hidden" name="type" value="1">' : '<div class="field"><label>Tipo</label><select class="select" name="type"><option value="1">Adicionar saldo</option><option value="-1">Remover saldo</option></select></div>') +
         '<div class="field"><label>Valor (USD)</label><input class="input" name="amt" type="number" min="0.01" step="0.01" required></div><div class="field"><label>Motivo (o jogador vê no extrato, em inglês)</label><input class="input" name="why" required minlength="3" placeholder="' + (isBonus ? "Ex.: VIP reload bonus" : "Ex.: Compensation") + '"></div></div><div class="modal-foot"><button type="button" class="btn btn-ghost" data-close>Cancelar</button><button class="btn btn-primary">Confirmar</button></div></form>');
-      $("#adj-form").addEventListener("submit", function (ev) { ev.preventDefault(); var f = ev.target; db.adjustBalance(pl.id, +f.amt.value * +f.type.value, f.why.value, isBonus ? "Bonus" : "Adjustment"); closeAll(); RD.toast(isBonus ? "Bônus enviado" : "Saldo ajustado"); refreshAfter(pl.id); });
+      $("#adj-form").addEventListener("submit", function (ev) { ev.preventDefault(); var f = ev.target; closeAll(); after(db.adjustBalance(pl.id, +f.amt.value * +f.type.value, f.why.value, isBonus ? "Bonus" : "Adjustment"), isBonus ? "Bônus enviado" : "Saldo ajustado", pl.id); });
       return;
     }
     if (a === "aff-share") {
@@ -355,7 +380,7 @@
 
   /* ---------- Login / primeiro acesso ---------- */
   hydrate(document);
-  function setupMode() { return !db.adminExists(); }
+  function setupMode() { return !RD.live && !db.adminExists(); }
   function renderLogin() {
     var s = setupMode();
     $("#adm-login-intro").innerHTML = s ? '<div class="notice info" style="margin-bottom:16px">' + ic("lock", 16) + "<span><strong>Primeiro acesso.</strong> Crie o e-mail e a senha que vão proteger este painel.</span></div>" : "";
@@ -365,11 +390,19 @@
   }
   function enter() {
     $("#adm-login").classList.add("hidden"); $("#adm").classList.remove("hidden");
-    $("#adm-email").textContent = (db.data().admin || {}).email || "Admin";
+    $("#adm-email").textContent = RD.live ? ((db.live.user || {}).email || "Admin") : ((db.data().admin || {}).email || "Admin");
     window.addEventListener("hashchange", route); route();
   }
   $("#adm-login-form").addEventListener("submit", function (e) {
     e.preventDefault(); var f = e.target; $("#adm-login-error").innerHTML = "";
+    if (RD.live) {
+      var lb = $("#adm-login-btn"); lb.disabled = true;
+      return db.adminLogin(f.email.value, f.pass.value).then(function (r) {
+        lb.disabled = false;
+        if (r.error) { $("#adm-login-error").innerHTML = errorBox(r.error === "This account is not an admin." ? "Esta conta não é de administrador." : r.error === "Wrong email or password." ? "E-mail ou senha incorretos." : r.error); return; }
+        enter();
+      });
+    }
     if (setupMode()) {
       if (f.pass.value !== f.pass2.value) { $("#adm-login-error").innerHTML = errorBox("As senhas não são iguais."); return; }
       db.adminSetup(f.email.value, f.pass.value);
@@ -378,5 +411,10 @@
     enter();
   });
   var logged = false; try { logged = sessionStorage.getItem(SESSION) === "1"; } catch (x) {}
-  if (logged && db.adminExists()) enter(); else renderLogin();
+  if (RD.live) { var envb = $(".adm-env"); if (envb) { envb.textContent = "Modo real"; envb.className = "badge badge-success adm-env"; } }
+  if (RD.live) {
+    renderLogin();
+    $("#adm-login-intro").innerHTML = '<div class="notice info" style="margin-bottom:16px">' + ic("lock", 16) + "<span><strong>Modo real.</strong> Entre com a sua conta de administrador do RDCasino.</span></div>";
+    db.adminSession().then(function (ok) { if (ok) enter(); });
+  } else if (logged && db.adminExists()) enter(); else renderLogin();
 })();
