@@ -63,7 +63,7 @@ RD.img = {
 RD.banners = [
   { id: "welcome", art: "scene:welcome", tag: "Welcome offer", title: "100% bonus up to $1,000", sub: "On your first crypto deposit.", cta: "Claim now", route: "promotions", img: "assets/img/banners/welcome.jpg", c1: "#1d4ed8", c2: "#0b2a6b" },
   { id: "leaderboard", art: "scene:leaderboard", tag: "Monthly race", title: "$50,000 leaderboard", sub: "Top wagerers get paid every month.", cta: "See standings", route: "leaderboard", img: "assets/img/banners/leaderboard.jpg", c1: "#5b3fd6", c2: "#24135f" },
-  { id: "affiliate", art: "scene:affiliate", tag: "Affiliates", title: "Earn up to 50% commission", sub: "Lifetime revenue share, paid in crypto.", cta: "Start earning", route: "affiliate", img: "assets/img/banners/affiliate.jpg", c1: "#0e7490", c2: "#083344" }
+  { id: "affiliate", art: "scene:affiliate", tag: "Affiliates", title: "Earn 15% commission", sub: "Lifetime revenue share, paid in crypto.", cta: "Start earning", route: "affiliate", img: "assets/img/banners/affiliate.jpg", c1: "#0e7490", c2: "#083344" }
 ];
 
 RD.categories = [
@@ -175,11 +175,7 @@ RD.wallet = {
 };
 
 RD.affiliatePlans = [
-  { tier: 1, label: "Starter", min: 0, max: 10, range: "0–10 FTDs / month", share: 25 },
-  { tier: 2, label: "Growth", min: 11, max: 25, range: "11–25 FTDs / month", share: 30 },
-  { tier: 3, label: "Pro", min: 26, max: 50, range: "26–50 FTDs / month", share: 35 },
-  { tier: 4, label: "Elite", min: 51, max: 100, range: "51–100 FTDs / month", share: 40 },
-  { tier: 5, label: "Partner", min: 101, max: Infinity, range: "100+ FTDs / month", share: 50 }
+  { tier: 1, label: "Standard", min: 0, max: Infinity, range: "Every player you refer", share: 15 }
 ];
 
 RD.affiliateAssets = [
