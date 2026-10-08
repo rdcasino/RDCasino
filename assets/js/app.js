@@ -109,7 +109,7 @@
     if (state.walletTab === "deposit") {
       h = coins + nets +
         '<div class="notice info" style="margin-bottom:16px">' + ic("help", 16) + "<span>Your personal " + c.sym + " (" + state.net + ") deposit address appears here once the crypto payment processor is connected.</span></div>" +
-        '<div class="field"><label>Test mode: simulate a confirmed deposit</label><div class="input-group"><input type="number" min="1" step="0.01" placeholder="Amount in USD" id="dep-amt"><button class="btn btn-primary btn-sm" data-action="sim-deposit">Deposit</button></div><span class="hint">Credits your balance instantly, as the processor would after the blockchain confirms.</span></div><div id="dep-msg"></div>';
+        '<div class="field"><label>Test mode: simulate a confirmed deposit</label><div class="input-group"><input type="number" min="' + RD.config.minDeposit + '" step="0.01" placeholder="Min. $' + RD.config.minDeposit + '" id="dep-amt"><button class="btn btn-primary btn-sm" data-action="sim-deposit">Deposit</button></div><span class="hint">Minimum deposit: $' + RD.config.minDeposit + '. Credits your balance instantly, as the processor would after the blockchain confirms.</span></div><div id="dep-msg"></div>';
     } else if (state.walletTab === "withdraw") {
       h = coins + nets + '<div id="wd-msg"></div>' +
         '<div class="field"><label>Destination address</label><input class="input" id="wd-addr" placeholder="Paste your ' + c.sym + ' address"></div>' +

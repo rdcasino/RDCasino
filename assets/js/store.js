@@ -136,6 +136,7 @@
 
     /* ---------- carteira ---------- */
     deposit: function (pid, amount, coin) {
+      if (!(amount >= (RD.config.minDeposit || 0))) return { error: "Minimum deposit is $" + (RD.config.minDeposit || 0) + "." };
       var p = byId(pid); if (!p) return { error: "Not signed in." };
       if (p.status !== "Active") return { error: "Your account is suspended." };
       if (!(amount > 0)) return { error: "Enter an amount." };
