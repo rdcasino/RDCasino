@@ -1685,7 +1685,7 @@
         side: selectField("ck-diff", "Difficulty", [["easy", "Easy"], ["medium", "Medium"], ["hard", "Hard"], ["expert", "Expert"]], ogPrefs.ckDiff || "easy") +
           '<div id="ck-live" class="hidden">' + profitField("Total profit") + "</div>",
         after: '<button class="btn btn-secondary btn-block hidden" id="ck-go" style="height:42px">Cross next lane</button>',
-        center: '<div class="ck"><div class="ck-road" id="ck-road"></div><div class="ck-note" id="ck-note"></div></div>'
+        center: '<div class="ck"><div class="ck-road" id="ck-road"></div></div>'
       };
     },
     bind: function (ctx) {
@@ -1704,7 +1704,6 @@
         road.innerHTML = html + '<div class="ck-lane ck-end"><span class="ck-flag">RD FINISH</span></div>';
         var at = road.querySelector(".here, .dead") || road.querySelector(".ck-start");
         if (at && road.scrollWidth > road.clientWidth) road.scrollTo({ left: Math.max(0, at.offsetLeft - road.clientWidth / 2 + at.offsetWidth / 2), behavior: "smooth" });
-        $("#ck-note").textContent = round ? "Next lane pays " + (T.mult[steps + 1] ? T.mult[steps + 1].toFixed(2) + "×" : "—") + " · " + T.bones + " of 20 lanes hide a car" : T.bones + " of 20 lanes hide a car · up to " + T.mult[lanes].toLocaleString("en-US") + "×";
       }
       function refresh() {
         if (round) { var m = multNow(); ctx.setProfit(m, m.toFixed(2)); var p = $("#og-profit"); if (p) p.value = (round.amount * (m - 1)).toFixed(2); }
@@ -1860,7 +1859,7 @@
         side: selectField("sc-diff", "Difficulty", [["easy", "Easy"], ["medium", "Medium"], ["hard", "Hard"], ["expert", "Expert"]], ogPrefs.scDiff || "medium") +
           '<div id="sc-live" class="hidden">' + profitField("Total profit") + "</div>",
         after: '<button class="btn btn-secondary btn-block hidden" id="sc-random" style="height:42px">Random shot</button>',
-        center: '<div class="sc"><div class="sc-pitch">' + soccerScene() + '<div class="sc-flash hidden" id="sc-flash"></div></div><div class="ladder" id="sc-ladder"></div><div class="sc-note" id="sc-note"></div></div>'
+        center: '<div class="sc"><div class="sc-pitch">' + soccerScene() + '<div class="sc-flash hidden" id="sc-flash"></div></div><div class="ladder" id="sc-ladder"></div></div>'
       };
     },
     bind: function (ctx) {
@@ -1872,7 +1871,6 @@
         if (kp) kp.style.setProperty("--kit", SC_KIT[round ? round.diff : diff()]);
         box.innerHTML = t.mult.slice(1).map(function (m, i) { return '<span class="' + (i < g ? "done" : i === g && round ? "next" : "") + '">' + m.toFixed(2) + "×</span>"; }).join("");
         var nx = box.querySelector(".next") || box.querySelector(".done:last-of-type"); if (nx && box.scrollWidth > box.clientWidth) box.scrollTo({ left: Math.max(0, nx.offsetLeft - box.clientWidth / 2), behavior: "smooth" });
-        $("#sc-note").textContent = "Keeper covers " + t.block + " of 5 corners · " + Math.round((5 - t.block) / 5 * 100) + "% to score · up to " + t.mult[t.kicks].toLocaleString("en-US") + "×";
       }
       function refresh() {
         var t = T();
