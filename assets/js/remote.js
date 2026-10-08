@@ -65,6 +65,8 @@
       var txs = (r[1].data || []).map(function (t) { return mapTx(t, prof.username); });
       var me = mapProfile(prof, state.user.email, txs), s = r[3].data;
       if (s) me.seeds = { server: "", hash: s.server_hash, client: s.client_seed, nonce: +s.nonce, revealed: s.revealed || [] };
+      /* um saldo só na tela (o total); wallet guarda de qual cripto veio cada valor */
+      me.wallet = prof.wallet || {}; me.coin = prof.active_coin || "USDT"; me.total = me.balance;
       me.reloadGrant = mapReload(r[5].data);
       me.kycInfo = mapKyc(r[6].data); if (me.kycInfo && me.kyc === "Rejected") me.kycReason = me.kycInfo.reason;
       Object.keys(rounds).forEach(function (k) { delete rounds[k]; });
@@ -176,6 +178,7 @@
           if (nonce > lastNonce) {
             lastNonce = nonce;
             me.balance = n(pr.balance); me.wagered = n(pr.wagered); me.profit = n(pr.profit); me.bets = +pr.bets; me.rakeback = +pr.rakeback;
+            if (pr.wallet) { me.wallet = pr.wallet; me.coin = pr.coin; me.total = n(pr.total); }
             me.seeds.nonce = nonce + 1;
           }
           D.bets.unshift(bet); if (D.bets.length > 500) D.bets.length = 500;
@@ -188,7 +191,9 @@
   var SOON = { error: "Not available yet." };
   db.placeBet = function () { return SOON; };
   var rounds = {}, lastBet = {};
-  function applyProfile(pr) { var me = db.current(); if (!me || !pr) return; me.balance = n(pr.balance); me.wagered = n(pr.wagered); me.profit = n(pr.profit); me.bets = +pr.bets; me.rakeback = +pr.rakeback; me.held = n(pr.held); }
+  /* trocar a moeda usada nas apostas (não deixa com jogo aberto) */
+  db.setCoin = function (coin) { return sb.rpc("set_active_coin", { p_coin: coin }).then(function (r) { if (r.error) return { error: msg(r.error) }; applyProfile(r.data); db.emit(); return { ok: true }; }); };
+  function applyProfile(pr) { var me = db.current(); if (!me || !pr) return; if (pr.wallet) { me.wallet = pr.wallet; me.coin = pr.coin; me.total = n(pr.total); } me.balance = n(pr.balance); me.wagered = n(pr.wagered); me.profit = n(pr.profit); me.bets = +pr.bets; me.rakeback = +pr.rakeback; me.held = n(pr.held); }
   function mapBet(b, game, r) { var me = db.current() || {}; return { id: "B-" + b.id, userId: me.id, user: me.username, game: game, amount: n(b.amount), multiplier: +b.multiplier, payout: n(b.payout), date: b.created_at, detail: Object.assign({ nonce: r ? r.nonce : undefined, client: r ? r.client : undefined }, b.detail || {}) }; }
   function syncRounds() { var me = db.current(); if (me) me.rounds = rounds; }
   db.activeRound = function (pid, game) { return rounds[game] || null; };

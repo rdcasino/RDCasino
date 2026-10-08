@@ -57,10 +57,10 @@
     if (!b || !(b.id in inFlight)) return; delete inFlight[b.id];
     var el = $("#hdr-bal"); if (el && b.payout > 0) { el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); }
   }
-  /* Moeda de exibição do saldo: um saldo só (em dólar por dentro), mostrado em USD, BRL, ARS, CAD...
-     O câmbio vem do servidor (tabela prices, "FX:BRL" = quantos reais valem 1 dólar). */
-  var disp = { cur: "USD" };
-  try { var dj = JSON.parse(localStorage.getItem("rd_cur") || "null"); if (dj && dj.cur) disp = dj; } catch (e) {}
+  /* Saldo por moeda (estilo Razed): cada cripto tem o seu saldo; as apostas usam a moeda ativa.
+     Os valores ficam em dólar no servidor; aqui mostramos em unidades da moeda ou em fiat (USD, BRL, ARS...). */
+  var disp = { cur: "USD", fiat: true, hideZero: false };
+  try { var dj = JSON.parse(localStorage.getItem("rd_cur") || "null"); if (dj && dj.cur) { disp.cur = dj.cur; disp.fiat = dj.fiat !== false; disp.hideZero = !!dj.hideZero; } } catch (e) {}
   function saveDisp() { try { localStorage.setItem("rd_cur", JSON.stringify(disp)); } catch (e) {} }
   function fxRate(c) { return c === "USD" ? 1 : RD.prices["FX:" + c] || 0; }
   function curInfo(c) { return RD.fiats.filter(function (f) { return f[0] === c; })[0] || RD.fiats[0]; }
@@ -69,19 +69,31 @@
     var f = curInfo(c), dec = f[3] === 0 ? 0 : 2;
     return f[1] + (usd * r).toLocaleString(f[4] || "en-US", { minimumFractionDigits: dec, maximumFractionDigits: dec });
   }
+  function coinDec(c) { var p = RD.prices[c] || 1; return p >= 1000 ? 8 : p >= 50 ? 6 : p >= 5 ? 4 : 2; }
+  function inCoin(usd, c) { var p = RD.prices[c] || 1; return (usd / p).toLocaleString("en-US", { minimumFractionDigits: coinDec(c), maximumFractionDigits: coinDec(c) }); }
+  function showAmt(usd, c) { return disp.fiat ? inCur(usd, disp.cur) : inCoin(usd, c); }
+  function coinDot(c) { return '<span class="coin-dot" style="background:' + (COIN_COLORS[c] || "#666") + '">' + (c === "USDT" ? "₮" : c === "BTC" ? "₿" : c === "ETH" ? "Ξ" : c[0]) + "</span>"; }
+  function walletOf(u) { var w = {}; if (u.wallet) for (var k in u.wallet) w[k] = +u.wallet[k] || 0; w[u.coin || "USDT"] = u.balance; return w; }
+  var BAL_IC = '<svg viewBox="0 0 24 24" class="bal-ic"><circle cx="9" cy="9" r="6.5" fill="#22d3ee"/><circle cx="9" cy="9" r="4.2" fill="none" stroke="#0b3d91" stroke-width="1.4"/><circle cx="15" cy="15" r="6.5" fill="#1f8fff" stroke="#0d1a30" stroke-width="1.5"/><path d="M15 11.5v7M13 13.2h3a1.3 1.3 0 0 1 0 2.6h-2a1.3 1.3 0 0 0 0 2.6h3" fill="none" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/></svg>';
   function paintBal(u) {
     var v = shownBal(u), el = $("#hdr-bal"), tag = $("#hdr-coin");
     if (!fxRate(disp.cur)) disp.cur = "USD";
     el.textContent = inCur(v, disp.cur);
-    if (tag) tag.textContent = disp.cur;
+    if (tag && !tag.firstChild) tag.innerHTML = BAL_IC;
     if (!$("#bal-menu").classList.contains("hidden")) renderBalMenu();
   }
+  /* um saldo só (como na Shuffle), mostrado na moeda que o jogador escolher */
   function renderBalMenu() {
-    var u = me(); if (!u) return; var v = shownBal(u);
-    $("#bal-menu").innerHTML = '<div class="bm-title">Display currency</div><div class="bm-list">' + RD.fiats.filter(function (f) { return fxRate(f[0]); }).map(function (f) {
-      return '<button class="bm-row' + (f[0] === disp.cur ? " active" : "") + '" data-disp-cur="' + f[0] + '"><span class="bm-sym">' + f[1].trim() + '</span><span class="grow"><b>' + f[0] + "</b><small>" + f[2] + '</small></span><span class="bm-amt"><b class="num">' + inCur(v, f[0]) + "</b></span></button>";
-    }).join("") + "</div>";
+    var u = me(); if (!u) return;
+    $("#bal-menu").innerHTML = '<div class="bm-one">' + BAL_IC + '<b class="num">' + inCur(shownBal(u), disp.cur) + "</b></div>" +
+      '<div class="bm-title">Display currency</div><div class="bm-cur"><select class="select" data-disp-cur>' + RD.fiats.filter(function (f) { return fxRate(f[0]); }).map(function (f) { return '<option value="' + f[0] + '"' + (f[0] === disp.cur ? " selected" : "") + ">" + f[0] + " · " + f[2] + "</option>"; }).join("") + "</select></div>";
   }
+  document.addEventListener("change", function (e) {
+    var t = e.target; if (!t.hasAttribute) return;
+    if (t.hasAttribute("data-disp-fiat")) { disp.fiat = t.checked; saveDisp(); renderHeader(); renderBalMenu(); }
+    else if (t.hasAttribute("data-disp-zero")) { disp.hideZero = t.checked; saveDisp(); renderBalMenu(); }
+    else if (t.hasAttribute("data-disp-cur")) { disp.cur = t.value; saveDisp(); renderHeader(); renderBalMenu(); }
+  });
   RD.onPrices = function () { var u = me(); if (u) paintBal(u); };
   function renderHeader() {
     var u = me();
@@ -201,6 +213,9 @@
   var CHIPS = [[0.1, "#8a93a6"], [1, "#3b82f6"], [5, "#e11d48"], [10, "#16a34a"], [25, "#f59e0b"], [100, "#1f1a24"], [500, "#8b5cf6"]];
   function chipColor(v) { var c = CHIPS[0][1]; CHIPS.forEach(function (x) { if (v >= x[0] - 0.001) c = x[1]; }); return c; }
   function chipRack() { return '<div class="chip-rack">' + CHIPS.map(function (c) { return '<button type="button" class="chip-r" data-chip="' + c[0] + '" style="--cc:' + c[1] + '"><span>' + (c[0] < 1 ? "0.1" : c[0]) + "</span></button>"; }).join("") + "</div>"; }
+  /* Escada de multiplicadores (Door, Soccer, Rock Paper Scissors): um cartão por etapa */
+  function ladderWin(mults, done, live) { var start = Math.max(0, Math.min(done - 1, mults.length - 7)); return mults.slice(start, start + 7).map(function (m, k) { var i = start + k; return ladderStep(i + 1, m, i < done ? "done" : i === done && live ? "next" : ""); }).join(""); }
+  function ladderStep(n, m, cls) { return '<span class="lstep' + (cls ? " " + cls : "") + '"><i>' + (cls === "done" ? '<svg viewBox="0 0 24 24" width="11" height="11"><path d="M5 13l4 4L19 7" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>' : n) + "</i><b>" + (m >= 1000 ? (m / 1000).toFixed(m >= 10000 ? 0 : 1) + "k" : m.toFixed(2)) + "×</b></span>"; }
   function sectionHead(title, icon, link) {
     return '<div class="section-head"><h2>' + (icon ? ic(icon, 18) : "") + title + "</h2>" + (link ? '<a class="see-all" href="' + link + '">View all' + ic("chevronRight") + "</a>" : "") + "</div>";
   }
@@ -1230,13 +1245,15 @@
       var tiles = ""; for (var i = 1; i <= 40; i++) tiles += '<button class="kn-tile" data-kn="' + i + '">' + i + "</button>";
       return {
         auto: true,
-        side: selectField("kn-risk", "Risk", [["classic", "Classic"], ["low", "Low"], ["medium", "Medium"], ["high", "High"]], ogPrefs.knRisk || "classic"),
+        side: selectField("kn-risk", "Risk", [["classic", "Classic"], ["low", "Low"], ["medium", "Medium"], ["high", "High"]], ogPrefs.knRisk || "classic") +
+          '<label class="og-turbo"><span>' + ic("zap", 15) + 'Turbo</span><input type="checkbox" id="kn-turbo"' + (ogPrefs.knTurbo ? " checked" : "") + '><i class="sw"></i></label>',
         after: '<div class="ogx-row2"><button class="btn btn-secondary" style="height:42px" id="kn-auto">Auto pick</button><button class="btn btn-secondary" style="height:42px" id="kn-clear">Clear</button></div>',
         center: '<div class="kn"><div class="kn-grid" id="kn-grid">' + tiles + '</div><div class="kn-pay" id="kn-pay"></div></div>'
       };
     },
     bind: function (ctx) {
       var picks = (ogPrefs.knPicks || []).slice(0, 10), busyK = false;
+      $("#kn-turbo").addEventListener("change", function () { ogPrefs.knTurbo = this.checked; savePrefs(); });
       function risk() { return $("#kn-risk").value; }
       function paint(drawn, hitsShown) {
         if (!$("#kn-pay")) return;
@@ -1280,7 +1297,7 @@
             (function next() {
               if (!$("#kn-grid")) { busyK = false; return res({ win: m > 1 }); }
               i++; paint(drawn.slice(0, i), i === 10 ? hits : null); RD.sfx.play(picks.indexOf(drawn[i - 1]) > -1 ? "gem" : "tick", 0);
-              if (i < 10) return setTimeout(next, 70);
+              if (i < 10) return setTimeout(next, ogPrefs.knTurbo ? 45 : 190); // ritmo normal parecido com a Stake; Turbo = rápido
               busyK = false; ctx.lock(false); ctx.record(b); res({ win: m > 1 });
             })();
           });
@@ -1546,7 +1563,7 @@
         auto: true, amountLabel: "Chip value",
         side: '<div><div class="ogx-label">Total bet</div><div class="ogx-input ro"><span class="cur">$</span><input id="rl-total" readonly value="0.00"></div></div>',
         after: '<div class="ogx-row2"><button class="btn btn-secondary" style="height:42px" id="rl-undo">Undo</button><button class="btn btn-secondary" style="height:42px" id="rl-clear">Clear</button></div>',
-        center: '<div class="rl"><div class="rl-top"><div class="rl-wheel"><div class="wh-pointer"></div><svg viewBox="-110 -110 220 220"><g id="rl-rot"></g><g id="rl-ball" class="hidden"><circle r="5.2" fill="#000" opacity=".35" cx="1" cy="1.5"/><circle r="5.2" fill="#f4f1ee"/><circle r="1.8" cx="-1.6" cy="-1.6" fill="#fff"/></g></svg><div class="rl-out" id="rl-out"></div></div></div><div class="rl-table" id="rl-table">' + grid + "</div></div>"
+        center: '<div class="rl"><div class="rl-top"><div class="rl-wheel"><div class="wh-pointer"></div><svg viewBox="-112 -112 224 224"><defs><linearGradient id="rlWood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7a4a24"/><stop offset=".5" stop-color="#4a2a12"/><stop offset="1" stop-color="#2a170a"/></linearGradient><radialGradient id="rlTrack" r=".5"><stop offset=".88" stop-color="#1a1410"/><stop offset="1" stop-color="#3a2a1c"/></radialGradient></defs><circle r="111" fill="url(#rlWood)"/><circle r="111" fill="none" stroke="#c9a24a" stroke-width="1.5"/><circle r="109" fill="url(#rlTrack)"/><circle r="101.5" fill="none" stroke="#c9a24a" stroke-opacity=".7" stroke-width="1"/><g id="rl-rot"></g><g id="rl-ball" class="hidden"><circle r="5.2" fill="#000" opacity=".35" cx="1" cy="1.5"/><circle r="5.2" fill="#f4f1ee"/><circle r="1.8" cx="-1.6" cy="-1.6" fill="#fff"/></g></svg><div class="rl-out" id="rl-out"></div></div></div><div class="rl-table" id="rl-table">' + grid + "</div></div>"
       };
     },
     bind: function (ctx) {
@@ -1559,19 +1576,28 @@
         (function step(now) {
           if (!document.contains(b)) return;
           var k = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - k, 3);
-          var angle = -360 * turns * (1 - e), radius = k < 0.62 ? 101 : k < 0.86 ? 101 - (k - 0.62) / 0.24 * 19 + Math.sin(k * 60) * 2.2 * (0.86 - k) / 0.24 : 82;
+          var angle = -360 * turns * (1 - e), radius = k < 0.62 ? 106 : k < 0.86 ? 106 - (k - 0.62) / 0.24 * 32 + Math.sin(k * 60) * 2.2 * (0.86 - k) / 0.24 : 74;
           ballAt(angle, radius);
           if (k < 1) requestAnimationFrame(step);
         })(t0);
       }
       (function wheel() {
-        var out = "", N = 37, R = 104, r = 74;
+        /* roda realista: casas numeradas com divisórias douradas, anel interno, cone de madeira e torre dourada */
+        var out = "", frets = "", N = 37, R = 100, r = 79, r2 = 68;
         RL_ORDER.forEach(function (n, i) {
           var a0 = (i / N) * 2 * Math.PI - Math.PI / 2, a1 = ((i + 1) / N) * 2 * Math.PI - Math.PI / 2, am = (a0 + a1) / 2;
-          out += '<path d="M' + (R * Math.cos(a0)).toFixed(2) + " " + (R * Math.sin(a0)).toFixed(2) + " A" + R + " " + R + " 0 0 1 " + (R * Math.cos(a1)).toFixed(2) + " " + (R * Math.sin(a1)).toFixed(2) + " L" + (r * Math.cos(a1)).toFixed(2) + " " + (r * Math.sin(a1)).toFixed(2) + " A" + r + " " + r + " 0 0 0 " + (r * Math.cos(a0)).toFixed(2) + " " + (r * Math.sin(a0)).toFixed(2) + 'Z" fill="' + (n === 0 ? "#16a34a" : RL_RED.indexOf(n) > -1 ? "#d61f45" : "#1a1218") + '" stroke="#c9a24a" stroke-width=".6"/>' +
-            '<text x="' + (89 * Math.cos(am)).toFixed(2) + '" y="' + (89 * Math.sin(am)).toFixed(2) + '" font-size="7" font-weight="800" fill="#fff" text-anchor="middle" dominant-baseline="central" transform="rotate(' + ((am * 180) / Math.PI + 90).toFixed(1) + " " + (89 * Math.cos(am)).toFixed(2) + " " + (89 * Math.sin(am)).toFixed(2) + ')">' + n + "</text>";
+          var col = n === 0 ? "#16a34a" : RL_RED.indexOf(n) > -1 ? "#d61f45" : "#15121a";
+          var P = function (rr, a) { return (rr * Math.cos(a)).toFixed(2) + " " + (rr * Math.sin(a)).toFixed(2); };
+          out += '<path d="M' + P(R, a0) + " A" + R + " " + R + " 0 0 1 " + P(R, a1) + " L" + P(r, a1) + " A" + r + " " + r + " 0 0 0 " + P(r, a0) + 'Z" fill="' + col + '"/>' +
+            '<path d="M' + P(r, a0) + " A" + r + " " + r + " 0 0 1 " + P(r, a1) + " L" + P(r2, a1) + " A" + r2 + " " + r2 + " 0 0 0 " + P(r2, a0) + 'Z" fill="' + col + '" opacity=".55"/>' +
+            '<text x="' + (90 * Math.cos(am)).toFixed(2) + '" y="' + (90 * Math.sin(am)).toFixed(2) + '" font-size="7.4" font-weight="800" fill="#fff" text-anchor="middle" dominant-baseline="central" transform="rotate(' + ((am * 180) / Math.PI + 90).toFixed(1) + " " + (90 * Math.cos(am)).toFixed(2) + " " + (90 * Math.sin(am)).toFixed(2) + ')" style="font-family:var(--font-display,Arial)">' + n + "</text>";
+          frets += '<path d="M' + P(R, a0) + " L" + P(r2, a0) + '"/>';
         });
-        $("#rl-rot").innerHTML = '<circle r="108" fill="#c9a24a"/><circle r="105" fill="#2a1a12"/>' + out + '<circle r="74" fill="#3a2214"/><circle r="50" fill="#4a2c1a"/><circle r="16" fill="#c9a24a"/>';
+        $("#rl-rot").innerHTML = '<defs><radialGradient id="rlCone" cx=".42" cy=".38" r=".75"><stop offset="0" stop-color="#8a5a32"/><stop offset=".6" stop-color="#5a3519"/><stop offset="1" stop-color="#2e1a0b"/></radialGradient><linearGradient id="rlGold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe9a6"/><stop offset=".5" stop-color="#d4a73c"/><stop offset="1" stop-color="#8a6416"/></linearGradient></defs>' +
+          '<circle r="' + R + '" fill="#0d0a10"/>' + out + '<g stroke="url(#rlGold)" stroke-width="1.1" opacity=".9">' + frets + "</g>" +
+          '<circle r="' + R + '" fill="none" stroke="url(#rlGold)" stroke-width="1.6"/><circle r="' + r + '" fill="none" stroke="url(#rlGold)" stroke-width="1.2"/><circle r="' + r2 + '" fill="none" stroke="url(#rlGold)" stroke-width="1.6"/>' +
+          '<circle r="' + (r2 - 1) + '" fill="url(#rlCone)"/><circle r="44" fill="none" stroke="#000" stroke-opacity=".25" stroke-width="2"/>' +
+          '<g fill="url(#rlGold)"><rect x="-3" y="-34" width="6" height="68" rx="3"/><rect x="-34" y="-3" width="68" height="6" rx="3"/><circle cx="0" cy="-34" r="5"/><circle cx="0" cy="34" r="5"/><circle cx="-34" cy="0" r="5"/><circle cx="34" cy="0" r="5"/><circle r="11"/></g><circle r="5" fill="#fff6d6" opacity=".8"/>';
         $("#rl-rot").style.transform = "rotate(" + rot + "deg)";
       })();
       function total() { var t = 0; for (var k in bets) t += bets[k]; return Math.round(t * 100) / 100; }
@@ -1951,7 +1977,7 @@
       function ladder() {
         var t = T(), g = round ? round.goals : 0, box = $("#sc-ladder"), kp = $("#sc-keeper"); if (!box) return;
         if (kp) kp.style.setProperty("--kit", SC_KIT[round ? round.diff : diff()]);
-        box.innerHTML = t.mult.slice(1).map(function (m, i) { return '<span class="' + (i < g ? "done" : i === g && round ? "next" : "") + '">' + m.toFixed(2) + "×</span>"; }).join("");
+        box.innerHTML = ladderWin(t.mult.slice(1), g, !!round);
         var nx = box.querySelector(".next") || box.querySelector(".done:last-of-type"); if (nx && box.scrollWidth > box.clientWidth) box.scrollTo({ left: Math.max(0, nx.offsetLeft - box.clientWidth / 2), behavior: "smooth" });
       }
       function refresh() {
@@ -2076,7 +2102,7 @@
       }
       function ladder() {
         var c = C(), lv = round ? round.level : 0, box = $("#dr-ladder"); if (!box) return;
-        box.innerHTML = c.mult.slice(1).map(function (m, i) { return '<span class="' + (i < lv ? "done" : i === lv && round ? "next" : "") + '">' + m.toFixed(2) + "×</span>"; }).join("");
+        box.innerHTML = ladderWin(c.mult.slice(1), lv, !!round);
         var nx = box.querySelector(".next"); if (nx && box.scrollWidth > box.clientWidth) box.scrollTo({ left: Math.max(0, nx.offsetLeft - box.clientWidth / 2), behavior: "smooth" });
       }
       function refresh() {
@@ -2229,21 +2255,21 @@
       return {
         side: '<div id="rps-live" class="hidden">' + profitField("Total profit") + "</div>",
         center: '<div class="rps"><div class="rps-ladder" id="rps-ladder"></div>' +
-          '<div class="rps-arena" id="rps-arena"><div class="rps-hand house" id="rps-house"></div><div class="rps-vs" id="rps-vs">VS</div><div class="rps-hand you" id="rps-you"></div><div class="rps-fx" id="rps-fx"></div></div>' +
-          '<div class="rps-picks">' + RPS.map(function (k) { return '<button class="rps-pick" data-rps="' + k + '" disabled><span class="rps-badge sm">' + RPS_E[k] + "</span><small>" + k[0].toUpperCase() + k.slice(1) + "</small></button>"; }).join("") + "</div>" +
+          '<div class="rps-duel" id="rps-arena"><div class="rps-side you" id="rps-you"><span class="rps-who">You</span><div class="rps-obj">' + RD.art.rpsArt("rock") + '</div></div><div class="rps-vs" id="rps-vs">VS</div><div class="rps-side house" id="rps-house"><span class="rps-who">House</span><div class="rps-obj">' + RD.art.rpsArt("rock") + "</div></div></div>" +
+          '<div class="rps-picks">' + RPS.map(function (k) { return '<button class="rps-pick" data-rps="' + k + '" disabled><span class="rps-pic">' + RD.art.rpsArt(k) + "</span><small>" + k[0].toUpperCase() + k.slice(1) + "</small></button>"; }).join("") + "</div>" +
           '<div class="rps-hist" id="rps-hist"></div></div>'
       };
     },
     bind: function (ctx) {
       var G = "rps", round = null, busy = false; // round: { amount, throws:[{p,h,r}], wins }
-      function hand(el, k, cls) { if (!el) return; var e = RPS_E[k || "rock"]; el.className = "rps-hand " + (el.id === "rps-house" ? "house" : "you") + (cls ? " " + cls : ""); el.innerHTML = '<div class="in"><span class="rps-badge">' + e + "</span></div>"; }
+      function hand(el, k, cls) { if (!el) return; el.className = "rps-side " + (el.id === "rps-house" ? "house" : "you") + (cls ? " " + cls : ""); var o = el.querySelector(".rps-obj"); if (o) o.innerHTML = RD.art.rpsArt(k || "rock"); }
       function ladder() {
         var box = $("#rps-ladder"); if (!box) return; var w = round ? round.wins : 0, html = "";
-        for (var i = 1; i <= 10; i++) html += '<span class="' + (i <= w ? "done" : i === w + 1 && round ? "next" : "") + '">' + rpsMult(i).toFixed(2) + "×</span>";
+        var ms = []; for (var i = 1; i <= 10; i++) ms.push(rpsMult(i)); html = ladderWin(ms, w, !!round);
         box.innerHTML = html;
         var cur = box.querySelector(".next") || box.querySelector(".done:last-of-type"); if (cur && box.scrollWidth > box.clientWidth) box.scrollLeft = cur.offsetLeft - box.clientWidth / 2;
       }
-      function hist() { var h = $("#rps-hist"); if (!h) return; h.innerHTML = round ? round.throws.map(function (t) { return '<span class="' + t.r + '" title="' + t.p + " vs " + t.h + '">' + RPS_E[t.r === "lose" ? t.h : t.p] + "</span>"; }).join("") : ""; } /* só o sinal que venceu: verde = você, vermelho = casa, amarelo = empate */
+      function hist() { var h = $("#rps-hist"); if (!h) return; h.innerHTML = round ? round.throws.map(function (t) { return '<span class="' + t.r + '" title="' + t.p + " vs " + t.h + '">' + RD.art.rpsArt(t.r === "lose" ? t.h : t.p) + "</span>"; }).join("") : ""; } /* só o sinal que venceu: verde = você, vermelho = casa, amarelo = empate */
       function setLive(on) {
         if (!$("#rps-live")) return;
         $("#rps-live").classList.toggle("hidden", !on); ctx.lock(on);
@@ -2259,24 +2285,24 @@
       }
       /* Animação: as duas mãos batem 3 vezes como punho, mostram a jogada e o vencedor ataca:
          tesoura corta o papel, pedra esmaga a tesoura, papel embrulha a pedra. */
+      /* Duelo: os dois lados embaralham pedra/papel/tesoura, param na jogada e o vencedor brilha */
       function animate(p, h, res) {
-        var you = $("#rps-you"), house = $("#rps-house"), fx = $("#rps-fx"), arena = $("#rps-arena"); if (!arena) return Promise.resolve();
-        hand(you, "rock", "shake"); hand(house, "rock", "shake"); fx.className = "rps-fx"; fx.textContent = ""; $("#rps-vs").className = "rps-vs";
+        var you = $("#rps-you"), house = $("#rps-house"), arena = $("#rps-arena"); if (!arena) return Promise.resolve();
+        var vs = $("#rps-vs"); vs.className = "rps-vs"; vs.textContent = "VS";
         return new Promise(function (done) {
-          setTimeout(function () {
+          var n = 0, seq = ["rock", "paper", "scissors"];
+          (function roll() {
             if (!document.contains(arena)) return done();
-            hand(you, p, "show"); hand(house, h, "show");
+            if (n < 9) { hand(you, seq[n % 3], "rolling"); hand(house, seq[(n + 1) % 3], "rolling"); RD.sfx.play("tick", 0); n++; return setTimeout(roll, 85 + n * 9); }
+            hand(you, p, "show"); hand(house, h, "show"); RD.sfx.play("card");
             setTimeout(function () {
               if (!document.contains(arena)) return done();
-              if (res === "tie") { hand(you, p, "bump"); hand(house, h, "bump"); $("#rps-vs").className = "rps-vs tie"; $("#rps-vs").textContent = "TIE"; return setTimeout(done, 650); }
-              var winEl = res === "win" ? you : house, loseEl = res === "win" ? house : you, wk = res === "win" ? p : h;
-              var fxName = wk === "scissors" ? "cut" : wk === "rock" ? "smash" : "wrap";
-              hand(winEl, wk, "attack " + (winEl === you ? "up" : "down")); hand(loseEl, res === "win" ? h : p, "hit " + fxName);
-              fx.className = "rps-fx impact " + (res === "win" ? "at-house" : "at-you"); fx.innerHTML = "";
-              $("#rps-vs").className = "rps-vs " + res; $("#rps-vs").textContent = res === "win" ? "WIN" : "LOSE";
-              setTimeout(done, 750);
-            }, 280);
-          }, 900);
+              if (res === "tie") { hand(you, p, "tie"); hand(house, h, "tie"); vs.className = "rps-vs tie"; vs.textContent = "TIE"; return setTimeout(done, 700); }
+              hand(you, p, res === "win" ? "win" : "lose"); hand(house, h, res === "win" ? "lose" : "win");
+              vs.className = "rps-vs " + res; vs.textContent = res === "win" ? "WIN" : "LOSE";
+              setTimeout(done, 800);
+            }, 260);
+          })();
         });
       }
       function pick(p) {
@@ -2306,7 +2332,7 @@
         rStart(u, G, a, { throws: [], wins: 0 }).then(function (r) { busy = false; if (r.error) return ctx.msg(r.error); started(a); });
       }
       function started(a) {
-        round = { amount: a, throws: [], wins: 0 }; renderHeader(); ctx.refresh(); hand($("#rps-you"), "rock"); hand($("#rps-house"), "rock"); $("#rps-vs").className = "rps-vs"; $("#rps-vs").textContent = "VS"; $("#rps-fx").className = "rps-fx"; setLive(true);
+        round = { amount: a, throws: [], wins: 0 }; renderHeader(); ctx.refresh(); hand($("#rps-you"), "rock"); hand($("#rps-house"), "rock"); $("#rps-vs").className = "rps-vs"; $("#rps-vs").textContent = "VS"; setLive(true);
       }
       hand($("#rps-you"), "rock"); hand($("#rps-house"), "rock"); ladder();
       return {
@@ -2971,7 +2997,7 @@
 
   /* ---------- Events ---------- */
   document.addEventListener("click", function (e) {
-    var t = e.target.closest("[data-open],[data-close],[data-drawer],[data-close-drawer],[data-action],[data-copy],[data-auth],[data-wtab],[data-coin],[data-net],[data-btab],[data-level],[data-promo],[data-tip-user],[data-disp-cur],#user-btn,#bal-btn,#burger,#bn-menu,#sb-backdrop");
+    var t = e.target.closest("[data-open],[data-close],[data-drawer],[data-close-drawer],[data-action],[data-copy],[data-auth],[data-wtab],[data-coin],[data-net],[data-btab],[data-level],[data-promo],[data-tip-user],[data-disp-coin],#user-btn,#bal-btn,#burger,#bn-menu,#sb-backdrop");
     if (!t) {
       if (!e.target.closest(".menu-wrap")) $("#user-menu").classList.add("hidden");
       if (!e.target.closest("#bal-menu")) $("#bal-menu").classList.add("hidden");
@@ -3005,7 +3031,11 @@
     }
     if (t.id === "user-btn") return $("#user-menu").classList.toggle("hidden");
     if (t.id === "bal-btn") { var bm = $("#bal-menu"); bm.classList.toggle("hidden"); if (!bm.classList.contains("hidden")) renderBalMenu(); return; }
-    if (t.hasAttribute("data-disp-cur")) { disp.cur = t.getAttribute("data-disp-cur"); saveDisp(); $("#bal-menu").classList.add("hidden"); return renderHeader(); }
+    if (t.hasAttribute("data-disp-coin")) {
+      var cc = t.getAttribute("data-disp-coin"), uu = me(); if (!uu || cc === uu.coin) { $("#bal-menu").classList.add("hidden"); return; }
+      Promise.resolve(db.setCoin ? db.setCoin(cc) : null).then(function (r) { if (r && r.error) return RD.toast(r.error, "error"); $("#bal-menu").classList.add("hidden"); renderHeader(); });
+      return;
+    }
     if (t.id === "burger" || t.id === "bn-menu") return document.body.classList.toggle("sb-open");
     if (t.id === "sb-backdrop") return closeAll();
 

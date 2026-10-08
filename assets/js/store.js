@@ -196,6 +196,8 @@
     },
 
     /* ---------- carteira ---------- */
+    /* demonstração: um saldo só, que acompanha a moeda escolhida */
+    setCoin: function (coin) { var p = db.current(); if (p) { p.coin = coin; save(); } return { ok: true }; },
     deposit: function (pid, amount, coin) {
       if (!(amount >= (RD.config.minDeposit || 0))) return { error: "Minimum deposit is $" + (RD.config.minDeposit || 0) + "." };
       var p = byId(pid); if (!p) return { error: "Not signed in." };
