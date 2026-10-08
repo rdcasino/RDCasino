@@ -118,6 +118,18 @@ window.RD = window.RD || {};
     return out;
   }
 
+  /* Moeda do Coinflip. Cara: retrato do Richard (cabelo preto, bigode e barbicha) em relevo dourado.
+     Coroa: moeda prateada com a joia RD. viewBox -110 -110 220 220 */
+  var HEADS = '<defs> <radialGradient id="cg" cx=".38" cy=".32" r=".8"><stop offset="0" stop-color="#fff2b8"/><stop offset=".45" stop-color="#f3c547"/><stop offset="1" stop-color="#b47a0c"/></radialGradient> <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe9a0"/><stop offset=".5" stop-color="#d9a21c"/><stop offset="1" stop-color="#8a5a06"/></linearGradient> <linearGradient id="skin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe7a1"/><stop offset="1" stop-color="#dcae3c"/></linearGradient> <linearGradient id="hair" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5a3a08"/><stop offset="1" stop-color="#2a1803"/></linearGradient> <linearGradient id="shirt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8b53a"/><stop offset="1" stop-color="#a87510"/></linearGradient> <clipPath id="inner"><circle r="80"/></clipPath> </defs> <circle r="99" fill="url(#rim)"/> <circle r="92" fill="none" stroke="#7a4f05" stroke-opacity=".5" stroke-width="1.5" stroke-dasharray="2 3"/> <circle r="86" fill="url(#cg)"/> <circle r="86" fill="none" stroke="#fff6cf" stroke-opacity=".6" stroke-width="2"/> <g clip-path="url(#inner)"> <circle r="80" fill="url(#cg)"/> <path d="M-58 -70 L70 60" stroke="#fff" stroke-opacity=".12" stroke-width="22"/> <path d="M-64 80 C-60 46 -36 36 -16 32 L16 32 C36 36 60 46 64 80 Z" fill="url(#shirt)" stroke="#7a4f05" stroke-width="1.6"/> <path d="M-16 32 C-10 44 10 44 16 32" fill="none" stroke="#7a4f05" stroke-width="1.6"/> <path d="M-12 14 L-12 34 C-6 40 6 40 12 34 L12 14 Z" fill="#d8a73a" stroke="#7a4f05" stroke-width="1.4"/> <path d="M-34 -6 C-46 -30 -40 -66 -8 -74 C24 -80 48 -60 42 -26 C44 -10 42 8 36 22 C34 14 33 8 31 2 C32 12 30 20 27 26 L28 -18 L-28 -18 L-27 26 C-31 20 -33 12 -32 4 C-34 10 -36 16 -38 22 C-40 12 -38 2 -34 -6Z" fill="url(#hair)"/> <ellipse cx="-30" cy="-6" rx="6" ry="10" fill="url(#skin)" stroke="#7a4f05" stroke-width="1.3"/> <ellipse cx="30" cy="-6" rx="6" ry="10" fill="url(#skin)" stroke="#7a4f05" stroke-width="1.3"/> <path d="M-27 -26 C-28 -2 -27 12 -17 23 C-10 29 10 29 17 23 C27 12 28 -2 27 -26 C20 -38 -20 -38 -27 -26Z" fill="url(#skin)" stroke="#7a4f05" stroke-width="1.5"/> <path d="M-31 -16 C-38 -46 -22 -68 2 -68 C28 -68 42 -50 33 -16 C31 -26 28 -32 24 -35 C24 -28 20 -24 16 -22 C16 -28 12 -33 6 -35 C2 -27 -8 -22 -18 -22 C-12 -25 -8 -30 -7 -35 C-14 -30 -22 -26 -31 -16Z" fill="url(#hair)"/> <path d="M-26 -30 C-22 -46 -8 -56 10 -56" fill="none" stroke="#7a5212" stroke-width="2" stroke-linecap="round" opacity=".75"/> <path d="M-14 -38 C-6 -50 8 -54 22 -48" fill="none" stroke="#7a5212" stroke-width="1.6" stroke-linecap="round" opacity=".6"/> <path d="M8 -36 C16 -42 24 -42 30 -36" fill="none" stroke="#7a5212" stroke-width="1.4" stroke-linecap="round" opacity=".55"/> <path d="M-33 -4 C-36 6 -36 14 -33 20 M35 -4 C38 6 38 14 35 20" fill="none" stroke="#7a5212" stroke-width="1.4" stroke-linecap="round" opacity=".6"/> <path d="M-20 -17 C-15 -21 -8 -21 -4 -18" stroke="#2a1803" stroke-width="3.6" stroke-linecap="round" fill="none"/> <path d="M4 -18 C8 -21 15 -21 20 -17" stroke="#2a1803" stroke-width="3.6" stroke-linecap="round" fill="none"/> <path d="M-18 -9 C-15 -12 -9 -12 -6 -9 C-9 -7 -15 -7 -18 -9Z" fill="#fff6d6" stroke="#5a3a08" stroke-width="1"/> <path d="M6 -9 C9 -12 15 -12 18 -9 C15 -7 9 -7 6 -9Z" fill="#fff6d6" stroke="#5a3a08" stroke-width="1"/> <circle cx="-12" cy="-9.4" r="2.3" fill="#2a1803"/><circle cx="12" cy="-9.4" r="2.3" fill="#2a1803"/> <path d="M-1 -6 C-2 0 -4 4 -5 6 C-2 8 2 8 5 6" fill="none" stroke="#8a5d14" stroke-width="1.5" stroke-linecap="round"/> <path d="M-13 12 C-8 8 -3 8 0 10 C3 8 8 8 13 12 C9 13 4 12 0 12.5 C-4 12 -9 13 -13 12Z" fill="#2a1803"/> <path d="M-6 15.5 C-2 17 2 17 6 15.5" stroke="#7a4f05" stroke-width="1.4" fill="none" stroke-linecap="round"/> <path d="M-6 19 C-5 26 -2 31 0 32 C2 31 5 26 6 19 C3 21 -3 21 -6 19Z" fill="#2a1803"/> <path d="M-26 0 C-24 14 -18 22 -12 25" stroke="#b07f1a" stroke-width="2" fill="none" opacity=".6"/> </g> <path id="arcB" d="M-62 30 A68 68 0 0 0 62 30" fill="none"/> <text font-size="19" font-weight="900" fill="#fff4c8" stroke="#7a4f05" stroke-width="1.2" paint-order="stroke" letter-spacing="3" style="font-family:var(--font-display,Arial)"><textPath href="#arcB" startOffset="50%" text-anchor="middle">HEADS</textPath></text>';
+  var TAILS = '<defs><radialGradient id="tg" cx=".38" cy=".32" r=".8"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#d6dde8"/><stop offset="1" stop-color="#7d8898"/></radialGradient><linearGradient id="trim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4f7fb"/><stop offset=".5" stop-color="#a9b4c4"/><stop offset="1" stop-color="#5b6575"/></linearGradient><linearGradient id="tgem" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff8fa3"/><stop offset=".5" stop-color="#ff2e55"/><stop offset="1" stop-color="#9e0f2c"/></linearGradient><path id="tarc" d="M-62 30 A68 68 0 0 0 62 30" fill="none"/></defs>' +
+    '<circle r="99" fill="url(#trim)"/><circle r="92" fill="none" stroke="#4a5363" stroke-opacity=".5" stroke-width="1.5" stroke-dasharray="2 3"/><circle r="86" fill="url(#tg)"/><circle r="86" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="2"/>' +
+    '<path d="M-58 -70 L70 60" stroke="#fff" stroke-opacity=".18" stroke-width="22"/>' +
+    '<path d="M0 -58 L36 -28 L0 30 L-36 -28Z" fill="url(#tgem)" stroke="#5b0718" stroke-width="2" stroke-linejoin="round"/><path d="M-36 -28 H36 M0 -58 L-14 -28 L0 30 L14 -28Z" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.6" stroke-linejoin="round"/><path d="M0 -58 L-14 -28 H14Z" fill="#fff" fill-opacity=".25"/>' +
+    '<text y="-22" text-anchor="middle" font-size="22" font-weight="900" fill="#fff" style="font-family:var(--font-display,Arial)">RD</text>' +
+    '<text font-size="19" font-weight="900" fill="#ffffff" stroke="#4a5363" stroke-width="1.2" paint-order="stroke" letter-spacing="3" style="font-family:var(--font-display,Arial)"><textPath href="#tarc" startOffset="50%" text-anchor="middle">TAILS</textPath></text>';
+  function uniq(svg, ids) { var k = U("cf"); ids.forEach(function (id) { svg = svg.split('id="' + id + '"').join('id="' + id + k + '"').split("url(#" + id + ")").join("url(#" + id + k + ")").split('href="#' + id + '"').join('href="#' + id + k + '"'); }); return svg; }
+  function coinSide(side) { return side === "tails" ? uniq(TAILS, ["tg", "trim", "tgem", "tarc"]) : uniq(HEADS, ["cg", "rim", "skin", "hair", "shirt", "inner", "arcB"]); }
+
   /* Selo de nível VIP: quadrado arredondado na cor da família, com a joia RD no centro */
   function tierBadge(t, size) {
     size = size || 40;
@@ -222,6 +234,19 @@ window.RD = window.RD || {};
       var chick = '<g transform="translate(88 118) scale(2.6)">' + hen() + '</g>';
       return lanes + car + '<rect x="160" y="236" width="56" height="26" rx="13" fill="#22e08a"/><text x="188" y="254" text-anchor="middle" font-size="14" font-weight="900" fill="#05301c" style="font-family:var(--font-display,Arial)">2.46×</text>' + chick + coinFront(252, 210, 18) + spark(54, 62, 10);
     } },
+    coinflip: { a: "#ffc23a", b: "#7a4a00", draw: function () {
+      return '<ellipse cx="150" cy="300" rx="92" ry="14" fill="#000" opacity=".3"/><g transform="translate(150 178) scale(.95)">' + coinSide("heads") + "</g>" +
+        '<g transform="translate(250 92) scale(.22) rotate(18)">' + coinSide("tails") + "</g>" + spark(56, 84, 12) + spark(246, 270, 9);
+    } },
+    rps: { a: "#7c5cff", b: "#21124f", draw: function () {
+      var t = function (x, y, e, sz, r) { return '<text x="' + x + '" y="' + y + '" font-size="' + sz + '" text-anchor="middle" dominant-baseline="central" transform="rotate(' + r + " " + x + " " + y + ')">' + e + "</text>"; };
+      return '<circle cx="150" cy="180" r="92" fill="#fff" opacity=".08"/>' + t(150, 112, "✌️", 84, 180) + t(150, 236, "✊", 96, 0) +
+        '<path d="M96 168 L126 176 L104 192 M204 168 L174 176 L196 192" stroke="#ffd23f" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>' + spark(70, 90, 12) + spark(236, 260, 10);
+    } },
+    baccarat: { a: "#ff2e55", b: "#4a0716", draw: function () {
+      return card(112, 172, 104, -12, "9", "♦", true) + card(190, 166, 104, 10, "K", "♠", false) + chip(238, 282, 28, "#ffd23f", 4) + chip(70, 290, 24, "#1d4ed8", 3) +
+        '<rect x="34" y="62" width="74" height="34" rx="17" fill="#fff" fill-opacity=".92"/><text x="71" y="85" text-anchor="middle" font-size="18" font-weight="900" fill="#b0102e" style="font-family:var(--font-display,Arial)">9 : 0</text>';
+    } },
     keno: { a: "#ff3d6e", b: "#4a0518", draw: function () {
       var out = "";
       for (var i = 0; i < 5; i++) for (var j = 0; j < 5; j++) out += '<rect x="' + (52 + j * 40) + '" y="' + (70 + i * 40) + '" width="32" height="32" rx="7" fill="#fff" opacity="' + ((i * 5 + j) % 7 === 0 ? 0.35 : 0.1) + '"/>';
@@ -232,7 +257,7 @@ window.RD = window.RD || {};
 
   function cover(id) {
     var c = COVERS[id]; if (!c) return "";
-    var bg = U("bg"), gl = U("gw"), fd = U("fd"), name = { dice: "DICE", limbo: "LIMBO", crash: "CRASH", mines: "MINES", plinko: "PLINKO", hilo: "HI-LO", blackjack: "BLACKJACK", roulette: "ROULETTE", wheel: "WHEEL", keno: "KENO", tower: "TOWER", chicken: "CHICKEN" }[id];
+    var bg = U("bg"), gl = U("gw"), fd = U("fd"), name = { dice: "DICE", limbo: "LIMBO", crash: "CRASH", mines: "MINES", plinko: "PLINKO", hilo: "HI-LO", blackjack: "BLACKJACK", roulette: "ROULETTE", wheel: "WHEEL", keno: "KENO", tower: "TOWER", chicken: "CHICKEN", coinflip: "COINFLIP", rps: "RPS", baccarat: "BACCARAT" }[id];
     return '<svg class="art" viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + name + '"><defs>' +
       lin(bg, [[0, c.a], [1, c.b]]) + rad(gl, [[0, "#ffffff", 0.35], [1, "#ffffff", 0]]) + lin(fd, [[0, "#000", 0], [1, "#000", 0.55]]) + "</defs>" +
       '<rect width="300" height="400" fill="url(#' + bg + ')"/>' +
@@ -287,6 +312,7 @@ window.RD = window.RD || {};
     },
     hen: hen,
     tierBadge: tierBadge,
+    coinSide: coinSide,
     games: Object.keys(COVERS)
   };
 })();
