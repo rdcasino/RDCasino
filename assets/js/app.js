@@ -72,11 +72,17 @@
   }
   function renderBalMenu() {
     var u = me(); if (!u) return; var v = shownBal(u);
-    $("#bal-menu").innerHTML = '<div class="bm-list">' + Object.keys(RD.coinNames).filter(function (c) { return RD.prices[c]; }).map(function (c) {
+    /* "Hide zero balances": o saldo é um só (em dólar), então mostra só as moedas que o jogador usa
+       (as que já depositou ou sacou, mais a escolhida); com saldo zerado fica só a escolhida */
+    var used = {}; used[disp.coin] = 1;
+    if (v > 0) (db.txOf(u.id) || []).forEach(function (t) { if (t.coin && t.status !== "Rejected" && RD.coinNames[t.coin]) used[t.coin] = 1; });
+    $("#bal-menu").innerHTML = '<div class="bm-list">' + Object.keys(RD.coinNames).filter(function (c) { return RD.prices[c] && (!disp.hideZero || used[c]); }).map(function (c) {
       return '<button class="bm-row' + (c === disp.coin ? " active" : "") + '" data-disp-coin="' + c + '">' + coinDot(c) + '<span class="grow"><b>' + c + "</b><small>" + RD.coinNames[c] + '</small></span><span class="bm-amt"><b class="num">' + (disp.fiat ? fmt.usd(v) : inCoin(v, c)) + "</b></span></button>";
-    }).join("") + '</div><label class="bm-fiat"><span>Display in fiat (USD)</span><input type="checkbox" data-disp-fiat' + (disp.fiat ? " checked" : "") + '><i class="sw"></i></label>';
+    }).join("") + '</div><label class="bm-fiat"><span>Hide zero balances</span><input type="checkbox" data-disp-zero' + (disp.hideZero ? " checked" : "") + '><i class="sw"></i></label>' +
+      '<label class="bm-fiat bm-tog2"><span>Display in fiat (USD)</span><input type="checkbox" data-disp-fiat' + (disp.fiat ? " checked" : "") + '><i class="sw"></i></label>';
   }
-  document.addEventListener("change", function (e) { if (e.target.hasAttribute && e.target.hasAttribute("data-disp-fiat")) { disp.fiat = e.target.checked; saveDisp(); renderHeader(); } });
+  document.addEventListener("change", function (e) { if (e.target.hasAttribute && e.target.hasAttribute("data-disp-fiat")) { disp.fiat = e.target.checked; saveDisp(); renderHeader(); }
+    if (e.target.hasAttribute && e.target.hasAttribute("data-disp-zero")) { disp.hideZero = e.target.checked; saveDisp(); renderBalMenu(); } });
   RD.onPrices = function () { var u = me(); if (u) paintBal(u); };
   function renderHeader() {
     var u = me();
