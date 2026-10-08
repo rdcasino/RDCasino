@@ -1168,3 +1168,6 @@ button.sup-card:hover { border-color: rgba(255,255,255,.18); }
   .sup-fab { bottom: 80px; right: 14px; width: 50px; height: 50px; }
   .sup-panel { right: 0; left: 0; bottom: 0; top: 0; width: auto; height: auto; border-radius: 0; z-index: 990; }
 }
+/* Escada de multiplicadores: faixa centralizada que rola, com as pontas esfumadas */
+.ladder { max-width: 560px; width: 100%; margin: 0 auto; padding: 4px 28px 2px; scroll-snap-type: x proximity; -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); }
+.ladder span { scroll-snap-align: center; padding: 5px 10px; font-size: 12px; }

@@ -70,7 +70,7 @@
       Object.keys(rounds).forEach(function (k) { delete rounds[k]; });
       (r[7].data || []).forEach(function (x) { rounds[x.game] = { game: x.game, amount: n(x.amount), nonce: +x.nonce, client: x.client_seed, server: "", state: x.state || {}, started: x.started_at }; });
       me.rounds = rounds;
-      loadAff(); if (!sup.loaded) supLoad();
+      loadAff(); loadBonus(); if (!sup.loaded) supLoad();
       fill(D.players, [me]); fill(D.tx, txs);
       fill(D.bets, (r[2].data || []).map(function (b) { return { id: "B-" + b.id, userId: b.user_id, user: prof.username, game: b.game, amount: n(b.amount), multiplier: +b.multiplier, payout: n(b.payout), date: b.created_at, detail: Object.assign({ nonce: +b.nonce, client: b.client_seed }, b.detail || {}) }; }));
       state.wallets = r[4].data || [];
@@ -179,7 +179,7 @@
             me.seeds.nonce = nonce + 1;
           }
           D.bets.unshift(bet); if (D.bets.length > 500) D.bets.length = 500;
-          db.emit(); return bet;
+          bonusSoon(); db.emit(); return bet;
         }
       };
     }, function (e) { return { error: msg(e) }; });
@@ -200,7 +200,7 @@
   function roundResult(game, x) {
     var r = rounds[game];
     applyProfile(x.profile);
-    if (x.bet) { var b = mapBet(x.bet, game, r); x.bet = b; lastBet[game] = b; D.bets.unshift(b); if (D.bets.length > 500) D.bets.length = 500; delete rounds[game]; }
+    if (x.bet) { var b = mapBet(x.bet, game, r); x.bet = b; lastBet[game] = b; D.bets.unshift(b); if (D.bets.length > 500) D.bets.length = 500; delete rounds[game]; bonusSoon(); }
     else if (r && x.state) r.state = x.state;
     if (r && x.amount != null) r.amount = n(x.amount);
     syncRounds(); db.emit(); return x;
@@ -219,11 +219,43 @@
     }, function (e) { return { error: msg(e) }; });
   };
   db.reserve = function () { return { server: "", client: "", nonce: 0 }; };
-  db.claimLevel = function () { return SOON; };
-  db.claimRakeback = function () { return SOON; };
-  /* VIP Reload (dado pelo admin) já paga no servidor; diário/semanal/mensal ainda não */
+  /* ---------- Resgates (servidor) ---------- */
+  function claimRpc(fn, args) {
+    return sb.rpc(fn, args || {}).then(function (r) {
+      if (r.error) return { error: msg(r.error) };
+      return refresh().then(loadBonus).then(function () { return { amount: n(r.data) }; });
+    });
+  }
+  db.claimLevel = function (pid, tier) { return claimRpc("claim_level", { p_tier: tier }); };
+  db.claimRakeback = function () { return claimRpc("claim_rakeback"); };
+  /* Bônus diário/semanal/mensal calculados no servidor; o VIP Reload continua vindo do reload dado pelo admin */
+  var baseBonus = db.bonusState;
+  state.bonus = [];
+  function loadBonus() { if (!state.user || RD.isAdminPage) return Promise.resolve(); return sb.rpc("my_bonus_state").then(function (r) { if (r.data) { state.bonus = r.data.map(function (b) { return { key: b.key, label: b.label, minTier: b.minTier, amount: n(b.amount), status: b.status, availableAt: b.availableAt }; }); db.emit(); } }); }
+  var bonusTimer = null;
+  function bonusSoon() { clearTimeout(bonusTimer); bonusTimer = setTimeout(loadBonus, 2500); if (typeof pubSoon === "function") pubSoon(); }
+  /* Apostas recentes de todo mundo (feed da home e "Recent plays" dos jogos) */
+  state.pub = [];
+  function loadPub() {
+    return sb.rpc("public_bets", { p_limit: 300 }).then(function (r) {
+      if (!r.data) return;
+      state.pub = r.data.map(function (b) { return { id: "B-" + b.id, userId: null, user: b.username, game: b.game, amount: n(b.amount), multiplier: +b.multiplier, payout: n(b.payout), date: b.created_at, detail: b.detail || {} }; });
+      if (!RD.isAdminPage) db.emit();
+    });
+  }
+  if (!RD.isAdminPage) { loadPub(); setInterval(function () { if (!document.hidden) loadPub(); }, 15000); }
+  var pubTimer = null;
+  function pubSoon() { clearTimeout(pubTimer); pubTimer = setTimeout(loadPub, 1500); }
+  if (!RD.isAdminPage) db.recentBets = function (k) {
+    var me = db.current(), mine = me ? D.bets.filter(function (b) { return b.userId === me.id; }) : [], seen = {}, out = [];
+    mine.concat(state.pub).forEach(function (b) { var key = String(b.id); if (seen[key]) return; seen[key] = 1; out.push(b); });
+    out.sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+    return out.slice(0, k || 20);
+  };
+  db.bonusState = function (pid) { return state.bonus.concat(baseBonus(pid).filter(function (b) { return b.key === "reload"; })); };
+  /* Resgate dos bônus: VIP Reload (dado pelo admin) ou diário/semanal/mensal */
   db.claimBonus = function (pid, key) {
-    if (key !== "reload") return SOON;
+    if (key !== "reload") return claimRpc("claim_bonus", { p_key: key });
     return sb.rpc("claim_reload").then(function (r) { if (r.error) return { error: msg(r.error) }; return refresh().then(function () { return { amount: n(r.data) }; }); });
   };
   db.tip = function (pid, to, amount, pub) {
