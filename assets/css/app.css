@@ -87,6 +87,12 @@
 .bm-row:hover { background: var(--surface-3); }
 .bm-row.active { background: var(--surface-3); box-shadow: inset 0 0 0 1px var(--line-2); }
 .cur-tag { font-size: 10.5px; font-weight: 800; letter-spacing: 0.04em; padding: 3px 6px; border-radius: 6px; background: rgba(255, 255, 255, 0.08); color: var(--text-2); }
+.bm-cur { padding: 4px 8px 6px; }
+.bal-tag { display: inline-flex; width: 22px; height: 22px; }
+.bal-ic { width: 22px; height: 22px; flex: none; }
+.bm-one { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 2px 2px 8px; padding: 12px; border-radius: 10px; background: var(--surface-3); box-shadow: inset 0 0 0 1px rgba(var(--brand-rgb), 0.5); }
+.bm-one b { font-size: 15px; }
+.bm-cur .select { height: 36px; font-size: 13px; }
 .bm-title { padding: 6px 8px 8px; font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); }
 .bm-sym { width: 34px; height: 26px; border-radius: 7px; display: grid; place-items: center; flex: none; background: var(--surface-3); font-size: 11px; font-weight: 800; color: var(--text); }
 .bm-row.active .bm-sym { background: var(--brand); color: var(--brand-ink, #fff); }
@@ -977,9 +983,9 @@ input[type="range"] { width: 100%; accent-color: var(--brand); }
 .bj-actions .btn { height: 44px; }
 
 /* Roulette */
-.rl { width: 100%; display: flex; flex-direction: column; gap: 18px; }
+.rl { width: 100%; display: flex; flex-direction: column; gap: 14px; }
 .rl-top { display: flex; justify-content: center; }
-.rl-wheel { position: relative; width: clamp(210px, 26vw, 330px); aspect-ratio: 1; }
+.rl-wheel { position: relative; width: clamp(220px, 24vw, 300px); aspect-ratio: 1; filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.45)); }
 .rl-wheel svg { width: 100%; height: 100%; display: block; }
 .rl-out { position: absolute; top: 50%; left: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 800; font-size: 18px; opacity: 0; transition: opacity 0.2s; }
 .rl-out.show { opacity: 1; animation: pop 0.25s ease; }
@@ -1151,11 +1157,11 @@ input[type="range"] { width: 100%; accent-color: var(--brand); }
 
 /* ---------- Door ---------- */
 .dr { width: 100%; display: flex; flex-direction: column; gap: 12px; }
-.dr-room { position: relative; height: 340px; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; align-items: center; padding-top: 14px;
+.dr-room { position: relative; height: 340px; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; align-items: center; padding-top: 48px;
   background: linear-gradient(180deg, rgba(255, 200, 120, 0.06), transparent 40%), repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 2px, transparent 2px 64px), linear-gradient(180deg, #132440, #0c1830 75%); }
 .dr-room::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 96px; background: linear-gradient(180deg, #10203a, #08111f); clip-path: polygon(10% 0, 90% 0, 100% 100%, 0 100%); }
 .dr-room::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 10px; background: linear-gradient(#1d3356, transparent); }
-.dr-level { position: relative; z-index: 1; font-size: 12.5px; font-weight: 700; color: var(--text-2); background: rgba(0, 0, 0, 0.35); padding: 5px 12px; border-radius: 999px; margin-bottom: 22px; }
+.dr-level { display: none; position: relative; z-index: 1; font-size: 12.5px; font-weight: 700; color: var(--text-2); background: rgba(0, 0, 0, 0.35); padding: 5px 12px; border-radius: 999px; margin-bottom: 22px; }
 .dr-doors { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 100px)); gap: clamp(12px, 4vw, 38px); }
 .dr-door { position: relative; width: 100%; aspect-ratio: 5 / 9; padding: 0; border: 0; background: #060d18; border-radius: 10px 10px 3px 3px; cursor: pointer; perspective: 700px;
   box-shadow: 0 0 0 5px #4a3524, 0 0 0 7px #2a1d14, 0 18px 30px rgba(0, 0, 0, 0.5); }
@@ -1321,5 +1327,48 @@ body { background: radial-gradient(1100px 620px at 88% -12%, rgba(34, 211, 238, 
 .main { background: transparent; }
 .sidebar { background: linear-gradient(180deg, #102040 0%, #0b172c 100%); }
 .header { background: rgba(13, 26, 48, 0.82); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
-.brand-name span { background: linear-gradient(90deg, #1f8fff, #22d3ee); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.brand-name span { background: linear-gradient(90deg, #5cbcff 0%, #38c8ff 45%, #2ee6f5 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .sb-switch .active, .sb-switch a.active { background: var(--brand-grad) !important; color: #fff !important; }
+
+/* Chave Turbo (Keno) */
+.og-turbo { display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 42px; padding: 0 12px; border-radius: 10px; background: var(--bg-2); cursor: pointer; font-size: 13px; font-weight: 700; color: var(--text-2); }
+.og-turbo span { display: flex; align-items: center; gap: 6px; }
+.og-turbo input { position: absolute; opacity: 0; pointer-events: none; }
+.og-turbo .sw { position: relative; width: 36px; height: 20px; border-radius: 999px; background: var(--surface-3); transition: background 0.15s; flex: none; }
+.og-turbo .sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform 0.15s; }
+.og-turbo input:checked + .sw { background: var(--brand); }
+.og-turbo input:checked + .sw::after { transform: translateX(16px); }
+
+/* ---------- Rock Paper Scissors: duelo lado a lado ---------- */
+.rps-duel { position: relative; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 18px; width: 100%; max-width: 560px; }
+.rps-side { position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 16px 12px 18px; border-radius: 20px; background: radial-gradient(ellipse at 50% 40%, rgba(255, 255, 255, 0.06), transparent 70%), var(--surface-2); box-shadow: inset 0 0 0 2px var(--line-2); transition: transform 0.25s, box-shadow 0.25s, opacity 0.25s; }
+.rps-side.you { box-shadow: inset 0 0 0 2px rgba(var(--brand-rgb), 0.45); }
+.rps-side.house { box-shadow: inset 0 0 0 2px rgba(255, 90, 120, 0.4); }
+.rps-who { font-size: 11px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); }
+.rps-obj { width: clamp(110px, 16vw, 160px); aspect-ratio: 1; display: grid; place-items: center; }
+.rps-obj .rps-art { width: 100%; height: 100%; filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.4)); }
+.rps-side.rolling .rps-obj { animation: rpsRoll 0.12s ease; }
+@keyframes rpsRoll { from { transform: translateY(-8px) scale(0.92); opacity: 0.6; } }
+.rps-side.show .rps-obj { animation: pop 0.25s ease; }
+.rps-side.win { transform: scale(1.05); box-shadow: inset 0 0 0 3px var(--success), 0 0 36px rgba(34, 224, 138, 0.35); }
+.rps-side.lose { opacity: 0.5; box-shadow: inset 0 0 0 2px var(--danger); animation: hlBad 0.4s ease; }
+.rps-side.lose .rps-obj { filter: grayscale(0.8); }
+.rps-side.tie { box-shadow: inset 0 0 0 3px var(--gold); }
+.rps-duel .rps-vs { position: static; transform: none; width: 64px; height: 64px; padding: 0; display: grid; place-items: center; border-radius: 50%; font-size: 15px; background: var(--surface-3); color: var(--text-2); box-shadow: 0 0 0 6px var(--bg-2); }
+.rps-pick { gap: 6px; padding: 12px 6px; }
+.rps-pic { width: 58px; height: 58px; display: grid; place-items: center; transition: transform 0.15s; }
+.rps-pic .rps-art { width: 100%; height: 100%; }
+.rps-pick:hover:not(:disabled) .rps-pic { transform: scale(1.1) rotate(-4deg); }
+.rps-hist span .rps-art { width: 22px; height: 22px; }
+@media (max-width: 640px) { .rps-duel { gap: 8px; } .rps-duel .rps-vs { width: 46px; height: 46px; font-size: 12px; } .rps-obj { width: 96px; } }
+
+/* ---------- Escada de multiplicadores padronizada ---------- */
+.ladder, .rps-ladder { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; overflow: visible; max-width: 620px; width: 100%; margin: 0 auto; padding: 6px 0; -webkit-mask-image: none; mask-image: none; }
+@media (max-width: 640px) { .ladder, .rps-ladder { gap: 5px; } .lstep { min-width: 0; padding: 6px 2px 7px; } .lstep b { font-size: 11px; } }
+.lstep { min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 7px 10px 8px; border-radius: 12px; background: var(--surface-2); box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.22); color: var(--text-3); font-variant-numeric: tabular-nums; }
+.lstep i { font-style: normal; font-size: 10px; font-weight: 800; letter-spacing: 0.06em; opacity: 0.75; }
+.lstep b { font-size: 13px; font-weight: 800; color: var(--text-2); }
+.lstep.done { background: rgba(34, 224, 138, 0.12); color: var(--success); }
+.lstep.done b { color: var(--success); }
+.lstep.next { background: var(--brand-grad); color: #fff; box-shadow: 0 6px 16px rgba(var(--brand-rgb), 0.35); transform: translateY(-2px); }
+.lstep.next b { color: #fff; }

@@ -201,6 +201,20 @@ window.RD = window.RD || {};
       '<path d="M45 47 L86 47 L80 74 L53 86 Z" fill="#000" opacity=".14"/><path d="M25 33 L47 18 L45 47 Z" fill="#fff" opacity=".25"/>';
     return '<svg viewBox="0 0 100 100" class="rps-svg" aria-hidden="true">' + body + "</svg>";
   }
+  /* Pedra, papel e tesoura ilustrados (com volume e luz), para o jogo e a capa. viewBox 0 0 120 120 */
+  function rpsArt(k) {
+    var a = U("ra"), b = U("rb"), c = U("rc"), body;
+    if (k === "paper") body = "<defs>" + lin(a, [[0, "#ffffff"], [1, "#d6dfee"]], 0, 0, 0, 1) + '</defs><g transform="translate(60 60) rotate(-8)"><path d="M-36 -46 H22 L40 -28 V48 H-36 Z" fill="#000" opacity=".25" transform="translate(4 6)"/>' +
+      '<path d="M-36 -46 H22 L40 -28 V48 H-36 Z" fill="url(#' + a + ')"/><path d="M22 -46 V-28 H40 Z" fill="#b9c5da"/><path d="M-25 -24 H24 M-25 -12 H28 M-25 0 H28 M-25 12 H28 M-25 24 H28 M-25 36 H8" stroke="#aebcd3" stroke-width="3.4" stroke-linecap="round"/></g>';
+    else if (k === "scissors") body = "<defs>" + lin(a, [[0, "#ffffff"], [0.5, "#c3cbd8"], [1, "#7f8a9c"]], 0, 0, 1, 1) + lin(b, [[0, "#4ea8ff"], [1, "#1f5fd6"]], 0, 0, 1, 1) + '</defs><g transform="translate(60 66) rotate(-18)">' +
+      '<path d="M-5 3 L-26 -62 Q-20 -68 -15 -62 L6 -3 Z" fill="url(#' + a + ')"/><path d="M5 3 L26 -62 Q20 -68 15 -62 L-6 -3 Z" fill="url(#' + a + ')"/>' +
+      '<path d="M-5 2 L-13 18 M5 2 L13 18" stroke="url(#' + b + ')" stroke-width="8" stroke-linecap="round"/><ellipse cx="-17" cy="32" rx="12" ry="15" fill="none" stroke="url(#' + b + ')" stroke-width="7.5"/><ellipse cx="17" cy="32" rx="12" ry="15" fill="none" stroke="url(#' + b + ')" stroke-width="7.5"/>' +
+      '<circle r="5.5" fill="#e6eaf1" stroke="#7d8798" stroke-width="1.6"/><circle r="1.8" fill="#7d8798"/></g>';
+    else body = "<defs>" + rad(a, [[0, "#d3d8e2"], [0.6, "#8f97a6"], [1, "#565d6b"]], 0.35, 0.3, 0.85) + '</defs><g transform="translate(60 64)"><ellipse cx="2" cy="36" rx="44" ry="7" fill="#000" opacity=".28"/>' +
+      '<path d="M-44 16 L-34 -18 L-8 -36 L22 -31 L44 -8 L41 20 L14 34 L-22 33 Z" fill="url(#' + a + ')"/><path d="M-8 -36 L-5 -4 L22 -31 Z" fill="#fff" opacity=".25"/><path d="M-34 -18 L-5 -4 L-8 -36 Z" fill="#fff" opacity=".12"/>' +
+      '<path d="M-5 -4 L44 -8 L41 20 L14 34 Z" fill="#000" opacity=".2"/><path d="M-5 -4 L14 34 L-22 33 L-44 16 Z" fill="#000" opacity=".1"/><path d="M6 8 l8 6 -3 7" fill="none" stroke="#000" stroke-opacity=".3" stroke-width="1.8" stroke-linecap="round"/></g>';
+    return '<svg viewBox="0 0 120 120" class="rps-art" aria-hidden="true">' + body + "</svg>";
+  }
   function hen() { return '<ellipse cx="24" cy="44.5" rx="11" ry="2.3" fill="#000" opacity=".3"/> <path d="M19.5 38v5.5M27.5 38v5.5M17.3 43.6h4.4M25.3 43.6h4.4" stroke="#ff9d1a" stroke-width="2.2" stroke-linecap="round"/> <ellipse cx="24" cy="30" rx="12.5" ry="10.8" fill="#fff"/> <path d="M11.8 29.5c-3.4-1.2-5.6 1.2-5.2 4.4 3.2.2 5.4-1 6.6-2.4z" fill="#e8edf7"/> <path d="M16.5 30.5c3 4.2 9.6 4.4 12.6 1" stroke="#dfe6f5" stroke-width="2" fill="none" stroke-linecap="round"/> <circle cx="27" cy="16.5" r="8.2" fill="#fff"/> <path d="M34.6 17.8l5.2 1.7-5.2 1.6z" fill="#ffb020"/> <circle cx="30.2" cy="17.4" r="1.6" fill="#1a1205"/><circle cx="30.7" cy="16.9" r=".5" fill="#fff"/>  <path d="M19.4 21.6c4.6 2.6 10 2.6 14.6-.3l.4 3.1c-5 3-10.6 3-15.4.3z" fill="#ff2e55"/> <path d="M22 23.6l3.6 6.2 3.4-6.4z" fill="#ff2e55"/> <path d="M22.6 24.4l3 4.8 2.8-5" fill="none" stroke="#c2133a" stroke-width=".6"/> <circle cx="23.4" cy="22.9" r=".45" fill="#fff" opacity=".8"/><circle cx="28.6" cy="23.4" r=".45" fill="#fff" opacity=".8"/><circle cx="32" cy="22.4" r=".45" fill="#fff" opacity=".8"/><circle cx="25.6" cy="26.2" r=".4" fill="#fff" opacity=".8"/> <path d="M19.6 22.4l-3.6 2.6 2.4 1.6z M19.8 23.6l-2 4.2 2.8-1z" fill="#c2133a"/>  <path d="M18.9 15.2c-.2-5.6 3.6-8.4 8.1-8.4s8.3 2.8 8.1 8.2z" fill="#ff2e55"/> <path d="M18.9 15.2h16.2" stroke="#c2133a" stroke-width="1.2"/> <path d="M33.6 14.4h7.2c1.4 0 1.4 2.2 0 2.2h-7.4z" fill="#c2133a"/> <circle cx="27" cy="6.9" r="1" fill="#c2133a"/> <path d="M21.5 9.5c1.6-1.6 3.4-2.1 5.5-2.1" stroke="#ff8fa3" stroke-width="1" fill="none" stroke-linecap="round" opacity=".8"/> <text x="27.4" y="13.6" text-anchor="middle" font-size="5" font-weight="900" fill="#ffc85c" style="font-family:var(--font-display,Arial)" letter-spacing="-.2">RD</text>'; }
 
   /* ---------- Capas (300×400) ---------- */
@@ -309,25 +323,26 @@ window.RD = window.RD || {};
         '<g transform="translate(150 168) rotate(-14) scale(.92 .78)"><ellipse cx="0" cy="18" rx="100" ry="100" fill="#7a4e06"/><ellipse cx="0" cy="11" rx="100" ry="100" fill="#a8700a"/>' + coinSide("heads") + "</g>" + spark(68, 72, 12) + spark(246, 220, 10) + spark(104, 40, 7);
     } },
     rps: { a: "#7c5cff", b: "#1d0f4a", draw: function () {
-      // ilustração: folha de papel ao fundo, pedra com volume à esquerda e tesoura metálica aberta à direita
-      var pg = U("pp"), rk = U("rk"), bl = U("bl"), hd = U("hd"), gw = U("rg");
-      var paper = '<g transform="translate(150 104) rotate(-9)"><path d="M-52 -66 H34 L56 -44 V70 H-52 Z" fill="#000" opacity=".22" transform="translate(6 8)"/>' +
-        '<path d="M-52 -66 H34 L56 -44 V70 H-52 Z" fill="url(#' + pg + ')"/><path d="M34 -66 V-44 H56 Z" fill="#c3cde0"/>' +
-        '<path d="M-36 -36 H32 M-36 -20 H38 M-36 -4 H38 M-36 12 H38 M-36 28 H38 M-36 44 H14" stroke="#b5c1d6" stroke-width="4" stroke-linecap="round"/></g>';
-      var rock = '<g transform="translate(92 226)"><ellipse cx="4" cy="44" rx="62" ry="10" fill="#000" opacity=".3"/>' +
-        '<path d="M-58 22 L-46 -24 L-12 -48 L30 -42 L58 -12 L54 26 L18 44 L-30 42 Z" fill="url(#' + rk + ')"/>' +
-        '<path d="M-12 -48 L-8 -6 L30 -42 Z" fill="#fff" opacity=".22"/><path d="M-46 -24 L-8 -6 L-12 -48 Z" fill="#fff" opacity=".12"/>' +
-        '<path d="M-8 -6 L58 -12 L54 26 L18 44 Z" fill="#000" opacity=".18"/><path d="M-8 -6 L18 44 L-30 42 L-58 22 Z" fill="#000" opacity=".1"/>' +
-        '<path d="M-46 -24 L-8 -6 L58 -12 M-8 -6 L18 44" fill="none" stroke="#fff" stroke-opacity=".18" stroke-width="1.5"/><path d="M8 10 l10 8 -4 9" fill="none" stroke="#000" stroke-opacity=".3" stroke-width="2" stroke-linecap="round"/></g>';
-      var sc = '<g transform="translate(214 196) rotate(-24)">' +
-        '<path d="M-6 4 L-34 -102 Q-27 -110 -20 -102 L8 -4 Z" fill="url(#' + bl + ')"/><path d="M6 4 L34 -102 Q27 -110 20 -102 L-8 -4 Z" fill="url(#' + bl + ')"/>' +
-        '<path d="M-6 4 L-34 -102" stroke="#fff" stroke-opacity=".6" stroke-width="1.5"/><path d="M6 4 L34 -102" stroke="#fff" stroke-opacity=".35" stroke-width="1.5"/>' +
-        '<path d="M-6 2 L-16 22 M6 2 L16 22" stroke="url(#' + hd + ')" stroke-width="10" stroke-linecap="round"/>' +
-        '<ellipse cx="-22" cy="44" rx="15" ry="19" fill="none" stroke="url(#' + hd + ')" stroke-width="9"/><ellipse cx="22" cy="44" rx="15" ry="19" fill="none" stroke="url(#' + hd + ')" stroke-width="9"/>' +
-        '<circle r="6.5" fill="#dfe4ec" stroke="#7d8798" stroke-width="2"/><circle r="2" fill="#7d8798"/></g>';
-      return "<defs>" + lin(pg, [[0, "#ffffff"], [1, "#dbe3f0"]], 0, 0, 0, 1) + rad(rk, [[0, "#c9ced8"], [0.6, "#8d95a3"], [1, "#5a6170"]], 0.35, 0.3, 0.85) +
-        lin(bl, [[0, "#ffffff"], [0.5, "#c3cbd8"], [1, "#7f8a9c"]], 0, 0, 1, 1) + lin(hd, [[0, "#ff5a7a"], [1, "#c8103a"]], 0, 0, 1, 1) + rad(gw, [[0, "#a78bfa", 0.55], [1, "#a78bfa", 0]]) + "</defs>" +
-        '<circle cx="150" cy="160" r="130" fill="url(#' + gw + ')"/>' + paper + rock + sc + spark(262, 62, 12) + spark(40, 90, 9) + spark(258, 262, 8);
+      // batalha de luvas (estilo ilustração de jogo): soco à esquerda contra tesoura à direita, impacto no meio
+      var gw = U("gw"), sh = U("gs"), bz = U("bz"), O = "#1b2540", SW = 3.6;
+      var R = function (x, y, w, h, extra) { return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="' + Math.min(w, h) / 2 + '" fill="url(#' + sh + ')" stroke="' + O + '" stroke-width="' + SW + '"' + (extra || "") + "/>"; };
+      var fist = function (cuff) {
+        return '<rect x="-78" y="-27" width="30" height="54" rx="9" fill="' + cuff + '" stroke="' + O + '" stroke-width="' + SW + '"/><path d="M-72 -18 v36 M-63 -18 v36" stroke="#fff" stroke-opacity=".35" stroke-width="2"/>' +
+          R(-52, -36, 72, 72) + R(10, -34, 32, 17) + R(12, -16, 32, 17) + R(12, 2, 32, 17) + R(8, 20, 30, 16) +
+          R(-34, 8, 50, 19, ' transform="rotate(-8 -9 17)"') + '<path d="M-40 -22 q10 -6 22 -2 M-42 -8 q12 -5 24 -1" fill="none" stroke="' + O + '" stroke-opacity=".35" stroke-width="2.4" stroke-linecap="round"/>';
+      };
+      var scissors = function (cuff) {
+        return '<rect x="-78" y="-27" width="30" height="54" rx="9" fill="' + cuff + '" stroke="' + O + '" stroke-width="' + SW + '"/><path d="M-72 -18 v36 M-63 -18 v36" stroke="#fff" stroke-opacity=".35" stroke-width="2"/>' +
+          R(0, -40, 74, 18, ' transform="rotate(-16 0 -31)"') + R(0, -18, 78, 18, ' transform="rotate(10 0 -9)"') +
+          R(-52, -32, 66, 66) + R(6, 4, 28, 16) + R(4, 20, 26, 15) + R(-36, 10, 46, 18, ' transform="rotate(-6 -13 19)"');
+      };
+      var burst = ""; for (var i = 0; i < 12; i++) { var an = i * Math.PI / 6, r1 = i % 2 ? 22 : 34; burst += (i ? " L" : "M") + (150 + r1 * Math.cos(an)).toFixed(1) + " " + (172 + r1 * Math.sin(an)).toFixed(1); }
+      return "<defs>" + rad(gw, [[0, "#c4b5fd", 0.6], [1, "#c4b5fd", 0]]) + lin(sh, [[0, "#ffffff"], [0.62, "#f1f4fa"], [1, "#cfd8e8"]], 0, 0, 0, 1) + lin(bz, [[0, "#fff6c8"], [1, "#ffb020"]], 0, 0, 0, 1) + "</defs>" +
+        '<circle cx="150" cy="170" r="128" fill="url(#' + gw + ')"/>' +
+        '<g transform="translate(96 196) rotate(-8) scale(.92)">' + fist("#1f8fff") + "</g>" +
+        '<g transform="translate(206 150) rotate(172) scale(.92)">' + scissors("#ff3d64") + "</g>" +
+        '<g transform="translate(152 98)"><circle r="23" fill="url(#' + bz + ')" stroke="#fff" stroke-width="3"/><text y="7" text-anchor="middle" font-size="18" font-weight="900" fill="#5a2a00" style="font-family:var(--font-display,Arial)">VS</text></g>' +
+        '<path d="M150 136 v-6 M150 238 v8 M138 246 l-6 8 M162 246 l6 8" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".7"/>' + spark(262, 58, 12) + spark(36, 98, 9) + spark(266, 270, 8);
     } },
     baccarat: { a: "#ff2e55", b: "#4a0716", draw: function () {
       return card(112, 172, 104, -12, "9", "♦", true) + card(190, 166, 104, 10, "K", "♠", false) + chip(238, 282, 28, "#ffd23f", 4) + chip(70, 290, 24, "#1d4ed8", 3) +
@@ -377,7 +392,7 @@ window.RD = window.RD || {};
       '<g opacity=".08" fill="#fff"><rect x="-60" y="40" width="420" height="22" transform="rotate(-24 150 200)"/><rect x="-60" y="120" width="420" height="8" transform="rotate(-24 150 200)"/><rect x="-60" y="300" width="420" height="40" transform="rotate(-24 150 200)"/></g>' +
       '<circle cx="150" cy="180" r="150" fill="url(#' + gl + ')"/>' + c.draw() +
       '<rect y="270" width="300" height="130" fill="url(#' + fd + ')"/>' +
-      (name.indexOf(" ") > -1 ? '<text x="150" y="330" text-anchor="middle" font-size="30" font-weight="900" fill="#fff" letter-spacing="-0.5" style="font-family:var(--font-display,Arial)">' + name.split(" ").slice(0, -1).join(" ") + '</text><text x="150" y="362" text-anchor="middle" font-size="30" font-weight="900" fill="#fff" letter-spacing="-0.5" style="font-family:var(--font-display,Arial)">' + name.split(" ").slice(-1)[0] + "</text>"
+      (name.indexOf(" ") > -1 ? '<text x="150" y="328" text-anchor="middle" font-size="34" font-weight="900" fill="#fff" letter-spacing="-0.5" style="font-family:var(--font-display,Arial)">' + name.split(" ").slice(0, -1).join(" ") + '</text><text x="150" y="363" text-anchor="middle" font-size="34" font-weight="900" fill="#fff" letter-spacing="-0.5" style="font-family:var(--font-display,Arial)">' + name.split(" ").slice(-1)[0] + "</text>"
         : '<text x="150" y="356" text-anchor="middle" font-size="' + (name.length > 7 ? 34 : 40) + '" font-weight="900" fill="#fff" letter-spacing="-0.5" style="font-family:var(--font-display,Arial)">' + name + "</text>") +
       '<text x="150" y="381" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" fill-opacity=".7" letter-spacing="3" style="font-family:var(--font,Arial)">RD ORIGINALS</text></svg>';
   }
@@ -436,6 +451,7 @@ window.RD = window.RD || {};
     },
     hen: hen,
     rpsHand: rpsHand,
+    rpsArt: rpsArt,
     tierBadge: tierBadge,
     rewardIcon: rewardIcon,
     coinSide: coinSide,
