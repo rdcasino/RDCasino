@@ -55,6 +55,7 @@
     RD.config.restrictedCountries = D.settings.restricted;
     RD.config.license = D.settings.license;
     RD.config.leaderboardPrize = D.settings.leaderboardPrize;
+    RD.config.maxProfit = +D.settings.maxProfit || 0;
   }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (e) {} }
   function id(prefix) { D.seq++; return prefix + D.seq; }

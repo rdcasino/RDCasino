@@ -8,7 +8,8 @@
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
   var ic = RD.ic, fmt = RD.fmt, esc = RD.esc, media = RD.media, db = RD.db;
-  var MAX_PROFIT = 10000; // lucro máximo por aposta (proteção do caixa)
+  /* Lucro máximo por aposta: definido no admin (Configurações). 0 = sem limite. */
+  function maxProfit() { return +RD.config.maxProfit || 0; }
 
   var state = { walletTab: "deposit", coin: "USDT", net: "TRC20", betsTab: "all" };
   function me() { return db.current(); }
@@ -266,7 +267,7 @@
     if (r === 13) return { up: { label: "Same", p: 1 / 13, ok: function (x) { return x === 13; } }, down: { label: "Lower", p: 12 / 13, ok: function (x) { return x < 13; } } };
     return { up: { label: "Higher or same", p: (14 - r) / 13, ok: function (x) { return x >= r; } }, down: { label: "Lower or same", p: r / 13, ok: function (x) { return x <= r; } } };
   }
-  function capMult(amount, mult) { return amount * (mult - 1) > MAX_PROFIT ? Math.floor(((amount + MAX_PROFIT) / amount) * 100) / 100 : mult; }
+  function capMult(amount, mult) { var M = maxProfit(); return M && amount * (mult - 1) > M ? Math.floor(((amount + M) / amount) * 100) / 100 : mult; }
 
   /* ---------- Moldura ---------- */
   function profitField(label) { return '<div><div class="ogx-label">' + (label || "Profit on win") + '<small id="og-mult-lbl"></small></div><div class="ogx-input ro"><span class="cur">$</span><input id="og-profit" readonly value="0.00"></div></div>'; }
@@ -335,7 +336,7 @@
     var u = me(), mod = OG[g.id], mine = function (b) { return b.game === g.id; };
     if (tab === "about") {
       box.innerHTML = '<div class="og-info-body">' + ABOUT[g.id] + "<p>Every result is generated from your seeds and can be verified on the Provably Fair page.</p>" +
-        '<div class="og-facts"><div><small>House edge</small><strong>' + (Math.round((100 - g.rtp) * 10) / 10) + '%</strong></div><div><small>RTP</small><strong>' + (g.id === "blackjack" ? "≈" : "") + g.rtp + '%</strong></div><div><small>Min bet</small><strong>$0.01</strong></div><div><small>Max profit</small><strong>' + fmt.usd(MAX_PROFIT, { dec: 0 }) + "</strong></div></div>" +
+        '<div class="og-facts"><div><small>House edge</small><strong>' + (Math.round((100 - g.rtp) * 10) / 10) + '%</strong></div><div><small>RTP</small><strong>' + (g.id === "blackjack" ? "≈" : "") + g.rtp + '%</strong></div><div><small>Min bet</small><strong>$0.01</strong></div><div><small>Max profit</small><strong>' + (maxProfit() ? fmt.usd(maxProfit(), { dec: 0 }) : "No limit") + "</strong></div></div>" +
         '<p class="faint" style="font-size:12.5px;margin-top:14px">Hotkeys (turn on in the bottom bar): <span class="kbd">Space</span> bet · <span class="kbd">S</span> half · <span class="kbd">D</span> double</p></div>';
       return;
     }
@@ -366,7 +367,7 @@
         if (u.status !== "Active") { ctx.msg("Your account is suspended."); return null; }
         if (a < 0.01) { ctx.msg("Minimum bet is $0.01."); return null; }
         if (a > u.balance) { ctx.msg("Insufficient balance.", ' <a href="#" class="link-sm" data-open="wallet">Deposit</a>'); return null; }
-        if (maxMult && a * (maxMult - 1) > MAX_PROFIT) { ctx.msg("Max profit per bet is " + fmt.usd(MAX_PROFIT, { dec: 0 }) + "."); return null; }
+        if (maxMult && maxProfit() && a * (maxMult - 1) > maxProfit()) { ctx.msg("Max profit per bet is " + fmt.usd(maxProfit(), { dec: 0 }) + "."); return null; }
         return u;
       },
       lock: function (on) {
@@ -1206,11 +1207,24 @@
         auto: true, amountLabel: "Chip value",
         side: '<div><div class="ogx-label">Total bet</div><div class="ogx-input ro"><span class="cur">$</span><input id="rl-total" readonly value="0.00"></div></div>',
         after: '<div class="ogx-row2"><button class="btn btn-secondary" style="height:42px" id="rl-undo">Undo</button><button class="btn btn-secondary" style="height:42px" id="rl-clear">Clear</button></div>',
-        center: '<div class="rl"><div class="rl-top"><div class="rl-wheel"><div class="wh-pointer"></div><svg viewBox="-110 -110 220 220"><g id="rl-rot"></g></svg><div class="rl-out" id="rl-out"></div></div></div><div class="rl-table" id="rl-table">' + grid + "</div></div>"
+        center: '<div class="rl"><div class="rl-top"><div class="rl-wheel"><div class="wh-pointer"></div><svg viewBox="-110 -110 220 220"><g id="rl-rot"></g><g id="rl-ball" class="hidden"><circle r="5.2" fill="#000" opacity=".35" cx="1" cy="1.5"/><circle r="5.2" fill="#f4f1ee"/><circle r="1.8" cx="-1.6" cy="-1.6" fill="#fff"/></g></svg><div class="rl-out" id="rl-out"></div></div></div><div class="rl-table" id="rl-table">' + grid + "</div></div>"
       };
     },
     bind: function (ctx) {
       var bets = {}, hist = [], rot = 0, spinning = false;
+      /* Bolinha: gira no sentido contrário da roda, perde velocidade, desce para os números e para no topo (onde fica o ponteiro) */
+      function ballAt(angle, radius) { var b = $("#rl-ball"); if (!b) return; var a = (angle - 90) * Math.PI / 180; b.setAttribute("transform", "translate(" + (radius * Math.cos(a)).toFixed(2) + " " + (radius * Math.sin(a)).toFixed(2) + ")"); }
+      function spinBall(ms) {
+        var b = $("#rl-ball"); if (!b) return; b.classList.remove("hidden");
+        var t0 = performance.now(), turns = 6;
+        (function step(now) {
+          if (!document.contains(b)) return;
+          var k = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - k, 3);
+          var angle = -360 * turns * (1 - e), radius = k < 0.62 ? 101 : k < 0.86 ? 101 - (k - 0.62) / 0.24 * 19 + Math.sin(k * 60) * 2.2 * (0.86 - k) / 0.24 : 82;
+          ballAt(angle, radius);
+          if (k < 1) requestAnimationFrame(step);
+        })(t0);
+      }
       (function wheel() {
         var out = "", N = 37, R = 104, r = 74;
         RL_ORDER.forEach(function (n, i) {
@@ -1248,14 +1262,15 @@
           if (b.error) { spinning = false; ctx.lock(false); ctx.msg(b.error); return null; }
           var i = RL_ORDER.indexOf(n), segA = 360 / 37, target = -((i + 0.5) * segA);
           rot = rot - (rot % 360) + 360 * 4 + target; if (rot <= 0) rot += 360 * 5;
-          var g = $("#rl-rot"); g.style.transition = "transform 2.6s cubic-bezier(.12,.75,.12,1)"; g.style.transform = "rotate(" + rot + "deg)";
+          var g = $("#rl-rot"); g.style.transition = "transform 3.4s cubic-bezier(.12,.75,.12,1)"; g.style.transform = "rotate(" + rot + "deg)";
+          spinBall(3400);
           $("#rl-out").className = "rl-out"; $("#rl-out").textContent = "";
           return new Promise(function (res) {
             setTimeout(function () {
               spinning = false; ctx.lock(false); if (!$("#rl-out")) return res({ win: payout > t });
               g.style.transition = "none"; $("#rl-out").className = "rl-out show " + rlColor(n); $("#rl-out").textContent = n;
               paintChips(wins); ctx.record(b); res({ win: payout > t });
-            }, 2650);
+            }, 3450);
           });
         });
       }
