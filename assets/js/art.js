@@ -272,6 +272,22 @@ window.RD = window.RD || {};
       return card(112, 172, 104, -12, "9", "♦", true) + card(190, 166, 104, 10, "K", "♠", false) + chip(238, 282, 28, "#ffd23f", 4) + chip(70, 290, 24, "#1d4ed8", 3) +
         '<rect x="34" y="62" width="74" height="34" rx="17" fill="#fff" fill-opacity=".92"/><text x="71" y="85" text-anchor="middle" font-size="18" font-weight="900" fill="#b0102e" style="font-family:var(--font-display,Arial)">9 : 0</text>';
     } },
+    double: { a: "#ff2e55", b: "#2a0710", draw: function () {
+      var t = function (x, y, w, fill, stroke, txt, rot, op) { return '<g transform="translate(' + x + " " + y + ") rotate(" + rot + ')" opacity="' + (op || 1) + '"><rect x="' + (-w / 2) + '" y="' + (-w * 0.62) + '" width="' + w + '" height="' + (w * 1.24) + '" rx="' + (w * 0.18) + '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="5"/>' + txt + "</g>"; };
+      var gem = '<path d="M0 -26 L22 -8 L0 26 L-22 -8 Z" fill="#ff2e55"/><path d="M0 -26 L10 -8 L0 26 L-10 -8 Z" fill="#ff7d96"/>';
+      return '<path d="M150 58 l-14 -22 h28z" fill="#fff" opacity=".9"/>' + t(58, 186, 70, "#1b1220", "#3a2a3a", "", -10, 0.9) + t(242, 186, 70, "#b0102e", "#ff6b86", "", 10, 0.9) + t(150, 176, 96, "#ffffff", "#ffd6de", gem, 0, 1) + chip(70, 290, 24, "#ffd23f", 4) + chip(232, 292, 26, "#ff2e55", 3) + spark(250, 80, 12) + spark(52, 92, 9);
+    } },
+    soccer: { a: "#22b35e", b: "#062a16", draw: function () {
+      var net = ""; for (var x = 50; x <= 250; x += 20) net += '<path d="M' + x + ' 74 V190" stroke="#fff" stroke-opacity=".18"/>'; for (var y = 84; y <= 190; y += 18) net += '<path d="M44 ' + y + ' H256" stroke="#fff" stroke-opacity=".18"/>';
+      return '<rect x="44" y="70" width="212" height="122" fill="#000" opacity=".25"/>' + net + '<path d="M40 194 V66 H260 V194" fill="none" stroke="#fff" stroke-width="9" stroke-linejoin="round"/>' +
+        '<g transform="translate(110 150) rotate(-28)"><rect x="-20" y="-22" width="40" height="40" rx="11" fill="#ff2e55"/><text x="0" y="4" text-anchor="middle" font-size="14" font-weight="900" fill="#fff" style="font-family:var(--font-display,Arial)">RD</text><circle cx="0" cy="-36" r="13" fill="#e8b48a"/><path d="M-20 -14 L-44 -40 M20 -14 L40 -44" stroke="#ff2e55" stroke-width="9" stroke-linecap="round"/><circle cx="-46" cy="-43" r="8" fill="#ffd23f"/><circle cx="42" cy="-48" r="8" fill="#ffd23f"/></g>' +
+        '<g transform="translate(206 112)"><circle r="24" fill="#fff"/><path d="M0 -9 l9 6 -3 10 h-12 l-3 -10z" fill="#111"/><path d="M0 -24 v15 M9 -3 l14 -4 M6 7 l8 12 M-6 7 l-8 12 M-9 -3 l-14 -4" stroke="#111" stroke-width="3"/></g>' +
+        '<path d="M206 140 q-40 70 -70 120" stroke="#fff" stroke-opacity=".35" stroke-width="5" stroke-dasharray="2 12" stroke-linecap="round" fill="none"/>' + spark(60, 240, 10) + spark(250, 240, 12);
+    } },
+    door: { a: "#8a3ffc", b: "#1d0b3d", draw: function () {
+      var d = function (x, open, glow) { return '<g transform="translate(' + x + ' 92)"><rect x="-4" y="-4" width="76" height="174" rx="8" fill="#000" opacity=".35"/>' + (open ? '<rect width="68" height="166" rx="6" fill="' + glow + '"/><circle cx="34" cy="84" r="20" fill="#fff" opacity=".5"/>' + '<path d="M0 0 L22 10 V176 L0 166 Z" fill="#3b2061"/>' : '<rect width="68" height="166" rx="6" fill="#5a2fa0"/><rect x="10" y="12" width="48" height="58" rx="4" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="3"/><rect x="10" y="86" width="48" height="64" rx="4" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="3"/><circle cx="56" cy="82" r="5" fill="#ffd23f"/>') + "</g>"; };
+      return d(22, false) + d(116, true, "#ffd23f") + d(210, false) + '<g transform="translate(150 250)"><circle r="18" fill="#ffd23f"/><text y="6" text-anchor="middle" font-size="15" font-weight="900" fill="#7a4a00" style="font-family:var(--font-display,Arial)">RD</text></g>' + spark(262, 74, 12) + spark(36, 70, 9);
+    } },
     keno: { a: "#ff3d6e", b: "#4a0518", draw: function () {
       var out = "";
       for (var i = 0; i < 5; i++) for (var j = 0; j < 5; j++) out += '<rect x="' + (52 + j * 40) + '" y="' + (70 + i * 40) + '" width="32" height="32" rx="7" fill="#fff" opacity="' + ((i * 5 + j) % 7 === 0 ? 0.35 : 0.1) + '"/>';
@@ -282,7 +298,7 @@ window.RD = window.RD || {};
 
   function cover(id) {
     var c = COVERS[id]; if (!c) return "";
-    var bg = U("bg"), gl = U("gw"), fd = U("fd"), name = { dice: "DICE", limbo: "LIMBO", crash: "CRASH", mines: "MINES", plinko: "PLINKO", hilo: "HI-LO", blackjack: "BLACKJACK", roulette: "ROULETTE", wheel: "WHEEL", keno: "KENO", tower: "TOWER", chicken: "CHICKEN", coinflip: "COINFLIP", rps: "RPS", baccarat: "BACCARAT" }[id];
+    var bg = U("bg"), gl = U("gw"), fd = U("fd"), name = { dice: "DICE", limbo: "LIMBO", crash: "CRASH", mines: "MINES", plinko: "PLINKO", hilo: "HI-LO", blackjack: "BLACKJACK", roulette: "ROULETTE", wheel: "WHEEL", keno: "KENO", tower: "TOWER", chicken: "CHICKEN", coinflip: "COINFLIP", rps: "RPS", baccarat: "BACCARAT", double: "DOUBLE", soccer: "SOCCER", door: "DOOR" }[id];
     return '<svg class="art" viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + name + '"><defs>' +
       lin(bg, [[0, c.a], [1, c.b]]) + rad(gl, [[0, "#ffffff", 0.35], [1, "#ffffff", 0]]) + lin(fd, [[0, "#000", 0], [1, "#000", 0.55]]) + "</defs>" +
       '<rect width="300" height="400" fill="url(#' + bg + ')"/>' +

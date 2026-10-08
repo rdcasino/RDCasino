@@ -391,6 +391,9 @@
     coinflip: "<p><strong>Coinflip</strong>: pick Heads or Tails and flip. <b>Classic</b> is one flip at 1.98×. <b>Target</b> asks for 2 to 10 flips in a row on your side — every extra flip doubles the multiplier, up to 1,013.76×. Heads is the gold RD coin, Tails the silver one.</p>",
     rps: "<p><strong>Rock Paper Scissors</strong>: beat the house hand to climb the ladder — 1.96×, 3.92×, 7.84× and up to 1,003.52× after 10 wins. A tie gives you another throw at no cost. Cash out after any win. Scissors cut paper, rock smashes scissors, paper wraps rock.</p>",
     baccarat: "<p><strong>Baccarat</strong>: bet on Player, Banker or Tie. The hand closest to 9 wins. Player pays 1:1, Banker pays 0.95:1 and Tie pays 8:1 (on a tie, Player and Banker bets are returned). Standard third-card rules, infinite deck. House edge: 1.24% on Player, 1.06% on Banker, 14.4% on Tie.</p>",
+    double: "<p><strong>Double</strong>: pick a color and spin. 15 tiles: 7 red and 7 black pay 2×, the white RD tile pays 14×.</p>",
+    soccer: "<p><strong>Soccer</strong>: choose a corner and shoot. The keeper covers 1 to 4 of the 5 corners depending on difficulty. Every goal multiplies your win — cash out any time, or keep shooting for up to 15,000×.</p>",
+    door: "<p><strong>Door</strong>: pick one door on each of 10 floors. Behind most doors is a coin, behind the trap door you lose. Every floor raises your multiplier — cash out whenever you want.</p>",
     hilo: "<p><strong>Hi-Lo</strong>: guess whether the next card is higher or lower than the current one. Each correct guess multiplies your win. Skip cards you don't like and cash out whenever you want. The last card stays on the table for your next round, win or lose. Aces are low, kings are high.</p>"
   };
   function ogTab(g, tab) {
@@ -1701,6 +1704,296 @@
     }
   };
 
+  /* ---------- DOUBLE (estilo Blaze: 15 casas — 7 vermelhas 2×, 7 pretas 2×, 1 branca RD 14×) ---------- */
+  var DBL_ORDER = [0, 11, 5, 10, 6, 9, 7, 8, 1, 14, 2, 13, 3, 12, 4];
+  var DBL_PAY = { red: 2, black: 2, white: 14 };
+  function dblColor(n) { return n === 0 ? "white" : n <= 7 ? "red" : "black"; }
+  function dblFrom(f) { return Math.floor(f * 15); }
+  RD.fair.doubleFrom = dblFrom;
+  function dblTile(n) { var c = dblColor(n); return '<div class="dbl-t ' + c + '">' + (c === "white" ? '<svg viewBox="0 0 40 40"><path d="M20 4 L34 14 L20 36 L6 14 Z" fill="#ff2e55"/><path d="M20 4 L27 14 L20 36 L13 14 Z" fill="#ff6b86"/></svg>' : "<span>" + n + "</span>") + "</div>"; }
+  function dblDot(n) { return '<span class="dbl-dot ' + dblColor(n) + '">' + (n === 0 ? "RD" : n) + "</span>"; }
+  OG.double = {
+    label: function (b) { return dblDot(b.detail.result); },
+    cfg: function () {
+      return {
+        auto: true,
+        side: '<div><div class="ogx-label">Color</div><div class="dbl-pick"><button class="dbl-c red" data-dbl="red">2×</button><button class="dbl-c white" data-dbl="white">14×</button><button class="dbl-c black" data-dbl="black">2×</button></div></div>' +
+          '<div class="og-manual-only">' + profitField() + "</div>",
+        center: '<div class="dbl"><div class="dbl-stage" id="dbl-stage"><div class="dbl-ptr"></div><div class="dbl-strip" id="dbl-strip"></div></div><div class="dbl-sub" id="dbl-sub">Pick a color and place your bet</div></div>'
+      };
+    },
+    bind: function (ctx) {
+      var pick = ogPrefs.dblPick || "red", spinning = false, pos = 30 + Math.floor(Math.random() * 15), jit = 0;
+      function strip() { var h = ""; for (var c = 0; c < 10; c++) DBL_ORDER.forEach(function (n) { h += dblTile(n); }); $("#dbl-strip").innerHTML = h; }
+      function tileW() { var t = $("#dbl-strip .dbl-t"); if (!t) return 92; var cs = getComputedStyle(t); return t.getBoundingClientRect().width + parseFloat(cs.marginLeft) + parseFloat(cs.marginRight); }
+      function place(i, ms) {
+        var s = $("#dbl-strip"), st = $("#dbl-stage"); if (!s || !st) return;
+        var w = tileW(), x = st.clientWidth / 2 - (i * w + w / 2) + jit * w;
+        s.style.transition = ms ? "transform " + ms + "ms cubic-bezier(.1,.75,.12,1)" : "none"; s.style.transform = "translateX(" + x.toFixed(1) + "px)";
+      }
+      function hist() {
+        var u = me(), box = $("#dbl-hist"); if (!box) return;
+        var list = u ? db.betsOf(u.id).filter(function (b) { return b.game === "double" && b.detail && b.detail.result != null; }).slice(0, 16) : [];
+        box.innerHTML = list.length ? list.map(function (b) { return dblDot(b.detail.result); }).join("") : '<small class="faint">Your last rolls show up here</small>';
+      }
+      function refresh() { $$("[data-dbl]").forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-dbl") === pick); }); ctx.setProfit(DBL_PAY[pick]); }
+      $$("[data-dbl]").forEach(function (b) { b.addEventListener("click", function () { if (spinning) return; pick = b.getAttribute("data-dbl"); ogPrefs.dblPick = pick; savePrefs(); refresh(); }); });
+      strip(); place(pos, 0); hist(); refresh();
+      function play() {
+        if (spinning) return Promise.resolve(null);
+        var col = pick, m = DBL_PAY[col], a = ctx.amount(), u = ctx.validate(a, m); if (!u) return Promise.resolve(null);
+        var unlock = function () { spinning = false; ctx.lock(false); $$("[data-dbl]").forEach(function (x) { x.disabled = false; }); };
+        spinning = true; ctx.lock(true); $$("[data-dbl]").forEach(function (b) { b.disabled = true; });
+        $$("#dbl-strip .dbl-t.hit").forEach(function (t) { t.classList.remove("hit"); });
+        return roll(u, "double", a, { color: col }, 1).then(function (s) {
+          var n = dblFrom(s.fs[0]), c = dblColor(n), win = c === col, mult = win ? capMult(a, m) : 0;
+          var b = s.place(mult, win, { result: n, color: c, pick: col, nonce: s.nonce, client: s.client });
+          if (b.error) { unlock(); ctx.msg(b.error); return null; }
+          ctx.hold(b);
+          var k = DBL_ORDER.indexOf(n), ms = 4200;
+          jit = (Math.random() - 0.5) * 0.7; $("#dbl-sub").textContent = "Rolling…"; place(15 * 7 + k, ms);
+          return new Promise(function (done) {
+            setTimeout(function () {
+              if (!$("#dbl-strip")) { unlock(); ctx.record(b); return done({ win: win }); }
+              pos = 30 + k; place(pos, 0);
+              var t = $$("#dbl-strip .dbl-t")[pos]; if (t) t.classList.add("hit");
+              $("#dbl-sub").innerHTML = "Rolled " + dblDot(n) + (c === "white" ? " · White pays 14×" : " · " + (c === "red" ? "Red" : "Black") + " pays 2×");
+              unlock(); ctx.record(b); hist(); done({ win: win });
+            }, ms + 80);
+          });
+        });
+      }
+      return { refresh: refresh, play: play, cooldown: 300, resize: function () { place(pos, 0); } };
+    }
+  };
+
+  /* ---------- SOCCER (pênalti: 5 alvos, o goleiro defende 1–4; cada gol multiplica, RTP 98%) ---------- */
+  var SOCCER = {"easy":{"block":1,"kicks":10,"mult":[1,1.22,1.53,1.91,2.39,2.99,3.73,4.67,5.84,7.3,9.12]},"medium":{"block":2,"kicks":10,"mult":[1,1.63,2.72,4.53,7.56,12.6,21,35,58.34,97.24,162.07]},"hard":{"block":3,"kicks":8,"mult":[1,2.45,6.12,15.31,38.28,95.7,239.25,598.14,1495.36]},"expert":{"block":4,"kicks":6,"mult":[1,4.9,24.5,122.5,612.5,3062.5,15312.5]}};
+  /* Chute nº k: embaralha os 5 alvos com os números 4k…4k+3 (Fisher–Yates); os primeiros "block" são defendidos */
+  function soccerFrom(fs, kick, block) { var a = [0, 1, 2, 3, 4], f = fs.slice(kick * 4, kick * 4 + 4); for (var j = 0; j < 4; j++) { var x = j + Math.floor(f[j] * (5 - j)), t = a[j]; a[j] = a[x]; a[x] = t; } return a.slice(0, block); }
+  RD.fair.soccer = SOCCER; RD.fair.soccerFrom = soccerFrom;
+  var SC_Z = [[160, 78], [300, 66], [440, 78], [160, 164], [440, 164]]; // centro de cada alvo no gol (viewBox 600×360)
+  function soccerScene() {
+    var net = ""; for (var x = 96; x <= 504; x += 24) net += '<path d="M' + x + ' 34 V212" stroke="#fff" stroke-opacity=".09"/>'; for (var y = 46; y <= 212; y += 22) net += '<path d="M96 ' + y + ' H504" stroke="#fff" stroke-opacity=".09"/>';
+    var tg = SC_Z.map(function (z, i) { return '<g class="sc-tg" data-sc="' + i + '" transform="translate(' + z[0] + " " + z[1] + ')"><circle r="30" class="sc-ring"/><circle r="19" class="sc-dot"/><g class="sc-glove"><path d="M-12 8 v-16 a4 4 0 0 1 8 0 v6 v-9 a4 4 0 0 1 8 0 v9 v-6 a4 4 0 0 1 8 0 v16 a10 10 0 0 1 -10 10 h-4 a10 10 0 0 1 -10 -10z" fill="#ffd23f"/></g></g>'; }).join("");
+    var keeper = '<g class="sc-keeper" id="sc-keeper"><g transform="translate(300 172) scale(.82)"><ellipse cx="0" cy="40" rx="34" ry="6" fill="#000" opacity=".35"/><rect x="-14" y="8" width="11" height="30" rx="5" fill="#1b1220"/><rect x="3" y="8" width="11" height="30" rx="5" fill="#1b1220"/><rect x="-22" y="-26" width="44" height="40" rx="12" fill="#ff2e55"/><text x="0" y="0" text-anchor="middle" font-size="15" font-weight="900" fill="#fff" style="font-family:var(--font-display,Arial)">RD</text><path d="M-22 -18 L-44 -40 M22 -18 L44 -40" stroke="#ff2e55" stroke-width="10" stroke-linecap="round"/><circle cx="-46" cy="-43" r="8" fill="#ffd23f"/><circle cx="46" cy="-43" r="8" fill="#ffd23f"/><circle cx="0" cy="-42" r="15" fill="#e8b48a"/><path d="M-16 -46 a16 14 0 0 1 32 0 v-2 h6 v4 h-38z" fill="#ff2e55"/><text x="0" y="-48" text-anchor="middle" font-size="7" font-weight="900" fill="#fff">RD</text></g></g>';
+    var ball = '<g class="sc-ball" id="sc-ball"><g transform="translate(300 312)"><ellipse cx="0" cy="16" rx="16" ry="4" fill="#000" opacity=".35"/><circle r="15" fill="#fff"/><path d="M0 -6 l6 4 -2 7 h-8 l-2 -7z" fill="#1b1220"/><path d="M0 -15 v9 M6 -2 l9 -3 M4 5 l5 8 M-4 5 l-5 8 M-6 -2 l-9 -3" stroke="#1b1220" stroke-width="2"/></g></g>';
+    return '<svg viewBox="0 0 600 360" class="sc-svg" id="sc-svg" preserveAspectRatio="xMidYMid meet"><defs><linearGradient id="sc-grass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a1d2b"/><stop offset="1" stop-color="#160f17"/></linearGradient></defs>' +
+      '<rect y="212" width="600" height="148" fill="url(#sc-grass)"/><path d="M40 360 L170 212 H430 L560 360" fill="none" stroke="#fff" stroke-opacity=".08" stroke-width="3"/><ellipse cx="300" cy="312" rx="5" ry="2" fill="#fff" opacity=".4"/>' +
+      '<rect x="96" y="34" width="408" height="178" fill="#1d1420"/>' + net + '<path d="M90 214 V28 H510 V214" fill="none" stroke="#e9e2ea" stroke-width="10" stroke-linejoin="round"/>' + tg + keeper + ball + "</svg>";
+  }
+  OG.soccer = {
+    label: function (b) { return b.multiplier ? b.multiplier.toFixed(2) + "×" : "0.00×"; },
+    cfg: function () {
+      return {
+        side: selectField("sc-diff", "Difficulty", [["easy", "Easy · keeper covers 1"], ["medium", "Medium · covers 2"], ["hard", "Hard · covers 3"], ["expert", "Expert · covers 4"]], ogPrefs.scDiff || "medium") +
+          '<div id="sc-live" class="hidden">' + profitField("Total profit") + "</div>",
+        after: '<button class="btn btn-secondary btn-block hidden" id="sc-random" style="height:42px">Random shot</button>',
+        center: '<div class="sc"><div class="sc-pitch">' + soccerScene() + '<div class="sc-flash hidden" id="sc-flash"></div></div><div class="ladder" id="sc-ladder"></div><div class="sc-note" id="sc-note"></div></div>'
+      };
+    },
+    bind: function (ctx) {
+      var G = "soccer", round = null, pending = false; // round: { amount, diff, goals }
+      function diff() { return $("#sc-diff").value; }
+      function T() { return SOCCER[round ? round.diff : diff()]; }
+      function ladder() {
+        var t = T(), g = round ? round.goals : 0, box = $("#sc-ladder"); if (!box) return;
+        box.innerHTML = t.mult.slice(1).map(function (m, i) { return '<span class="' + (i < g ? "done" : i === g && round ? "next" : "") + '">' + m.toFixed(2) + "×</span>"; }).join("");
+        var nx = box.querySelector(".next") || box.querySelector(".done:last-of-type"); if (nx && box.scrollWidth > box.clientWidth) box.scrollTo({ left: Math.max(0, nx.offsetLeft - box.clientWidth / 2), behavior: "smooth" });
+        $("#sc-note").textContent = "Keeper covers " + t.block + " of 5 corners · " + Math.round((5 - t.block) / 5 * 100) + "% to score · up to " + t.mult[t.kicks].toLocaleString("en-US") + "×";
+      }
+      function refresh() {
+        var t = T();
+        if (round) { var m = t.mult[round.goals]; ctx.setProfit(m, m.toFixed(2)); var p = $("#og-profit"); if (p) p.value = (round.amount * (m - 1)).toFixed(2); }
+        else ctx.setProfit(t.mult[1], t.mult[1].toFixed(2));
+        ladder();
+      }
+      function setLive(on) {
+        if (!$("#sc-live")) return;
+        $("#sc-live").classList.toggle("hidden", !on); $("#sc-random").classList.toggle("hidden", !on); ctx.lock(on);
+        $("#sc-svg").classList.toggle("live", on);
+        var b = ctx.btn(); b.textContent = on ? "Cashout" : "Bet"; b.disabled = on && (!round || !round.goals);
+      }
+      function resetShot() {
+        var svg = $("#sc-svg"); if (!svg) return;
+        $("#sc-ball").style.transition = "none"; $("#sc-ball").style.transform = ""; $("#sc-keeper").style.transition = "none"; $("#sc-keeper").style.transform = "";
+        $$(".sc-tg", svg).forEach(function (g) { g.classList.remove("blocked", "goal", "saved"); });
+      }
+      /* Anima o chute: bola vai ao alvo, goleiro mergulha; defendidos ficam com a luva */
+      function animate(zone, blocked, goal) {
+        return new Promise(function (done) {
+          var svg = $("#sc-svg"); if (!svg) return done();
+          resetShot(); void svg.getBoundingClientRect();
+          var z = SC_Z[zone], dive = goal ? blocked[0] : zone, d = SC_Z[dive];
+          var ball = $("#sc-ball"), kp = $("#sc-keeper");
+          ball.style.transition = "transform .55s cubic-bezier(.25,.7,.3,1)"; ball.style.transform = "translate(" + (z[0] - 300) + "px," + (z[1] - 312) + "px) scale(.62)";
+          kp.style.transition = "transform .45s cubic-bezier(.3,.8,.3,1) .08s"; kp.style.transform = "translate(" + ((d[0] - 300) * 0.82) + "px," + ((d[1] - 150) * 0.5) + "px) rotate(" + (d[0] < 300 ? -32 : d[0] > 300 ? 32 : 0) + "deg)";
+          setTimeout(function () {
+            if (!document.contains(svg)) return done();
+            blocked.forEach(function (i) { var g = svg.querySelector('[data-sc="' + i + '"]'); if (g) g.classList.add("blocked"); });
+            var tg = svg.querySelector('[data-sc="' + zone + '"]'); if (tg) tg.classList.add(goal ? "goal" : "saved");
+            var fl = $("#sc-flash"); fl.className = "sc-flash " + (goal ? "goal" : "saved"); fl.textContent = goal ? "GOAL!" : "SAVED";
+            setTimeout(function () { if (fl) fl.className = "sc-flash hidden"; done(); }, goal ? 650 : 900);
+          }, 600);
+        });
+      }
+      function layout(r) { return floats(r.server, r.client, r.nonce, 4 * (round.goals + 1)).then(function (fs) { return soccerFrom(fs, round.goals, SOCCER[round.diff].block); }); }
+      function end(win) {
+        var u = me(), k = round.goals, mult = win ? capMult(round.amount, SOCCER[round.diff].mult[k]) : 0;
+        var b = db.settleRound(u.id, G, mult, win, { diff: round.diff, goals: k, shots: round.shots.join("") });
+        round = null; setLive(false); refresh(); ctx.record(b);
+      }
+      function shoot(zone) {
+        if (!round || pending) return;
+        var u = me(), r = db.activeRound(u.id, G); if (!r) return;
+        pending = true; ctx.btn().disabled = true; $("#sc-random").disabled = true;
+        var got = RD.live ? db.roundAct(G, "shoot", { zone: zone }).then(function (x) { if (x.error) { ctx.msg(x.error); return null; } return x; })
+          : layout(r).then(function (bl) { return { blocked: bl, goal: bl.indexOf(zone) < 0 }; });
+        got.then(function (x) {
+          if (!x || !round) { pending = false; return; }
+          round.shots.push(zone);
+          animate(zone, x.blocked, x.goal).then(function () {
+            pending = false; if (!round) return; $("#sc-random").disabled = false;
+            if (!x.goal) return end(false);
+            round.goals++;
+            if (RD.live ? !!x.bet : round.goals === SOCCER[round.diff].kicks) return end(true);
+            if (!RD.live) db.updateRound(u.id, G, { diff: round.diff, goals: round.goals, shots: round.shots });
+            resetShot(); refresh(); ctx.btn().disabled = false;
+          });
+        });
+      }
+      $("#sc-svg").addEventListener("click", function (e) { var t = e.target.closest("[data-sc]"); if (t) shoot(+t.getAttribute("data-sc")); });
+      $("#sc-random").addEventListener("click", function () { shoot(Math.floor(Math.random() * 5)); });
+      $("#sc-diff").addEventListener("change", function () { ogPrefs.scDiff = diff(); savePrefs(); refresh(); });
+      function start() {
+        var a = ctx.amount(), u = ctx.validate(a); if (!u || pending) return;
+        var df = diff(); pending = true;
+        rStart(u, G, a, { diff: df, goals: 0, shots: [] }).then(function (r) {
+          pending = false; if (r.error) return ctx.msg(r.error);
+          round = { amount: a, diff: df, goals: 0, shots: [] }; renderHeader(); ctx.refresh(); resetShot(); setLive(true); refresh();
+        });
+      }
+      refresh();
+      return {
+        refresh: refresh,
+        click: function () {
+          if (!round) return start();
+          if (!round.goals || pending) return;
+          pending = true;
+          if (RD.live) return db.roundAct(G, "cashout").then(function (x) { pending = false; if (x.error) return ctx.msg(x.error); if (round) end(true); });
+          pending = false; end(true);
+        },
+        resume: function () {
+          var u = me(), r = u && db.activeRound(u.id, G);
+          if (r) { round = { amount: r.amount, diff: r.state.diff, goals: r.state.goals || 0, shots: (r.state.shots || []).slice() }; $("#sc-diff").value = round.diff; $("#og-amt").value = r.amount.toFixed(2); setLive(true); refresh(); }
+        }
+      };
+    }
+  };
+
+  /* ---------- DOOR (escolha uma porta por andar, 10 andares, RTP 98%) ---------- */
+  var DOOR = {"easy":{"doors":4,"bad":1,"mult":[1,1.3,1.74,2.32,3.09,4.12,5.5,7.34,9.78,13.05,17.4]},"medium":{"doors":3,"bad":1,"mult":[1,1.47,2.2,3.3,4.96,7.44,11.16,16.74,25.11,37.67,56.51]},"hard":{"doors":2,"bad":1,"mult":[1,1.96,3.92,7.84,15.68,31.36,62.72,125.44,250.88,501.76,1003.52]},"expert":{"doors":3,"bad":2,"mult":[1,2.94,8.82,26.46,79.38,238.14,714.42,2143.25,6429.78,19289.34,57868.02]}};
+  /* Andar nº k: embaralha as portas com os números 3k…3k+2; as primeiras "bad" são armadilha */
+  function doorFrom(fs, level, cfg) { var a = [], f = fs.slice(level * 3, level * 3 + 3); for (var i = 0; i < cfg.doors; i++) a.push(i); for (var j = 0; j < cfg.doors - 1; j++) { var x = j + Math.floor(f[j] * (cfg.doors - j)), t = a[j]; a[j] = a[x]; a[x] = t; } return a.slice(0, cfg.bad); }
+  RD.fair.door = DOOR; RD.fair.doorFrom = doorFrom;
+  var DOOR_KID = '<svg viewBox="0 0 60 110" class="dr-kid"><ellipse cx="30" cy="106" rx="20" ry="4" fill="#000" opacity=".4"/><rect x="18" y="66" width="10" height="38" rx="5" fill="#3b2a48"/><rect x="32" y="66" width="10" height="38" rx="5" fill="#3b2a48"/><rect x="14" y="34" width="32" height="38" rx="10" fill="#ff2e55"/><text x="30" y="58" text-anchor="middle" font-size="10" font-weight="900" fill="#fff">RD</text><circle cx="30" cy="22" r="13" fill="#e8b48a"/><path d="M15 20 a15 13 0 0 1 30 0 v-1 h8 v4 h-38z" fill="#ff2e55"/><text x="30" y="17" text-anchor="middle" font-size="7" font-weight="900" fill="#fff">RD</text></svg>';
+  OG.door = {
+    label: function (b) { return b.multiplier ? b.multiplier.toFixed(2) + "×" : "0.00×"; },
+    cfg: function () {
+      return {
+        side: selectField("dr-diff", "Difficulty", [["easy", "Easy · 1 trap in 4"], ["medium", "Medium · 1 trap in 3"], ["hard", "Hard · 1 trap in 2"], ["expert", "Expert · 2 traps in 3"]], ogPrefs.drDiff || "medium") +
+          '<div id="dr-live" class="hidden">' + profitField("Total profit") + "</div>",
+        after: '<button class="btn btn-secondary btn-block hidden" id="dr-random" style="height:42px">Random door</button>',
+        center: '<div class="dr"><div class="dr-room" id="dr-room"><div class="dr-level" id="dr-level"></div><div class="dr-doors" id="dr-doors"></div>' + DOOR_KID + '</div><div class="ladder" id="dr-ladder"></div></div>'
+      };
+    },
+    bind: function (ctx) {
+      var G = "door", round = null, pending = false; // round: { amount, diff, level }
+      function diff() { return $("#dr-diff").value; }
+      function C() { return DOOR[round ? round.diff : diff()]; }
+      function doors(state) {
+        var c = C(), box = $("#dr-doors"); if (!box) return;
+        var h = ""; for (var i = 0; i < c.doors; i++) {
+          var cls = state && state.bad.indexOf(i) > -1 ? " open bad" : state && state.open === i ? " open good" : state && state.reveal ? " open good dim" : "";
+          h += '<button class="dr-door' + cls + '" data-dr="' + i + '"' + (round && !pending && !state ? "" : " disabled") + '><span class="dr-in">' + (cls.indexOf("bad") > -1 ? '<b class="dr-x">✕</b>' : cls ? '<b class="dr-coin">RD</b>' : "") + '</span><span class="dr-leaf"><i class="dr-knob"></i><i class="dr-p1"></i><i class="dr-p2"></i></span></button>';
+        }
+        box.innerHTML = h; box.style.setProperty("--n", c.doors);
+        var lv = round ? round.level : 0; $("#dr-level").textContent = "Floor " + (Math.min(lv + 1, 10)) + " / 10 · next " + (c.mult[lv + 1] ? c.mult[lv + 1].toFixed(2) + "×" : "—");
+      }
+      function ladder() {
+        var c = C(), lv = round ? round.level : 0, box = $("#dr-ladder"); if (!box) return;
+        box.innerHTML = c.mult.slice(1).map(function (m, i) { return '<span class="' + (i < lv ? "done" : i === lv && round ? "next" : "") + '">' + m.toFixed(2) + "×</span>"; }).join("");
+        var nx = box.querySelector(".next"); if (nx && box.scrollWidth > box.clientWidth) box.scrollTo({ left: Math.max(0, nx.offsetLeft - box.clientWidth / 2), behavior: "smooth" });
+      }
+      function refresh() {
+        var c = C();
+        if (round) { var m = c.mult[round.level]; ctx.setProfit(m, m.toFixed(2)); var p = $("#og-profit"); if (p) p.value = (round.amount * (m - 1)).toFixed(2); }
+        else ctx.setProfit(c.mult[1], c.mult[1].toFixed(2));
+        ladder();
+      }
+      function setLive(on) {
+        if (!$("#dr-live")) return;
+        $("#dr-live").classList.toggle("hidden", !on); $("#dr-random").classList.toggle("hidden", !on); ctx.lock(on);
+        var b = ctx.btn(); b.textContent = on ? "Cashout" : "Bet"; b.disabled = on && (!round || !round.level);
+      }
+      function layout(r, level) { return floats(r.server, r.client, r.nonce, 3 * (level + 1)).then(function (fs) { return doorFrom(fs, level, DOOR[round.diff]); }); }
+      function end(win, badShown) {
+        var u = me(), k = round.level, mult = win ? capMult(round.amount, DOOR[round.diff].mult[k]) : 0;
+        var b = db.settleRound(u.id, G, mult, win, { diff: round.diff, floors: k, picks: round.picks.join("") });
+        round = null; setLive(false); refresh(); ctx.record(b);
+        if (badShown) doors(badShown);
+      }
+      function pick(i) {
+        if (!round || pending) return;
+        var u = me(), r = db.activeRound(u.id, G); if (!r) return;
+        pending = true; ctx.btn().disabled = true; doors();
+        var lvl = round.level;
+        var got = RD.live ? db.roundAct(G, "pick", { door: i }).then(function (x) { if (x.error) { ctx.msg(x.error); return null; } return x; })
+          : layout(r, lvl).then(function (bad) { return { bad: bad, safe: bad.indexOf(i) < 0 }; });
+        got.then(function (x) {
+          if (!x || !round) { pending = false; doors(); return; }
+          round.picks.push(i);
+          var st = x.safe ? { bad: [], open: i } : { bad: x.bad, open: i };
+          doors(st); var d = $$("#dr-doors .dr-door")[i]; if (d) d.classList.add("picked");
+          setTimeout(function () {
+            pending = false; if (!round) return;
+            if (!x.safe) return end(false, { bad: x.bad, open: i, reveal: true });
+            round.level++;
+            if (RD.live ? !!x.bet : round.level === 10) return end(true, null);
+            if (!RD.live) db.updateRound(u.id, G, { diff: round.diff, level: round.level, picks: round.picks });
+            doors(); refresh(); ctx.btn().disabled = false;
+          }, x.safe ? 650 : 900);
+        });
+      }
+      $("#dr-doors").addEventListener("click", function (e) { var t = e.target.closest("[data-dr]"); if (t && !t.disabled) pick(+t.getAttribute("data-dr")); });
+      $("#dr-random").addEventListener("click", function () { if (round) pick(Math.floor(Math.random() * DOOR[round.diff].doors)); });
+      $("#dr-diff").addEventListener("change", function () { ogPrefs.drDiff = diff(); savePrefs(); doors(); refresh(); });
+      function start() {
+        var a = ctx.amount(), u = ctx.validate(a); if (!u || pending) return;
+        var df = diff(); pending = true;
+        rStart(u, G, a, { diff: df, level: 0, picks: [] }).then(function (r) {
+          pending = false; if (r.error) return ctx.msg(r.error);
+          round = { amount: a, diff: df, level: 0, picks: [] }; renderHeader(); ctx.refresh(); doors(); setLive(true); refresh();
+        });
+      }
+      doors(); refresh();
+      return {
+        refresh: refresh,
+        click: function () {
+          if (!round) return start();
+          if (!round.level || pending) return;
+          pending = true;
+          if (RD.live) return db.roundAct(G, "cashout").then(function (x) { pending = false; if (x.error) return ctx.msg(x.error); if (round) end(true, null); });
+          pending = false; end(true, null);
+        },
+        resume: function () {
+          var u = me(), r = u && db.activeRound(u.id, G);
+          if (r) { round = { amount: r.amount, diff: r.state.diff, level: r.state.level || 0, picks: (r.state.picks || []).slice() }; $("#dr-diff").value = round.diff; $("#og-amt").value = r.amount.toFixed(2); doors(); setLive(true); refresh(); }
+        }
+      };
+    }
+  };
+
   /* ---------- COINFLIP (RTP 99%) ---------- */
   function coinMult(k) { return Math.floor(0.99 * Math.pow(2, k) * 100) / 100; }
   function coinFrom(fs) { return fs.map(function (f) { return f < 0.5 ? "heads" : "tails"; }); }
@@ -2645,7 +2938,7 @@
       });
       if (before.kyc !== after.kyc && after.kyc === "Verified") { told = true; RD.toast("Your identity is verified"); }
       if (before.kyc !== after.kyc && after.kyc === "Rejected") { told = true; RD.toast("Verification rejected — please resubmit", "error"); }
-      if (!told && before.bal !== after.bal) RD.toast("Balance updated: " + fmt.usd(after.bal));
+      db.txOf(u.id).forEach(function (t) { if (!before[t.id] && t.type === "Deposit" && t.status === "Completed") RD.toast("Deposit credited: " + fmt.usd(t.amount)); });
     }
     if ($(".overlay.open")) return;
     /* Login terminou de carregar (ou trocou de conta) com um jogo aberto: monta o jogo de novo para retomar a rodada */

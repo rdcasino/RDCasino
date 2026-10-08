@@ -36,6 +36,7 @@
 - [x] Jogos de um clique sorteados no servidor (função `play_bet`, migração 0007): Dice, Limbo, Plinko, Keno, Wheel, Roulette, Coinflip e Baccarat. Testado com 200 apostas: resultado do servidor igual ao do site e saldo batendo no centavo.
 - [x] Jogos com rodada no servidor (migração 0012): Mines, Tower, Chicken, Hi-Lo, RPS, Crash e Blackjack. 304 rodadas conferidas contra a matemática do site. A tabela de rodadas e as seeds não podem ser lidas pelo navegador.
 - [x] Leaderboard do mês, afiliado com rev share de 15% e códigos promocionais no servidor (migração 0013).
+- [x] Novos originais no servidor (migração 0014): Double (estilo Blaze, 15 casas, RTP 93,33%), Soccer e Door (RTP 98%). 216 jogadas conferidas.
 - [x] Chat em tempo real e Chuva (Rain) no servidor (migrações 0005 e 0006, pg_cron divide a chuva a cada minuto).
 - [x] VIP Reload dado pelo admin, Tip entre jogadores e Chuva automática de hora em hora (migração 0008).
 - [x] KYC com documentos num cofre privado (Supabase Storage), aprovação no admin, saque acima de $2.000 exige KYC; admin credita depósito manualmente (migração 0010).
