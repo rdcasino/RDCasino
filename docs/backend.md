@@ -28,6 +28,16 @@
     3. Se o admin rejeitar, o valor volta para o saldo.
   - **Depósito mínimo:** $10, ou o mínimo da moeda, se for maior.
 
+## Status
+- [x] Banco de dados aplicado no Supabase (migrações 0001, 0002 e 0003).
+- [x] Cadastro com convite e login.
+- [x] Caixa manual com várias moedas: depósito por TxID e saque, com aprovação ou rejeição no admin.
+- [x] Admin no modo real: jogadores, transações e convites.
+- [ ] Jogos sorteados no servidor (Edge Function `play`).
+- [ ] VIP, rakeback e leaderboard no servidor.
+
+**Como ligar o modo real:** abra o site com `?live=1` (o navegador lembra a escolha) e com `?live=0` para voltar ao modo demonstração. O admin segue a mesma escolha. Para lançar para todos, troque `LIVE_DEFAULT` para `true` em `assets/js/data.js`.
+
 ## Ordem de construção
 1. Aplicar a migração e criar a conta de admin.
 2. Login e cadastro com convite no site; `RD.db` passa a chamar o Supabase.

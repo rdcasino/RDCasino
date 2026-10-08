@@ -298,3 +298,4 @@ h3 { font-size: 15px; font-weight: 600; }
 .notice svg { margin-top: 1px; }
 .notice.info { background: var(--info-soft); border-color: rgba(79, 134, 247, 0.25); color: #9dbcff; }
 .notice code { font-size: 12px; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; word-break: break-all; }

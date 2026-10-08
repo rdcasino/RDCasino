@@ -6,6 +6,23 @@
 
 window.RD = window.RD || {};
 
+/* Modo REAL (servidor Supabase) x modo demonstração (dados no navegador).
+   Por enquanto o modo real fica escondido: abra o site com ?live=1 para ligar
+   e ?live=0 para voltar. Quando lançar, troque LIVE_DEFAULT para true. */
+var LIVE_DEFAULT = false;
+RD.supabaseConfig = {
+  url: "https://szhmaytfipnzcdulotli.supabase.co",
+  anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6aG1heXRmaXBuemNkdWxvdGxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0NDYxMDksImV4cCI6MjA4NzAyMjEwOX0.l9DkjbnR-5AcFiSvz4jmNuIWpEL2EdhV9HW6zMMmaEA" // chave pública (anon): pode ficar no site, o banco é protegido por RLS
+};
+RD.live = (function () {
+  try {
+    var m = location.search.match(/[?&]live=([01])/);
+    if (m) localStorage.setItem("rd_live", m[1]);
+    var v = localStorage.getItem("rd_live");
+    return v === null ? LIVE_DEFAULT : v === "1";
+  } catch (e) { return LIVE_DEFAULT; }
+})() && !!window.supabase;
+
 RD.config = {
   brand: "RDCasino",
   currency: "USD",
