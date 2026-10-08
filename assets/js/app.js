@@ -98,6 +98,17 @@
 
   /* ---------- Wallet ---------- */
   function coin() { return RD.wallet.coins.filter(function (c) { return c.sym === state.coin; })[0]; }
+  /* Tip: manda parte do saldo para outro jogador (chega na hora) */
+  function tipForm(u) {
+    return '<div class="tip-box"><div id="tip-msg"></div><p class="muted tip-intro">' + ic("gift", 16) + "<span>Send part of your balance to another player. It arrives instantly.</span></p>" +
+      '<div class="field"><label>Recipient username</label><input class="input" id="tip-to" placeholder="username" autocomplete="off" value="' + esc(state.tipTo || "") + '"></div>' +
+      '<div class="field"><label>Amount (USD)</label><div class="input-group"><input type="number" min="1" step="0.01" id="tip-amt" placeholder="Min. $1"><button class="btn btn-ghost btn-sm" data-action="tip-max">Max</button></div>' +
+      '<div class="tip-quick">' + [1, 5, 10, 25, 50].map(function (v) { return '<button class="chip" data-action="tip-set" data-v="' + v + '">$' + v + "</button>"; }).join("") + "</div>" +
+      '<span class="hint">Available: ' + fmt.usd(u.balance) + "</span></div>" +
+      '<label class="check tip-pub"><input type="checkbox" id="tip-pub" checked><span>Show in chat</span></label>' +
+      '<button class="btn btn-primary btn-block btn-lg" data-action="tip">Send tip</button>' +
+      '<div class="wallet-foot">' + ic("lock", 14) + "Tips can't be reversed. Check the username before sending.</div></div>";
+  }
   /* Caixa no modo real: endereços da casa (cadastrados no banco) e pedido com hash da transação */
   var COIN_COLORS = { USDT: "#26a17b", USDC: "#2775ca", BTC: "#f7931a", ETH: "#627eea", SOL: "#9945ff", LTC: "#345d9d", TRX: "#ff060a", BNB: "#f3ba2f" };
   function renderLiveWallet() {
@@ -106,7 +117,8 @@
     if (coinsL.indexOf(state.coin) < 0) state.coin = coinsL[0];
     var nets = ws.filter(function (w) { return w.coin === state.coin; });
     var w = nets.filter(function (x) { return x.network === state.net; })[0] || nets[0]; if (w) state.net = w.network;
-    $$("#wallet-tabs .tab").forEach(function (t) { t.classList.toggle("active", t.getAttribute("data-wtab") === state.walletTab); t.classList.toggle("hidden", t.getAttribute("data-wtab") === "tip"); });
+    $$("#wallet-tabs .tab").forEach(function (t) { t.classList.toggle("active", t.getAttribute("data-wtab") === state.walletTab); });
+    if (state.walletTab === "tip") { $("#wallet-body").innerHTML = tipForm(u); hydrateIcons($("#wallet-body")); return; }
     if (!w) { $("#wallet-body").innerHTML = empty("Wallet loading", "Try again in a moment."); return; }
     var stable = /^(USDT|USDC)$/.test(w.coin), min = Math.max(+w.min_deposit || 0, RD.config.minDeposit || 0);
     var h = '<div class="coin-select">' + coinsL.map(function (x) { return '<button class="coin-opt' + (x === state.coin ? " active" : "") + '" data-coin="' + x + '"><span class="coin-dot" style="background:' + (COIN_COLORS[x] || "#666") + '">' + x[0] + "</span>" + x + "</button>"; }).join("") + "</div>" +
@@ -150,9 +162,7 @@
         '<button class="btn btn-primary btn-block btn-lg" data-action="withdraw">Request withdrawal</button>' +
         '<div class="wallet-foot">' + ic("lock", 14) + "Reviewed by our team. Above " + fmt.usd(RD.config.kycWithdrawLimit, { dec: 0 }) + " requires identity verification.</div>";
     } else {
-      h = '<div id="tip-msg"></div><div class="field"><label>Recipient username</label><input class="input" id="tip-to" placeholder="username"></div>' +
-        '<div class="field"><label>Amount (USD)</label><input class="input" type="number" min="0.01" step="0.01" id="tip-amt" placeholder="0.00"><span class="hint">Available: ' + fmt.usd(u.balance) + "</span></div>" +
-        '<button class="btn btn-primary btn-block btn-lg" data-action="tip">Send tip</button>';
+      h = tipForm(u);
     }
     $("#wallet-body").innerHTML = h;
   }
@@ -1863,7 +1873,7 @@
   }
   function rewardCards(u) {
     var rb = u ? Math.floor(u.rakeback * 100) / 100 : 0, items = [{ key: "rakeback", label: "Instant Rakeback", amount: rb, status: rb >= 0.01 ? "ready" : "empty" }].concat(u ? db.bonusState(u.id) : []);
-    if (!u) ["daily", "weekly", "monthly", "reload"].forEach(function (k) { var c = RD.config.bonuses[k]; items.push({ key: k, label: c.label, minTier: c.minTier, status: "locked", amount: 0 }); });
+    if (!u) ["daily", "weekly", "monthly"].forEach(function (k) { var c = RD.config.bonuses[k]; items.push({ key: k, label: c.label, minTier: c.minTier, status: "locked", amount: 0 }); });
     return '<div class="rw-grid">' + items.map(function (it) {
       var top, btn, sub = "";
       if (it.status === "locked") { top = "Reach " + it.minTier; btn = '<button class="rw-btn" disabled>' + ic("lock", 14) + "Locked</button>"; }
@@ -1901,7 +1911,6 @@
     var cards = '<div class="section">' + sectionHead("Rewards", "gift") + rewardCards(u) + "</div>" +
       '<div class="vip2-cards" style="margin-top:14px">' +
 
-      '<div class="card vip2-card"><span class="vip2-ic">' + ic("crown", 20) + '</span><h3>Level-up rewards</h3><p class="muted">A cash reward every time you reach a new level. Paid to your balance, no wagering.</p><div class="vip2-val">' + fmt.usd(v.pendingSum) + '</div><button class="btn btn-primary btn-block" data-action="vip-claim-all"' + (v.pending.length ? "" : " disabled") + ">" + (v.pending.length > 1 ? "Claim " + v.pending.length + " rewards" : "Claim reward") + "</button></div>" +
       '<div class="card vip2-card"><span class="vip2-ic">' + ic("trophy", 20) + '</span><h3>Monthly leaderboard</h3><p class="muted">Your wager also counts for the monthly race. Top ' + RD.config.leaderboardPrizes.length + ' get paid.</p><div class="vip2-val">' + fmt.usd(RD.config.leaderboardPrize, { dec: 0 }) + '</div><a class="btn btn-secondary btn-block" href="#/leaderboard">See the race</a></div></div>';
     var table = '<div class="section">' + sectionHead("Wager rewards", "crown") + '<div class="card vip2-table">' +
       '<div class="vip2-row head"><span>Level</span><span>Wager required</span><span class="right">Reward</span><span></span></div>' +
@@ -1916,7 +1925,7 @@
       ["What is rakeback?", "A share of the house edge of every bet you place comes back to you. It builds up as you play and you can claim it whenever you want."],
       ["Do levels expire?", "No. Your level is based on your lifetime wager and never goes down."],
       ["Daily, weekly and monthly bonuses", "They return part of the house edge from your recent play: daily from Bronze 2, weekly from Silver and monthly from Gold. The more you play, the bigger the bonus."],
-      ["VIP Reload", "From Jade, you get a reload bonus you can claim once a day for 7 days, based on your last 30 days of play."]
+      ["VIP Reload", "A special reload our VIP team gives to selected players. When you have one, it shows up in your rewards with how many claims are left."]
     ].map(function (q) { return '<div class="vip2-qa"><h4>' + q[0] + "</h4><p>" + q[1] + "</p></div>"; }).join("") + "</div></details></div>";
     return '<div class="container">' + hero + cards + table + faq + "</div>";
   };
@@ -2156,10 +2165,10 @@
     if (!r) { box.innerHTML = ""; return; }
     var left = new Date(r.ends_at).getTime() - Date.now();
     if (left <= 0) { box.innerHTML = '<div class="rain-card ending"><div class="rain-ic">' + rainIcon() + '</div><div class="grow"><b>Rain ending…</b><small>Splitting the pot</small></div></div>'; if (!renderRain.settling) { renderRain.settling = true; db.rainSettle().then(function () { renderRain.settling = false; renderRain(); }); } return; }
-    box.innerHTML = '<div class="rain-card"><div class="rain-ic">' + rainIcon() + '</div><div class="grow"><b>Rain in progress</b><div class="rain-stats"><span>' + ic("users", 13) + r.participants + '</span><span data-until="' + r.ends_at + '">' + untilTxt(r.ends_at) + "</span></div></div>" +
+    box.innerHTML = '<div class="rain-card"><div class="rain-ic">' + rainIcon() + '</div><div class="grow"><b>' + (r.auto ? "Hourly Rain" : "Rain in progress") + '</b><div class="rain-stats"><span>' + ic("users", 13) + r.participants + '</span><span class="rain-timer">' + ic("clock", 13) + '<i data-until="' + r.ends_at + '">' + untilTxt(r.ends_at) + "</i></span></div></div>" +
       '<div class="rain-act">' + (r.joined ? '<button class="btn btn-sm rain-joined" disabled>' + ic("check", 14) + "Joined</button>" : '<button class="btn btn-primary btn-sm" data-rain="join">Join</button>') +
       '<div class="rain-pot"><span>' + fmt.usd(+r.amount) + '</span><button data-rain="add" aria-label="Add to rain">' + ic("plus", 13) + "</button></div></div></div>" +
-      '<p class="rain-note">Split equally between everyone who joins. Wager at least ' + fmt.usd(+r.min_wager, { dec: 0 }) + " to join.</p>";
+      '<p class="rain-note">Split equally between everyone who joins before the timer ends' + (r.auto ? ", every hour" : "") + ". Wager at least " + fmt.usd(+r.min_wager, { dec: 0 }) + " to join.</p>";
   }
   function rainIcon() { return '<svg viewBox="0 0 48 48" width="40" height="40"><path d="M14 30a9 9 0 0 1 1-18 12 12 0 0 1 22 4 7 7 0 0 1-1 14z" fill="#cfe3ff"/><path d="M14 30a9 9 0 0 1 1-18 12 12 0 0 1 22 4" fill="none" stroke="#fff" stroke-width="2" opacity=".6"/><path d="M17 35l-2 5M25 35l-2 5M33 35l-2 5" stroke="#4da3ff" stroke-width="3" stroke-linecap="round"/></svg>'; }
   function renderChat() {
@@ -2168,9 +2177,10 @@
     var hue = function (name) { var h = 0; for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % 360; return h; };
     renderRain();
     box.innerHTML = list.length ? list.map(function (m) {
+      if (m.kind === "tip") return '<div class="chat-sys tip">' + ic("gift", 14) + "<span>" + esc(m.text) + "</span></div>";
       if (m.kind === "rain" || m.kind === "system") return '<div class="chat-sys">' + (m.kind === "rain" ? rainIcon().replace('width="40" height="40"', 'width="20" height="20"') : ic("alert", 14)) + "<span>" + esc(m.text) + "</span></div>";
       var pl = db.findByName(m.user), mine = u && u.username === m.user, h = hue(m.user || "?");
-      return '<div class="chat-msg' + (mine ? " mine" : "") + '"><span class="avatar" style="background:hsl(' + h + ',55%,32%);color:hsl(' + h + ',90%,88%)">' + initials(m.user) + '</span><div class="chat-bubble"><div class="chat-meta">' + RD.art.tierBadge(pl ? db.tierOf(pl.wagered) : null, 16) + "<strong>" + esc(m.user) + '</strong><time>' + (m.at ? new Date(m.at).toTimeString().slice(0, 5) : "") + "</time></div><p>" + esc(m.text) + "</p></div></div>";
+      return '<div class="chat-msg' + (mine ? " mine" : "") + '"><span class="avatar" style="background:hsl(' + h + ',55%,32%);color:hsl(' + h + ',90%,88%)">' + initials(m.user) + '</span><div class="chat-bubble"><div class="chat-meta">' + RD.art.tierBadge(pl ? db.tierOf(pl.wagered) : null, 16) + (mine || !u ? "<strong>" + esc(m.user) + "</strong>" : '<button class="chat-name" data-tip-user="' + esc(m.user) + '" title="Tip ' + esc(m.user) + '">' + esc(m.user) + "</button>") + '<time>' + (m.at ? new Date(m.at).toTimeString().slice(0, 5) : "") + "</time></div><p>" + esc(m.text) + "</p></div></div>";
     }).join("") : '<div class="empty" style="padding:40px 10px"><h3>No messages yet</h3><p>Say hi to the community.</p></div>';
     if (atBottom || !renderChat.seen) box.scrollTop = box.scrollHeight;
     renderChat.seen = true;
@@ -2203,7 +2213,7 @@
 
   /* ---------- Events ---------- */
   document.addEventListener("click", function (e) {
-    var t = e.target.closest("[data-open],[data-close],[data-drawer],[data-close-drawer],[data-action],[data-copy],[data-auth],[data-wtab],[data-coin],[data-net],[data-btab],[data-level],[data-promo],#user-btn,#burger,#bn-menu,#sb-backdrop");
+    var t = e.target.closest("[data-open],[data-close],[data-drawer],[data-close-drawer],[data-action],[data-copy],[data-auth],[data-wtab],[data-coin],[data-net],[data-btab],[data-level],[data-promo],[data-tip-user],#user-btn,#burger,#bn-menu,#sb-backdrop");
     if (!t) {
       if (!e.target.closest(".menu-wrap")) $("#user-menu").classList.add("hidden");
       if (e.target.classList.contains("overlay")) closeAll();
@@ -2219,6 +2229,7 @@
     if (t.hasAttribute("data-drawer")) { e.preventDefault(); closeAll(); var dn = t.getAttribute("data-drawer"); if (dn === "vip") renderVipDrawer(); else renderChat(); $("#drawer-" + dn).classList.add("open"); return; }
     if (t.hasAttribute("data-close-drawer")) return closeAll();
     if (t.hasAttribute("data-auth")) { e.preventDefault(); return openAuth(t.getAttribute("data-auth")); }
+    if (t.hasAttribute("data-tip-user")) { if (needLogin()) return; state.tipTo = t.getAttribute("data-tip-user"); state.walletTab = "tip"; closeAll(); openModal("wallet"); renderWallet(); var ia = $("#tip-amt"); if (ia) ia.focus(); return; }
     if (t.hasAttribute("data-wtab")) { state.walletTab = t.getAttribute("data-wtab"); return renderWallet(); }
     if (t.hasAttribute("data-coin")) { state.coin = t.getAttribute("data-coin"); return renderWallet(); }
     if (t.hasAttribute("data-net")) { state.net = t.getAttribute("data-net"); return renderWallet(); }
@@ -2242,10 +2253,13 @@
       case "new-campaign": return newCampaign();
       case "collect": { var c = db.collectCommission(u.id); RD.toast(c.error || fmt.usd(c.amount) + " added to your balance", c.error ? "error" : ""); renderHeader(); return route(true); }
       case "claim-bonus": {
-        if (needLogin()) return; var cb = db.claimBonus(u.id, t.getAttribute("data-key"));
-        RD.toast(cb.error || "Claimed " + fmt.usd(cb.amount), cb.error ? "error" : ""); renderHeader(); renderSidebar(); markActive(currentPath);
-        if ($("#drawer-vip").classList.contains("open")) renderVipDrawer();
-        if (currentPath === "vip") route(true); return;
+        if (needLogin()) return; t.disabled = true;
+        Promise.resolve(db.claimBonus(u.id, t.getAttribute("data-key"))).then(function (cb) {
+          RD.toast(cb.error || "Claimed " + fmt.usd(cb.amount), cb.error ? "error" : ""); renderHeader(); renderSidebar(); markActive(currentPath);
+          if ($("#drawer-vip").classList.contains("open")) renderVipDrawer();
+          if (currentPath === "vip") route(true);
+        });
+        return;
       }
       case "vip-claim-all": {
         if (needLogin()) return; var got = 0;
@@ -2289,10 +2303,20 @@
         closeAll(); renderHeader(); RD.toast("Withdrawal of " + fmt.usd(amt) + " sent for review"); return route(true);
       }
       case "tip": {
-        var tp = db.tip(u.id, $("#tip-to").value.trim(), parseFloat($("#tip-amt").value));
-        if (tp.error) { $("#tip-msg").innerHTML = errorBox(tp.error); return; }
-        closeAll(); renderHeader(); return RD.toast("Tip sent");
+        var to = $("#tip-to").value.trim(), ta = Math.round(parseFloat($("#tip-amt").value) * 100) / 100;
+        if (!to) { $("#tip-msg").innerHTML = errorBox("Type the username."); return; }
+        if (!(ta >= 1)) { $("#tip-msg").innerHTML = errorBox("Minimum tip is $1."); return; }
+        if (!confirm("Send " + fmt.usd(ta) + " to " + to + "? Tips can't be reversed.")) return;
+        t.disabled = true;
+        Promise.resolve(db.tip(u.id, to, ta, $("#tip-pub").checked)).then(function (tp) {
+          t.disabled = false;
+          if (tp.error) { $("#tip-msg").innerHTML = errorBox(tp.error); return; }
+          state.tipTo = ""; closeAll(); renderHeader(); if ($("#drawer-chat") && $("#drawer-chat").classList.contains("open")) renderChat(); RD.toast("Tip sent to " + to);
+        });
+        return;
       }
+      case "tip-max": { $("#tip-amt").value = Math.floor(u.balance * 100) / 100; return; }
+      case "tip-set": { $("#tip-amt").value = t.getAttribute("data-v"); return; }
       case "verify": {
         var game = $("#v-game").value, sv = $("#v-server").value.trim(), cl = $("#v-client").value.trim(), n = parseInt($("#v-nonce").value, 10) || 0, extra = ($("#v-extra").value || "").trim();
         if (!sv || !cl) { $("#v-out").innerHTML = errorBox("Fill in both seeds."); return; }
