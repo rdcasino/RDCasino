@@ -2064,7 +2064,7 @@
     var k = KYC_LABEL[u.kyc] || [u.kyc, ""], txs = db.txOf(u.id);
     var pendingWd = txs.filter(function (t) { return t.type === "Withdrawal" && t.status === "Pending"; }).reduce(function (a, t) { return a + t.amount; }, 0);
     var head = '<div class="page-head"><h1>' + esc(u.username) + '</h1><p>Member since ' + u.created.slice(0, 10) + "</p></div>" +
-      '<div class="card balance-card"><div><div class="kpi-label">Balance</div><div class="kpi-value num">' + fmt.usd(u.balance) + '</div></div><div><div class="kpi-label">Pending withdrawals</div><div class="kpi-value num">' + fmt.usd(pendingWd) + '</div></div><div><div class="kpi-label">Verification</div><div style="margin-top:6px"><span class="badge ' + k[1] + '">' + k[0] + '</span></div></div><div class="row bc-actions" style="gap:8px"><button class="btn btn-primary" data-open="wallet">Deposit</button><button class="btn btn-secondary" data-action="open-withdraw">Withdraw</button></div></div>' +
+      '<div class="card balance-card"><div><div class="kpi-label">Balance</div><div class="kpi-value num">' + fmt.usd(u.balance) + '</div></div><div><div class="kpi-label">Pending withdrawals</div><div class="kpi-value num">' + fmt.usd(pendingWd) + "</div>" + (u.held > 0 ? '<small class="held-note">' + ic("lock", 12) + "On hold: " + fmt.usd(u.held) + " · contact support</small>" : "") + '</div><div><div class="kpi-label">Verification</div><div style="margin-top:6px"><span class="badge ' + k[1] + '">' + k[0] + '</span></div></div><div class="row bc-actions" style="gap:8px"><button class="btn btn-primary" data-open="wallet">Deposit</button><button class="btn btn-secondary" data-action="open-withdraw">Withdraw</button></div></div>' +
       '<div class="pill-tabs" style="margin:20px 0">' + [["overview", "Transactions"], ["bets", "Bets"], ["verification", "Verification"], ["stats", "Statistics"]].map(function (t) { return '<a class="' + (t[0] === tab ? "active" : "") + '" href="#/account/' + t[0] + '">' + t[1] + "</a>"; }).join("") + "</div>";
     var body;
     if (tab === "bets") body = '<div class="card">' + betsTable(db.betsOf(u.id).slice(0, 50), "Your bets show up here.") + "</div>";
@@ -2136,7 +2136,9 @@
 
   /* ---------- Static pages ---------- */
   pages.sports = function () {
-    return '<div class="container"><div class="card empty" style="padding:72px 20px">' + ic("ball", 40) + '<h2 style="margin-top:14px">Sportsbook is coming</h2><p style="max-width:420px;margin:8px auto 20px">We are integrating a sportsbook provider. Meanwhile, try RD Originals.</p><a class="btn btn-primary" href="#/game/dice">Play Dice</a></div></div>';
+    var og = RD.games.filter(function (g) { return g.cat === "originals" && g.playable && g.enabled; });
+    return '<div class="container"><div class="sports-soon">' + ic("ball", 26) + '<div><h1>Sports is coming soon</h1><p class="muted">Meanwhile, play RD Originals.</p></div></div>' +
+      '<div class="section">' + sectionHead("RD Originals", "star") + '<div class="game-grid">' + og.map(function (g) { return gameCard(g); }).join("") + "</div></div></div>";
   };
   pages.fairness = function () {
     return '<div class="container prose"><h1>Provably fair</h1><p class="muted" style="margin-top:8px">Every RD Originals result can be verified by you. We commit to the server seed (showing its hash) before you bet, so nobody can change a result afterwards.</p>' +
@@ -2209,7 +2211,7 @@
       if (m.kind === "tip") return '<div class="chat-sys tip">' + ic("gift", 14) + "<span>" + esc(m.text) + "</span></div>";
       if (m.kind === "rain" || m.kind === "system") return '<div class="chat-sys">' + (m.kind === "rain" ? rainIcon().replace('width="40" height="40"', 'width="20" height="20"') : ic("alert", 14)) + "<span>" + esc(m.text) + "</span></div>";
       var pl = db.findByName(m.user), mine = u && u.username === m.user, h = hue(m.user || "?");
-      return '<div class="chat-msg' + (mine ? " mine" : "") + '"><span class="avatar" style="background:hsl(' + h + ',55%,32%);color:hsl(' + h + ',90%,88%)">' + initials(m.user) + '</span><div class="chat-bubble"><div class="chat-meta">' + RD.art.tierBadge(pl ? db.tierOf(pl.wagered) : null, 16) + (mine || !u ? "<strong>" + esc(m.user) + "</strong>" : '<button class="chat-name" data-tip-user="' + esc(m.user) + '" title="Tip ' + esc(m.user) + '">' + esc(m.user) + "</button>") + '<time>' + (m.at ? new Date(m.at).toTimeString().slice(0, 5) : "") + "</time></div><p>" + esc(m.text) + "</p></div></div>";
+      return '<div class="chat-msg' + (mine ? " mine" : "") + (m.pending ? " pending" : "") + '"><span class="avatar" style="background:hsl(' + h + ',55%,32%);color:hsl(' + h + ',90%,88%)">' + initials(m.user) + '</span><div class="chat-bubble"><div class="chat-meta">' + RD.art.tierBadge(pl ? db.tierOf(pl.wagered) : null, 16) + (mine || !u ? "<strong>" + esc(m.user) + "</strong>" : '<button class="chat-name" data-tip-user="' + esc(m.user) + '" title="Tip ' + esc(m.user) + '">' + esc(m.user) + "</button>") + '<time>' + (m.at ? new Date(m.at).toTimeString().slice(0, 5) : "") + "</time></div><p>" + esc(m.text) + "</p></div></div>";
     }).join("") : '<div class="empty" style="padding:40px 10px"><h3>No messages yet</h3><p>Say hi to the community.</p></div>';
     if (atBottom || !renderChat.seen) box.scrollTop = box.scrollHeight;
     renderChat.seen = true;

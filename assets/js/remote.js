@@ -37,7 +37,7 @@
     return {
       id: p.id, username: p.username, email: email || "", country: p.country, refCode: p.ref_code, referrerId: p.referred_by, referredBy: null,
       status: p.status === "active" ? "Active" : "Suspended", kyc: KYC[p.kyc] || "Not started", kycReason: "", kycInfo: null,
-      balance: n(p.balance), wagered: n(p.wagered), profit: n(p.profit), bets: +p.bets_count || 0, rakeback: +p.rakeback || 0, rakebackClaimed: sum("Rakeback"),
+      balance: n(p.balance), held: n(p.held), wagered: n(p.wagered), profit: n(p.profit), bets: +p.bets_count || 0, rakeback: +p.rakeback || 0, rakebackClaimed: sum("Rakeback"),
       claimedTiers: p.claimed_tiers || [], bonusTotal: n(sum("Bonus") + sum("Level reward")), deposits: sum("Deposit"), withdrawals: sum("Withdrawal"), firstDeposit: firstDep,
       created: p.created_at, note: p.note || "", affShare: null, campaigns: [], rounds: {},
       seeds: { server: "", client: "", nonce: 0, revealed: [] }
@@ -229,7 +229,7 @@
   sb.channel("rd-live")
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages" }, function (ev) {
       if (D.chat.some(function (x) { return x.id === ev.new.id; })) return;
-      D.chat.push(mapMsg(ev.new)); if (D.chat.length > 100) D.chat.splice(0, D.chat.length - 100); chatNotify();
+      addMsg(ev.new); if (D.chat.length > 100) D.chat.splice(0, D.chat.length - 100); chatNotify();
       if (((ev.new.kind === "rain" && /split between/.test(ev.new.text)) || ev.new.kind === "tip") && state.user) refresh();
     })
     .on("postgres_changes", { event: "*", schema: "public", table: "rains" }, function () { loadRain(); })
@@ -243,16 +243,26 @@
     sb.from("chat_messages").select("*").gt("id", lastId).order("id").limit(50).then(function (r) {
       var fresh = (r.data || []).filter(function (m) { return !D.chat.some(function (x) { return x.id === m.id; }); });
       if (!fresh.length) return;
-      fresh.forEach(function (m) { D.chat.push(mapMsg(m)); }); if (D.chat.length > 100) D.chat.splice(0, D.chat.length - 100);
+      fresh.forEach(addMsg); if (D.chat.length > 100) D.chat.splice(0, D.chat.length - 100);
       if (fresh.some(function (m) { return (m.kind === "rain" && /split between/.test(m.text)) || m.kind === "tip"; }) && state.user) refresh();
       chatNotify();
     });
     if (live.tick % 2 === 0) loadRain();
   }, 3000);
+  /* Mensagem nova do servidor: se for a minha que já está na tela (enviada agora), só confirma */
+  function addMsg(row) {
+    if (D.chat.some(function (x) { return x.id === row.id; })) return;
+    var mine = D.chat.filter(function (x) { return x.pending && x.user === row.username && x.text === row.text; })[0];
+    if (mine) { mine.id = row.id; mine.at = row.created_at; mine.pending = false; return; }
+    D.chat.push(mapMsg(row));
+  }
+  /* Envio instantâneo: a mensagem aparece na hora e o servidor confirma em seguida */
   db.chatSend = function (pid, text) {
+    var me = db.current(), tmp = { id: "tmp-" + Date.now(), user: me ? me.username : "", text: String(text).trim().slice(0, 200), at: new Date().toISOString(), kind: "user", pending: true };
+    D.chat.push(tmp); chatNotify();
     return sb.rpc("chat_send", { p_text: text }).then(function (r) {
-      if (r.error) return { error: msg(r.error) };
-      if (!live.rt) return sb.from("chat_messages").select("*").eq("id", r.data).maybeSingle().then(function (m) { if (m.data && !D.chat.some(function (x) { return x.id === m.data.id; })) { D.chat.push(mapMsg(m.data)); chatNotify(); } return { ok: true }; });
+      if (r.error) { D.chat.splice(D.chat.indexOf(tmp), 1); chatNotify(); return { error: msg(r.error) }; }
+      if (tmp.pending) { if (D.chat.some(function (x) { return x.id === r.data; })) D.chat.splice(D.chat.indexOf(tmp), 1); else { tmp.id = r.data; tmp.pending = false; } }
       return { ok: true };
     });
   };
@@ -301,7 +311,10 @@
     return sb.rpc(fn, args).then(function (r) { if (r.error) { RD.toast(msg(r.error), "error"); throw r.error; } return loadAdmin().then(function () { db.emit(); return r.data; }); });
   }
   function rid(txId) { return +String(txId).replace("TX-", ""); }
-  db.decideTx = function (txId, approve, reason) { return adminCall("admin_decide_tx", { p_id: rid(txId), p_approve: approve, p_tx_hash: null, p_note: reason || null }); };
+  db.decideTx = function (txId, approve, reason, hold) { return adminCall("admin_decide_tx", { p_id: rid(txId), p_approve: approve, p_tx_hash: null, p_note: reason || null, p_hold: !!hold }); };
+  db.holdBalance = function (pid, amount, reason) { return adminCall("admin_hold", { p_user: pid, p_amount: amount, p_reason: reason }); };
+  db.releaseHeld = function (pid, amount, reason) { return adminCall("admin_release", { p_user: pid, p_amount: amount, p_reason: reason }); };
+  db.confiscateHeld = function (pid, amount, reason) { return adminCall("admin_confiscate", { p_user: pid, p_amount: amount, p_reason: reason }); };
   db.decideWithdrawal = db.decideTx;
   db.adjustBalance = function (pid, amount, reason, type) { return adminCall("admin_adjust_balance", { p_user: pid, p_amount: amount, p_reason: reason || "", p_type: type === "Bonus" ? "bonus" : "adjustment" }); };
   db.setStatus = function (pid, status) { return adminCall("admin_set_status", { p_user: pid, p_status: status === "Suspended" ? "suspended" : "active" }); };
