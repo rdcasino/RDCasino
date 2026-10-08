@@ -286,6 +286,19 @@
   function minesFrom(fs, m) { var a = []; for (var i = 0; i < 25; i++) a.push(i); for (var j = 0; j < 24; j++) { var k = j + Math.floor(fs[j] * (25 - j)), t = a[j]; a[j] = a[k]; a[k] = t; } return a.slice(0, m); }
   function cardFrom(f) { var i = Math.floor(f * 52); return { rank: (i % 13) + 1, suit: Math.floor(i / 13) }; }
   RD.fair = { hmac: hmac, sha256: sha256, floatFrom: floatFrom, outcome: outcome, floats: floats, minesFrom: minesFrom, cardFrom: cardFrom };
+  /* Aposta de um clique: pega os números sorteados e devolve place() para gravar.
+     Modo demonstração: sorteia aqui com a seed local.
+     Modo real: o servidor sorteia, calcula e grava antes (db.playBet); place()
+     só aplica o resultado que veio do servidor. */
+  function roll(u, game, amount, params, count, single) {
+    if (db.playBet) return db.playBet(game, amount, params).then(function (r) {
+      if (r.error) { var z = []; for (var i = 0; i < count; i++) z.push(0); return { fs: z, nonce: 0, client: "", place: function () { return { error: r.error }; } }; }
+      return r;
+    });
+    var s = db.reserve(u.id);
+    var p = single ? hmac(s.server, s.client + ":" + s.nonce).then(function (buf) { return [floatFrom(buf)]; }) : floats(s.server, s.client, s.nonce, count);
+    return p.then(function (fs) { return { fs: fs, nonce: s.nonce, client: s.client, place: function (mult, win, detail) { return db.placeBet(u.id, game, amount, mult, win, detail); } }; });
+  }
 
   /* ---------- Tabelas e fórmulas ---------- */
   /* Tabelas iguais às da Stake (8 a 16 linhas, RTP ≈ 99%) */
@@ -564,10 +577,9 @@
         refresh: refresh,
         play: function () {
           var a = ctx.amount(), p = params(), u = ctx.validate(a, p.mult); if (!u) return Promise.resolve(null);
-          var s = db.reserve(u.id), nonce = s.nonce, client = s.client;
-          return hmac(s.server, client + ":" + nonce).then(function (buf) {
-            var res = outcome("dice", floatFrom(buf)), win = over ? res > p.target : res < p.target;
-            var b = db.placeBet(u.id, "dice", a, p.mult, win, { result: res, target: p.target, mode: over ? "over" : "under", nonce: nonce, client: client }); if (b.error) { ctx.msg(b.error); return null; }
+          return roll(u, "dice", a, { target: p.target, mode: over ? "over" : "under" }, 1, true).then(function (s) {
+            var nonce = s.nonce, client = s.client, res = outcome("dice", s.fs[0]), win = over ? res > p.target : res < p.target;
+            var b = s.place(p.mult, win, { result: res, target: p.target, mode: over ? "over" : "under", nonce: nonce, client: client }); if (b.error) { ctx.msg(b.error); return null; }
             var r = $("#dx-res"); if (r) { r.classList.remove("hidden", "w", "l", "pop"); void r.offsetWidth; r.textContent = res.toFixed(2); r.style.left = "calc(var(--pad) + (100% - 2 * var(--pad)) * " + (res / 100) + ")"; r.classList.add(win ? "w" : "l", "pop"); }
             ctx.record(b); return { win: win };
           });
@@ -600,10 +612,9 @@
         refresh: refresh, cooldown: 320,
         play: function () {
           var a = ctx.amount(), m = target(), u = ctx.validate(a, m); if (!u) return Promise.resolve(null);
-          var s = db.reserve(u.id), nonce = s.nonce, client = s.client;
-          return hmac(s.server, client + ":" + nonce).then(function (buf) {
-            var res = outcome("limbo", floatFrom(buf)), win = res >= m;
-            var b = db.placeBet(u.id, "limbo", a, m, win, { result: res, target: m, nonce: nonce, client: client }); if (b.error) { ctx.msg(b.error); return null; }
+          return roll(u, "limbo", a, { target: m }, 1, true).then(function (s) {
+            var nonce = s.nonce, client = s.client, res = outcome("limbo", s.fs[0]), win = res >= m;
+            var b = s.place(m, win, { result: res, target: m, nonce: nonce, client: client }); if (b.error) { ctx.msg(b.error); return null; }
             var el = $("#lb-num"), t0 = performance.now();
             if (el) { el.classList.remove("w", "l"); (function step(t) { var k = Math.max(0, Math.min(1, (t - t0) / 280)); el.textContent = (1 + (res - 1) * k).toFixed(2) + "×"; if (k < 1) requestAnimationFrame(step); else el.classList.add(win ? "w" : "l"); })(t0); }
             ctx.record(b); return { win: win };
@@ -665,11 +676,11 @@
       draw();
       function play() {
         var a = ctx.amount(), t = table(), R = rows(), rk = risk(), u = ctx.validate(a, Math.max.apply(null, t)); if (!u) return Promise.resolve(null);
-        var s = db.reserve(u.id), nonce = s.nonce, client = s.client;
         live++;
-        return floats(s.server, client, nonce, R).then(function (fs) {
+        return roll(u, "plinko", a, { rows: R, risk: rk }, R).then(function (s) {
+          var fs = s.fs, nonce = s.nonce, client = s.client;
           var path = fs.map(function (f) { return Math.floor(f * 2); }), slot = path.reduce(function (x, y) { return x + y; }, 0), m = t[slot];
-          var b = db.placeBet(u.id, "plinko", a, m, true, { result: m, rows: R, risk: rk, slot: slot, path: path.join(""), nonce: nonce, client: client });
+          var b = s.place(m, true, { result: m, rows: R, risk: rk, slot: slot, path: path.join(""), nonce: nonce, client: client });
           if (b.error) { live--; ctx.msg(b.error); return null; }
           ctx.hold(b);
           return drop(path, slot).then(function () { live--; ctx.record(b); return { win: m > 1 }; });
@@ -1010,10 +1021,10 @@
       draw();
       function play() {
         var a = ctx.amount(), t = wheelTable(n(), risk()), N = t.length, u = ctx.validate(a, Math.max.apply(null, t)); if (!u || spinning) return Promise.resolve(null);
-        var s = db.reserve(u.id), nonce = s.nonce, client = s.client; spinning = true; ctx.lock(true);
-        return floats(s.server, client, nonce, 1).then(function (fs) {
-          var seg = Math.floor(fs[0] * N), m = t[seg];
-          var b = db.placeBet(u.id, "wheel", a, m, m > 0, { result: m, segment: seg, segments: N, risk: risk(), nonce: nonce, client: client });
+        spinning = true; ctx.lock(true);
+        return roll(u, "wheel", a, { segments: N, risk: risk() }, 1).then(function (s) {
+          var fs = s.fs, nonce = s.nonce, client = s.client, seg = Math.floor(fs[0] * N), m = t[seg];
+          var b = s.place(m, m > 0, { result: m, segment: seg, segments: N, risk: risk(), nonce: nonce, client: client });
           if (b.error) { spinning = false; ctx.lock(false); ctx.msg(b.error); return null; }
           ctx.hold(b);
           var segA = 360 / N, jitter = (Math.random() - 0.5) * segA * 0.6, target = -((seg + 0.5) * segA) + jitter;
@@ -1078,10 +1089,10 @@
         if (busyK) return Promise.resolve(null);
         if (!picks.length) { ctx.msg("Select at least 1 number."); return Promise.resolve(null); }
         var a = ctx.amount(), t = kenoTable(picks.length, risk()), u = ctx.validate(a); if (!u) return Promise.resolve(null);
-        var s = db.reserve(u.id), nonce = s.nonce, client = s.client; busyK = true; ctx.lock(true);
-        return floats(s.server, client, nonce, 10).then(function (fs) {
-          var drawn = kenoFrom(fs), hits = drawn.filter(function (n) { return picks.indexOf(n) > -1; }).length, m = capMult(a, t[hits]);
-          var b = db.placeBet(u.id, "keno", a, m, m > 0, { result: hits, hits: hits, picks: picks.length, drawn: drawn, risk: risk(), nonce: nonce, client: client });
+        busyK = true; ctx.lock(true);
+        return roll(u, "keno", a, { picks: picks.slice(), risk: risk() }, 10).then(function (s) {
+          var fs = s.fs, nonce = s.nonce, client = s.client, drawn = kenoFrom(fs), hits = drawn.filter(function (n) { return picks.indexOf(n) > -1; }).length, m = capMult(a, t[hits]);
+          var b = s.place(m, m > 0, { result: hits, hits: hits, picks: picks.length, drawn: drawn, risk: risk(), nonce: nonce, client: client });
           if (b.error) { busyK = false; ctx.lock(false); ctx.msg(b.error); return null; }
           ctx.hold(b);
           paint([]);
@@ -1321,12 +1332,12 @@
       function play() {
         var t = total(); if (!t) { ctx.msg("Place chips on the table first."); return Promise.resolve(null); }
         var u = ctx.validate(t); if (!u || spinning) return Promise.resolve(null);
-        var s = db.reserve(u.id), nonce = s.nonce, client = s.client; spinning = true; ctx.lock(true);
-        return floats(s.server, client, nonce, 1).then(function (fs) {
-          var n = Math.floor(fs[0] * 37), payout = 0, wins = [];
+        spinning = true; ctx.lock(true);
+        return roll(u, "roulette", t, { bets: JSON.parse(JSON.stringify(bets)) }, 1).then(function (s) {
+          var fs = s.fs, nonce = s.nonce, client = s.client, n = Math.floor(fs[0] * 37), payout = 0, wins = [];
           for (var k in bets) if (rlWins(k, n)) { payout += bets[k] * rlPays(k); wins.push(k); }
           var mult = capMult(t, Math.round((payout / t) * 10000) / 10000);
-          var b = db.placeBet(u.id, "roulette", t, mult, payout > 0, { result: n, bets: JSON.parse(JSON.stringify(bets)), nonce: nonce, client: client });
+          var b = s.place(mult, payout > 0, { result: n, bets: JSON.parse(JSON.stringify(bets)), nonce: nonce, client: client });
           if (b.error) { spinning = false; ctx.lock(false); ctx.msg(b.error); return null; }
           ctx.hold(b);
           var i = RL_ORDER.indexOf(n), segA = 360 / 37, target = -((i + 0.5) * segA);
@@ -1592,12 +1603,12 @@
       function play() {
         if (flipping) return Promise.resolve(null);
         var k = n(), m = coinMult(k), a = ctx.amount(), u = ctx.validate(a, m); if (!u) return Promise.resolve(null);
-        var s = db.reserve(u.id), nonce = s.nonce, client = s.client, pick = side; flipping = true; ctx.lock(true);
+        var pick = side; flipping = true; ctx.lock(true);
         $$("[data-cfm],[data-cfs]").forEach(function (b) { b.disabled = true; });
-        return floats(s.server, client, nonce, k).then(function (fs) {
-          var res = coinFrom(fs), hits = 0; while (hits < k && res[hits] === pick) hits++;
+        return roll(u, "coinflip", a, { flips: k, pick: pick }, k).then(function (s) {
+          var fs = s.fs, nonce = s.nonce, client = s.client, res = coinFrom(fs), hits = 0; while (hits < k && res[hits] === pick) hits++;
           var shown = res.slice(0, Math.min(k, hits + 1)), win = hits === k, mult = win ? capMult(a, m) : 0;
-          var b = db.placeBet(u.id, "coinflip", a, mult, win, { result: shown.join(","), pick: pick, flips: k, hits: hits, nonce: nonce, client: client });
+          var b = s.place(mult, win, { result: shown.join(","), pick: pick, flips: k, hits: hits, nonce: nonce, client: client });
           if (b.error) { flipping = false; ctx.lock(false); ctx.msg(b.error); return null; }
           ctx.hold(b);
           var row = $("#cf-row"); if (row) row.innerHTML = k > 1 ? res.slice(0, k).map(function (_, i) { return '<span class="cf-mini" data-i="' + i + '"></span>'; }).join("") : "";
@@ -1774,12 +1785,12 @@
       function play() {
         var t = total(); if (!t) { ctx.msg("Place chips on Player, Banker or Tie first."); return Promise.resolve(null); }
         var u = ctx.validate(t); if (!u || dealing) return Promise.resolve(null);
-        var s = db.reserve(u.id), nonce = s.nonce, client = s.client; dealing = true; ctx.lock(true);
-        return floats(s.server, client, nonce, 6).then(function (fs) {
-          var g = baccaratFrom(fs), pay = 0;
+        dealing = true; ctx.lock(true);
+        return roll(u, "baccarat", t, { bets: JSON.parse(JSON.stringify(bets)) }, 6).then(function (s) {
+          var fs = s.fs, nonce = s.nonce, client = s.client, g = baccaratFrom(fs), pay = 0;
           for (var k in bets) { if (k === g.winner) pay += bets[k] * BC_PAY[k]; else if (g.winner === "tie" && k !== "tie") pay += bets[k]; }
           var mult = capMult(t, Math.round((pay / t) * 10000) / 10000);
-          var b = db.placeBet(u.id, "baccarat", t, mult, pay > 0, { winner: g.winner, p: g.p, b: g.b, player: g.player.map(function (c) { return RANKS[c.rank] + SUITS[c.suit]; }).join(" "), banker: g.banker.map(function (c) { return RANKS[c.rank] + SUITS[c.suit]; }).join(" "), bets: JSON.parse(JSON.stringify(bets)), nonce: nonce, client: client });
+          var b = s.place(mult, pay > 0, { winner: g.winner, p: g.p, b: g.b, player: g.player.map(function (c) { return RANKS[c.rank] + SUITS[c.suit]; }).join(" "), banker: g.banker.map(function (c) { return RANKS[c.rank] + SUITS[c.suit]; }).join(" "), bets: JSON.parse(JSON.stringify(bets)), nonce: nonce, client: client });
           if (b.error) { dealing = false; ctx.lock(false); ctx.msg(b.error); return null; }
           ctx.hold(b);
           $("#bc-result").className = "bc-result hidden"; $("#bc-pc").innerHTML = ""; $("#bc-bc").innerHTML = ""; paint();

@@ -9,7 +9,7 @@
 - **Login:** Supabase Auth (e-mail e senha).
   - O cadastro exige código de convite enquanto a fase for fechada.
   - O admin é uma conta comum que está na tabela `admins`, com verificação em duas etapas (2FA) ligada.
-- **Apostas:** Edge Function `play` (TypeScript/Deno).
+- **Apostas:** funções no próprio banco (`play_bet` para um clique; rodadas a seguir).
   - Recebe `{ game, action, amount, params }`.
   - Faz o sorteio com a server seed, que nunca vai para o navegador.
   - Grava o saldo e a aposta numa única transação. O navegador só anima o resultado.
@@ -33,7 +33,8 @@
 - [x] Cadastro aberto e login (o código de convite é opcional e serve para criar a conta de admin).
 - [x] Caixa manual com várias moedas: depósito por TxID e saque, com aprovação ou rejeição no admin.
 - [x] Admin no modo real: jogadores, transações e convites.
-- [ ] Jogos sorteados no servidor (Edge Function `play`).
+- [x] Jogos de um clique sorteados no servidor (função `play_bet`, migração 0007): Dice, Limbo, Plinko, Keno, Wheel, Roulette, Coinflip e Baccarat. Testado com 200 apostas: resultado do servidor igual ao do site e saldo batendo no centavo.
+- [ ] Jogos com rodada no servidor: Mines, Crash, Hi-Lo, Blackjack, Tower, Chicken, RPS (no modo real mostram "abre em breve").
 - [x] Chat em tempo real e Chuva (Rain) no servidor (migrações 0005 e 0006, pg_cron divide a chuva a cada minuto).
 - [ ] VIP, rakeback e leaderboard no servidor.
 
