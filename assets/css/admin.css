@@ -1,0 +1,76 @@
+/* ==========================================================================
+   RDCasino — Admin (back-office). Mais denso que o site: ferramenta de trabalho.
+   ========================================================================== */
+.brand-name { font-family: var(--font-display); font-size: 17px; font-weight: 800; letter-spacing: -0.02em; }
+.brand-name span { color: var(--brand); }
+
+.adm-login { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px;
+  background: radial-gradient(ellipse at top, rgba(31, 199, 127, 0.08), transparent 60%), var(--bg); }
+.adm-login-card { width: 100%; max-width: 400px; padding: 28px; }
+
+.adm { display: flex; min-height: 100vh; }
+.adm-side { position: fixed; inset: 0 auto 0 0; width: 232px; background: var(--bg-2); border-right: 1px solid var(--line); display: flex; flex-direction: column; z-index: 300; overflow-y: auto; }
+.adm-brand { display: flex; align-items: center; gap: 10px; height: 58px; padding: 0 16px; border-bottom: 1px solid var(--line); }
+#adm-nav { padding: 10px; flex: 1; }
+.adm-group { padding: 14px 10px 6px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); }
+.adm-link { display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 10px; border-radius: 8px; font-size: 13.5px; font-weight: 500; color: var(--text-2); }
+.adm-link:hover { background: var(--surface); color: var(--text); }
+.adm-link.active { background: var(--surface-2); color: var(--text); }
+.adm-link.active svg { color: var(--brand); }
+.adm-link .badge { margin-left: auto; height: 20px; }
+.adm-side-foot { padding: 10px; border-top: 1px solid var(--line); }
+.adm-backdrop { display: none; }
+
+.adm-main { flex: 1; margin-left: 232px; min-width: 0; }
+.adm-header { position: sticky; top: 0; z-index: 200; height: 58px; display: flex; align-items: center; gap: 12px; padding: 0 24px; background: rgba(10, 13, 19, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+.adm-title { font-family: var(--font-display); font-weight: 800; font-size: 17px; }
+.adm-burger { display: none; }
+.adm-me { gap: 10px; padding-left: 8px; }
+.adm-me strong { display: block; font-size: 13px; line-height: 1.2; }
+.adm-me small { font-size: 11px; }
+.adm-view { padding: 24px; max-width: 1400px; }
+
+.adm-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
+.adm-head p { color: var(--text-2); font-size: 13px; margin-top: 4px; }
+.adm-grid-2 { display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; }
+.adm-grid-2 > *, .adm-grid-3 > * { min-width: 0; }
+.adm-grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.mt { margin-top: 16px; }
+.queue-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--line); }
+.queue-item:last-child { border-bottom: none; }
+.queue-item .grow strong { display: block; font-size: 13px; }
+.queue-item .grow small { color: var(--text-3); font-size: 12px; }
+.table td .btn-sm { height: 28px; }
+.table tr.clickable { cursor: pointer; }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.detail-grid > div { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+.detail-grid small { display: block; color: var(--text-3); font-size: 11px; margin-bottom: 2px; }
+.detail-grid strong { font-size: 14px; }
+.img-slot { overflow: hidden; }
+.img-slot .media { aspect-ratio: 16 / 9; border-bottom: 1px solid var(--line); }
+.img-slot .media-fallback { flex-direction: column; gap: 6px; color: rgba(255, 255, 255, 0.6); font-size: 12px; }
+.img-slot-body { padding: 12px 14px; }
+.img-slot-body code { display: block; font-size: 11.5px; color: var(--text-2); font-family: ui-monospace, Menlo, monospace; word-break: break-all; margin: 4px 0 8px; }
+.tag-input { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; background: var(--bg-2); border: 1px solid var(--line-2); border-radius: var(--r-sm); }
+.tag-input .badge { cursor: pointer; }
+.tag-input input { flex: 1; min-width: 140px; background: none; border: none; outline: none; height: 26px; }
+
+@media (max-width: 1100px) {
+  .adm-grid-2, .adm-grid-3 { grid-template-columns: 1fr; }
+}
+@media (max-width: 900px) {
+  .adm-side { transform: translateX(-100%); transition: transform 0.2s; }
+  body.adm-open .adm-side { transform: none; }
+  body.adm-open .adm-backdrop { display: block; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); z-index: 250; }
+  .adm-main { margin-left: 0; }
+  .adm-burger { display: inline-flex; }
+  .adm-header { padding: 0 12px; }
+  .adm-view { padding: 16px; }
+  .adm-env, .adm-me div { display: none; }
+}
+.thumb { width: 32px; height: 32px; border-radius: 7px; flex-shrink: 0; }
+.toolbar-a { display: flex; gap: 10px; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.toolbar-a .input, .toolbar-a .select { height: 36px; }
+.adm-grid-4 { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+.section-a { margin-bottom: 26px; }
+.queue-item:hover { background: rgba(255, 255, 255, 0.015); }
