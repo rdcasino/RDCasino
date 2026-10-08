@@ -103,18 +103,18 @@ RD.vipFamilies = {
   jade: { label: "Jade", c1: "#6ff0bd", c2: "#0f8a5c" }
 };
 RD.vipTiers = [
-  { name: "Wood", wager: 10000, reward: 40, family: "wood" },
-  { name: "Iron", wager: 25000, reward: 100, family: "iron" },
-  { name: "Bronze", wager: 50000, reward: 250, family: "bronze" },
-  { name: "Silver 1", wager: 100000, reward: 400, family: "silver" },
-  { name: "Silver 2", wager: 150000, reward: 600, family: "silver" },
-  { name: "Silver 3", wager: 200000, reward: 800, family: "silver" },
-  { name: "Silver 4", wager: 250000, reward: 1000, family: "silver" },
-  { name: "Gold 1", wager: 300000, reward: 1200, family: "gold" },
-  { name: "Gold 2", wager: 350000, reward: 1400, family: "gold" },
-  { name: "Gold 3", wager: 400000, reward: 1600, family: "gold" },
-  { name: "Gold 4", wager: 450000, reward: 1800, family: "gold" },
-  { name: "Jade 1", wager: 500000, reward: 2000, family: "jade" }
+  { name: "Wood", wager: 10000, reward: 20, family: "wood" },
+  { name: "Iron", wager: 25000, reward: 50, family: "iron" },
+  { name: "Bronze", wager: 50000, reward: 125, family: "bronze" },
+  { name: "Silver 1", wager: 100000, reward: 200, family: "silver" },
+  { name: "Silver 2", wager: 150000, reward: 300, family: "silver" },
+  { name: "Silver 3", wager: 200000, reward: 400, family: "silver" },
+  { name: "Silver 4", wager: 250000, reward: 500, family: "silver" },
+  { name: "Gold 1", wager: 300000, reward: 600, family: "gold" },
+  { name: "Gold 2", wager: 350000, reward: 700, family: "gold" },
+  { name: "Gold 3", wager: 400000, reward: 800, family: "gold" },
+  { name: "Gold 4", wager: 450000, reward: 900, family: "gold" },
+  { name: "Jade 1", wager: 500000, reward: 1000, family: "jade" }
 ];
 RD.vipTiers.forEach(function (t) { t.color = RD.vipFamilies[t.family].c1; });
 
