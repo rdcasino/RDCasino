@@ -45,7 +45,7 @@ RD.config = {
      (valor apostado × vantagem da casa de cada jogo). "rate" = fatia dessa vantagem que volta.
      minTier = nível VIP mínimo para liberar. Soma máxima (sem recarga): 5% + 5% + 7,5% + 10% = 27,5% da vantagem da casa. */
   bonuses: {
-    daily:   { label: "Daily Bonus",   rate: 0.05,  hours: 24,  minTier: "Bronze" },
+    daily:   { label: "Daily Bonus",   rate: 0.05,  hours: 24,  minTier: "Bronze 2" },
     weekly:  { label: "Weekly Bonus",  rate: 0.075, hours: 168, minTier: "Silver 1" },
     monthly: { label: "Monthly Bonus", rate: 0.10,  hours: 720, minTier: "Gold 1" },
     reload:  { label: "VIP Reload",    rate: 0.10,  hours: 24,  claims: 7, lookbackDays: 30, minTier: "Jade 1" }
@@ -122,8 +122,6 @@ RD.promotions = [
 /* Níveis VIP: valor total apostado para chegar no nível e prêmio de subida (pago uma vez, o jogador resgata).
    Prêmios = metade da tabela de referência (0,2% do apostado na maioria dos níveis). */
 RD.vipFamilies = {
-  wood: { label: "Wood", c1: "#c08a52", c2: "#6b4120" },
-  iron: { label: "Iron", c1: "#b7c2cf", c2: "#56616e" },
   bronze: { label: "Bronze", c1: "#f0a066", c2: "#8a4a1c" },
   silver: { label: "Silver", c1: "#eef3f8", c2: "#8d9cae" },
   gold: { label: "Gold", c1: "#ffe08a", c2: "#c98a00" },
@@ -135,9 +133,10 @@ RD.vipFamilies = {
   amethyst: { label: "Amethyst", c1: "#e08aff", c2: "#7a1fb0" }
 };
 RD.vipTiers = [
-  { name: "Wood", wager: 10000, reward: 20, family: "wood" },
-  { name: "Iron", wager: 25000, reward: 50, family: "iron" },
-  { name: "Bronze", wager: 50000, reward: 125, family: "bronze" },
+  { name: "Bronze 1", wager: 1000, reward: 2, family: "bronze" },
+  { name: "Bronze 2", wager: 5000, reward: 10, family: "bronze" },
+  { name: "Bronze 3", wager: 15000, reward: 30, family: "bronze" },
+  { name: "Bronze 4", wager: 50000, reward: 100, family: "bronze" },
   { name: "Silver 1", wager: 100000, reward: 200, family: "silver" },
   { name: "Silver 2", wager: 150000, reward: 300, family: "silver" },
   { name: "Silver 3", wager: 200000, reward: 400, family: "silver" },

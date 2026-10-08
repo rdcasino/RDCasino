@@ -34,6 +34,7 @@
 - [x] Caixa manual com várias moedas: depósito por TxID e saque, com aprovação ou rejeição no admin.
 - [x] Admin no modo real: jogadores, transações e convites.
 - [ ] Jogos sorteados no servidor (Edge Function `play`).
+- [x] Chat em tempo real e Chuva (Rain) no servidor (migrações 0005 e 0006, pg_cron divide a chuva a cada minuto).
 - [ ] VIP, rakeback e leaderboard no servidor.
 
 **Como ligar o modo real:** abra o site com `?live=1` (o navegador lembra a escolha) e com `?live=0` para voltar ao modo demonstração. O admin segue a mesma escolha. Para lançar para todos, troque `LIVE_DEFAULT` para `true` em `assets/js/data.js`.

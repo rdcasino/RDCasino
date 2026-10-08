@@ -150,7 +150,66 @@
   db.claimRakeback = function () { return SOON; };
   db.claimBonus = function () { return SOON; };
   db.tip = function () { return { error: "Tips are not available yet." }; };
-  db.chatSend = function () {};
+  /* ---------- Chat em tempo real + Chuva ---------- */
+  var chatSubs = [];
+  db.onChat = function (fn) { chatSubs.push(fn); };
+  function chatNotify() { chatSubs.forEach(function (fn) { fn(); }); }
+  function mapMsg(m) { return { id: m.id, user: m.username, text: m.text, at: m.created_at, kind: m.kind }; }
+  sb.from("chat_messages").select("*").order("created_at", { ascending: false }).limit(60).then(function (r) {
+    fill(D.chat, (r.data || []).reverse().map(mapMsg)); chatNotify();
+  });
+  sb.channel("rd-live")
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages" }, function (ev) {
+      if (D.chat.some(function (x) { return x.id === ev.new.id; })) return;
+      D.chat.push(mapMsg(ev.new)); if (D.chat.length > 100) D.chat.splice(0, D.chat.length - 100); chatNotify();
+      if (ev.new.kind === "rain" && /split between/.test(ev.new.text) && state.user) refresh();
+    })
+    .on("postgres_changes", { event: "*", schema: "public", table: "rains" }, function () { loadRain(); })
+    .subscribe(function (status) { live.rt = status === "SUBSCRIBED"; });
+  /* Plano B: se o tempo real (WebSocket) não conectar nesse aparelho/rede, busca novidades a cada 3s */
+  var live = { rt: false, tick: 0 };
+  setInterval(function () {
+    if (live.rt || document.hidden) return;
+    live.tick++;
+    var lastId = D.chat.length ? D.chat[D.chat.length - 1].id || 0 : 0;
+    sb.from("chat_messages").select("*").gt("id", lastId).order("id").limit(50).then(function (r) {
+      var fresh = (r.data || []).filter(function (m) { return !D.chat.some(function (x) { return x.id === m.id; }); });
+      if (!fresh.length) return;
+      fresh.forEach(function (m) { D.chat.push(mapMsg(m)); }); if (D.chat.length > 100) D.chat.splice(0, D.chat.length - 100);
+      if (fresh.some(function (m) { return m.kind === "rain" && /split between/.test(m.text); }) && state.user) refresh();
+      chatNotify();
+    });
+    if (live.tick % 2 === 0) loadRain();
+  }, 3000);
+  db.chatSend = function (pid, text) {
+    return sb.rpc("chat_send", { p_text: text }).then(function (r) {
+      if (r.error) return { error: msg(r.error) };
+      if (!live.rt) return sb.from("chat_messages").select("*").eq("id", r.data).maybeSingle().then(function (m) { if (m.data && !D.chat.some(function (x) { return x.id === m.data.id; })) { D.chat.push(mapMsg(m.data)); chatNotify(); } return { ok: true }; });
+      return { ok: true };
+    });
+  };
+  state.rain = null;
+  function loadRain() {
+    return sb.from("rains").select("*").eq("status", "open").order("id", { ascending: false }).limit(1).maybeSingle().then(function (r) {
+      var rain = r.data || null;
+      if (!rain || !state.user) { state.rain = rain; chatNotify(); return; }
+      return sb.from("rain_entries").select("rain_id").eq("rain_id", rain.id).eq("user_id", state.user.id).maybeSingle().then(function (e) {
+        rain.joined = !!e.data; state.rain = rain; chatNotify();
+      });
+    });
+  }
+  loadRain();
+  db.ready.then(loadRain);
+  db.rain = function () { return state.rain; };
+  db.rainSettle = function () { return sb.rpc("rain_settle").then(loadRain); };
+  db.rainJoin = function () {
+    return sb.rpc("rain_join").then(function (r) { if (r.error) return { error: msg(r.error) }; return loadRain().then(function () { return { ok: true }; }); });
+  };
+  db.rainContribute = function (amount) {
+    return sb.rpc("rain_contribute", { p_amount: amount }).then(function (r) { if (r.error) return { error: msg(r.error) }; return refresh().then(loadRain).then(function () { return { ok: true }; }); });
+  };
+  db.adminStartRain = function (amount, minutes, minWager) { return adminCall("admin_start_rain", { p_amount: amount, p_minutes: minutes, p_min_wager: minWager }).then(loadRain); };
+  db.adminRains = function () { return sb.from("rains").select("*").order("id", { ascending: false }).limit(20).then(function (r) { return r.data || []; }); };
 
   /* ---------- Admin ---------- */
   db.adminExists = function () { return true; };
