@@ -44,13 +44,22 @@
   }
 
   /* ---------- Header ---------- */
+  /* Saldo mostrado = saldo real menos os prêmios de apostas cuja animação ainda não terminou.
+     Assim a aposta sai na hora e o prêmio só "entra" quando a bolinha cai / a roda para. */
+  var inFlight = {};
+  function shownBal(u) { var t = 0; for (var k in inFlight) t += inFlight[k]; return Math.round((u.balance - t) * 100) / 100; }
+  function hold(b) { if (b && !b.error && b.payout > 0) inFlight[b.id] = b.payout; renderHeader(); }
+  function release(b) {
+    if (!b || !(b.id in inFlight)) return; delete inFlight[b.id];
+    var el = $("#hdr-bal"); if (el && b.payout > 0) { el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); }
+  }
   function renderHeader() {
     var u = me();
     $("#hdr-guest").classList.toggle("hidden", !!u);
     $("#hdr-user").classList.toggle("hidden", !u);
     $("#hdr-wallet").classList.toggle("hidden", !u);
     if (!u) return;
-    $("#hdr-bal").textContent = fmt.usd(u.balance);
+    $("#hdr-bal").textContent = fmt.usd(shownBal(u));
     var t = db.tierOf(u.wagered);
     $("#user-menu").innerHTML =
       '<div class="menu-head row" style="gap:10px">' + RD.art.tierBadge(t, 30) + '<div><strong>' + esc(u.username) + '</strong><small class="faint">' + (t ? t.name : "Unranked") + " · VIP</small></div></div>" +
@@ -362,7 +371,7 @@
       setAmt: function (v) { amt.value = Math.max(0, v).toFixed(2); ctx.refresh(); },
       msg: function (t, extra) { if (!$("#og-msg")) return; $("#og-msg").innerHTML = t ? errorBox(t, extra) : ""; },
       btn: function () { return $("#og-bet"); },
-      refresh: function () { var u = me(); if (!$("#og-bal")) return; $("#og-bal").textContent = u ? "Balance " + fmt.usd(u.balance) : ""; if (api.refresh) api.refresh(); },
+      refresh: function () { var u = me(); if (!$("#og-bal")) return; $("#og-bal").textContent = u ? "Balance " + fmt.usd(shownBal(u)) : ""; if (api.refresh) api.refresh(); },
       setProfit: function (mult, label) { var p = $("#og-profit"); if (!p) return; p.value = (ctx.amount() * (mult - 1)).toFixed(2); $("#og-mult-lbl").textContent = (label || mult.toFixed(2)) + "×"; },
       validate: function (a, maxMult) {
         var u = me(); ctx.msg("");
@@ -373,6 +382,7 @@
         if (maxMult && maxProfit() && a * (maxMult - 1) > maxProfit()) { ctx.msg("Max profit per bet is " + fmt.usd(maxProfit(), { dec: 0 }) + "."); return null; }
         return u;
       },
+      hold: function (b) { hold(b); ctx.refresh(); },
       lock: function (on) {
         if (!document.contains(amt)) return;
         amt.disabled = on; $$("[data-og]").forEach(function (b) { b.disabled = on; });
@@ -381,6 +391,7 @@
       },
       record: function (b) {
         if (!b || b.error) return;
+        release(b);
         var me0 = me(); if (me0) { var t0 = db.tierOf(me0.wagered - b.amount), t1 = db.tierOf(me0.wagered); if (t1 && t1 !== t0) { RD.toast("Level up! You reached " + t1.name + " — claim " + fmt.usd(t1.reward, { dec: 0 }) + " on the VIP page"); renderSidebar(); markActive(currentPath); } }
         var st = sess(g.id), delta = b.payout - b.amount;
         st.profit = Math.round((st.profit + delta) * 100) / 100; st.wagered += b.amount; st[b.payout > b.amount ? "wins" : "losses"]++; st.series.push(st.profit); if (st.series.length > 200) st.series.shift();
@@ -615,7 +626,7 @@
           var path = fs.map(function (f) { return Math.floor(f * 2); }), slot = path.reduce(function (x, y) { return x + y; }, 0), m = t[slot];
           var b = db.placeBet(u.id, "plinko", a, m, true, { result: m, rows: R, risk: rk, slot: slot, path: path.join(""), nonce: nonce, client: client });
           if (b.error) { live--; ctx.msg(b.error); return null; }
-          renderHeader(); ctx.refresh();
+          ctx.hold(b);
           return drop(path, slot).then(function () { live--; ctx.record(b); return { win: m > 1 }; });
         });
       }
@@ -959,6 +970,7 @@
           var seg = Math.floor(fs[0] * N), m = t[seg];
           var b = db.placeBet(u.id, "wheel", a, m, m > 0, { result: m, segment: seg, segments: N, risk: risk(), nonce: nonce, client: client });
           if (b.error) { spinning = false; ctx.lock(false); ctx.msg(b.error); return null; }
+          ctx.hold(b);
           var segA = 360 / N, jitter = (Math.random() - 0.5) * segA * 0.6, target = -((seg + 0.5) * segA) + jitter;
           rot = rot - (rot % 360) + 360 * 4 + target; if (rot <= 0) rot += 360 * 5;
           var g = $("#wh-rot"); g.style.transition = "transform 2.4s cubic-bezier(.12,.75,.12,1)"; g.style.transform = "rotate(" + rot + "deg)";
@@ -1026,6 +1038,7 @@
           var drawn = kenoFrom(fs), hits = drawn.filter(function (n) { return picks.indexOf(n) > -1; }).length, m = capMult(a, t[hits]);
           var b = db.placeBet(u.id, "keno", a, m, m > 0, { result: hits, hits: hits, picks: picks.length, drawn: drawn, risk: risk(), nonce: nonce, client: client });
           if (b.error) { busyK = false; ctx.lock(false); ctx.msg(b.error); return null; }
+          ctx.hold(b);
           paint([]);
           return new Promise(function (res) {
             var i = 0;
@@ -1270,6 +1283,7 @@
           var mult = capMult(t, Math.round((payout / t) * 10000) / 10000);
           var b = db.placeBet(u.id, "roulette", t, mult, payout > 0, { result: n, bets: JSON.parse(JSON.stringify(bets)), nonce: nonce, client: client });
           if (b.error) { spinning = false; ctx.lock(false); ctx.msg(b.error); return null; }
+          ctx.hold(b);
           var i = RL_ORDER.indexOf(n), segA = 360 / 37, target = -((i + 0.5) * segA);
           rot = rot - (rot % 360) + 360 * 4 + target; if (rot <= 0) rot += 360 * 5;
           var g = $("#rl-rot"); g.style.transition = "transform 3.4s cubic-bezier(.12,.75,.12,1)"; g.style.transform = "rotate(" + rot + "deg)";
@@ -1540,6 +1554,7 @@
           var shown = res.slice(0, Math.min(k, hits + 1)), win = hits === k, mult = win ? capMult(a, m) : 0;
           var b = db.placeBet(u.id, "coinflip", a, mult, win, { result: shown.join(","), pick: pick, flips: k, hits: hits, nonce: nonce, client: client });
           if (b.error) { flipping = false; ctx.lock(false); ctx.msg(b.error); return null; }
+          ctx.hold(b);
           var row = $("#cf-row"); if (row) row.innerHTML = k > 1 ? res.slice(0, k).map(function (_, i) { return '<span class="cf-mini" data-i="' + i + '"></span>'; }).join("") : "";
           var i = 0, per = k > 1 ? 650 : 900;
           return new Promise(function (done) {
@@ -1721,6 +1736,7 @@
           var mult = capMult(t, Math.round((pay / t) * 10000) / 10000);
           var b = db.placeBet(u.id, "baccarat", t, mult, pay > 0, { winner: g.winner, p: g.p, b: g.b, player: g.player.map(function (c) { return RANKS[c.rank] + SUITS[c.suit]; }).join(" "), banker: g.banker.map(function (c) { return RANKS[c.rank] + SUITS[c.suit]; }).join(" "), bets: JSON.parse(JSON.stringify(bets)), nonce: nonce, client: client });
           if (b.error) { dealing = false; ctx.lock(false); ctx.msg(b.error); return null; }
+          ctx.hold(b);
           $("#bc-result").className = "bc-result hidden"; $("#bc-pc").innerHTML = ""; $("#bc-bc").innerHTML = ""; paint();
           var order = [["p", 0], ["b", 0], ["p", 1], ["b", 1]]; if (g.player[2]) order.push(["p", 2]); if (g.banker[2]) order.push(["b", 2]);
           return new Promise(function (done) {
@@ -2054,6 +2070,7 @@
   /* ---------- Router ---------- */
   var currentPath = "";
   function route(keep) {
+    inFlight = {}; // trocar de página encerra animações pendentes: mostra o saldo real
     var path = (location.hash || "#/").replace(/^#\/?/, "").replace(/\/$/, "");
     var parts = path.split("/"), name = parts[0] || "home", arg = parts[1];
     var fn = pages[name] || pages.notfound, u = me();
