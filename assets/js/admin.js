@@ -137,7 +137,7 @@
         '<button class="btn btn-secondary btn-sm" data-act="bonus" data-id="' + p.id + '">' + ic("gift", 14) + "Dar bônus</button>" +
         '<button class="btn btn-secondary btn-sm" data-act="reload" data-id="' + p.id + '">' + ic("bolt", 14) + "VIP Reload</button>" +
         '<button class="btn btn-secondary btn-sm" data-act="aff-share" data-id="' + p.id + '">' + ic("link", 14) + "Comissão afiliado</button>" +
-        ('<button class="btn btn-secondary btn-sm" data-act="resetbets" data-id="' + p.id + '">Zerar apostas</button>') + (p.status === "Suspended" ? '<button class="btn btn-primary btn-sm" data-act="unsuspend" data-id="' + p.id + '">Reativar</button>' : '<button class="btn btn-danger btn-sm" data-act="suspend" data-id="' + p.id + '">' + ic("ban", 14) + "Suspender</button>") + "</div>" +
+        (RD.live ? "" : '<button class="btn btn-secondary btn-sm" data-act="resetbets" data-id="' + p.id + '">Zerar apostas</button>') + (p.status === "Suspended" ? '<button class="btn btn-primary btn-sm" data-act="unsuspend" data-id="' + p.id + '">Reativar</button>' : '<button class="btn btn-danger btn-sm" data-act="suspend" data-id="' + p.id + '">' + ic("ban", 14) + "Suspender</button>") + "</div>" +
       '<div class="field" style="margin-top:20px"><label>Nota interna (só a equipe vê)</label><textarea class="textarea" id="pl-note" data-id="' + p.id + '">' + esc(p.note) + "</textarea></div>" +
       '<h3 style="margin:20px 0 10px">Transações</h3><div class="card">' + txTable(db.txOf(p.id).slice(0, 20), true) + "</div>" +
       '<h3 style="margin:20px 0 10px">Últimas apostas</h3><div class="card">' + betsTable(db.betsOf(p.id).slice(0, 20)) + "</div>");
@@ -428,7 +428,7 @@
     $("#lic-form").addEventListener("submit", function (e) { e.preventDefault(); var f = e.target; db.setSettings({ license: { status: f.status.value, authority: f.authority.value, number: f.number.value, company: f.company.value, address: f.address.value } }); RD.toast("Licença salva"); });
     $("#mp-form").addEventListener("submit", function (e) { e.preventDefault(); db.setSettings({ maxProfit: Math.max(0, Math.floor(+e.target.max.value || 0)) }); RD.toast(RD.config.maxProfit ? "Limite salvo" : "Sem limite de ganho"); });
     $("#lb-form").addEventListener("submit", function (e) { e.preventDefault(); db.setSettings({ leaderboardPrize: Math.max(0, +e.target.prize.value || 0) }); RD.toast("Prêmio salvo"); });
-    $("#pw-form").addEventListener("submit", function (e) { e.preventDefault(); db.adminSetup(db.data().admin.email, e.target.pass.value); RD.toast("Senha trocada"); e.target.reset(); });
+    $("#pw-form").addEventListener("submit", function (e) { e.preventDefault(); var f = e.target; Promise.resolve(db.adminSetup(db.data().admin ? db.data().admin.email : "", f.pass.value)).then(function () { RD.toast("Senha trocada"); f.reset(); }, function () {}); });
     $("#geo-add").addEventListener("keydown", function (e) {
       if (e.key !== "Enter" || !this.value.trim()) return; e.preventDefault();
       db.setSettings({ restricted: RD.config.restrictedCountries.concat([this.value.trim()]) }); route();
