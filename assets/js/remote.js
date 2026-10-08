@@ -22,6 +22,7 @@
     if (/Invalid login credentials/i.test(m)) return "Wrong email or password.";
     if (/already registered/i.test(m)) return "This email is already registered.";
     if (/Database error saving new user/i.test(m)) return "Invalid or already used invite code.";
+    if (/tx_hash_once/i.test(m)) return RD.isAdminPage ? "Esse TxID já foi creditado antes." : "This transaction was already submitted.";
     return m.replace(/^.*?ERROR:\s*/, "");
   }
 
@@ -43,6 +44,8 @@
     };
   }
   function mapReload(r) { return r ? { id: r.id, per: n(r.per_claim), claims: r.claims, used: r.used, hours: r.interval_hours, last: r.last_claim_at, note: r.note || "", created: r.created_at } : null; }
+  var DOC = { passport: "Passport", id_card: "National ID", driver_license: "Driver's license" };
+  function mapKyc(k) { return k ? { name: k.first_name + " " + k.last_name, first: k.first_name, last: k.last_name, dob: k.dob, doc: DOC[k.doc_type] || k.doc_type, docType: k.doc_type, sent: String(k.created_at).slice(0, 10), country: k.country, address: k.address, city: k.city, postal: k.postal || "", files: k.files || {}, status: k.status, reason: k.reason || "" } : null; }
   function fill(arr, items) { arr.length = 0; Array.prototype.push.apply(arr, items); }
 
   /* ---------- Carregar dados do servidor para o cache ---------- */
@@ -54,13 +57,15 @@
       sb.from("bets").select("*").eq("user_id", uid).order("created_at", { ascending: false }).limit(200),
       sb.from("my_seeds").select("*").maybeSingle(),
       sb.from("wallets").select("*").eq("enabled", true).order("id"),
-      sb.from("vip_reloads").select("*").eq("user_id", uid).eq("status", "active").maybeSingle()
+      sb.from("vip_reloads").select("*").eq("user_id", uid).eq("status", "active").maybeSingle(),
+      sb.from("kyc_submissions").select("*").eq("user_id", uid).order("created_at", { ascending: false }).limit(1).maybeSingle()
     ]).then(function (r) {
       var prof = r[0].data; if (!prof) throw new Error("Profile not found.");
       var txs = (r[1].data || []).map(function (t) { return mapTx(t, prof.username); });
       var me = mapProfile(prof, state.user.email, txs), s = r[3].data;
       if (s) me.seeds = { server: "", hash: s.server_hash, client: s.client_seed, nonce: +s.nonce, revealed: s.revealed || [] };
       me.reloadGrant = mapReload(r[5].data);
+      me.kycInfo = mapKyc(r[6].data); if (me.kycInfo && me.kyc === "Rejected") me.kycReason = me.kycInfo.reason;
       fill(D.players, [me]); fill(D.tx, txs);
       fill(D.bets, (r[2].data || []).map(function (b) { return { id: "B-" + b.id, userId: b.user_id, user: prof.username, game: b.game, amount: n(b.amount), multiplier: +b.multiplier, payout: n(b.payout), date: b.created_at, detail: Object.assign({ nonce: +b.nonce, client: b.client_seed }, b.detail || {}) }; }));
       state.wallets = r[4].data || [];
@@ -76,7 +81,8 @@
       sb.from("invites_admin").select("*").order("created_at", { ascending: false }),
       sb.from("wallets").select("*").order("id"),
       sb.from("vip_reloads").select("*").eq("status", "active"),
-      sb.from("settings").select("*").eq("key", "rain_auto").maybeSingle()
+      sb.from("settings").select("*").eq("key", "rain_auto").maybeSingle(),
+      sb.from("kyc_submissions").select("*").order("created_at", { ascending: false }).limit(1000)
     ]).then(function (r) {
       r.forEach(function (x) { if (x.error) throw x.error; });
       var profs = r[0].data || [], emails = {}, names = {};
@@ -86,7 +92,8 @@
       fill(D.tx, txs);
       var rl = {}; (r[7].data || []).forEach(function (x) { rl[x.user_id] = mapReload(x); });
       state.rainAuto = r[8].data ? r[8].data.value : null;
-      fill(D.players, profs.map(function (p) { var m = mapProfile(p, emails[p.id], txs); m.reloadGrant = rl[p.id] || null; if (p.referred_by) m.referredBy = (profs.filter(function (x) { return x.id === p.referred_by; })[0] || {}).ref_code || null; return m; }));
+      var ky = {}; (r[9].data || []).forEach(function (x) { if (!ky[x.user_id]) ky[x.user_id] = mapKyc(x); });
+      fill(D.players, profs.map(function (p) { var m = mapProfile(p, emails[p.id], txs); m.reloadGrant = rl[p.id] || null; m.kycInfo = ky[p.id] || null; if (m.kycInfo && m.kyc === "Rejected") m.kycReason = m.kycInfo.reason; if (p.referred_by) m.referredBy = (profs.filter(function (x) { return x.id === p.referred_by; })[0] || {}).ref_code || null; return m; }));
       fill(D.bets, (r[3].data || []).map(function (b) { return { id: "B-" + b.id, userId: b.user_id, user: names[b.user_id] || "", game: b.game, amount: n(b.amount), multiplier: +b.multiplier, payout: n(b.payout), date: b.created_at, detail: b.detail || {} }; }));
       fill(D.audit, (r[4].data || []).map(function (a) { return { at: a.at, who: names[a.who] || (a.who ? "admin" : "sistema"), what: a.what + (a.data ? " " + JSON.stringify(a.data) : "") }; }));
       state.invites = r[5].data || []; state.wallets = r[6].data || [];
@@ -190,6 +197,23 @@
       return refresh().then(function () { return { ok: true }; });
     });
   };
+  /* ---------- KYC: arquivos vão para o cofre privado "kyc" (pasta do próprio jogador) ---------- */
+  db.submitKyc = function (pid, info, files) {
+    var uid = state.user && state.user.id; if (!uid) return Promise.resolve({ error: "Sign in first." });
+    var keys = Object.keys(files || {}), paths = {}, stamp = Date.now();
+    return Promise.all(keys.map(function (k) {
+      var f = files[k], ext = (f.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 5) || "jpg", path = uid + "/" + stamp + "-" + k + "." + ext;
+      return sb.storage.from("kyc").upload(path, f, { contentType: f.type || undefined, upsert: false }).then(function (r) { if (r.error) throw r.error; paths[k] = path; });
+    })).then(function () {
+      return sb.rpc("kyc_submit", { p: Object.assign({}, info, { files: paths }) });
+    }).then(function (r) {
+      if (r.error) return { error: msg(r.error) };
+      return refresh().then(function () { return { ok: true }; });
+    }, function (e) { return { error: /exceeded|size/i.test(String(e && e.message)) ? "Each file must be 10 MB or less." : msg(e) }; });
+  };
+  db.kycFileUrl = function (path) { return sb.storage.from("kyc").createSignedUrl(path, 600).then(function (r) { return r.data ? r.data.signedUrl : null; }); };
+  db.setKyc = function (pid, status, reason) { return adminCall("admin_kyc_decide", { p_user: pid, p_approve: status === "Verified", p_reason: reason || null }); };
+  db.creditDeposit = function (pid, amount, coin, net, txHash) { return adminCall("admin_credit_deposit", { p_user: pid, p_amount: amount, p_coin: coin || "", p_network: net || "", p_tx_hash: txHash || null }); };
   db.grantReload = function (pid, per, claims, hours, note) { return adminCall("admin_grant_reload", { p_user: pid, p_per: per, p_claims: claims, p_hours: hours, p_note: note || null }); };
   db.cancelReload = function (pid) { return adminCall("admin_cancel_reload", { p_user: pid }); };
   db.rainAuto = function () { return state.rainAuto; };

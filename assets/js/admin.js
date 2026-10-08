@@ -121,9 +121,13 @@
       '<div class="row" style="gap:12px;margin-bottom:16px"><span class="avatar" style="width:44px;height:44px;font-size:15px">' + initials(p.username) + '</span><div><strong>' + esc(p.username) + '</strong><br><small class="faint">' + esc(p.email) + " · " + p.id + "</small></div></div>" +
       '<div class="row wrap" style="gap:6px;margin-bottom:16px">' + badge(p.status) + badge(p.kyc) + '<span class="badge">' + (t ? t.name : "Sem nível") + "</span></div>" +
       '<div class="detail-grid"><div><small>Saldo</small><strong class="num">' + fmt.usd(p.balance) + '</strong></div><div><small>Resultado da casa</small><strong class="num ' + (house >= 0 ? "pos" : "neg") + '">' + fmt.usd(house) + '</strong></div><div><small>Depósitos</small><strong class="num">' + fmt.usd(p.deposits) + '</strong></div><div><small>Saques</small><strong class="num">' + fmt.usd(p.withdrawals) + '</strong></div><div><small>Apostado</small><strong class="num">' + fmt.usd(p.wagered) + " (" + p.bets + ' apostas)</strong></div><div><small>Bônus recebidos</small><strong class="num">' + fmt.usd(p.bonusTotal) + '</strong></div><div><small>País</small><strong>' + esc(p.country) + '</strong></div><div><small>Cadastro</small><strong>' + fmt.date(p.created) + '</strong></div><div><small>Indicado por</small><strong>' + (ref ? esc(ref.username) + " (" + esc(p.referredBy) + ")" : "—") + '</strong></div><div><small>Código de afiliado</small><strong>' + p.refCode + "</strong></div></div>" +
-      (p.kycInfo ? '<h3 style="margin:20px 0 10px">Documentos enviados</h3><div class="detail-grid"><div><small>Nome</small><strong>' + esc(p.kycInfo.name) + '</strong></div><div><small>Nascimento</small><strong>' + esc(p.kycInfo.dob) + '</strong></div><div><small>Documento</small><strong>' + esc(p.kycInfo.doc) + '</strong></div><div><small>Enviado</small><strong>' + esc(p.kycInfo.sent) + "</strong></div></div>" + (p.kyc === "Pending" ? '<div class="row" style="gap:8px;margin-top:10px"><button class="btn btn-primary btn-sm" data-act="kyc-ok" data-id="' + p.id + '">Aprovar KYC</button><button class="btn btn-danger btn-sm" data-act="kyc-no" data-id="' + p.id + '">Rejeitar</button></div>' : "") : "") +
+      (p.kycInfo ? '<h3 style="margin:20px 0 10px">KYC enviado</h3><div class="detail-grid"><div><small>Nome</small><strong>' + esc(p.kycInfo.name) + '</strong></div><div><small>Nascimento</small><strong>' + esc(p.kycInfo.dob) + '</strong></div><div><small>Documento</small><strong>' + esc(p.kycInfo.doc) + '</strong></div><div><small>Enviado</small><strong>' + esc(p.kycInfo.sent) + "</strong></div>" +
+        (p.kycInfo.address ? '<div style="grid-column:1/-1"><small>Endereço</small><strong>' + esc(p.kycInfo.address + ", " + p.kycInfo.city + (p.kycInfo.postal ? " " + p.kycInfo.postal : "") + " — " + p.kycInfo.country) + "</strong></div>" : "") + "</div>" +
+        (p.kycInfo.files && Object.keys(p.kycInfo.files).length ? '<div class="kyc-docs" id="kyc-docs">' + Object.keys(p.kycInfo.files).map(function (k) { return '<div class="kyc-doc-item"><small>' + ({ front: "Frente", back: "Verso", selfie: "Selfie", address: "Comprovante" }[k] || k) + '</small><div class="kyc-thumb" data-kpath="' + esc(p.kycInfo.files[k]) + '">Carregando…</div></div>'; }).join("") + "</div>" : "") +
+        (p.kyc === "Pending" ? '<div class="row" style="gap:8px;margin-top:10px"><button class="btn btn-primary btn-sm" data-act="kyc-ok" data-id="' + p.id + '">Aprovar</button><button class="btn btn-danger btn-sm" data-act="kyc-no" data-id="' + p.id + '">Rejeitar</button></div>' : "") : "") +
       (p.reloadGrant && p.reloadGrant.used < p.reloadGrant.claims ? '<div class="notice info" style="margin-top:16px">' + ic("bolt", 16) + "<span>VIP Reload ativo: <b>" + fmt.usd(p.reloadGrant.per) + "</b> por resgate, " + p.reloadGrant.used + " de " + p.reloadGrant.claims + " resgatados, 1 a cada " + p.reloadGrant.hours + "h.</span></div>" : "") +
       '<h3 style="margin:20px 0 10px">Ações</h3><div class="row wrap" style="gap:8px">' +
+        '<button class="btn btn-primary btn-sm" data-act="credit-dep" data-id="' + p.id + '">' + ic("arrowDown", 14) + "Creditar depósito</button>" +
         '<button class="btn btn-secondary btn-sm" data-act="adjust" data-id="' + p.id + '">' + ic("sliders", 14) + "Ajustar saldo</button>" +
         '<button class="btn btn-secondary btn-sm" data-act="bonus" data-id="' + p.id + '">' + ic("gift", 14) + "Dar bônus</button>" +
         '<button class="btn btn-secondary btn-sm" data-act="reload" data-id="' + p.id + '">' + ic("bolt", 14) + "VIP Reload</button>" +
@@ -133,6 +137,15 @@
       '<h3 style="margin:20px 0 10px">Transações</h3><div class="card">' + txTable(db.txOf(p.id).slice(0, 20), true) + "</div>" +
       '<h3 style="margin:20px 0 10px">Últimas apostas</h3><div class="card">' + betsTable(db.betsOf(p.id).slice(0, 20)) + "</div>");
     $("#pl-note").addEventListener("change", function () { db.setNote(p.id, this.value); RD.toast("Nota salva"); });
+    /* Documentos do KYC: links temporários (10 min) do cofre privado */
+    $$("[data-kpath]").forEach(function (el) {
+      if (!db.kycFileUrl) { el.textContent = "Só no modo real"; return; }
+      var path = el.getAttribute("data-kpath"), pdf = /\.pdf$/i.test(path);
+      db.kycFileUrl(path).then(function (url) {
+        if (!url) { el.textContent = "Não encontrado"; return; }
+        el.innerHTML = '<a href="' + url + '" target="_blank" rel="noopener">' + (pdf ? '<span class="kyc-pdf">PDF · abrir</span>' : '<img src="' + url + '" alt="">') + "</a>";
+      });
+    });
   }
 
   P.transactions = function (filter) {
@@ -246,8 +259,8 @@
       '<div class="card card-pad mt"><h3 style="margin-bottom:10px">Bônus recorrentes</h3><p class="faint" style="font-size:13px;margin-bottom:12px">Base = vantagem da casa gerada pelo jogador no período (valor apostado × vantagem do jogo). Cada bônus devolve uma fatia disso, então nunca custa mais do que o jogador gerou.</p><div class="table-wrap"><table class="table"><thead><tr><th>Bônus</th><th>Libera a partir de</th><th class="right">Devolve</th><th class="right">Frequência</th></tr></thead><tbody>' +
       '<tr><td class="strong">Rakeback instantâneo</td><td>Todos</td><td class="right">' + (RD.config.rakebackRate * 100) + '% da vantagem</td><td class="right">A qualquer momento</td></tr>' +
       Object.keys(RD.config.bonuses).filter(function (k) { return k !== "reload"; }).map(function (k) { var c = RD.config.bonuses[k]; return '<tr><td class="strong">' + c.label + '</td><td>' + c.minTier + '</td><td class="right">' + (c.rate * 100) + '% da vantagem' + (k === "reload" ? " dos últimos " + c.lookbackDays + " dias, em " + c.claims + " partes" : "") + '</td><td class="right">' + (k === "reload" ? "1 por dia" : c.hours === 24 ? "Diário" : c.hours === 168 ? "Semanal" : "Mensal") + "</td></tr>"; }).join("") +
-      '<tr><td class="strong">VIP Reload</td><td>Quem você escolher</td><td class="right">Valor que você define</td><td class="right">Jogadores → VIP Reload</td></tr>' +
-      '</tbody></table></div><p class="faint" style="font-size:12.5px;margin-top:10px">Somando tudo (sem o reload), os bônus devolvem até 27,5% da vantagem da casa. Ajuste as taxas em <code>RD.config.bonuses</code>.</p></div>';
+      '<tr><td class="strong">VIP Reload</td><td>Gold 1, quem você escolher</td><td class="right">Valor que você define</td><td class="right">Jogadores → VIP Reload</td></tr>' +
+      '</tbody></table></div><p class="faint" style="font-size:12.5px;margin-top:10px">Somando tudo (sem o reload), os bônus devolvem até ' + Math.round((RD.config.rakebackRate + ['daily', 'weekly', 'monthly'].reduce(function (a, k) { return a + RD.config.bonuses[k].rate; }, 0)) * 1000) / 10 + '% da vantagem da casa. Ajuste as taxas em <code>RD.config.bonuses</code>.</p></div>';
   };
 
   /* Convites (modo real): só quem tem código consegue criar conta */
@@ -372,10 +385,10 @@
       $("#rej-form").addEventListener("submit", function (ev) { ev.preventDefault(); closeAll(); after(db.decideWithdrawal(id, false, ev.target.why.value), tx && tx.type === "Deposit" ? "Depósito rejeitado" : "Saque rejeitado e valor devolvido", null, "error"); });
       return;
     }
-    if (a === "kyc-ok") { db.setKyc(id, "Verified"); RD.toast("KYC aprovado"); return refreshAfter(id); }
+    if (a === "kyc-ok") { if (!confirm("Aprovar a verificação deste jogador?")) return; return after(db.setKyc(id, "Verified"), "KYC aprovado", id); }
     if (a === "kyc-no") {
       openModal('<div class="modal-head"><h3>Rejeitar KYC</h3><button class="btn btn-ghost btn-icon btn-sm" data-close>' + ic("x") + '</button></div><form id="kyc-rej"><div class="modal-body"><div class="field"><label>Motivo (o jogador vê esta mensagem, em inglês)</label><select class="select" name="why"><option>Document is blurry or cropped</option><option>Document is expired</option><option>Name does not match your account</option><option>Proof of address is older than 3 months</option></select></div></div><div class="modal-foot"><button type="button" class="btn btn-ghost" data-close>Cancelar</button><button class="btn btn-danger">Rejeitar</button></div></form>');
-      $("#kyc-rej").addEventListener("submit", function (ev) { ev.preventDefault(); db.setKyc(id, "Rejected", ev.target.why.value); closeAll(); RD.toast("KYC rejeitado", "error"); refreshAfter(); });
+      $("#kyc-rej").addEventListener("submit", function (ev) { ev.preventDefault(); closeAll(); after(db.setKyc(id, "Rejected", ev.target.why.value), "KYC rejeitado", null, "error"); });
       return;
     }
     if (a === "resetbets") { if (!confirm("Zerar o histórico de apostas e as estatísticas deste jogador? O saldo não muda.")) return; db.resetBets(id); RD.toast("Apostas zeradas"); return refreshAfter(id); }
@@ -388,8 +401,24 @@
       $("#adj-form").addEventListener("submit", function (ev) { ev.preventDefault(); var f = ev.target; closeAll(); after(db.adjustBalance(pl.id, +f.amt.value * +f.type.value, f.why.value, isBonus ? "Bonus" : "Adjustment"), isBonus ? "Bônus enviado" : "Saldo ajustado", pl.id); });
       return;
     }
+    if (a === "credit-dep") {
+      var dp = db.player(id), ws = RD.live && db.wallets ? db.wallets() : [];
+      var opts = ws.length ? ws.map(function (w, i) { return '<option value="' + i + '">' + esc(w.coin + " · " + w.network) + "</option>"; }).join("") : '<option value="">USDT</option>';
+      openModal('<div class="modal-head"><h3>Creditar depósito · ' + esc(dp.username) + '</h3><button class="btn btn-ghost btn-icon btn-sm" data-close>' + ic("x") + '</button></div><form id="cd-form"><div class="modal-body"><p class="muted" style="margin-bottom:14px">Use quando você confirmar na Kraken que o depósito deste jogador chegou. Entra como <b>depósito</b> (conta para estatísticas e afiliados), não como bônus.</p>' +
+        '<div class="adm-grid-2"><div class="field"><label>Valor em USD</label><input class="input" name="amt" type="number" min="0.01" step="0.01" required></div><div class="field"><label>Moeda / rede</label><select class="select" name="w">' + opts + '</select></div></div>' +
+        '<div class="field"><label>TxID (opcional, ajuda a não creditar duas vezes)</label><input class="input" name="tx" placeholder="Hash da transação na blockchain"></div></div>' +
+        '<div class="modal-foot"><button type="button" class="btn btn-ghost" data-close>Cancelar</button><button class="btn btn-primary">Creditar</button></div></form>');
+      $("#cd-form").addEventListener("submit", function (ev) {
+        ev.preventDefault(); var f = ev.target, w = ws[+f.w.value] || { coin: "USDT", network: "" }, v = +f.amt.value;
+        if (!confirm("Creditar " + fmt.usd(v) + " (" + w.coin + ") no saldo de " + dp.username + "?")) return;
+        closeAll(); after(db.creditDeposit(dp.id, v, w.coin, w.network, f.tx.value.trim()), "Depósito creditado", dp.id);
+      });
+      return;
+    }
     if (a === "reload") {
       var rp = db.player(id), g = rp.reloadGrant && rp.reloadGrant.used < rp.reloadGrant.claims ? rp.reloadGrant : null;
+      var minT = RD.vipTiers.filter(function (t) { return t.name === RD.config.bonuses.reload.minTier; })[0];
+      if (minT && rp.wagered < minT.wager && !g) { RD.toast("VIP Reload é a partir do " + minT.name + " (" + fmt.usd(minT.wager, { dec: 0 }) + " apostados). " + rp.username + " apostou " + fmt.usd(rp.wagered, { dec: 0 }) + ".", "error"); return; }
       openModal('<div class="modal-head"><h3>VIP Reload · ' + esc(rp.username) + '</h3><button class="btn btn-ghost btn-icon btn-sm" data-close>' + ic("x") + '</button></div><form id="rl-form"><div class="modal-body">' +
         (g ? '<div class="notice info" style="margin-bottom:14px">' + ic("bolt", 16) + "<span>Ativo agora: " + fmt.usd(g.per) + " por resgate, " + g.used + "/" + g.claims + " resgatados. Dar um novo substitui este.</span></div>" : '<p class="muted" style="margin-bottom:14px">O card "VIP Reload" aparece nas recompensas do jogador só enquanto ele tiver resgates sobrando.</p>') +
         '<div class="adm-grid-2"><div class="field"><label>Valor por resgate (USD)</label><input class="input" name="per" type="number" min="0.01" step="0.01" required placeholder="Ex.: 10"></div>' +

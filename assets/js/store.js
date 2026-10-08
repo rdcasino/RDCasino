@@ -218,6 +218,15 @@
       save();
       return { ok: true };
     },
+    /* Admin credita um depósito que viu chegar na corretora */
+    creditDeposit: function (pid, amount, coin, net, txHash) {
+      var p = byId(pid); if (!(amount > 0)) return { error: "Valor inválido." };
+      if (!p.deposits) p.firstDeposit = nowIso();
+      p.balance = round(p.balance + amount); p.deposits = round(p.deposits + amount);
+      var t = addTx(p, "Deposit", amount, "Completed", { coin: coin, net: net, txHash: txHash });
+      log("admin", "Creditou depósito " + RD.fmt.usd(amount) + " " + (coin || "") + " para " + p.username); save();
+      return { tx: t };
+    },
     submitKyc: function (pid, info) {
       var p = byId(pid); p.kyc = "Pending"; p.kycInfo = info; p.kycReason = "";
       log(p.username, "Enviou documentos de KYC"); save();
