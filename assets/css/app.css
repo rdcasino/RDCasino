@@ -255,9 +255,6 @@ input[type="range"] { width: 100%; accent-color: var(--brand); }
 .prose h2 { margin: 28px 0 10px; font-size: 18px; }
 .prose p, .prose li { color: var(--text-2); margin-bottom: 10px; }
 .prose ul { padding-left: 18px; }
-.notice { display: flex; gap: 12px; padding: 14px 16px; border-radius: var(--r); background: var(--warn-soft); border: 1px solid rgba(242, 169, 59, 0.25); color: var(--warn); font-size: 13px; }
-.notice svg { margin-top: 1px; }
-.notice.info { background: var(--info-soft); border-color: rgba(79, 134, 247, 0.25); color: #9dbcff; }
 
 /* ---------- Footer ---------- */
 .footer { border-top: 1px solid var(--line); background: var(--bg-2); }

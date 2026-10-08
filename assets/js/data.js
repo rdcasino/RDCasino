@@ -213,7 +213,7 @@ RD.admin = {
   })(),
   players: (function () {
     var names = ["satoshi_k", "alpha_dog", "cryptoqueen", "degen_dan", "BigWager", "rdplayer", "lucky_7", "moonboy", "hodl_hannah", "whale_01", "ace_high", "nightowl"];
-    var countries = ["Canada", "Germany*", "Japan", "Mexico", "Argentina", "Canada", "India", "Turkey", "Chile", "UAE", "Norway", "Peru"];
+    var countries = ["Canada", "Austria", "Japan", "Mexico", "Argentina", "Canada", "India", "Turkey", "Chile", "UAE", "Norway", "Peru"];
     var kyc = ["Verified", "Verified", "Pending", "Not started", "Verified", "Verified", "Rejected", "Pending", "Verified", "Verified", "Not started", "Verified"];
     return names.map(function (n, i) {
       return {
@@ -271,7 +271,7 @@ RD.esc = function (s) {
 RD.media = function (o, cls, label) {
   return '<div class="media ' + (cls || "") + '" style="--c1:' + (o.c1 || "#1a2233") + ";--c2:" + (o.c2 || "#0f1420") + '">' +
     (label ? '<div class="media-fallback">' + label + "</div>" : "") +
-    (o.img ? '<img src="' + o.img + '" alt="" loading="lazy" onerror="this.remove()">' : "") +
+    (o.img ? '<img src="' + (RD.imgBase || "") + o.img + '" alt="" loading="lazy" onerror="this.remove()">' : "") +
     "</div>";
 };
 
