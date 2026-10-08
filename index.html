@@ -30,16 +30,9 @@
   </div>
   <nav class="sb-nav" id="sb-nav"></nav>
   <div class="sb-foot">
-    <div class="sb-lang">
-      <span data-ic="globe"></span>
-      <select class="sb-lang-select" aria-label="Language">
-        <option>English</option>
-        <option>Español</option>
-        <option>Deutsch</option>
-        <option>Français</option>
-        <option>日本語</option>
-        <option>Türkçe</option>
-      </select>
+    <div class="sb-lang-wrap">
+      <div class="lang-menu hidden" id="lang-menu"></div>
+      <button class="sb-lang" id="lang-btn" aria-haspopup="true" title="Language"><span data-ic="globe"></span><span class="sb-lang-name" id="lang-name">English</span><span class="sb-lang-chev" data-ic="chevronDown"></span></button>
     </div>
   </div>
 </aside>
@@ -66,7 +59,7 @@
     </div>
 
     <div class="hdr-right hidden" id="hdr-user">
-      <a class="icon-btn hide-sm" href="#/vip" aria-label="VIP"><span data-ic="crown"></span></a>
+      <button class="icon-btn hdr-vip hide-sm" data-drawer="vip" aria-label="VIP"><span data-ic="crown"></span><i class="hdr-dot hidden" id="vip-dot"></i></button>
       <button class="icon-btn hide-sm" data-drawer="chat" aria-label="Chat"><span data-ic="chat"></span></button>
       <div class="menu-wrap">
         <button class="icon-btn" id="user-btn" aria-label="Account"><span data-ic="user"></span></button>
@@ -83,7 +76,7 @@
 <nav class="bottom-nav" id="bottom-nav">
   <button id="bn-menu"><span data-ic="menu"></span><span>Menu</span></button>
   <a href="#/casino/all"><span data-ic="grid"></span><span>Casino</span></a>
-  <a href="#/vip"><span data-ic="crown"></span><span>VIP</span></a>
+  <button data-drawer="vip"><span data-ic="crown"></span><span>VIP</span></button>
   <a href="#/affiliate"><span data-ic="link"></span><span>Affiliate</span></a>
   <button data-drawer="chat"><span data-ic="chat"></span><span>Chat</span></button>
 </nav>
@@ -141,6 +134,14 @@
 <div class="overlay" id="modal-generic"><div class="modal modal-lg" id="modal-generic-box"></div></div>
 
 <!-- CHAT DRAWER -->
+<aside class="drawer" id="drawer-vip">
+  <div class="drawer-head">
+    <h3>VIP</h3>
+    <button class="icon-btn" data-close-drawer aria-label="Close"><span data-ic="x"></span></button>
+  </div>
+  <div class="drawer-body" id="vip-drawer-body"></div>
+</aside>
+
 <aside class="drawer" id="drawer-chat">
   <div class="drawer-head">
     <h3>Chat</h3>

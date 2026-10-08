@@ -60,6 +60,7 @@
     $("#hdr-wallet").classList.toggle("hidden", !u);
     if (!u) return;
     $("#hdr-bal").textContent = fmt.usd(shownBal(u));
+    if (typeof vipDot === "function") vipDot();
     var t = db.tierOf(u.wagered);
     $("#user-menu").innerHTML =
       '<div class="menu-head row" style="gap:10px">' + RD.art.tierBadge(t, 30) + '<div><strong>' + esc(u.username) + '</strong><small class="faint">' + (t ? t.name : "Unranked") + " · VIP</small></div></div>" +
@@ -1844,14 +1845,51 @@
     var v = vipState(u);
     return '<a class="sb-vip" href="#/vip">' + badge(v.cur, 34) + '<div class="grow"><div class="row between"><strong>' + (v.cur ? v.cur.name : "Unranked") + "</strong><small>" + v.pct.toFixed(0) + '%</small></div><div class="progress sm"><span style="width:' + v.pct + '%"></span></div><small class="faint">' + (v.next ? fmt.usd(v.next.wager - v.w, { dec: 0 }) + " to " + v.next.name : "Top level reached") + "</small></div>" + (v.pending.length ? '<span class="sb-vip-dot" title="Reward ready"></span>' : "") + "</a>";
   }
+  /* Cards de recompensa (iguais na janela VIP e na página VIP) */
+  function untilTxt(iso) {
+    var d = Math.max(0, new Date(iso).getTime() - Date.now()), h = Math.floor(d / 36e5), m = Math.floor((d % 36e5) / 6e4), sec = Math.floor((d % 6e4) / 1e3);
+    return h >= 24 ? Math.floor(h / 24) + "d " + (h % 24) + "h" : h ? h + "h " + String(m).padStart(2, "0") + "m" : m + "m " + String(sec).padStart(2, "0") + "s";
+  }
+  function rewardCards(u) {
+    var rb = u ? Math.floor(u.rakeback * 100) / 100 : 0, items = [{ key: "rakeback", label: "Instant Rakeback", amount: rb, status: rb >= 0.01 ? "ready" : "empty" }].concat(u ? db.bonusState(u.id) : []);
+    if (!u) ["daily", "weekly", "monthly", "reload"].forEach(function (k) { var c = RD.config.bonuses[k]; items.push({ key: k, label: c.label, minTier: c.minTier, status: "locked", amount: 0 }); });
+    return '<div class="rw-grid">' + items.map(function (it) {
+      var top, btn, sub = "";
+      if (it.status === "locked") { top = "Reach " + it.minTier; btn = '<button class="rw-btn" disabled>' + ic("lock", 14) + "Locked</button>"; }
+      else if (it.status === "wait") { top = "Claim soon"; btn = '<span class="rw-btn outline" data-until="' + it.availableAt + '">' + untilTxt(it.availableAt) + "</span>"; }
+      else if (it.status === "ready") { top = "Available"; sub = fmt.usd(it.amount); btn = '<button class="rw-btn ready" data-action="' + (it.key === "rakeback" ? "rakeback" : "claim-bonus") + '" data-key="' + it.key + '">Claim</button>'; }
+      else { top = "Wager to unlock"; btn = '<button class="rw-btn" disabled>Claim</button>'; }
+      if (it.key === "reload" && it.status !== "locked") top = "Remaining " + it.remaining + "/" + it.claims;
+      return '<div class="rw' + (it.status === "ready" ? " is-ready" : "") + '"><div class="rw-top"><span>' + top + "</span>" + ic("gift", 15) + '</div><div class="rw-art">' + RD.art.rewardIcon(it.key, 58) + '</div><b>' + it.label + "</b>" + (sub ? '<small class="rw-amt">' + sub + "</small>" : "") + btn + "</div>";
+    }).join("") + "</div>";
+  }
+  function renderVipDrawer() {
+    var u = me(), v = vipState(u), box = $("#vip-drawer-body"); if (!box) return;
+    box.innerHTML = '<div class="vd-card"><div class="vd-banner">' + badge(v.cur, 84) + (v.next ? '<span class="vd-arrow">' + ic("chevronRight", 18) + "</span>" + badge(v.next, 64) : "") + "</div>" +
+      '<div class="row between vd-prog-head"><span>Your VIP progress</span><strong>' + v.pct.toFixed(2) + "%</strong></div>" +
+      '<div class="progress"><span style="width:' + v.pct + '%"></span></div>' +
+      '<div class="row between vd-tiers"><span>' + badge(v.cur, 18) + (v.cur ? v.cur.name : "Unranked") + "</span><span>" + (v.next ? badge(v.next, 18) + v.next.name : "Max level") + "</span></div>" +
+      '<a class="btn btn-primary btn-block" href="#/vip" data-close-drawer>View VIP program</a></div>' +
+      '<h4 class="vd-h">' + ic("gift", 16) + "Available rewards</h4>" + rewardCards(u) +
+      (!u ? '<button class="btn btn-secondary btn-block" style="margin-top:14px" data-open="register">Create an account to start earning</button>' : "");
+    hydrateIcons(box);
+  }
+  function vipDot() { var u = me(), d = $("#vip-dot"); if (!d) return; var any = u && ((u.rakeback >= 0.01) || db.bonusState(u.id).some(function (b) { return b.status === "ready"; }) || vipState(u).pending.length); d.classList.toggle("hidden", !any); }
+  setInterval(function () {
+    var due = false;
+    $$("[data-until]").forEach(function (el) { var iso = el.getAttribute("data-until"); if (new Date(iso).getTime() <= Date.now()) due = true; else el.textContent = untilTxt(iso); });
+    if (due) { if ($("#drawer-vip").classList.contains("open")) renderVipDrawer(); else if (currentPath === "vip") route(true); }
+  }, 1000);
+
   pages.vip = function () {
-    var u = me(), v = vipState(u), rb = u ? Math.floor(u.rakeback * 100) / 100 : 0;
+    var u = me(), v = vipState(u);
     var hero = '<div class="vip2-hero"><div class="vip2-me">' + badge(v.cur, 72) + '<div class="grow"><span class="eyebrow">' + (u ? "Your VIP level" : "RD VIP Club") + "</span><h2>" + (u ? (v.cur ? v.cur.name : "Unranked") : "Play. Level up. Get paid.") + "</h2>" +
       (u ? (v.next ? '<div class="vip2-prog"><div class="row between"><span>' + fmt.usd(v.w, { dec: 0 }) + ' <small class="faint">/ ' + fmt.usd(v.next.wager, { dec: 0 }) + '</small></span><strong>' + v.pct.toFixed(1) + '%</strong></div><div class="progress"><span style="width:' + v.pct + '%"></span></div><small class="faint">Wager ' + fmt.usd(v.next.wager - v.w) + " more to reach <b>" + v.next.name + "</b> and unlock " + fmt.usd(v.next.reward, { dec: 0 }) + "</small></div>" : '<p class="muted">You reached the highest level. Our team will contact you about bespoke rewards.</p>')
         : '<p class="muted" style="margin:6px 0 14px">Every dollar you wager counts toward your level. No opt-in, no hidden rules.</p><button class="btn btn-primary" data-open="register">Join now</button>') +
       "</div></div>" + (v.next ? '<div class="vip2-next">' + badge(v.next, 54) + '<small class="faint">Next level</small><strong>' + v.next.name + '</strong><span class="vip2-amt">' + fmt.usd(v.next.reward, { dec: 0 }) + "</span></div>" : "") + "</div>";
-    var cards = '<div class="vip2-cards">' +
-      '<div class="card vip2-card"><span class="vip2-ic">' + ic("coins", 20) + '</span><h3>Rakeback</h3><p class="muted">' + (RD.config.rakebackRate * 100) + "% of the house edge on every bet, claimable any time.</p><div class=\"vip2-val\">" + fmt.usd(rb) + '</div><button class="btn btn-primary btn-block" data-action="rakeback"' + (rb < 0.01 ? " disabled" : "") + ">Claim rakeback</button></div>" +
+    var cards = '<div class="section">' + sectionHead("Rewards", "gift") + rewardCards(u) + "</div>" +
+      '<div class="vip2-cards" style="margin-top:14px">' +
+
       '<div class="card vip2-card"><span class="vip2-ic">' + ic("crown", 20) + '</span><h3>Level-up rewards</h3><p class="muted">A cash reward every time you reach a new level. Paid to your balance, no wagering.</p><div class="vip2-val">' + fmt.usd(v.pendingSum) + '</div><button class="btn btn-primary btn-block" data-action="vip-claim-all"' + (v.pending.length ? "" : " disabled") + ">" + (v.pending.length > 1 ? "Claim " + v.pending.length + " rewards" : "Claim reward") + "</button></div>" +
       '<div class="card vip2-card"><span class="vip2-ic">' + ic("trophy", 20) + '</span><h3>Monthly leaderboard</h3><p class="muted">Your wager also counts for the monthly race. Top ' + RD.config.leaderboardPrizes.length + ' get paid.</p><div class="vip2-val">' + fmt.usd(RD.config.leaderboardPrize, { dec: 0 }) + '</div><a class="btn btn-secondary btn-block" href="#/leaderboard">See the race</a></div></div>';
     var table = '<div class="section">' + sectionHead("Wager rewards", "crown") + '<div class="card vip2-table">' +
@@ -1861,12 +1899,14 @@
         var btn = !u ? '<span class="vip2-st">Locked</span>' : claimed ? '<span class="vip2-st ok">' + ic("check", 13) + "Claimed</span>" : reached ? '<button class="btn btn-primary btn-sm" data-level="' + t.name + '">Claim</button>' : '<span class="vip2-st">' + (isNext ? v.pct.toFixed(0) + "%" : "Locked") + "</span>";
         return '<div class="vip2-row' + (i === v.idx ? " current" : "") + (reached ? " reached" : "") + '">' + '<span class="vip2-lvl">' + badge(t, 34) + "<b>" + t.name + "</b>" + (i === v.idx ? '<em>You</em>' : "") + '</span><span class="num muted">' + fmt.usd(t.wager, { dec: 0 }) + '</span><span class="right vip2-rw">' + fmt.usd(t.reward, { dec: 0 }) + '</span><span class="right">' + btn + "</span></div>";
       }).join("") + "</div></div>";
-    var faq = '<div class="section">' + sectionHead("How it works", "help") + '<div class="vip2-faq">' + [
+    var faq = '<div class="section"><details class="card vip2-how"><summary>' + ic("help", 18) + '<span>How it works</span>' + ic("chevronDown", 18) + '</summary><div class="vip2-faq">' + [
       ["How do I level up?", "Every bet you place counts toward your total wager. When it passes the amount of the next level, you move up automatically."],
       ["How are rewards paid?", "Each level has a one-time cash reward. Claim it on this page and it goes straight to your balance, with no wagering requirement."],
       ["What is rakeback?", "A share of the house edge of every bet you place comes back to you. It builds up as you play and you can claim it whenever you want."],
-      ["Do levels expire?", "No. Your level is based on your lifetime wager and never goes down."]
-    ].map(function (q) { return '<details class="card"><summary>' + q[0] + "</summary><p>" + q[1] + "</p></details>"; }).join("") + "</div></div>";
+      ["Do levels expire?", "No. Your level is based on your lifetime wager and never goes down."],
+      ["Daily, weekly and monthly bonuses", "They return part of the house edge from your recent play: daily from Bronze, weekly from Silver and monthly from Gold. The more you play, the bigger the bonus."],
+      ["VIP Reload", "From Jade, you get a reload bonus you can claim once a day for 7 days, based on your last 30 days of play."]
+    ].map(function (q) { return '<div class="vip2-qa"><h4>' + q[0] + "</h4><p>" + q[1] + "</p></div>"; }).join("") + "</div></details></div>";
     return '<div class="container">' + hero + cards + table + faq + "</div>";
   };
 
@@ -2093,15 +2133,22 @@
       '<div><h4>Rewards</h4><a href="#/promotions">Promotions</a><a href="#/vip">VIP Club</a><a href="#/leaderboard">Leaderboard</a><a href="#/affiliate">Affiliate</a></div>' +
       '<div><h4>Support</h4><a href="#" data-drawer="chat">Chat</a><a href="mailto:' + RD.config.supportEmail + '">Email us</a><a href="#/fairness">Provably fair</a><a href="#/responsible">Responsible gaming</a></div>' +
       '<div><h4>Legal</h4><a href="#/legal/terms">Terms of Service</a><a href="#/legal/privacy">Privacy Policy</a><a href="#/legal/aml">AML & KYC</a><a href="#/legal/bonus">Bonus Terms</a></div></div>' +
-      '<div class="footer-legal"><div>' + licenseLine + "</div><div>Restricted territories: " + RD.config.restrictedCountries.join(", ") + ".</div><div>Gambling can be addictive. Play responsibly. © " + new Date().getFullYear() + " RDCasino.</div></div></div>";
+      '<div class="footer-legal"><div class="fl-row"><span class="fl-lbl">' + ic("shield", 13) + "License</span><span>" + licenseLine + '</span></div>' +
+      '<div class="fl-row"><span class="fl-lbl">' + ic("ban", 13) + 'Not available in</span><span class="fl-chips">' + RD.config.restrictedCountries.map(function (c) { return "<i>" + esc(c) + "</i>"; }).join("") + "</span></div>" +
+      '<div class="fl-copy">© ' + new Date().getFullYear() + " RDCasino. All rights reserved.</div></div></div>";
   }
 
   /* ---------- Chat ---------- */
   function renderChat() {
-    var list = db.chat(), box = $("#chat-list");
-    box.innerHTML = list.length ? list.map(function (m) { var pl = db.findByName(m.user); return '<div class="chat-msg"><span class="avatar">' + initials(m.user) + "</span><div><strong class=\"row\" style=\"gap:6px\">" + RD.art.tierBadge(pl ? db.tierOf(pl.wagered) : null, 18) + esc(m.user) + "</strong><p>" + esc(m.text) + "</p></div></div>"; }).join("") : '<div class="empty" style="padding:40px 10px">No messages yet. Say hi!</div>';
+    var list = db.chat(), box = $("#chat-list"), u = me();
+    var hue = function (name) { var h = 0; for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % 360; return h; };
+    box.innerHTML = list.length ? list.map(function (m) {
+      var pl = db.findByName(m.user), mine = u && u.username === m.user, h = hue(m.user || "?");
+      return '<div class="chat-msg' + (mine ? " mine" : "") + '"><span class="avatar" style="background:hsl(' + h + ',55%,32%);color:hsl(' + h + ',90%,88%)">' + initials(m.user) + '</span><div class="chat-bubble"><div class="chat-meta">' + RD.art.tierBadge(pl ? db.tierOf(pl.wagered) : null, 16) + "<strong>" + esc(m.user) + '</strong><time>' + (m.at ? m.at.slice(11, 16) : "") + "</time></div><p>" + esc(m.text) + "</p></div></div>";
+    }).join("") : '<div class="empty" style="padding:40px 10px"><h3>No messages yet</h3><p>Say hi to the community.</p></div>';
     box.scrollTop = box.scrollHeight;
   }
+
 
   /* ---------- Countdown ---------- */
   function countdown() {
@@ -2141,7 +2188,7 @@
       return openAuth(w);
     }
     if (t.hasAttribute("data-close")) { closeAll(); return; }
-    if (t.hasAttribute("data-drawer")) { e.preventDefault(); closeAll(); renderChat(); $("#drawer-" + t.getAttribute("data-drawer")).classList.add("open"); return; }
+    if (t.hasAttribute("data-drawer")) { e.preventDefault(); closeAll(); var dn = t.getAttribute("data-drawer"); if (dn === "vip") renderVipDrawer(); else renderChat(); $("#drawer-" + dn).classList.add("open"); return; }
     if (t.hasAttribute("data-close-drawer")) return closeAll();
     if (t.hasAttribute("data-auth")) { e.preventDefault(); return openAuth(t.getAttribute("data-auth")); }
     if (t.hasAttribute("data-wtab")) { state.walletTab = t.getAttribute("data-wtab"); return renderWallet(); }
@@ -2166,12 +2213,18 @@
       case "logout": Promise.resolve(db.logout()).then(function () { renderHeader(); renderSidebar(); closeAll(); location.hash = "#/"; route(); RD.toast("Signed out"); }); return;
       case "new-campaign": return newCampaign();
       case "collect": { var c = db.collectCommission(u.id); RD.toast(c.error || fmt.usd(c.amount) + " added to your balance", c.error ? "error" : ""); renderHeader(); return route(true); }
+      case "claim-bonus": {
+        if (needLogin()) return; var cb = db.claimBonus(u.id, t.getAttribute("data-key"));
+        RD.toast(cb.error || "Claimed " + fmt.usd(cb.amount), cb.error ? "error" : ""); renderHeader(); renderSidebar(); markActive(currentPath);
+        if ($("#drawer-vip").classList.contains("open")) renderVipDrawer();
+        if (currentPath === "vip") route(true); return;
+      }
       case "vip-claim-all": {
         if (needLogin()) return; var got = 0;
         vipState(u).pending.forEach(function (tr) { var r2 = db.claimLevel(u.id, tr.name); if (r2.amount) got += r2.amount; });
         RD.toast(got ? "Claimed " + fmt.usd(got) + " in VIP rewards" : "Nothing to claim yet", got ? "" : "error"); renderHeader(); renderSidebar(); markActive(currentPath); return route(true);
       }
-      case "rakeback": { if (needLogin()) return; var rb = db.claimRakeback(u.id); RD.toast(rb.error || "Claimed " + fmt.usd(rb.amount), rb.error ? "error" : ""); renderHeader(); return route(true); }
+      case "rakeback": { if (needLogin()) return; var rb = db.claimRakeback(u.id); if ($("#drawer-vip").classList.contains("open")) setTimeout(renderVipDrawer, 0); RD.toast(rb.error || "Claimed " + fmt.usd(rb.amount), rb.error ? "error" : ""); renderHeader(); return route(true); }
       case "seeds": return seedsModal();
       case "rotate": { var rs = db.rotateSeed(u.id, ($("#new-client").value || "").trim()); if (rs && rs.error) return RD.toast(rs.error, "error"); RD.toast("Seeds rotated — previous server seed revealed"); return seedsModal(); }
       case "open-withdraw": state.walletTab = "withdraw"; openModal("wallet"); return renderWallet();
@@ -2331,6 +2384,20 @@
     if (currentPath === "" || currentPath === "home") { renderTicker(); renderFeed(); return; }
     route(true);
   });
+
+  /* Idioma: menu próprio (por enquanto só inglês; os outros entram com a tradução) */
+  var LANGS = [["en", "English"], ["es", "Español"], ["pt", "Português"], ["de", "Deutsch"], ["fr", "Français"], ["tr", "Türkçe"], ["ja", "日本語"]];
+  function renderLang() {
+    $("#lang-menu").innerHTML = LANGS.map(function (l) { return '<button data-lang="' + l[0] + '"' + (l[0] === "en" ? ' class="active"' : "") + "><span>" + l[1] + "</span>" + (l[0] === "en" ? ic("check", 15) : '<small>Soon</small>') + "</button>"; }).join("");
+  }
+  renderLang();
+  $("#lang-btn").addEventListener("click", function (e) { e.stopPropagation(); $("#lang-menu").classList.toggle("hidden"); });
+  $("#lang-menu").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-lang]"); if (!b) return;
+    $("#lang-menu").classList.add("hidden");
+    if (b.getAttribute("data-lang") !== "en") RD.toast(b.textContent.replace("Soon", "") + " is coming soon");
+  });
+  document.addEventListener("click", function (e) { if (!e.target.closest(".sb-lang-wrap")) $("#lang-menu").classList.add("hidden"); });
 
   /* Menu lateral: no computador encolhe para só ícones (lembra a escolha); no celular fecha a gaveta */
   try { if (localStorage.getItem("rd_sb_mini") === "1") document.body.classList.add("sb-mini"); } catch (x) {}

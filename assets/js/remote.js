@@ -148,6 +148,7 @@
   db.reserve = function () { return { server: "", client: "", nonce: 0 }; };
   db.claimLevel = function () { return SOON; };
   db.claimRakeback = function () { return SOON; };
+  db.claimBonus = function () { return SOON; };
   db.tip = function () { return { error: "Tips are not available yet." }; };
   db.chatSend = function () {};
 
