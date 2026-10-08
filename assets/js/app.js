@@ -352,6 +352,17 @@
   RD.fair.plinko = PLINKO;
   function minesMult(k, m) { var x = 0.99; for (var i = 0; i < k; i++) x *= (25 - i) / (25 - m - i); return Math.floor(x * 100) / 100; }
   var RANKS = ["", "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"], SUITS = ["♠", "♥", "♦", "♣"];
+  /* Carta de baralho (Blackjack, Hi-Lo, Baccarat): naipes desenhados em SVG, frente/verso com virada 3D */
+  var SUIT_D = ["M12 2C9 6.5 3.5 9.5 3.5 14a4.5 4.5 0 0 0 7.6 3.2L10 22h4l-1.1-4.8A4.5 4.5 0 0 0 20.5 14C20.5 9.5 15 6.5 12 2z",
+    "M12 21.2s-7.6-4.7-9.7-9.4C.8 8.3 3 4.4 6.8 4.4c2.1 0 3.6 1.2 5.2 3.2 1.6-2 3.1-3.2 5.2-3.2 3.8 0 6 3.9 4.5 7.4-2.1 4.7-9.7 9.4-9.7 9.4z",
+    "M12 1.8 20.2 12 12 22.2 3.8 12z",
+    "M12 2.4a4.4 4.4 0 0 0-4 6.2A4.4 4.4 0 1 0 10.9 16L10 22h4l-.9-6a4.4 4.4 0 1 0 2.9-7.4 4.4 4.4 0 0 0-4-6.2z"];
+  function suitSvg(su, cls) { return '<svg viewBox="0 0 24 24" class="' + (cls || "") + '"><path d="' + SUIT_D[su] + '" fill="currentColor"/></svg>'; }
+  function pcard(c, o) {
+    o = o || {}; var red = c && (c.suit === 1 || c.suit === 2);
+    var front = c ? '<div class="pc-f"><span class="pc-r">' + RANKS[c.rank] + "</span>" + suitSvg(c.suit, "pc-s") + suitSvg(c.suit, "pc-big") + "</div>" : '<div class="pc-f"></div>';
+    return '<div class="pc' + (red ? " red" : "") + (o.hidden ? " hid" : "") + (o.cls ? " " + o.cls : "") + '"><div class="pc-in">' + front + '<div class="pc-b"><span>RD</span></div></div></div>';
+  }
   function hiloOpts(r) {
     if (r === 1) return { up: { label: "Higher", p: 12 / 13, ok: function (x) { return x > 1; } }, down: { label: "Same", p: 1 / 13, ok: function (x) { return x === 1; } } };
     if (r === 13) return { up: { label: "Same", p: 1 / 13, ok: function (x) { return x === 13; } }, down: { label: "Lower", p: 12 / 13, ok: function (x) { return x < 13; } } };
@@ -1007,27 +1018,39 @@
   };
 
   /* ---------- HI-LO ---------- */
-  function cardHtml(c, cls) { var red = c.suit === 1 || c.suit === 2; return '<div class="hl-card' + (red ? " red" : "") + (cls ? " " + cls : "") + '"><span class="r">' + RANKS[c.rank] + '</span><span class="s">' + SUITS[c.suit] + '</span><span class="r b">' + RANKS[c.rank] + "</span></div>"; }
-  function miniCard(c, cls) { var red = c.suit === 1 || c.suit === 2; return '<div class="hl-mini' + (red ? " red" : "") + (cls ? " " + cls : "") + '">' + RANKS[c.rank] + "<span>" + SUITS[c.suit] + "</span></div>"; }
+  function cardHtml(c, cls) { return pcard(c, { cls: "hl-big" + (cls ? " " + cls : "") }); }
+  var HL_ARW = { good: '<i class="hl-res good">' + '<svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></i>', bad: '<i class="hl-res bad"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></i>', skip: '<i class="hl-res skip"><svg viewBox="0 0 24 24"><path d="M6 6l6 6-6 6M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></i>' };
+  function miniCard(c, cls) { return '<div class="hl-mwrap">' + pcard(c, { cls: "hl-mini" + (cls ? " " + cls : "") }) + (HL_ARW[cls] || "") + "</div>"; }
+  var HL_UP = '<svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>', HL_DN = '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   OG.hilo = {
     label: function (b) { return b.multiplier ? b.multiplier.toFixed(2) + "×" : "0.00×"; },
     cfg: function () {
       return {
         side: '<div id="hl-live" class="hidden">' + profitField("Total profit") + "</div>",
         after: '<button class="btn btn-secondary btn-block" id="hl-skip" style="height:42px" disabled>Skip card</button>',
-        center: '<div class="hl"><div class="hl-hist" id="hl-hist"></div><div id="hl-card"></div><div class="hl-btns"><button class="hl-btn" id="hl-up" disabled><span id="hl-up-l">Higher</span><small id="hl-up-p"></small></button><button class="hl-btn" id="hl-down" disabled><span id="hl-down-l">Lower</span><small id="hl-down-p"></small></button></div><div class="hl-note">K is the highest card, A is the lowest</div></div>'
+        center: '<div class="hl"><div class="hl-hist" id="hl-hist"></div><div class="hl-table"><div class="hl-deck">' + pcard(null, { hidden: true, cls: "hl-big" }) + pcard(null, { hidden: true, cls: "hl-big" }) + pcard(null, { hidden: true, cls: "hl-big" }) + '</div><div class="hl-slot" id="hl-card"></div><div class="hl-scale"><span>K</span><i></i><span>A</span></div></div>' +
+          '<div class="hl-btns"><button class="hl-btn up" id="hl-up" disabled><span class="hl-ic">' + HL_UP + '</span><span class="hl-tx"><b id="hl-up-l">Higher</b><small id="hl-up-p"></small></span><em id="hl-up-m"></em></button><button class="hl-btn down" id="hl-down" disabled><span class="hl-ic">' + HL_DN + '</span><span class="hl-tx"><b id="hl-down-l">Lower</b><small id="hl-down-p"></small></span><em id="hl-down-m"></em></button></div></div>'
       };
     },
     bind: function (ctx) {
       var G = "hilo", round = null, preview = null, busyCard = false; // round: {amount, cards:[{rank,suit,res}], mult, idx}
       function current() { return round ? round.cards[round.cards.length - 1] : preview; }
-      function show() {
+      /* carta nova sai do baralho, desliza para o centro e vira */
+      function dealCard(c, res) {
+        var slot = $("#hl-card"); if (!slot) return;
+        slot.insertAdjacentHTML("beforeend", pcard(c, { hidden: true, cls: "hl-big hl-in" }));
+        var el = slot.lastElementChild; setTimeout(function () { el.classList.remove("hid"); }, 170);
+        slot.className = "hl-slot";
+        setTimeout(function () { if (!document.contains(el)) return; while (slot.firstElementChild !== el) slot.firstElementChild.remove(); el.classList.remove("hl-in"); if (res) { void slot.offsetWidth; slot.className = "hl-slot " + res; } }, 620);
+      }
+      function show(anim) {
         var c = current(); if (!c || !$("#hl-card")) return;
-        $("#hl-card").innerHTML = cardHtml(c);
+        if (anim) dealCard(c, c.res); else { $("#hl-card").innerHTML = cardHtml(c); $("#hl-card").className = "hl-slot"; }
         var o = hiloOpts(c.rank), live = !!round;
         [["up", o.up], ["down", o.down]].forEach(function (x) {
           $("#hl-" + x[0] + "-l").textContent = x[1].label;
-          $("#hl-" + x[0] + "-p").textContent = (x[1].p * 100).toFixed(2) + "% · " + (0.99 / x[1].p).toFixed(2) + "×";
+          $("#hl-" + x[0] + "-p").textContent = (x[1].p * 100).toFixed(2) + "%";
+          $("#hl-" + x[0] + "-m").textContent = (0.99 / x[1].p).toFixed(2) + "×";
           $("#hl-" + x[0]).disabled = !live;
         });
         $("#hl-skip").disabled = live ? false : !me();
@@ -1050,7 +1073,7 @@
         for (var k in extra) d[k] = extra[k]; return d;
       }
       function draw(kind) {
-        if (!round) { if (kind === "skip" && !busyCard && me()) { preview = randomCard(); keepCard(preview); show(); } return; }
+        if (!round) { if (kind === "skip" && !busyCard && me()) { preview = randomCard(); keepCard(preview); RD.sfx.play("card"); show(true); } return; }
         if (busyCard) return; busyCard = true;
         var u = me(), r = db.activeRound(u.id, G), idx = round.cards.length;
         // carta nº idx da rodada = número (idx − 1) das seeds (a 1ª carta é a que já estava na mesa)
@@ -1069,15 +1092,15 @@
               var last = round; round = null; busyCard = false; keepCard(next); preview = { rank: next.rank, suit: next.suit };
               if (!$("#hl-card")) return;
               ctx.lock(false);
-              $("#hl-card").innerHTML = cardHtml(next, "lose"); $("#hl-hist").innerHTML = last.cards.map(function (k, i) { return miniCard(k, i === 0 ? "" : k.res); }).join("");
+              dealCard(next, "bad"); $("#hl-hist").innerHTML = last.cards.map(function (k, i) { return miniCard(k, i === 0 ? "" : k.res); }).join("");
               ["up", "down"].forEach(function (x) { $("#hl-" + x).disabled = true; }); $("#hl-skip").disabled = true; $("#hl-live").classList.add("hidden");
               ctx.btn().textContent = "Bet"; ctx.btn().disabled = false; ctx.record(b); busyCard = false;
-              setTimeout(function () { if (!round) loadPreview(); }, 1200);
+              setTimeout(function () { if (!round && $("#hl-card")) { loadPreview(); } }, 1600);
               return;
             }
             round.mult = RD.live ? x.state.mult : Math.floor(round.mult * (0.99 / opt.p) * 100) / 100;
           }
-          db.updateRound(u.id, G, { cards: round.cards, mult: round.mult }); keepCard(next); busyCard = false; show();
+          db.updateRound(u.id, G, { cards: round.cards, mult: round.mult }); keepCard(next); busyCard = false; show(true);
         });
       }
       function start() {
@@ -1257,11 +1280,7 @@
   /* ---------- BLACKJACK (baralho infinito, dealer para em 17, BJ paga 3:2) ---------- */
   function bjVal(r) { return r === 1 ? 11 : r > 10 ? 10 : r; }
   function bjTotal(cards) { var t = 0, aces = 0; cards.forEach(function (c) { t += bjVal(c.rank); if (c.rank === 1) aces++; }); while (t > 21 && aces) { t -= 10; aces--; } return { t: t, soft: aces > 0 }; }
-  function bjCard(c, hidden) {
-    if (hidden) return '<div class="bj-card back"></div>';
-    var red = c.suit === 1 || c.suit === 2;
-    return '<div class="bj-card' + (red ? " red" : "") + '"><span class="r">' + RANKS[c.rank] + '</span><span class="s">' + SUITS[c.suit] + "</span></div>";
-  }
+  function bjCard(c, hidden) { return pcard(c, { hidden: hidden, cls: "bj-card" }); }
   OG.blackjack = {
     label: function (b) { return b.detail.outcome || b.multiplier.toFixed(2) + "×"; },
     cfg: function () {
@@ -1274,21 +1293,77 @@
       var G = "blackjack", S = null, busyB = false; // S: {cursor, dealer, hands:[{cards,bet,done,doubled}], active, over}
       function u() { return me(); }
       function draw(n) { var r = db.activeRound(u().id, G); return floats(r.server, r.client, r.nonce, S.cursor + n).then(function (fs) { var out = []; for (var i = 0; i < n; i++) out.push(cardFrom(fs[S.cursor + i])); S.cursor += n; return out; }); }
-      function render(reveal) {
+      /* Mesa animada: as cartas entram uma de cada vez (fila), a do dealer vira no fim.
+         render() só agenda; o que já está na mesa não é redesenhado (sem piscar). */
+      var view = null, q = Promise.resolve(), animating = 0;
+      function snap(reveal) { return S ? { reveal: !!reveal, dealer: S.dealer.map(function (c) { return { rank: c.rank, suit: c.suit }; }), hands: S.hands.map(function (h) { return { cards: h.cards.slice(), res: h.res }; }), active: S.active, over: S.over } : null; }
+      function render(reveal) { var sn = snap(reveal); animating++; buttons(); q = q.then(function () { return sync(sn); }).then(function () { animating--; buttons(); }); return q; }
+      function valTxt(cards) { var v = bjTotal(cards); return v.soft && v.t < 21 ? v.t - 10 + "/" + v.t : String(v.t); }
+      function handHtml(cards) { return '<div class="bj-hand"><div class="bj-cards">' + cards.map(function (c) { return bjCard(c); }).join("") + '</div><span class="bj-val' + (cards.length ? "" : " hidden") + '">' + (cards.length ? valTxt(cards) : "") + "</span></div>"; }
+      function paintVals(sn) {
+        var dv = $("#bj-dval"); if (!dv) return;
+        var dShown = view.hole && view.dealer.length > 1 ? [view.dealer[0]] : view.dealer;
+        dv.textContent = dShown.length ? valTxt(dShown) : ""; dv.classList.toggle("hidden", !dShown.length);
+        $$("#bj-hands .bj-hand").forEach(function (el, i) {
+          var cards = view.hands[i] || [], v = el.querySelector(".bj-val");
+          v.textContent = cards.length ? valTxt(cards) : ""; v.classList.toggle("hidden", !cards.length);
+          var res = sn && sn.over !== undefined && sn.hands[i] ? sn.hands[i].res : null;
+          el.className = "bj-hand" + (sn && view.hands.length > 1 && i === sn.active && !sn.over ? " active" : "") + (res ? " " + res : "") + (cards.length && bjTotal(cards).t > 21 ? " bust" : "");
+        });
+      }
+      function sync(sn) {
+        return new Promise(function (resolve) {
+          var dEl = $("#bj-dealer"), hEl = $("#bj-hands"); if (!dEl) return resolve();
+          if (!sn) { if (!view) { dEl.innerHTML = '<div class="bj-card pc ghost"></div><div class="bj-card pc ghost"></div>'; hEl.innerHTML = '<div class="bj-hand"><div class="bj-cards"><div class="bj-card pc ghost"></div><div class="bj-card pc ghost"></div></div></div>'; $("#bj-dval").classList.add("hidden"); } return resolve(); }
+          if (!view) { view = { dealer: [], hole: true, hands: sn.hands.map(function () { return []; }) }; dEl.innerHTML = ""; hEl.innerHTML = view.hands.map(handHtml).join(""); }
+          if (view.hands.length !== sn.hands.length) { // split: cada mão começa com uma das cartas que já estavam na mesa
+            view.hands = sn.hands.map(function (h) { return [h.cards[0]]; }); hEl.innerHTML = view.hands.map(handHtml).join("");
+          }
+          var steps = [], i, k;
+          if (!view.dealer.length && view.hands.every(function (h) { return !h.length; })) {
+            for (k = 0; k < 2; k++) { sn.hands.forEach(function (h, hi) { if (h.cards[k]) steps.push({ h: hi, c: h.cards[k] }); }); if (sn.dealer[k]) steps.push({ d: k, c: sn.dealer[k] }); }
+            sn.hands.forEach(function (h, hi) { for (var x = 2; x < h.cards.length; x++) steps.push({ h: hi, c: h.cards[x] }); });
+            for (k = 2; k < sn.dealer.length; k++) steps.push({ d: k, c: sn.dealer[k] });
+          } else {
+            sn.hands.forEach(function (h, hi) { for (var x = view.hands[hi].length; x < h.cards.length; x++) steps.push({ h: hi, c: h.cards[x] }); });
+            if (sn.reveal && view.hole && view.dealer.length > 1) steps.push({ flip: true, c: sn.dealer[1] });
+            for (k = view.dealer.length; k < sn.dealer.length; k++) steps.push({ d: k, c: sn.dealer[k] });
+          }
+          if (sn.reveal && view.hole && view.dealer.length < 2 && sn.dealer.length > 1) view.hole = false;
+          (function run(n) {
+            if (!$("#bj-dealer")) return resolve();
+            if (n >= steps.length) { paintVals(sn); return resolve(); }
+            var st = steps[n];
+            if (st.flip) {
+              var hole = $$("#bj-dealer .pc")[1]; if (hole) { hole.outerHTML = pcard(st.c, { hidden: true, cls: "bj-card" }); hole = $$("#bj-dealer .pc")[1]; void hole.offsetWidth; hole.classList.remove("hid"); }
+              view.hole = false; view.dealer[1] = st.c; RD.sfx.play("card");
+            } else {
+              var box = st.d !== undefined ? dEl : hEl.querySelectorAll(".bj-cards")[st.h], hidden = st.d === 1 && !sn.reveal;
+              if (box) { box.insertAdjacentHTML("beforeend", pcard(st.c, { hidden: true, cls: "bj-card deal" })); var el = box.lastElementChild; if (!hidden) setTimeout(function () { el.classList.remove("hid"); }, 140); }
+              if (st.d !== undefined) { view.dealer.push(st.c); if (st.d === 1) view.hole = hidden; } else view.hands[st.h].push(st.c);
+              RD.sfx.play("card", 0);
+            }
+            paintVals(sn);
+            setTimeout(function () { run(n + 1); }, n + 1 < steps.length ? 420 : 300);
+          })(0);
+        });
+      }
+      function buttons() {
         if (!$("#bj-dealer")) return;
-        var dCards = S ? S.dealer : [];
-        $("#bj-dealer").innerHTML = dCards.map(function (c, i) { return bjCard(c, i === 1 && !reveal); }).join("");
-        $("#bj-dval").textContent = S ? (reveal ? bjTotal(dCards).t : bjTotal([dCards[0]]).t) : "";
-        $("#bj-dval").classList.toggle("hidden", !S);
-        $("#bj-hands").innerHTML = S ? S.hands.map(function (h, i) { var v = bjTotal(h.cards); return '<div class="bj-hand' + (S.hands.length > 1 && i === S.active && !S.over ? " active" : "") + (h.res ? " " + h.res : "") + '"><div class="bj-cards">' + h.cards.map(function (c) { return bjCard(c); }).join("") + '</div><span class="bj-val">' + (v.soft && v.t < 21 ? v.t - 10 + "/" + v.t : v.t) + "</span></div>"; }).join("") : '<div class="bj-hand"><div class="bj-cards"><div class="bj-card ghost"></div><div class="bj-card ghost"></div></div></div>';
-        var insOpen = !!(S && S.ins === "offer" && !S.over), box = $("#bj-ins");
+        var insOpen = !!(S && S.ins === "offer" && !S.over && !animating), box = $("#bj-ins");
         box.classList.toggle("hidden", !insOpen);
         if (insOpen) { $("#bj-ins-cost").textContent = "Costs " + fmt.usd(insCost()) + " · pays " + fmt.usd(insCost() * 3) + " if the dealer has Blackjack"; $("#bj-ins-yes").disabled = (u() ? u().balance : 0) < insCost(); }
-        var h = S && !S.over && !insOpen ? S.hands[S.active] : null, bal = u() ? u().balance : 0;
+        var h = S && !S.over && !insOpen && !animating && !busyB ? S.hands[S.active] : null, bal = u() ? u().balance : 0;
         $("#bj-hit").disabled = !h; $("#bj-stand").disabled = !h;
         $("#bj-double").disabled = !(h && h.cards.length === 2 && bal >= h.bet);
         $("#bj-split").disabled = !(h && S.hands.length === 1 && h.cards.length === 2 && bjVal(h.cards[0].rank) === bjVal(h.cards[1].rank) && bal >= h.bet);
-        var b = ctx.btn(); b.disabled = !!(S && !S.over);
+        var b = ctx.btn(); if (b) b.disabled = animating > 0 || !!(S && !S.over);
+      }
+      function newTable() { view = null; var r0 = $("#bj-result"); if (r0) r0.className = "bj-result hidden"; }
+      function showResult(outcome, total, amount) {
+        var r = $("#bj-result"); if (!r) return;
+        r.className = "bj-result " + (total > amount ? "w" : total === amount ? "p" : "l");
+        r.textContent = outcome === "Blackjack" ? "Blackjack! +" + fmt.usd(total - amount) : outcome === "Insured" ? "Dealer Blackjack — insurance paid" + (total > amount ? " +" + fmt.usd(total - amount) : "") : outcome === "Win" ? "You win +" + fmt.usd(total - amount) : outcome === "Push" ? "Push" : "Dealer wins";
       }
       function persist() { db.updateRound(u().id, G, S); }
       /* Seguro: metade da aposta, paga 2:1 se o dealer tiver Blackjack */
@@ -1313,21 +1388,12 @@
       }
       function liveShow(x) {
         if (!x.over) { fromServer(x); busyB = false; if (x.ins === "lost") RD.toast("Dealer doesn't have Blackjack — insurance lost"); render(); return; }
-        var full = x.dealer, i = 2; busyB = true;
-        fromServer(x); S.over = false; S.dealer = full.slice(0, 2); render(true);
-        (function step() {
-          if (!$("#bj-dealer")) return liveFinish(x);
-          if (i < full.length) { S.dealer.push(full[i++]); render(true); return setTimeout(step, 420); }
-          setTimeout(function () { liveFinish(x); }, 300);
-        })();
+        busyB = true; liveFinish(x);
       }
       function liveFinish(x) {
-        var bet = db.settleRound(u().id, G) || x.bet; S.over = true; S.dealer = x.dealer; S.hands.forEach(function (h, i) { h.res = x.hands[i].res; });
-        var amount = bet.amount, total = bet.payout, outcome = bet.detail.outcome;
-        render(true);
-        var r = $("#bj-result"); if (!r) { S = null; busyB = false; return; } r.className = "bj-result " + (total > amount ? "w" : total === amount ? "p" : "l");
-        r.textContent = outcome === "Blackjack" ? "Blackjack! +" + fmt.usd(total - amount) : outcome === "Insured" ? "Dealer Blackjack — insurance paid" + (total > amount ? " +" + fmt.usd(total - amount) : "") : outcome === "Win" ? "You win +" + fmt.usd(total - amount) : outcome === "Push" ? "Push" : "Dealer wins";
-        S = null; busyB = false; ctx.lock(false); if (ctx.btn()) ctx.btn().disabled = false; ctx.record(bet);
+        var bet = db.settleRound(u().id, G) || x.bet; fromServer(x); S.over = true; S.dealer = x.dealer; S.hands.forEach(function (h, i) { h.res = x.hands[i].res; });
+        var shown = render(true); S = null; busyB = false;
+        shown.then(function () { showResult(bet.detail.outcome, bet.payout, bet.amount); ctx.lock(false); buttons(); ctx.record(bet); });
       }
       function insurance(take) {
         if (!S || S.ins !== "offer" || busyB) return;
@@ -1359,10 +1425,8 @@
         var amount = S.hands.reduce(function (a, h) { return a + h.bet; }, 0) + ins, mult = capMult(amount, Math.round((total / amount) * 10000) / 10000);
         var outcome = natural && !dealerBJ ? "Blackjack" : insWon ? "Insured" : total > amount ? "Win" : total === amount ? "Push" : "Lose";
         var bet = db.settleRound(u().id, G, mult, total > 0, { outcome: outcome, player: S.hands.map(function (h) { return bjTotal(h.cards).t; }).join("/"), dealer: d, insurance: ins || undefined });
-        render(true);
-        var r = $("#bj-result"); if (!r) { S = null; busyB = false; return; } r.className = "bj-result " + (total > amount ? "w" : total === amount ? "p" : "l");
-        r.textContent = outcome === "Blackjack" ? "Blackjack! +" + fmt.usd(total - amount) : outcome === "Insured" ? "Dealer Blackjack — insurance paid" + (total > amount ? " +" + fmt.usd(total - amount) : "") : outcome === "Win" ? "You win +" + fmt.usd(total - amount) : outcome === "Push" ? "Push" : "Dealer wins";
-        S = null; busyB = false; ctx.lock(false); if (ctx.btn()) ctx.btn().disabled = false; ctx.record(bet);
+        var shown = render(true); S = null; busyB = false;
+        shown.then(function () { showResult(outcome, total, amount); ctx.lock(false); buttons(); ctx.record(bet); });
       }
       function dealerPlay() {
         render(true);
@@ -1379,7 +1443,7 @@
         persist(); render();
       }
       function act(kind) {
-        if (!S || S.over || busyB || S.ins === "offer") return; busyB = true;
+        if (!S || S.over || busyB || animating || S.ins === "offer") return; busyB = true;
         if (RD.live) return liveDo(kind);
         var h = S.hands[S.active];
         if (kind === "stand") { h.done = true; busyB = false; return nextHand(); }
@@ -1406,14 +1470,14 @@
           busyB = true;
           return db.roundStart(G, a, {}).then(function (x) {
             busyB = false; if (x.error) return ctx.msg(x.error);
-            renderHeader(); ctx.refresh(); ctx.lock(true); $("#bj-result").className = "bj-result hidden"; liveShow(x);
+            renderHeader(); ctx.refresh(); ctx.lock(true); newTable(); liveShow(x);
           });
         }
         var r = db.startRound(us.id, G, a, {}); if (r.error) return ctx.msg(r.error);
         renderHeader(); ctx.refresh(); deal(a);
       }
       function deal(a) {
-        ctx.lock(true); $("#bj-result").className = "bj-result hidden"; busyB = true;
+        ctx.lock(true); newTable(); busyB = true;
         S = { cursor: 0, dealer: [], hands: [{ cards: [], bet: a, done: false }], active: 0, over: false };
         draw(4).then(function (c) {
           busyB = false;
@@ -1425,7 +1489,7 @@
       render();
       return {
         refresh: function () {},
-        click: function () { if (!S) start(); },
+        click: function () { if (!S && !animating) start(); },
         resume: function () {
           var us = u(), r = us && db.activeRound(us.id, G);
           if (!r) return;
@@ -1678,6 +1742,10 @@
   RD.fair.chicken = CHICKEN; RD.fair.chickenFrom = chickenFrom;
   var HEN = '<svg viewBox="0 0 48 48" class="ck-hen">' + RD.art.hen() + "</svg>";
   var CAR = '<svg viewBox="0 0 48 64" class="ck-car"><rect x="8" y="4" width="32" height="56" rx="9" fill="#ff2e55"/><rect x="12" y="14" width="24" height="12" rx="3" fill="#2a1a24"/><rect x="12" y="40" width="24" height="9" rx="3" fill="#2a1a24"/><rect x="5" y="12" width="4" height="10" rx="2" fill="#111"/><rect x="39" y="12" width="4" height="10" rx="2" fill="#111"/><rect x="5" y="44" width="4" height="10" rx="2" fill="#111"/><rect x="39" y="44" width="4" height="10" rx="2" fill="#111"/><rect x="13" y="5" width="6" height="3" rx="1.5" fill="#fff4c2"/><rect x="29" y="5" width="6" height="3" rx="1.5" fill="#fff4c2"/></svg>';
+  /* penas que voam quando o carro pega a galinha */
+  var CK_FEATHERS = [[-46, -64, -40], [38, -72, 30], [-62, -18, -70], [58, -26, 80], [-22, -86, 10], [20, -48, -20], [-36, 6, 50], [44, 2, -60]].map(function (f, i) {
+    return '<i class="ck-fth" style="--dx:' + f[0] + "px;--dy:" + f[1] + "px;--r:" + f[2] + "deg;animation-delay:" + (0.34 + i * 0.015).toFixed(3) + 's"><svg viewBox="0 0 12 24"><path d="M6 1C2 6 1.5 14 6 23 10.5 14 10 6 6 1z" fill="#fff"/><path d="M6 4v18" stroke="#d8dce6" stroke-width="1"/></svg></i>';
+  }).join("");
   OG.chicken = {
     label: function (b) { return b.multiplier ? b.multiplier.toFixed(2) + "×" : "0.00×"; },
     cfg: function () {
@@ -1699,7 +1767,7 @@
           var here = i === steps, done = i < steps, dead = final && final.dead && i === final.steps, bone = final && final.bones.indexOf(i - 1) > -1;
           var next = round && !pending && i === steps + 1;
           html += '<button class="ck-lane' + (done ? " done" : "") + (here ? " here" : "") + (next ? " next" : "") + (dead ? " dead" : "") + (final && bone && !dead ? " reveal" : "") + '" data-ck="' + i + '"' + (next ? "" : " disabled") + ">" +
-            '<span class="ck-m">' + T.mult[i].toFixed(2) + "×</span>" + (dead ? '<span class="ck-hit">' + HEN + '<i class="ck-boom"></i></span>' + CAR : here ? HEN : final && bone ? CAR : "") + "</button>";
+            '<span class="ck-m">' + T.mult[i].toFixed(2) + "×</span>" + (dead ? '<span class="ck-hit">' + HEN + '<i class="ck-boom"></i>' + CK_FEATHERS + "</span>" + '<i class="ck-skid"></i>' + CAR : here ? HEN : final && bone ? CAR : "") + "</button>";
         }
         road.innerHTML = html + '<div class="ck-lane ck-end"><span class="ck-flag">RD FINISH</span></div>';
         var at = road.querySelector(".here, .dead") || road.querySelector(".ck-start");
