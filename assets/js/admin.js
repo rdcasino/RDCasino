@@ -37,6 +37,7 @@
       { id: "affiliates", label: "Afiliados", icon: "link" },
       RD.live ? { id: "invites", label: "Convites", icon: "gift" } : null,
       RD.live ? { id: "rain", label: "Chuva (Rain)", icon: "coins" } : null,
+      { id: "codes", label: "Códigos", icon: "gift" },
       { id: "vip", label: "VIP & Recompensas", icon: "crown" },
       { group: "Sistema" },
       { id: "settings", label: "Configurações", icon: "settings" },
@@ -318,6 +319,37 @@
     });
   };
 
+  /* Códigos promocionais: você cria e posta (Telegram, X...); o jogador digita em Rewards */
+  P.codes = function () {
+    return head("Códigos promocionais", "Crie um código, poste onde quiser e o jogador resgata na área de Rewards. Cada jogador usa cada código uma vez.") +
+      '<div class="card card-pad"><form id="code-form" class="row wrap" style="gap:12px;align-items:flex-end">' +
+      '<div class="field" style="margin:0;width:170px"><label>Código</label><input class="input" name="code" required maxlength="24" placeholder="Ex.: DAILY5" style="text-transform:uppercase"></div>' +
+      '<div class="field" style="margin:0;width:130px"><label>Valor (USD)</label><input class="input" type="number" name="amt" min="0.01" step="0.01" required placeholder="1"></div>' +
+      '<div class="field" style="margin:0;width:150px"><label>Máx. de usos (0 = sem limite)</label><input class="input" type="number" name="max" min="0" step="1" value="50"></div>' +
+      '<div class="field" style="margin:0;width:170px"><label>Apostado mínimo (USD)</label><input class="input" type="number" name="wag" min="0" step="1" value="0"></div>' +
+      '<div class="field" style="margin:0;width:150px"><label>Expira em (horas, 0 = nunca)</label><input class="input" type="number" name="hrs" min="0" step="1" value="24"></div>' +
+      '<button class="btn btn-primary">Criar código</button></form><p class="faint" id="code-cost" style="font-size:12.5px;margin-top:10px"></p></div>' +
+      '<div class="card mt" id="code-list"><div class="card-pad faint">Carregando…</div></div>';
+  };
+  P.codes.after = function () {
+    var f = $("#code-form"), cost = function () { var a = +f.amt.value || 0, m = +f.max.value || 0; $("#code-cost").textContent = a ? (m ? "Custo máximo: " + fmt.usd(a * m) + " (" + m + " × " + fmt.usd(a) + ")." : "Sem limite de usos: custo = " + fmt.usd(a) + " por jogador que resgatar.") : ""; };
+    ["amt", "max"].forEach(function (k) { f[k].addEventListener("input", cost); });
+    f.addEventListener("submit", function (e) {
+      e.preventDefault();
+      after(db.saveCode({ code: f.code.value.trim().toUpperCase(), amount: +f.amt.value, maxUses: +f.max.value, minWager: +f.wag.value, hours: +f.hrs.value }), "Código " + f.code.value.trim().toUpperCase() + " criado");
+    });
+    Promise.resolve(db.adminCodes()).then(function (list) {
+      var box = $("#code-list"); if (!box) return;
+      box.innerHTML = list.length ? '<div class="table-wrap"><table class="table"><thead><tr><th>Código</th><th class="right">Valor</th><th class="right">Usos</th><th class="right">Apostado mín.</th><th>Expira</th><th>Status</th><th></th></tr></thead><tbody>' +
+        list.map(function (c) {
+          var expired = c.expires_at && new Date(c.expires_at) < new Date(), full = c.max_uses && c.uses >= c.max_uses;
+          return '<tr><td><span class="badge">' + esc(c.code) + '</span> <button class="btn btn-ghost btn-sm" data-copy="' + esc(c.code) + '">' + ic("copy", 13) + '</button></td><td class="right num strong">' + fmt.usd(+c.amount) + '</td><td class="right">' + c.uses + (c.max_uses ? " / " + c.max_uses : "") + '</td><td class="right num">' + fmt.usd(+c.min_wager, { dec: 0 }) + '</td><td class="faint">' + (c.expires_at ? fmt.date(c.expires_at) : "Nunca") + "</td><td>" +
+            (!c.active ? '<span class="badge">Desligado</span>' : expired ? '<span class="badge">Expirado</span>' : full ? '<span class="badge">Esgotado</span>' : '<span class="badge badge-success">Ativo</span>') + '</td><td class="right"><button class="btn btn-secondary btn-sm" data-act="code-toggle" data-id="' + esc(c.code) + '" data-on="' + (c.active ? 0 : 1) + '">' + (c.active ? "Desligar" : "Ligar") + "</button></td></tr>";
+        }).join("") + "</tbody></table></div>" : empty("Nenhum código ainda", "Crie o primeiro acima.");
+      hydrate(box); $$("[data-copy]", box).forEach(function (b) { b.addEventListener("click", function () { RD.copy(b.getAttribute("data-copy")); }); });
+    });
+  };
+
   P.settings = function () {
     var L = RD.config.license;
     return head("Configurações", "O que você muda aqui aparece no site na hora") +
@@ -419,6 +451,7 @@
       });
       return;
     }
+    if (a === "code-toggle") return after(db.toggleCode(id, t.getAttribute("data-on") === "1"), "Código atualizado");
     if (a === "credit-dep") {
       var dp = db.player(id), ws = RD.live && db.wallets ? db.wallets() : [];
       var opts = ws.length ? ws.map(function (w, i) { return '<option value="' + i + '">' + esc(w.coin + " · " + w.network) + "</option>"; }).join("") : '<option value="">USDT</option>';

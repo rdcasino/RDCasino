@@ -39,7 +39,7 @@
       status: p.status === "active" ? "Active" : "Suspended", kyc: KYC[p.kyc] || "Not started", kycReason: "", kycInfo: null,
       balance: n(p.balance), held: n(p.held), wagered: n(p.wagered), profit: n(p.profit), bets: +p.bets_count || 0, rakeback: +p.rakeback || 0, rakebackClaimed: sum("Rakeback"),
       claimedTiers: p.claimed_tiers || [], bonusTotal: n(sum("Bonus") + sum("Level reward")), deposits: sum("Deposit"), withdrawals: sum("Withdrawal"), firstDeposit: firstDep,
-      created: p.created_at, note: p.note || "", affShare: null, campaigns: [], rounds: {},
+      created: p.created_at, note: p.note || "", affShare: p.aff_share != null ? +p.aff_share : null, affPaid: n(p.aff_paid), campaigns: [], rounds: {},
       seeds: { server: "", client: "", nonce: 0, revealed: [] }
     };
   }
@@ -58,7 +58,8 @@
       sb.from("my_seeds").select("*").maybeSingle(),
       sb.from("wallets").select("*").eq("enabled", true).order("id"),
       sb.from("vip_reloads").select("*").eq("user_id", uid).eq("status", "active").maybeSingle(),
-      sb.from("kyc_submissions").select("*").eq("user_id", uid).order("created_at", { ascending: false }).limit(1).maybeSingle()
+      sb.from("kyc_submissions").select("*").eq("user_id", uid).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+      sb.from("my_rounds").select("*")
     ]).then(function (r) {
       var prof = r[0].data; if (!prof) throw new Error("Profile not found.");
       var txs = (r[1].data || []).map(function (t) { return mapTx(t, prof.username); });
@@ -66,6 +67,10 @@
       if (s) me.seeds = { server: "", hash: s.server_hash, client: s.client_seed, nonce: +s.nonce, revealed: s.revealed || [] };
       me.reloadGrant = mapReload(r[5].data);
       me.kycInfo = mapKyc(r[6].data); if (me.kycInfo && me.kyc === "Rejected") me.kycReason = me.kycInfo.reason;
+      Object.keys(rounds).forEach(function (k) { delete rounds[k]; });
+      (r[7].data || []).forEach(function (x) { rounds[x.game] = { game: x.game, amount: n(x.amount), nonce: +x.nonce, client: x.client_seed, server: "", state: x.state || {}, started: x.started_at }; });
+      me.rounds = rounds;
+      loadAff();
       fill(D.players, [me]); fill(D.tx, txs);
       fill(D.bets, (r[2].data || []).map(function (b) { return { id: "B-" + b.id, userId: b.user_id, user: prof.username, game: b.game, amount: n(b.amount), multiplier: +b.multiplier, payout: n(b.payout), date: b.created_at, detail: Object.assign({ nonce: +b.nonce, client: b.client_seed }, b.detail || {}) }; }));
       state.wallets = r[4].data || [];
@@ -179,10 +184,40 @@
       };
     }, function (e) { return { error: msg(e) }; });
   };
-  /* Jogos com rodada (Mines, Crash, Blackjack...): ainda chegando no modo real */
-  var SOON = { error: "This game opens for real money very soon. Dice, Limbo, Plinko, Keno, Wheel, Roulette, Coinflip and Baccarat are live now." };
+  /* ---------- Jogos com rodada (Mines, Tower, Chicken, Hi-Lo, RPS, Crash, Blackjack): o servidor joga ---------- */
+  var SOON = { error: "Not available yet." };
   db.placeBet = function () { return SOON; };
-  db.startRound = function () { return SOON; };
+  var rounds = {}, lastBet = {};
+  function applyProfile(pr) { var me = db.current(); if (!me || !pr) return; me.balance = n(pr.balance); me.wagered = n(pr.wagered); me.profit = n(pr.profit); me.bets = +pr.bets; me.rakeback = +pr.rakeback; me.held = n(pr.held); }
+  function mapBet(b, game, r) { var me = db.current() || {}; return { id: "B-" + b.id, userId: me.id, user: me.username, game: game, amount: n(b.amount), multiplier: +b.multiplier, payout: n(b.payout), date: b.created_at, detail: Object.assign({ nonce: r ? r.nonce : undefined, client: r ? r.client : undefined }, b.detail || {}) }; }
+  function syncRounds() { var me = db.current(); if (me) me.rounds = rounds; }
+  db.activeRound = function (pid, game) { return rounds[game] || null; };
+  db.activeRounds = function () { return Object.keys(rounds).map(function (k) { return rounds[k]; }); };
+  db.startRound = function () { return { error: "Use roundStart." }; };
+  db.updateRound = function () {};
+  db.addToRound = function () { return { ok: true }; };
+  db.settleRound = function (pid, game) { var b = lastBet[game]; delete lastBet[game]; return b || null; };
+  function roundResult(game, x) {
+    var r = rounds[game];
+    applyProfile(x.profile);
+    if (x.bet) { var b = mapBet(x.bet, game, r); x.bet = b; lastBet[game] = b; D.bets.unshift(b); if (D.bets.length > 500) D.bets.length = 500; delete rounds[game]; }
+    else if (r && x.state) r.state = x.state;
+    if (r && x.amount != null) r.amount = n(x.amount);
+    syncRounds(); db.emit(); return x;
+  }
+  db.roundStart = function (game, amount, params) {
+    return sb.rpc("round_start", { p_game: game, p_amount: amount, p_params: params || {} }).then(function (r) {
+      if (r.error) return { error: msg(r.error) };
+      var x = r.data; rounds[game] = { game: game, amount: n(x.round.amount), nonce: +x.round.nonce, client: x.round.client, server: "", state: x.state || {}, started: x.round.started };
+      return roundResult(game, x);
+    }, function (e) { return { error: msg(e) }; });
+  };
+  db.roundAct = function (game, action, params) {
+    return sb.rpc("round_act", { p_game: game, p_action: action, p_params: params || {} }).then(function (r) {
+      if (r.error) { if (/No active round/i.test(r.error.message)) { delete rounds[game]; syncRounds(); } return { error: msg(r.error) }; }
+      return roundResult(game, r.data);
+    }, function (e) { return { error: msg(e) }; });
+  };
   db.reserve = function () { return { server: "", client: "", nonce: 0 }; };
   db.claimLevel = function () { return SOON; };
   db.claimRakeback = function () { return SOON; };
@@ -214,6 +249,44 @@
   db.kycFileUrl = function (path) { return sb.storage.from("kyc").createSignedUrl(path, 600).then(function (r) { return r.data ? r.data.signedUrl : null; }); };
   db.setKyc = function (pid, status, reason) { return adminCall("admin_kyc_decide", { p_user: pid, p_approve: status === "Verified", p_reason: reason || null }); };
   db.creditDeposit = function (pid, amount, coin, net, txHash) { return adminCall("admin_credit_deposit", { p_user: pid, p_amount: amount, p_coin: coin || "", p_network: net || "", p_tx_hash: txHash || null }); };
+  /* ---------- Afiliado (15% do NGR, calculado no servidor) ---------- */
+  state.aff = null;
+  function loadAff() {
+    return sb.rpc("my_affiliate").then(function (r) { if (r.data) { state.aff = r.data; db.emit(); } });
+  }
+  if (!RD.isAdminPage) db.affiliate = function (pid) {
+    var a = state.aff || { code: (db.current() || {}).refCode || "", share: 15, custom: false, referrals: [], ngr: 0, commission: 0, paid: 0, available: 0 };
+    var refs = (a.referrals || []).map(function (r) { return { user: r.user, code: a.code, joined: r.joined, deposits: n(r.deposits), wagered: n(r.wagered), ngr: n(r.ngr), commission: n(r.commission), active: +r.wagered > 0, ftd: +r.deposits > 0 }; });
+    var daily = []; for (var i = 29; i >= 0; i--) daily.push({ date: new Date(Date.now() - i * 864e5).toISOString().slice(0, 10), commission: 0 });
+    return { code: a.code, codes: [{ name: "Default", code: a.code, clicks: 0, signups: refs.length, ftds: refs.filter(function (r) { return r.ftd; }).length, ngr: n(a.ngr), commission: n(a.commission) }],
+      referrals: refs, plan: RD.affiliatePlans[0], share: +a.share, custom: !!a.custom, clicks: 0, signups: refs.length, ftds: refs.filter(function (r) { return r.ftd; }).length, ftdMonth: 0,
+      active: refs.filter(function (r) { return r.active; }).length, ngr: n(a.ngr), commission: n(a.commission), paid: n(a.paid), available: n(a.available), daily: daily,
+      payouts: D.tx.filter(function (t) { return t.type === "Commission"; }) };
+  };
+  db.collectCommission = function () {
+    return sb.rpc("affiliate_collect").then(function (r) { if (r.error) return { error: msg(r.error) }; return refresh().then(function () { return { amount: n(r.data) }; }); });
+  };
+  db.setAffShare = function (pid, share) { return adminCall("admin_set_aff_share", { p_user: pid, p_share: share === "" || share == null ? null : +share }); };
+  db.addCampaign = function () { return { error: "Extra campaign codes are coming soon. Use your main link for now." }; };
+  /* ---------- Leaderboard do mês (servidor) ---------- */
+  state.lb = [];
+  function loadLb() {
+    return sb.rpc("leaderboard_month").then(function (r) {
+      state.lb = (r.data || []).map(function (x, i) { return { userId: x.username, user: x.username, wagered: n(x.wagered), rank: i + 1, prize: RD.config.leaderboardPrizes[i] || 0 }; });
+    });
+  }
+  loadLb(); setInterval(function () { if (!document.hidden) loadLb(); }, 30000);
+  db.leaderboard = function () { return state.lb; };
+  /* ---------- Códigos promocionais ---------- */
+  db.redeemCode = function (pid, code) {
+    return sb.rpc("redeem_code", { p_code: code }).then(function (r) {
+      if (r.error) return { error: msg(r.error) }; if (r.data && r.data.error) return { error: r.data.error };
+      return refresh().then(function () { return { amount: n(r.data.amount) }; });
+    });
+  };
+  db.adminCodes = function () { return sb.from("promo_codes").select("*").order("created_at", { ascending: false }).then(function (r) { return r.data || []; }); };
+  db.saveCode = function (c) { return adminCall("admin_save_code", { p_code: c.code, p_amount: c.amount, p_max_uses: c.maxUses, p_min_wager: c.minWager, p_hours: c.hours, p_active: true }); };
+  db.toggleCode = function (code, active) { return adminCall("admin_toggle_code", { p_code: code, p_active: active }); };
   db.grantReload = function (pid, per, claims, hours, note) { return adminCall("admin_grant_reload", { p_user: pid, p_per: per, p_claims: claims, p_hours: hours, p_note: note || null }); };
   db.cancelReload = function (pid) { return adminCall("admin_cancel_reload", { p_user: pid }); };
   db.rainAuto = function () { return state.rainAuto; };

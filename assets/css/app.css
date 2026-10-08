@@ -995,3 +995,22 @@ input[type="range"] { width: 100%; accent-color: var(--brand); }
 .sports-soon p { font-size: 13.5px; margin-top: 2px; }
 .held-note { display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; font-size: 12px; color: var(--gold); }
 .chat-msg.pending { opacity: .65; }
+
+/* ---------- Afiliado: resumo dos indicados ---------- */
+.ref-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border-bottom: 1px solid var(--line); }
+.ref-stats > div { background: var(--surface); padding: 14px 16px; }
+.ref-stats small { display: block; font-size: 12px; color: var(--text-3); }
+.ref-stats b { font-size: 18px; font-variant-numeric: tabular-nums; }
+@media (max-width: 600px) { .ref-stats { grid-template-columns: 1fr 1fr; } }
+
+/* ---------- Códigos promocionais ---------- */
+.code-box { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; margin-top: 12px; padding: 14px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); }
+.code-box .code-ic { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: rgba(255, 200, 92, .12); color: var(--gold); flex: none; }
+.code-box b { display: block; font-size: 14px; }
+.code-box small { display: block; font-size: 12px; color: var(--text-3); }
+.code-box .code-row { display: flex; gap: 8px; flex: 1 1 260px; }
+.code-box .code-row .input { flex: 1; text-transform: uppercase; letter-spacing: .06em; font-weight: 700; min-width: 0; }
+.code-box .code-row .btn { flex: none; }
+.lb-table .gold { color: var(--gold); }
+.code-box .grow { flex: 1 1 160px; min-width: 160px; }
+.podium .gold { color: var(--gold); }

@@ -218,6 +218,27 @@
       save();
       return { ok: true };
     },
+    /* ---------- Códigos promocionais (demonstração) ---------- */
+    redeemCode: function (pid, code) {
+      var p = byId(pid), k = String(code || "").trim().toUpperCase(); D.codes = D.codes || [];
+      var c = D.codes.filter(function (x) { return x.code === k; })[0];
+      if (c && (c.users || []).indexOf(pid) > -1) return { error: "You already used this code." };
+      if (!c || !c.active || (c.expires && new Date(c.expires) < new Date()) || (c.maxUses && c.uses >= c.maxUses)) return { error: c && c.maxUses && c.uses >= c.maxUses ? "This code has been fully claimed." : "Invalid code." };
+      c.users = c.users || []; if (c.users.indexOf(pid) > -1) return { error: "You already used this code." };
+      if (p.wagered < (c.minWager || 0)) return { error: "Wager at least $" + c.minWager + " in total to use this code." };
+      c.users.push(pid); c.uses++; p.balance = round(p.balance + c.amount); p.bonusTotal = round(p.bonusTotal + c.amount);
+      addTx(p, "Bonus", c.amount, "Completed", { note: "Code " + k }); log(p.username, "Usou o código " + k); save();
+      return { amount: c.amount };
+    },
+    adminCodes: function () { return (D.codes || []).map(function (c) { return { code: c.code, amount: c.amount, max_uses: c.maxUses, uses: c.uses, min_wager: c.minWager, expires_at: c.expires, active: c.active, created_at: c.created }; }); },
+    saveCode: function (c) {
+      var k = String(c.code || "").trim().toUpperCase(); if (!/^[A-Z0-9_-]{3,24}$/.test(k)) return { error: "Código: 3 a 24 letras, números, - ou _." };
+      if (!(c.amount > 0)) return { error: "Valor inválido." };
+      D.codes = D.codes || []; var ex = D.codes.filter(function (x) { return x.code === k; })[0] || { code: k, uses: 0, users: [], created: nowIso() };
+      ex.amount = round(c.amount); ex.maxUses = +c.maxUses || 0; ex.minWager = +c.minWager || 0; ex.expires = c.hours > 0 ? new Date(Date.now() + c.hours * 3600e3).toISOString() : null; ex.active = true;
+      if (D.codes.indexOf(ex) < 0) D.codes.unshift(ex); log("admin", "Código " + k + " salvo"); save(); return { ok: true };
+    },
+    toggleCode: function (code, active) { var c = (D.codes || []).filter(function (x) { return x.code === code; })[0]; if (c) { c.active = active; save(); } return { ok: true }; },
     /* Admin credita um depósito que viu chegar na corretora */
     creditDeposit: function (pid, amount, coin, net, txHash) {
       var p = byId(pid); if (!(amount > 0)) return { error: "Valor inválido." };
