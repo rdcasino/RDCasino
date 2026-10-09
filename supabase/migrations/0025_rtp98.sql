@@ -62,3 +62,27 @@ update public.game_tables set value = '{"8":{"low":[5.55,1.95,1.1,1,0.5,1,1.1,1.
 update public.game_tables set value = '{"low":[[0.69,1.85],[0,1.99,3.72],[0,1.1,1.33,25.85],[0,0,2.2,7.67,89.93],[0,0,1.5,4.12,13,293],[0,0,1.07,2,6.2,100,692],[0,0,1.09,1.6,3.37,15,225,700],[0,0,1.1,1.5,1.88,5.42,39,100,800],[0,0,1.1,1.28,1.65,2.5,7.5,50,250,1000],[0,0,1.1,1.2,1.3,1.62,3.5,13,50,250,1000]],"high":[[0,3.92],[0,0,16.99],[0,0,0,80.69],[0,0,0,9.77,259],[0,0,0,4.47,48,433],[0,0,0,0,10.58,350,710],[0,0,0,0,6.79,90,400,800],[0,0,0,0,5,19.28,270,600,900],[0,0,0,0,4,10.86,56,468,800,1000],[0,0,0,0,3.5,7.77,12.95,63,500,800,1000]],"medium":[[0.39,2.75],[0,1.8,4.99],[0,0,2.75,49.75],[0,0,1.68,9.91,100],[0,0,1.4,3.91,14,384],[0,0,0,3,8.65,180,710],[0,0,0,2,6.79,30,400,800],[0,0,0,2,3.88,10.98,67,400,900],[0,0,0,2,2.43,4.93,15,100,500,1000],[0,0,0,1.6,2,3.77,7,26,100,500,1000]],"classic":[[0,3.92],[0,1.9,4.32],[0,0.98,3.09,10.4],[0,0.78,1.8,5,22.19],[0,0.23,1.4,4.1,16.34,36],[0,0,0.97,3.68,7,16.5,40],[0,0,0.47,2.95,4.5,13.83,31,60],[0,0,0,2.16,4,12.9,22,55,70],[0,0,0,1.53,3,7.82,15,44,60,85],[0,0,0,1.4,2.18,4.5,7.99,17,50,80,100]]}'::jsonb where key = 'keno';
 update public.game_tables set value = '{"10":[0,1.8,0,1.5,0,2,0,1.5,0,3],"20":[1.4,0,2,0,2,0,2,0,1.4,0,3,0,1.8,0,2,0,2,0,2,0],"30":[1.5,0,1.5,0,2,0,1.5,0,2,0,2,0,1.5,0,3,0,1.5,0,2,0,2,0,1.4,0,4,0,1.5,0,2,0],"40":[2,0,3,0,2,0,1.5,0,3,0,1.5,0,1.5,0,2,0,1.5,0,3,0,1.5,0,2,0,2,0,1.2,0,2,0,1.5,0,3,0,1.5,0,2,0,1.5,0],"50":[2,0,1.5,0,2,0,1.5,0,3,0,1.5,0,1.5,0,2,0,1.5,0,3,0,1.5,0,2,0,1.5,0,2,0,2,0,1.5,0,3,0,1.5,0,2,0,1.5,0,1.5,0,4.5,0,1.5,0,2,0,1.5,0]}'::jsonb where key = 'wheel_medium';
 update public.game_tables set value = '[{"name":"Bronze 1","wager":1000,"reward":2},{"name":"Bronze 2","wager":5000,"reward":4},{"name":"Bronze 3","wager":15000,"reward":10},{"name":"Bronze 4","wager":50000,"reward":35},{"name":"Silver 1","wager":100000,"reward":50},{"name":"Silver 2","wager":150000,"reward":50},{"name":"Silver 3","wager":200000,"reward":50},{"name":"Silver 4","wager":250000,"reward":50},{"name":"Gold 1","wager":300000,"reward":50},{"name":"Gold 2","wager":350000,"reward":50},{"name":"Gold 3","wager":400000,"reward":50},{"name":"Gold 4","wager":450000,"reward":50},{"name":"Jade 1","wager":500000,"reward":50},{"name":"Jade 2","wager":600000,"reward":100},{"name":"Jade 3","wager":700000,"reward":100},{"name":"Jade 4","wager":800000,"reward":100},{"name":"Jade 5","wager":900000,"reward":100},{"name":"Sapphire 1","wager":1000000,"reward":100},{"name":"Sapphire 2","wager":1500000,"reward":500},{"name":"Emerald 1","wager":2000000,"reward":500},{"name":"Emerald 2","wager":2500000,"reward":500},{"name":"Ruby 1","wager":3000000,"reward":500},{"name":"Ruby 2","wager":3500000,"reward":500},{"name":"Obsidian 1","wager":4000000,"reward":500},{"name":"Obsidian 2","wager":4500000,"reward":500},{"name":"Amethyst 1","wager":5000000,"reward":500},{"name":"Amethyst 2","wager":7500000,"reward":2500},{"name":"Amethyst 3","wager":10000000,"reward":2500}]'::jsonb where key = 'vip_tiers';
+
+-- ---------- Rain: só entra quem apostou o mínimo nos últimos 7 dias (antes: total da vida, mínimo 0) ----------
+create or replace function public.rain_join()
+returns void language plpgsql security definer set search_path = public as $$
+declare r rains; p profiles; v_w numeric;
+begin
+  if auth.uid() is null then raise exception 'Sign in to join the rain.'; end if;
+  perform public.rain_settle();
+  select * into r from rains where status = 'open' for update;
+  if not found or r.ends_at <= now() then raise exception 'No rain running right now.'; end if;
+  select * into p from profiles where id = auth.uid();
+  if p.status <> 'active' then raise exception 'Your account is suspended.'; end if;
+  if r.min_wager > 0 then
+    select coalesce(sum(amount), 0) into v_w from bets where user_id = auth.uid() and created_at > now() - interval '7 days';
+    if v_w < r.min_wager then
+      raise exception 'Wager at least $% in the last 7 days to join the rain (you have $%).', to_char(r.min_wager, 'FM999,999,990'), to_char(v_w, 'FM999,999,990.00');
+    end if;
+  end if;
+  insert into rain_entries(rain_id, user_id) values (r.id, auth.uid()) on conflict do nothing;
+  if found then update rains set participants = participants + 1 where id = r.id; end if;
+end $$;
+
+update public.settings set value = jsonb_set(value, '{min_wager}', '5000') where key = 'rain_auto';
+update public.rains set min_wager = 5000 where status = 'open' and auto;

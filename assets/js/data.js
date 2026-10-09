@@ -123,7 +123,7 @@ RD.promotions = [
   { id: "vip", art: "scene:vip", cat: "casino", badge: "VIP Club", value: "Over $10,000 in rewards", sub: "A cash reward at every VIP level.", title: "VIP Level-Up Rewards",
     desc: "Climb from Bronze 1 to Amethyst 3 just by playing. Every level unlocks a one-time cash reward — from $2 at Bronze 1 to $2,500 at Amethyst 3 — paid straight to your balance with no wagering. Your level never goes down.", cta: "Open VIP Club", route: "vip", status: "active" },
   { id: "rain", art: "scene:rain", cat: "casino", badge: "Every hour", value: "Hourly Rain", sub: "Free money splits in the chat every hour.", title: "Hourly Rain",
-    desc: "Every hour a rain pot drops in the chat. Click Join before the timer ends and the pot is split equally between everyone who joined. Players can add to the pot too.", cta: "Open the chat", route: "chat", status: "active" },
+    desc: "Every hour a rain pot drops in the chat. Click Join before the timer ends and the pot is split equally between everyone who joined. Open to players with $5,000 wagered in the last 7 days. Players can add to the pot too.", cta: "Open the chat", route: "chat", status: "active" },
   { id: "rakeback", art: "scene:rakeback", cat: "casino", badge: "Instant", value: "Instant Rakeback", sub: "Part of every bet comes back to you.", title: "Instant Rakeback",
     desc: "2% of the house edge of every bet you place comes back as rakeback. It builds up as you play and you can claim it any time in Rewards.", cta: "Claim in Rewards", route: "vip", status: "active" },
   { id: "bonuses", art: "scene:reload", cat: "casino", badge: "Daily · Weekly · Monthly", value: "Recurring Bonuses", sub: "Get paid back for playing — every day.", title: "Daily, Weekly & Monthly Bonuses",

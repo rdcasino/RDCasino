@@ -1393,3 +1393,4 @@ body { background: radial-gradient(1100px 620px at 88% -12%, rgba(34, 211, 238, 
 /* Spill: escada só com o multiplicador, centralizado */
 .ladder.no-n .lstep { justify-content: center; padding: 11px 6px; }
 .ladder.no-n .lstep i { display: none; }
+.rain-req { display: block; margin-top: 4px; font-size: 11px; color: var(--text-3); }

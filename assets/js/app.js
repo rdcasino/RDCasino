@@ -2999,7 +2999,7 @@
     if (!r) { box.innerHTML = ""; return; }
     var left = new Date(r.ends_at).getTime() - Date.now();
     if (left <= 0) { box.innerHTML = '<div class="rain-card ending"><div class="rain-ic">' + rainIcon() + '</div><div class="grow"><b>Rain ending…</b><small>Splitting the pot</small></div></div>'; if (!renderRain.settling) { renderRain.settling = true; db.rainSettle().then(function () { renderRain.settling = false; renderRain(); }); } return; }
-    box.innerHTML = '<div class="rain-card"><div class="rain-ic">' + rainIcon() + '</div><div class="grow"><b>Rain</b><div class="rain-stats"><span>' + ic("users", 13) + r.participants + '</span><span class="rain-timer">' + ic("clock", 13) + '<i data-until="' + r.ends_at + '">' + untilTxt(r.ends_at) + "</i></span></div></div>" +
+    box.innerHTML = '<div class="rain-card"><div class="rain-ic">' + rainIcon() + '</div><div class="grow"><b>Rain</b><div class="rain-stats"><span>' + ic("users", 13) + r.participants + '</span><span class="rain-timer">' + ic("clock", 13) + '<i data-until="' + r.ends_at + '">' + untilTxt(r.ends_at) + "</i></span></div>" + (+r.min_wager > 0 && !r.joined ? '<small class="rain-req">Wager ' + fmt.usd(+r.min_wager, { dec: 0 }) + ' in the last 7 days to join</small>' : '') + "</div>" +
       '<div class="rain-act">' + (r.joined ? '<button class="btn btn-sm rain-joined" disabled>' + ic("check", 14) + "Joined</button>" : '<button class="btn btn-primary btn-sm" data-rain="join">Join</button>') +
       '<div class="rain-pot"><span>' + fmt.usd(+r.amount) + '</span><button data-rain="add" aria-label="Add to rain">' + ic("plus", 13) + "</button></div></div></div>";
   }
@@ -3029,7 +3029,7 @@
     ["What is rakeback?", "A share of the house edge of every bet you place comes back to you instantly. It builds up as you play and you can claim it any time in Rewards."],
     ["Daily, weekly and monthly bonuses", "They return part of the house edge from your recent play: daily every 24h from Bronze 2; weekly every Thursday at 12:00 (BRT) and monthly on the 1st at 12:00 (BRT) from Silver. Claim them in Rewards when they are ready."],
     ["How do I redeem a code?", "Open the VIP Club (crown icon) and type the code in \"Have a code?\" under Rewards. Each code can be used once per account."],
-    ["What is the Rain?", "Every hour a pot is split between everyone who clicks Join in the chat before the timer ends. Players can add to the pot too."],
+    ["What is the Rain?", "Every hour a pot is split between everyone who clicks Join in the chat before the timer ends. To join you need $5,000 wagered in the last 7 days. Players can add to the pot too."],
     ["What is provably fair?", "Every RD Originals result comes from your seeds and our server seed. After you rotate your seeds you can check any bet on the Provably Fair page."],
     ["Why verify my identity?", "Identity verification (KYC) keeps accounts safe and is required for withdrawals above $2,000. Send it in Account → Verification; reviews usually take less than 24 hours."],
     ["Responsible gaming", "Only play with money you can afford to lose. If you want to take a break or close your account, message us here and we will help right away."]
