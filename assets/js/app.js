@@ -447,6 +447,7 @@
     blackjack: "<p><strong>Blackjack</strong>: get closer to 21 than the dealer without going over. Blackjack pays 3 to 2, the dealer stands on all 17s, you can double, or split a pair once, and when the dealer shows an Ace you can take insurance (half your bet, pays 2 to 1 if the dealer has Blackjack). Cards are dealt from an infinite deck. RTP shown assumes basic strategy (approximate).</p>",
     roulette: "<p><strong>Roulette</strong>: European wheel with a single zero. Place chips on numbers or outside bets — a number pays 35 to 1, dozens and columns 2 to 1, and red/black, even/odd and 1–18/19–36 pay 1 to 1.</p>",
     tower: "<p><strong>Tower</strong>: climb 9 floors. On every floor pick a tile — find the egg and you go up, hit the skull and the round ends. Cash out whenever you want. Five difficulties, from Easy (3 eggs in 4 tiles) to Master (1 egg in 4 tiles, up to 256,901×).</p>",
+    spill: "<p><strong>Spill</strong>: fill the cup one pour at a time. Every pour raises your multiplier, but a hidden pour makes the cup spill over. Cash out any time. Low hides 1 spill in 25 pours, Medium 3, High 5 and Degen 10.</p>",
     chicken: "<p><strong>Chicken</strong>: help the chicken cross the road, one lane at a time. Every lane you cross raises your multiplier, but some lanes hide a car. Cash out before you get hit. Easy hides 1 car in 20 lanes, Expert hides 10.</p>",
     coinflip: "<p><strong>Coinflip</strong>: pick Heads or Tails and flip. <b>Classic</b> is one flip at 1.98×. <b>Target</b> asks for 2 to 10 flips in a row on your side — every extra flip doubles the multiplier, up to 1,013.76×. Heads is the gold RD coin, Tails the silver one.</p>",
     rps: "<p><strong>Rock Paper Scissors</strong>: beat the house hand to climb the ladder — 1.96×, 3.92×, 7.84× and up to 1,003.52× after 10 wins. A tie gives you another throw at no cost. Cash out after any win. Scissors cut paper, rock smashes scissors, paper wraps rock.</p>",
@@ -1882,6 +1883,120 @@
     }
   };
 
+  /* ---------- SPILL (estilo Pump: 25 enchidas de 4%; posições escondidas derramam; RTP 98%) ---------- */
+  var SPILL_BAD = { low: 1, medium: 3, high: 5, degen: 10 };
+  function spillMult(bad, k) { var sv = 1; for (var i = 0; i < bad; i++) sv *= (25 - k - i) / (25 - i); return sv > 0 ? Math.floor(0.98 / sv * 100) / 100 : 0; }
+  RD.fair.spillMult = spillMult;
+  function spillScene() {
+    var ticks = ""; for (var i = 0; i <= 4; i++) { var y = 280 - i * 50; ticks += '<path d="M96 ' + y + ' H112" stroke="#ff5a7a" stroke-opacity=".75" stroke-width="2"/><text x="88" y="' + (y + 4) + '" text-anchor="end" font-size="12" font-weight="700" fill="#ff5a7a" fill-opacity=".85">' + i * 25 + "%</text>" + (i < 4 ? '<path d="M102 ' + (y - 25) + ' H112" stroke="#ff5a7a" stroke-opacity=".45" stroke-width="2"/>' : ""); }
+    var glass = "M138 74 L262 74 L250 282 Q249 290 241 290 L159 290 Q151 290 150 282 Z";
+    return '<svg viewBox="0 0 400 330" class="sp-svg"><defs><clipPath id="spClip"><path d="' + glass + '"/></clipPath>' +
+      '<linearGradient id="spWater" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5cc8ff"/><stop offset=".5" stop-color="#9fe2ff"/><stop offset="1" stop-color="#4ab3f5"/></linearGradient>' +
+      '<linearGradient id="spMetal" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4b5568"/><stop offset=".5" stop-color="#9aa5b8"/><stop offset="1" stop-color="#3c4556"/></linearGradient></defs>' +
+      ticks +
+      '<rect x="186" y="0" width="28" height="34" fill="url(#spMetal)"/><rect x="178" y="30" width="44" height="12" rx="4" fill="url(#spMetal)"/><rect x="191" y="40" width="18" height="12" rx="3" fill="#3c4556"/>' +
+      '<rect id="sp-stream" x="194" y="50" width="12" height="236" rx="6" fill="url(#spWater)" opacity="0"/>' +
+      '<rect x="132" y="290" width="136" height="20" rx="4" fill="#20283a"/><rect x="124" y="304" width="152" height="14" rx="4" fill="#161c2a"/>' +
+      '<g clip-path="url(#spClip)"><g id="sp-water" style="transform:translateY(210px)"><rect x="120" y="80" width="160" height="230" fill="url(#spWater)" opacity=".92"/><path d="M120 80 q20 -8 40 0 t40 0 t40 0 t40 0 v8 h-160z" fill="#c9f0ff" opacity=".85"/></g></g>' +
+      '<path d="' + glass + '" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.55)" stroke-width="3" stroke-linejoin="round"/>' +
+      '<path d="M150 90 L160 270" stroke="#fff" stroke-opacity=".25" stroke-width="5" stroke-linecap="round"/>' +
+      '<g id="sp-over" opacity="0"><path d="M138 74 q-14 4 -18 30 q-3 22 6 30 q6 -10 4 -26 q-2 -18 12 -26z M262 74 q14 4 18 34 q3 22 -6 32 q-6 -12 -4 -28 q2 -18 -12 -30z" fill="url(#spWater)"/><path d="M138 70 q62 -18 124 0 q-62 10 -124 0z" fill="#c9f0ff"/></g>' +
+      "</svg>";
+  }
+  OG.spill = {
+    label: function (b) { return b.multiplier ? b.multiplier.toFixed(2) + "×" : "0.00×"; },
+    cfg: function () {
+      var d = ogPrefs.spDiff || "low";
+      return {
+        side: '<div><div class="ogx-label">Difficulty</div><div class="ogx-split sp-diff">' + ["low", "medium", "high", "degen"].map(function (k) { return '<button data-spd="' + k + '"' + (k === d ? ' class="active"' : "") + ">" + k[0].toUpperCase() + k.slice(1) + "</button>"; }).join("") + "</div></div>" +
+          '<div id="sp-live" class="hidden">' + profitField("Total profit") + "</div>" +
+          '<div class="sp-next"><span>Next pour</span><b id="sp-next">—</b></div>',
+        after: '<button class="btn btn-secondary btn-block hidden" id="sp-pour" style="height:46px">' + ic("droplet", 16) + "Pour</button>",
+        center: '<div class="sp"><div class="sp-stage"><div class="sp-badge hidden" id="sp-badge"></div>' + spillScene() + '</div><div class="ladder" id="sp-ladder"></div></div>'
+      };
+    },
+    bind: function (ctx) {
+      var G = "spill", round = null, pending = false, diffSel = ogPrefs.spDiff || "low"; // round: { amount, diff, steps }
+      function D() { return round ? round.diff : diffSel; }
+      function bad() { return SPILL_BAD[D()]; }
+      function maxSteps() { return 25 - bad(); }
+      function setLevel(steps, over) {
+        var w = $("#sp-water"); if (!w) return;
+        w.style.transform = "translateY(" + (210 - Math.min(steps, 25) * 8.4) + "px)";
+        var o = $("#sp-over"); if (o) { o.style.opacity = over ? 1 : 0; o.classList.toggle("on", !!over); }
+      }
+      function paint() {
+        var k = round ? round.steps : 0, ms = []; for (var i = 1; i <= maxSteps(); i++) ms.push(spillMult(bad(), i));
+        var box = $("#sp-ladder"); if (box) box.innerHTML = ladderWin(ms, k, !!round);
+        var nx = $("#sp-next"); if (nx) nx.textContent = k < maxSteps() ? spillMult(bad(), k + 1).toFixed(2) + "×" : "—";
+        if (round) { var m = k ? spillMult(bad(), k) : 1; ctx.setProfit(m, m.toFixed(2)); var p = $("#og-profit"); if (p) p.value = (round.amount * (m - 1)).toFixed(2); }
+        else ctx.setProfit(spillMult(bad(), 1), spillMult(bad(), 1).toFixed(2));
+      }
+      function setLive(on) {
+        if (!$("#sp-live")) return;
+        $("#sp-live").classList.toggle("hidden", !on); $("#sp-pour").classList.toggle("hidden", !on); ctx.lock(on);
+        var b = ctx.btn(); b.textContent = on ? "Cashout" : "Bet"; b.disabled = on && (!round || !round.steps);
+        $("#sp-pour").disabled = !on || pending; $$(".sp-diff button").forEach(function (x) { x.disabled = on; });
+      }
+      function badge(txt, cls) { var b = $("#sp-badge"); if (!b) return; b.className = "sp-badge " + cls; b.textContent = txt; }
+      function end(win, detail) {
+        var u = me(), k = round.steps, mult = win ? capMult(round.amount, spillMult(bad(), k)) : 0;
+        var b = db.settleRound(u.id, G, mult, win, detail);
+        round = null; setLive(false); paint(); ctx.record(b);
+        if (win) { badge("+" + mult.toFixed(2) + "×", "win"); RD.sfx.play("cash"); }
+      }
+      function pour() {
+        if (!round || pending) return;
+        var u = me(), r = db.activeRound(u.id, G); if (!r) return;
+        pending = true; $("#sp-pour").disabled = true; ctx.btn().disabled = true;
+        var st = $("#sp-stream"); if (st) { st.classList.remove("on"); void st.getBoundingClientRect(); st.classList.add("on"); }
+        RD.sfx.play("step");
+        var got = RD.live ? db.roundAct(G, "pour").then(function (x) { if (x.error) { pending = false; setLive(true); ctx.msg(x.error); return null; } return { ok: x.ok, bad: x.bad || [], done: !!x.bet && x.ok }; })
+          : floats(r.server, r.client, r.nonce, 24).then(function (fs) { var pos = minesFrom(fs, bad()); return { ok: pos.indexOf(round.steps) < 0, bad: pos }; });
+        got.then(function (x) {
+          if (!x || !round) { pending = false; return; }
+          setTimeout(function () {
+            pending = false; if (!round) return;
+            round.steps++;
+            var detail = { diff: round.diff, steps: round.steps, bad: x.bad };
+            if (!x.ok) { setLevel(25, true); badge("Spilled!", "lose"); RD.sfx.play("boom"); detail.spill = round.steps; return end(false, detail); }
+            setLevel(round.steps); RD.sfx.play("gem");
+            if (!RD.live) db.updateRound(u.id, G, { diff: round.diff, steps: round.steps });
+            if (round.steps >= maxSteps()) return end(true, detail);
+            if (!$("#sp-pour")) return;
+            paint(); setLive(true);
+          }, 420);
+        });
+      }
+      $("#sp-pour").addEventListener("click", pour);
+      $$(".sp-diff button").forEach(function (b) { b.addEventListener("click", function () { if (round) return; diffSel = b.getAttribute("data-spd"); ogPrefs.spDiff = diffSel; savePrefs(); $$(".sp-diff button").forEach(function (x) { x.classList.toggle("active", x === b); }); paint(); }); });
+      function start() {
+        var a = ctx.amount(), u = ctx.validate(a); if (!u || pending) return;
+        var df = diffSel; pending = true;
+        rStart(u, G, a, { diff: df, steps: 0 }).then(function (r) {
+          pending = false; if (r.error) return ctx.msg(r.error);
+          round = { amount: a, diff: df, steps: 0 }; badge("", "hidden"); setLevel(0); renderHeader(); ctx.refresh(); paint(); setLive(true);
+        });
+      }
+      setLevel(0); paint();
+      return {
+        refresh: paint,
+        click: function () {
+          if (!round) return start();
+          if (!round.steps || pending) return;
+          var u = me(), r = db.activeRound(u.id, G); if (!r) return;
+          pending = true;
+          if (RD.live) return db.roundAct(G, "cashout").then(function (x) { pending = false; if (x.error) return ctx.msg(x.error); if (round) end(true, { diff: round.diff, steps: round.steps, bad: x.bad || [] }); });
+          floats(r.server, r.client, r.nonce, 24).then(function (fs) { pending = false; if (round) end(true, { diff: round.diff, steps: round.steps, bad: minesFrom(fs, bad()) }); });
+        },
+        resume: function () {
+          var u = me(), r = u && db.activeRound(u.id, G);
+          if (r) { round = { amount: r.amount, diff: r.state.diff, steps: r.state.steps || 0 }; diffSel = round.diff; $$(".sp-diff button").forEach(function (x) { x.classList.toggle("active", x.getAttribute("data-spd") === round.diff); }); $("#og-amt").value = r.amount.toFixed(2); setLevel(round.steps); paint(); setLive(true); }
+        }
+      };
+    }
+  };
+
   /* ---------- DOUBLE (estilo Blaze: 15 casas — 7 vermelhas 2×, 7 pretas 2×, 1 branca RD 14×) ---------- */
   var DBL_ORDER = [0, 11, 5, 10, 6, 9, 7, 8, 1, 14, 2, 13, 3, 12, 4];
   var DBL_PAY = { red: 2, black: 2, white: 14 };
@@ -2806,7 +2921,7 @@
     return '<div class="container prose"><h1>Provably fair</h1><p class="muted" style="margin-top:8px">Every RD Originals result can be verified by you. We commit to the server seed (showing its hash) before you bet, so nobody can change a result afterwards.</p>' +
       "<h2>How results are made</h2><ul>" +
       "<li><strong>Dice / Limbo / Crash:</strong> <code>HMAC_SHA256(server_seed, client_seed:nonce)</code> → first 4 bytes → number between 0 and 1. Dice: <code>floor(n × 10001) / 100</code>. Limbo and Crash: <code>floor(0.99 / n × 100) / 100</code> (min 1.00×).</li>" +
-      "<li><strong>All other games:</strong> need several numbers, made with <code>HMAC_SHA256(server_seed, client_seed:nonce:cursor)</code>, 8 numbers per cursor. Plinko: each row goes right if <code>n ≥ 0.5</code>. Mines: Fisher–Yates shuffle of the 25 tiles, the first N are mines. Hi-Lo and Blackjack: card = <code>floor(n × 52)</code> (infinite deck). In Hi-Lo the first card on the table is the last card of your previous round; every card after it comes from your seeds. Keno: shuffle of 1–40, first 10 are drawn. Wheel: segment = <code>floor(n × segments)</code>. Roulette: number = <code>floor(n × 37)</code>. Tower: on each of the 9 floors, Fisher–Yates shuffle of the tiles, the first ones are eggs. Chicken: Fisher–Yates shuffle of the 20 lanes, the first ones hide a car. Coinflip: heads if <code>n &lt; 0.5</code>. Rock Paper Scissors: house hand = <code>floor(n × 3)</code> (rock, paper, scissors), one number per throw. Baccarat: 6 cards in order P1 B1 P2 B2, then third cards when the standard rules ask for them.</li></ul>" +
+      "<li><strong>All other games:</strong> need several numbers, made with <code>HMAC_SHA256(server_seed, client_seed:nonce:cursor)</code>, 8 numbers per cursor. Plinko: each row goes right if <code>n ≥ 0.5</code>. Mines: Fisher–Yates shuffle of the 25 tiles, the first N are mines. Hi-Lo and Blackjack: card = <code>floor(n × 52)</code> (infinite deck). In Hi-Lo the first card on the table is the last card of your previous round; every card after it comes from your seeds. Keno: shuffle of 1–40, first 10 are drawn. Wheel: segment = <code>floor(n × segments)</code>. Roulette: number = <code>floor(n × 37)</code>. Tower: on each of the 9 floors, Fisher–Yates shuffle of the tiles, the first ones are eggs. Chicken: Fisher–Yates shuffle of the 20 lanes, the first ones hide a car. Spill: Fisher–Yates shuffle of the 25 pours (like Mines), the first ones spill (1, 3, 5 or 10 by difficulty); multiplier after k pours = 0.98 ÷ chance of surviving k pours. Coinflip: heads if <code>n &lt; 0.5</code>. Rock Paper Scissors: house hand = <code>floor(n × 3)</code> (rock, paper, scissors), one number per throw. Baccarat: 6 cards in order P1 B1 P2 B2, then third cards when the standard rules ask for them.</li></ul>" +
       '<h2>Verify a bet</h2><div class="card card-pad"><div class="row wrap" style="gap:0 12px;align-items:flex-start"><div class="field grow" style="min-width:160px"><label>Game</label><select class="select" id="v-game"><option value="dice">Dice</option><option value="limbo">Limbo</option><option value="crash">Crash</option><option value="plinko">Plinko</option><option value="mines">Mines</option><option value="hilo">Hi-Lo</option><option value="keno">Keno</option><option value="wheel">Wheel</option><option value="roulette">Roulette</option><option value="blackjack">Blackjack</option><option value="tower">Tower</option><option value="chicken">Chicken</option><option value="coinflip">Coinflip</option><option value="rps">Rock Paper Scissors</option><option value="baccarat">Baccarat</option></select></div>' +
       '<div class="field grow" style="min-width:160px" id="v-extra-wrap"><label id="v-extra-l">—</label><input class="input" id="v-extra" disabled></div></div>' +
       '<div class="field"><label>Server seed (revealed)</label><input class="input" id="v-server"></div><div class="field"><label>Client seed</label><input class="input" id="v-client"></div><div class="field"><label>Nonce</label><input class="input" id="v-nonce" type="number" value="0" min="0"></div><button class="btn btn-primary" data-action="verify">Verify</button><div id="v-out" style="margin-top:16px"></div></div>' +
