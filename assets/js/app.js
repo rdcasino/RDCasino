@@ -1910,10 +1910,16 @@
     var glass = "M138 74 L262 74 L250 282 Q249 290 241 290 L159 290 Q151 290 150 282 Z";
     return '<svg viewBox="0 0 400 330" class="sp-svg"><defs><clipPath id="spClip"><path d="' + glass + '"/></clipPath>' +
       '<linearGradient id="spWater" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5cc8ff"/><stop offset=".5" stop-color="#9fe2ff"/><stop offset="1" stop-color="#4ab3f5"/></linearGradient>' +
-      '<linearGradient id="spMetal" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4b5568"/><stop offset=".5" stop-color="#9aa5b8"/><stop offset="1" stop-color="#3c4556"/></linearGradient></defs>' +
+      '<linearGradient id="spMetal" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4b5568"/><stop offset=".5" stop-color="#9aa5b8"/><stop offset="1" stop-color="#3c4556"/></linearGradient><linearGradient id="spMetalV" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c9d2df"/><stop offset=".5" stop-color="#8b96aa"/><stop offset="1" stop-color="#4a5466"/></linearGradient></defs>' +
       ticks +
-      '<rect x="186" y="0" width="28" height="34" fill="url(#spMetal)"/><rect x="178" y="30" width="44" height="12" rx="4" fill="url(#spMetal)"/><rect x="191" y="40" width="18" height="12" rx="3" fill="#3c4556"/>' +
-      '<rect id="sp-stream" x="194" y="50" width="12" height="236" rx="6" fill="url(#spWater)" opacity="0"/>' +
+      /* torneira de parede (bica curva) vindo da direita */
+      '<rect x="334" y="0" width="16" height="38" rx="5" fill="url(#spMetalV)"/><rect x="326" y="7" width="10" height="24" rx="2" fill="#59647a"/>' +
+      '<path d="M330 19 H224 A24 24 0 0 0 200 43 V52" fill="none" stroke="#7c879b" stroke-width="16"/>' +
+      '<path d="M330 13.5 H224 A29.5 29.5 0 0 0 194.5 43 V52" fill="none" stroke="#c9d2df" stroke-opacity=".8" stroke-width="3"/>' +
+      '<path d="M330 24.5 H224 A18.5 18.5 0 0 0 205.5 43 V52" fill="none" stroke="#4a5466" stroke-width="3"/>' +
+      '<rect x="189" y="50" width="22" height="9" rx="3" fill="url(#spMetal)"/><rect x="192" y="58" width="16" height="3" rx="1.5" fill="#2b3242"/>' +
+      '<rect x="283" y="6" width="12" height="6" rx="2" fill="#59647a"/><rect x="266" y="1" width="46" height="7" rx="3.5" fill="url(#spMetalV)"/><circle cx="289" cy="4.5" r="4.5" fill="#c9d2df"/>' +
+      '<rect id="sp-stream" x="194.5" y="60" width="11" height="226" rx="5.5" fill="url(#spWater)" opacity="0"/>' +
       '<rect x="132" y="290" width="136" height="20" rx="4" fill="#20283a"/><rect x="124" y="304" width="152" height="14" rx="4" fill="#161c2a"/>' +
       '<g clip-path="url(#spClip)"><g id="sp-water" style="transform:translateY(210px)"><rect x="120" y="80" width="160" height="230" fill="url(#spWater)" opacity=".92"/><path d="M120 80 q20 -8 40 0 t40 0 t40 0 t40 0 v8 h-160z" fill="#c9f0ff" opacity=".85"/></g></g>' +
       '<path d="' + glass + '" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.55)" stroke-width="3" stroke-linejoin="round"/>' +
@@ -1930,7 +1936,7 @@
           '<div id="sp-live" class="hidden">' + profitField("Total profit") + "</div>" +
           '<div class="sp-next"><span>Next pour</span><b id="sp-next">—</b></div>',
         after: '<button class="btn btn-secondary btn-block hidden" id="sp-pour" style="height:46px">' + ic("droplet", 16) + "Pour</button>",
-        center: '<div class="sp"><div class="sp-stage"><div class="sp-badge hidden" id="sp-badge"></div>' + spillScene() + '</div><div class="ladder" id="sp-ladder"></div></div>'
+        center: '<div class="sp"><div class="sp-stage"><div class="sp-badge hidden" id="sp-badge"></div>' + spillScene() + '</div><div class="ladder no-n" id="sp-ladder"></div></div>'
       };
     },
     bind: function (ctx) {
