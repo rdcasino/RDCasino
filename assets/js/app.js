@@ -57,7 +57,8 @@
   var inFlight = {};
   /* Dono/equipe (lista vem do servidor) ganha a tag de diamante no lugar do nível */
   function isStaff(name) { return !!name && (RD.staff || []).some(function (x) { return x.toLowerCase() === String(name).toLowerCase(); }); }
-  function uBadge(name, wagered, size) { return isStaff(name) ? RD.art.ownerBadge(size) : RD.art.tierBadge(db.tierOf(wagered || 0), size); }
+  function topTier() { return RD.vipTiers[RD.vipTiers.length - 1]; }
+  function uBadge(name, wagered, size) { return RD.art.tierBadge(isStaff(name) ? topTier() : db.tierOf(wagered || 0), size); }
   function shownBal(u) { var t = 0; for (var k in inFlight) t += inFlight[k]; return Math.round((u.balance - t) * 100) / 100; }
   function hold(b) { if (b && !b.error && b.payout > 0) inFlight[b.id] = b.payout; renderHeader(); }
   function release(b) {
@@ -97,7 +98,7 @@
     var v = shownBal(u), el = $("#hdr-bal"), tag = $("#hdr-coin");
     if (!fxRate(disp.cur)) disp.cur = "USD";
     el.textContent = inCur(v, disp.cur);
-    if (tag && !tag.firstChild) tag.innerHTML = BAL_IC;
+    if (tag) tag.remove(); // só o saldo na moeda escolhida, sem o ícone ao lado
     if (!$("#bal-menu").classList.contains("hidden")) renderBalMenu();
   }
   /* um saldo só (como na Shuffle), mostrado na moeda que o jogador escolher */
@@ -135,7 +136,7 @@
     if (typeof vipDot === "function") vipDot();
     var t = db.tierOf(u.wagered);
     $("#user-menu").innerHTML =
-      '<div class="menu-head row" style="gap:10px">' + uBadge(u.username, u.wagered, 30) + '<div><strong>' + esc(u.username) + '</strong><small class="faint">' + (isStaff(u.username) ? "Owner" : t ? t.name : "Unranked") + "</small></div></div>" +
+      '<div class="menu-head row" style="gap:10px">' + uBadge(u.username, u.wagered, 30) + '<div><strong>' + esc(u.username) + '</strong><small class="faint">' + (isStaff(u.username) ? topTier().name : t ? t.name : "Unranked") + "</small></div></div>" +
       '<button data-open="wallet">' + ic("wallet", 16) + "Wallet</button>" +
       '<a href="#/account">' + ic("user", 16) + "Account & verification</a>" +
       '<a href="#/account/bets">' + ic("chart", 16) + "My bets</a>" +
@@ -2977,7 +2978,8 @@
   function vipWidget() {
     var u = me(); if (!u) return "";
     var v = vipState(u);
-    return '<a class="sb-vip" href="#/vip">' + (isStaff(u.username) ? RD.art.ownerBadge(34) : badge(v.cur, 34)) + '<div class="grow"><div class="row between"><strong>' + (isStaff(u.username) ? "Owner" : v.cur ? v.cur.name : "Unranked") + "</strong><small>" + v.pct.toFixed(0) + '%</small></div><div class="progress sm"><span style="width:' + v.pct + '%"></span></div><small class="faint">' + (v.next ? fmt.usd(v.next.wager - v.w, { dec: 0 }) + " to " + v.next.name : "Top level reached") + "</small></div>" + (v.pending.length ? '<span class="sb-vip-dot" title="Reward ready"></span>' : "") + "</a>";
+    var staff = isStaff(u.username), cur = staff ? topTier() : v.cur, pct = staff ? 100 : v.pct;
+    return '<a class="sb-vip" href="#/vip">' + badge(cur, 30) + '<div class="grow"><div class="row between"><strong>' + (cur ? cur.name : "Unranked") + "</strong><small>" + pct.toFixed(0) + '%</small></div><div class="progress sm"><span style="width:' + pct + '%"></span></div><small class="faint">' + (!staff && v.next ? fmt.usd(v.next.wager - v.w, { dec: 0 }) + " to " + v.next.name : "Top level reached") + "</small></div>" + (v.pending.length ? '<span class="sb-vip-dot" title="Reward ready"></span>' : "") + "</a>";
   }
   /* Cards de recompensa (iguais na janela VIP e na página VIP) */
   function untilTxt(iso) {
