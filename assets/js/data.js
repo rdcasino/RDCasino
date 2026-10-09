@@ -262,6 +262,9 @@ RD.toast = function (msg, type) {
 RD.sfx = (function () {
   var ac = null, muted = false, last = {};
   try { muted = localStorage.getItem("rd_mute") === "1"; } catch (e) {}
+  /* Liga o áudio no primeiro toque (pointerdown), antes do clique: o 1º clique de aposta não paga esse custo */
+  function warm() { document.removeEventListener("pointerdown", warm, true); document.removeEventListener("keydown", warm, true); if (!muted) try { ctx(); } catch (e) {} }
+  document.addEventListener("pointerdown", warm, true); document.addEventListener("keydown", warm, true);
   function ctx() { if (!ac) { var A = window.AudioContext || window.webkitAudioContext; if (!A) return null; ac = new A(); } if (ac.state === "suspended") ac.resume(); return ac; }
   function tone(f, dur, type, vol, at, slide) {
     var a = ctx(); if (!a) return; var t = a.currentTime + (at || 0), o = a.createOscillator(), g = a.createGain();

@@ -12,6 +12,18 @@
   var sb = window.supabase.createClient(cfg.url, cfg.anonKey, { auth: { persistSession: true, autoRefreshToken: true } });
   RD.sb = sb;
   var state = { user: null, admin: false, ready: false, wallets: [] };
+  /* Apostas vão direto para a API (sem a fila interna do cliente Supabase): o pedido sai no mesmo instante do clique.
+     Usa o token da sessão atual; se ele estiver perto de vencer ou for recusado, cai no caminho normal (sb.rpc). */
+  var tok = { access: null, exp: 0 };
+  function keepTok(s) { tok.access = s ? s.access_token : null; tok.exp = s ? +s.expires_at || 0 : 0; }
+  function fastRpc(fn, args) {
+    if (!tok.access || tok.exp * 1000 < Date.now() + 60000 || !window.fetch) return sb.rpc(fn, args);
+    return fetch(cfg.url + "/rest/v1/rpc/" + fn, { method: "POST", headers: { apikey: cfg.anonKey, Authorization: "Bearer " + tok.access, "Content-Type": "application/json" }, body: JSON.stringify(args || {}) })
+      .then(function (res) {
+        if (res.status === 401) return sb.rpc(fn, args);
+        return res.text().then(function (t) { var d = null; try { d = t ? JSON.parse(t) : null; } catch (e) { d = { message: t }; } return res.ok ? { data: d, error: null } : { data: null, error: d || { message: res.statusText } }; });
+      });
+  }
 
   var KYC = { none: "Not started", pending: "Pending", verified: "Verified", rejected: "Rejected" };
   var TX = { deposit: "Deposit", withdrawal: "Withdrawal", adjustment: "Adjustment", bonus: "Bonus", rakeback: "Rakeback", level_reward: "Level reward", commission: "Commission", tip_in: "Tip received", tip_out: "Tip sent" };
@@ -118,8 +130,8 @@
 
   /* ---------- Conta ---------- */
   db.live = state;
-  db.ready = sb.auth.getSession().then(function (r) { return onSession(r.data.session); });
-  sb.auth.onAuthStateChange(function (ev, session) { if (ev === "SIGNED_OUT") onSession(null); if (ev === "TOKEN_REFRESHED") state.user = session.user; });
+  db.ready = sb.auth.getSession().then(function (r) { keepTok(r.data.session); return onSession(r.data.session); });
+  sb.auth.onAuthStateChange(function (ev, session) { keepTok(session); if (ev === "SIGNED_OUT") onSession(null); if (ev === "TOKEN_REFRESHED") state.user = session.user; });
   db.current = function () { return state.user && D.players[0] && D.players[0].id === state.user.id ? D.players[0] : (state.user ? D.players.filter(function (p) { return p.id === state.user.id; })[0] || null : null); };
   db.logout = function () { state.user = null; fill(D.players, []); fill(D.tx, []); fill(D.bets, []); return sb.auth.signOut(); };
   db.login = function (email, pass) {
@@ -165,7 +177,7 @@
   /* ---------- Jogos de um clique: o servidor sorteia, calcula e grava (play_bet) ---------- */
   var lastNonce = -1;
   db.playBet = function (game, amount, params) {
-    return sb.rpc("play_bet", { p_game: game, p_amount: amount, p_params: params || {} }).then(function (r) {
+    return fastRpc("play_bet", { p_game: game, p_amount: amount, p_params: params || {} }).then(function (r) {
       if (r.error) return { error: msg(r.error) };
       var x = r.data, nonce = +x.nonce;
       return {
@@ -211,14 +223,14 @@
     syncRounds(); db.emit(); return x;
   }
   db.roundStart = function (game, amount, params) {
-    return sb.rpc("round_start", { p_game: game, p_amount: amount, p_params: params || {} }).then(function (r) {
+    return fastRpc("round_start", { p_game: game, p_amount: amount, p_params: params || {} }).then(function (r) {
       if (r.error) return { error: msg(r.error) };
       var x = r.data; rounds[game] = { game: game, amount: n(x.round.amount), nonce: +x.round.nonce, client: x.round.client, server: "", state: x.state || {}, started: x.round.started };
       return roundResult(game, x);
     }, function (e) { return { error: msg(e) }; });
   };
   db.roundAct = function (game, action, params) {
-    return sb.rpc("round_act", { p_game: game, p_action: action, p_params: params || {} }).then(function (r) {
+    return fastRpc("round_act", { p_game: game, p_action: action, p_params: params || {} }).then(function (r) {
       if (r.error) { if (/No active round/i.test(r.error.message)) { delete rounds[game]; syncRounds(); } return { error: msg(r.error) }; }
       return roundResult(game, r.data);
     }, function (e) { return { error: msg(e) }; });
@@ -242,12 +254,15 @@
   /* Apostas recentes de todo mundo (feed da home e "Recent plays" dos jogos) */
   state.pub = [];
   function loadPub() {
-    return sb.rpc("public_bets", { p_limit: 300 }).then(function (r) {
+    var first = !state.pub.length;
+    return sb.rpc("public_bets", { p_limit: first ? 300 : 60 }).then(function (r) {
       if (!r.data) return;
       var top = r.data[0] ? r.data[0].id : null;
       if (top === state.pubTop && state.pub.length) return; // nada novo: não redesenha a tela
+      var known = state.pubTop, rows = first || known == null ? r.data : r.data.filter(function (b) { return +b.id > +known; });
       state.pubTop = top;
-      state.pub = r.data.map(function (b) { return { id: "B-" + b.id, userId: null, user: b.username, game: b.game, amount: n(b.amount), multiplier: +b.multiplier, payout: n(b.payout), date: b.created_at, detail: b.detail || {} }; });
+      var fresh = rows.map(function (b) { return { id: "B-" + b.id, userId: null, user: b.username, game: b.game, amount: n(b.amount), multiplier: +b.multiplier, payout: n(b.payout), date: b.created_at, detail: b.detail || {} }; });
+      state.pub = first ? fresh : fresh.concat(state.pub).slice(0, 300);
       if (!RD.isAdminPage) db.emit();
     });
   }
