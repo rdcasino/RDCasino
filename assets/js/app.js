@@ -14,7 +14,14 @@
   var state = { walletTab: "deposit", coin: "USDT", net: "TRC20", betsTab: "all" };
   function me() { return db.current(); }
 
-  function hydrateIcons(root) { $$("[data-ic]", root).forEach(function (el) { el.outerHTML = ic(el.getAttribute("data-ic")); }); }
+  /* troca <span data-ic> pelo SVG mantendo as classes do span (o CSS depende delas) */
+  function hydrateIcons(root) {
+    $$("[data-ic]", root).forEach(function (el) {
+      var cls = el.className, t = document.createElement("div"); t.innerHTML = ic(el.getAttribute("data-ic"));
+      var svg = t.firstElementChild; if (!svg) return; if (cls) svg.setAttribute("class", ((svg.getAttribute("class") || "") + " " + cls).trim());
+      el.replaceWith(svg);
+    });
+  }
   function gameOf(id) { return RD.games.filter(function (g) { return g.id === id; })[0]; }
   function initials(u) { return String(u || "?").slice(0, 2).toUpperCase(); }
   function errorBox(msg, extra) { return '<div class="notice form-error" style="background:var(--danger-soft);border-color:rgba(255,122,89,.3);color:var(--danger)">' + ic("alert", 16) + "<span>" + esc(msg) + (extra || "") + "</span></div>"; }
@@ -222,7 +229,23 @@
     var tag = g.tag === "hot" ? '<span class="badge badge-danger g-tag">Hot</span>' : g.tag === "new" ? '<span class="badge badge-brand g-tag">New</span>' : "";
     return '<a class="game" href="#/game/' + g.id + '">' + tag +
       media(g, "", '<span class="gf-name">' + esc(g.name) + '</span><span class="gf-prov">' + esc(g.provider) + "</span>") +
-      '<div class="game-meta">' + (g.playable ? '<span class="dot"></span>Play now' : esc(g.provider)) + "</div></a>";
+      '<div class="game-meta">' + gameMeta(g) + "</div></a>";
+  }
+  /* Embaixo da capa: jogadores reais nos últimos 15 min (das apostas recentes); sem ninguém, o RTP */
+  var playCache = { t: 0, map: {} };
+  function playingMap() {
+    var now = Date.now();
+    if (now - playCache.t > 5000) {
+      var m = {}, cut = now - 15 * 60e3;
+      (db.recentBets ? db.recentBets(2000) : []).forEach(function (b) { if (new Date(b.date).getTime() < cut) return; (m[b.game] = m[b.game] || {})[b.user] = 1; });
+      playCache = { t: now, map: m };
+    }
+    return playCache.map;
+  }
+  function gameMeta(g) {
+    if (!g.playable) return esc(g.provider);
+    var n = Object.keys(playingMap()[g.id] || {}).length;
+    return n ? '<span class="dot"></span>' + n + " playing" : '<span class="g-rtp">RTP ' + g.rtp + "%</span>";
   }
   function gamesOf(cat) { return RD.games.filter(function (g) { return g.enabled && (cat === "all" || g.cat === cat); }); }
   /* Fichas para escolher o valor (Roleta e Baccarat) */
@@ -684,17 +707,19 @@
   function limboStage() {
     var lines = "", i;
     for (i = 0; i < 6; i++) lines += '<ellipse cx="200" cy="200" rx="178" ry="' + (46 + i * 8) + '" transform="rotate(' + i * 30 + ' 200 200)"/>';
-    return '<div class="lb" id="lb"><div class="lb-field"><svg viewBox="0 0 400 400" class="lb-svg" aria-hidden="true">' +
-      '<defs><radialGradient id="lbGlow"><stop offset="0" stop-color="currentColor" stop-opacity=".38"/><stop offset=".55" stop-color="currentColor" stop-opacity=".08"/><stop offset="1" stop-color="currentColor" stop-opacity="0"/></radialGradient></defs>' +
-      '<circle cx="200" cy="200" r="200" fill="url(#lbGlow)" class="lb-glow"/>' +
-      '<g class="lb-r lb-lines">' + lines + "</g>" +
-      '<g class="lb-r lb-ring1"><circle cx="200" cy="200" r="150" stroke-dasharray="3 9"/></g>' +
-      '<g class="lb-r lb-ring2"><circle cx="200" cy="200" r="118" stroke-dasharray="40 14 4 14"/></g>' +
-      '<g class="lb-r lb-orb1"><circle cx="200" cy="50" r="4" class="lb-dot"/><circle cx="200" cy="350" r="2.5" class="lb-dot"/></g>' +
-      '<g class="lb-r lb-orb2"><circle cx="82" cy="200" r="3" class="lb-dot"/><circle cx="318" cy="200" r="2" class="lb-dot"/></g>' +
-      '<circle cx="200" cy="200" r="96" class="lb-burst" id="lb-burst"/>' +
-      '</svg></div><div class="lb-core"><div class="lb-num" id="lb-num">1.00×</div><div class="lb-tgt">Target <b id="lb-tgt">2.00×</b></div></div></div>';
+    var L = function (cls, inner) { return '<div class="lb-layer ' + cls + '"><svg viewBox="0 0 400 400" aria-hidden="true">' + inner + "</svg></div>"; };
+    // cada camada gira como um <div> (transform no compositor, sem recalcular o SVG a cada quadro)
+    return '<div class="lb" id="lb"><div class="lb-field">' +
+      L("lb-glow", '<defs><radialGradient id="lbGlow"><stop offset="0" stop-color="currentColor" stop-opacity=".38"/><stop offset=".55" stop-color="currentColor" stop-opacity=".08"/><stop offset="1" stop-color="currentColor" stop-opacity="0"/></radialGradient></defs><circle cx="200" cy="200" r="200" fill="url(#lbGlow)"/>') +
+      L("lb-lines", '<g fill="none" stroke="currentColor" stroke-opacity=".16" stroke-width="1.2">' + lines + "</g>") +
+      L("lb-ring1", '<circle cx="200" cy="200" r="150" fill="none" stroke="currentColor" stroke-opacity=".45" stroke-width="2" stroke-dasharray="3 9"/>') +
+      L("lb-ring2", '<circle cx="200" cy="200" r="118" fill="none" stroke="currentColor" stroke-opacity=".3" stroke-width="1.5" stroke-dasharray="40 14 4 14"/>') +
+      L("lb-orb1", '<circle cx="200" cy="50" r="9" fill="currentColor" opacity=".18"/><circle cx="200" cy="50" r="4" fill="currentColor"/><circle cx="200" cy="350" r="2.5" fill="currentColor"/>') +
+      L("lb-orb2", '<circle cx="82" cy="200" r="7" fill="currentColor" opacity=".18"/><circle cx="82" cy="200" r="3" fill="currentColor"/><circle cx="318" cy="200" r="2" fill="currentColor"/>') +
+      L("lb-burst", '<circle cx="200" cy="200" r="96" fill="none" stroke="currentColor" stroke-width="3"/>') +
+      '</div><div class="lb-core"><div class="lb-num" id="lb-num">1.00×</div><div class="lb-tgt">Target <b id="lb-tgt">2.00×</b></div></div></div>';
   }
+
   OG.limbo = {
     label: function (b) { return Number(b.detail.result).toFixed(2) + "×"; },
     cfg: function () {
@@ -2038,6 +2063,241 @@
         }
       };
     }
+  };  /* ---------- CROSS THE LAKE: o sapo rapper atravessa o lago pulando nas vitórias-régias ----------
+     Em cada coluna o jogador escolhe a folha: branca (96% de não afundar), laranja (80%) ou rosa (59%).
+     Multiplicador = 0,98 ÷ chance acumulada (RTP 98%). Pulo k usa o k-ésimo número das seeds: afunda se número ≥ chance. */
+  var LAKE_COLS = 20, LAKE_PADS = [{ k: "risky", p: 0.59, cls: "r" }, { k: "safe", p: 0.96, cls: "s" }, { k: "mid", p: 0.8, cls: "m" }];
+  function lakeMult(raw) { return Math.floor(raw * 100 + 1e-9) / 100; }
+  RD.fair.lakePads = LAKE_PADS;
+  function frogSVG() { return '<svg viewBox="0 0 120 120" class="lk-frog-svg" aria-hidden="true">' + RD.art.frog() + "</svg>"; }
+
+  function lilySVG() { return '<svg viewBox="0 0 100 100" aria-hidden="true"><ellipse cx="50" cy="58" rx="46" ry="34" fill="#0b5a2a" opacity=".55"/><path d="M50 50 L92 40 A46 40 0 1 1 64 14 Z" fill="#3fbf4a"/><path d="M50 50 L92 40 A46 40 0 1 1 64 14 Z" fill="none" stroke="#2a9a38" stroke-width="3"/><path d="M50 50 L20 30 M50 50 L18 62 M50 50 L44 86 M50 50 L78 76" stroke="#2f9e3a" stroke-width="3" stroke-linecap="round"/><circle cx="34" cy="40" r="2.5" fill="#2a8a33"/><circle cx="66" cy="68" r="2" fill="#2a8a33"/></svg>'; }
+  OG.lake = {
+    label: function (b) { return b.multiplier ? b.multiplier.toFixed(2) + "×" : "0.00×"; },
+    cfg: function () {
+      return {
+        side: '<div id="lk-live" class="hidden">' + profitField("Total profit") + "</div>" +
+          '<div class="lk-help"><span><i class="s"></i>White 96%</span><span><i class="m"></i>Orange 80%</span><span><i class="r"></i>Pink 59%</span><small>Chance of the pad holding the frog. Pick a pad in the next column to jump.</small></div>',
+        center: '<div class="lk"><div class="lk-view" id="lk-view"><div class="lk-world" id="lk-world"></div>' +
+          '<button class="lk-music" id="lk-music" title="Music" aria-label="Music"></button><div class="sp-badge hidden" id="lk-badge"></div></div></div>'
+      };
+    },
+    bind: function (ctx) {
+      var G = "lake", round = null, pending = false, CW = 120, BANK = 120, ROWY = [22, 50, 78];
+      var world = $("#lk-world"), view = $("#lk-view");
+      function colX(c) { return BANK + (c - 0.5) * CW; }
+      var h = '<div class="lk-bank l"><span class="lk-flower" style="left:18px;top:14%"></span><span class="lk-flower" style="left:52px;top:80%"></span><span class="lk-shroom" style="left:24px;top:64%"></span><span class="lk-stone" style="left:60px;top:30%"></span></div>';
+      for (var c = 1; c <= LAKE_COLS; c++) for (var r = 0; r < 3; r++) h += '<button class="lk-pad" data-c="' + c + '" data-r="' + r + '" style="left:' + colX(c) + 'px;top:' + ROWY[r] + '%">' + lilySVG() + '<b></b></button>';
+      h += '<div class="lk-bank r" style="left:' + (BANK + LAKE_COLS * CW) + 'px"><span class="lk-flag">' + ic("flag", 22) + '</span><span class="lk-flower" style="left:40px;top:70%"></span></div>';
+      h += '<div class="lk-frog" id="lk-frog">' + frogSVG() + '</div><div class="lk-splash" id="lk-splash"></div>';
+      world.innerHTML = h; world.style.width = (BANK * 2 + LAKE_COLS * CW) + "px";
+      function frogAt(col, row, instant) {
+        var f = $("#lk-frog"); if (!f) return;
+        var x = col ? colX(col) : 62, y = col ? ROWY[row] : 50;
+        if (instant) f.style.transition = "none";
+        f.style.left = x + "px"; f.style.top = y + "%";
+        if (instant) { void f.offsetWidth; f.style.transition = ""; }
+        var vw = view.clientWidth, off = Math.max(0, Math.min(x - vw * 0.32, BANK * 2 + LAKE_COLS * CW - vw));
+        world.style.transform = "translateX(" + (-off) + "px)";
+      }
+      function paint() {
+        var k = round ? round.steps : 0, raw = round ? round.raw : 0.98;
+        $$(".lk-pad", world).forEach(function (el) {
+          var c = +el.getAttribute("data-c"), r = +el.getAttribute("data-r"), pad = LAKE_PADS[r], lab = el.querySelector("b");
+          el.className = "lk-pad"; lab.textContent = "";
+          if (c === k + 1) { el.classList.add("next", pad.cls); lab.textContent = lakeMult(raw / pad.p).toFixed(2) + "×"; el.disabled = !round || pending; }
+          else { el.disabled = true; if (round && c <= k) el.classList.add(round.path[c - 1] === pad.k ? "path" : "dim"); }
+        });
+        var m = round && k ? lakeMult(raw) : 1;
+        if (round) { ctx.setProfit(m, m.toFixed(2)); var pf = $("#og-profit"); if (pf) pf.value = amtIn(round.amount * (m - 1)); }
+      }
+      function setLive(on) {
+        if (!$("#lk-live")) return;
+        $("#lk-live").classList.toggle("hidden", !on); ctx.lock(on);
+        var b = ctx.btn(); b.textContent = on ? "Cashout" : "Bet"; b.disabled = on && (!round || !round.steps || pending);
+      }
+      function badge(txt, cls) { var b = $("#lk-badge"); if (!b) return; b.className = "sp-badge " + cls; b.textContent = txt; }
+      function end(win, detail) {
+        var u = me(), mult = win ? capMult(round.amount, lakeMult(round.raw)) : 0;
+        var b = db.settleRound(u.id, G, mult, win, detail);
+        round = null; setLive(false); paint(); ctx.record(b);
+        if (win) { badge("+" + mult.toFixed(2) + "×", "win"); RD.sfx.play("cash"); }
+      }
+      function jump(row) {
+        if (!round || pending) return;
+        var u = me(), r = db.activeRound(u.id, G); if (!r) return;
+        var pad = LAKE_PADS[row], col = round.steps + 1; pending = true; paint(); setLive(true);
+        var f = $("#lk-frog"); f.classList.remove("hop"); void f.offsetWidth; f.classList.add("hop"); RD.sfx.play("step");
+        frogAt(col, row);
+        var got = RD.live ? db.roundAct(G, "jump", { pad: pad.k }).then(function (x) { if (x.error) { ctx.msg(x.error); return null; } return { ok: x.ok, roll: x.roll }; })
+          : floats(r.server, r.client, r.nonce, col).then(function (fs) { return { ok: fs[col - 1] < pad.p, roll: fs[col - 1] }; });
+        got.then(function (x) {
+          setTimeout(function () {
+            pending = false;
+            if (!round) return;
+            if (!x) { frogAt(round.steps, round.path.length ? LAKE_PADS.map(function (q) { return q.k; }).indexOf(round.path[round.path.length - 1]) : 1); paint(); setLive(true); return; }
+            round.steps = col; round.path.push(pad.k);
+            var detail = { steps: col, path: round.path.slice(), roll: x.roll };
+            if (!x.ok) {
+              var el = world.querySelector('.lk-pad[data-c="' + col + '"][data-r="' + row + '"]'); if (el) el.classList.add("sunk");
+              f.classList.add("drown"); var sp = $("#lk-splash"); if (sp) { sp.style.left = colX(col) + "px"; sp.style.top = ROWY[row] + "%"; sp.classList.remove("on"); void sp.offsetWidth; sp.classList.add("on"); }
+              badge("Splash!", "lose"); RD.sfx.play("boom"); detail.sank = col; return end(false, detail);
+            }
+            round.raw = round.raw / pad.p; RD.sfx.play("gem");
+            if (!RD.live) db.updateRound(u.id, G, { steps: round.steps, mult: round.raw, path: round.path.slice() });
+            if (round.steps >= LAKE_COLS) { frogAt(LAKE_COLS + 1.1, 1); return end(true, detail); }
+            paint(); setLive(true);
+          }, 460);
+        });
+      }
+      world.addEventListener("click", function (e) { var b = e.target.closest(".lk-pad"); if (!b || b.disabled) return; jump(+b.getAttribute("data-r")); });
+      function musicBtn() { var b = $("#lk-music"); if (b) { var on = RD.sfx.music.on(); b.innerHTML = ic(on ? "volume" : "volumeX", 16); b.classList.toggle("off", !on); } }
+      $("#lk-music").addEventListener("click", function () { RD.sfx.music.toggle(); musicBtn(); });
+      RD.sfx.music.start(); musicBtn();
+      function reset() { var f = $("#lk-frog"); if (f) f.classList.remove("drown", "hop"); frogAt(0, 1, true); }
+      function start() {
+        var a = ctx.amount(), u = ctx.validate(a); if (!u || pending) return;
+        pending = true; RD.sfx.music.start();
+        rStart(u, G, a, { steps: 0, mult: 0.98, path: [] }, {}).then(function (r) {
+          pending = false; if (r.error) return ctx.msg(r.error);
+          round = { amount: a, steps: 0, raw: 0.98, path: [] }; badge("", "hidden"); reset(); renderHeader(); ctx.refresh(); paint(); setLive(true);
+        });
+      }
+      reset(); paint();
+      window.addEventListener("resize", function () { if (round) frogAt(round.steps, round.path.length ? LAKE_PADS.map(function (q) { return q.k; }).indexOf(round.path[round.path.length - 1]) : 1, true); });
+      return {
+        refresh: paint,
+        click: function () {
+          if (!round) return start();
+          if (!round.steps || pending) return;
+          pending = true; setLive(true);
+          if (RD.live) return db.roundAct(G, "cashout").then(function (x) { pending = false; if (x.error) { setLive(true); return ctx.msg(x.error); } if (round) end(true, { steps: round.steps, path: round.path.slice() }); });
+          pending = false; end(true, { steps: round.steps, path: round.path.slice() });
+        },
+        resume: function () {
+          var u = me(), r = u && db.activeRound(u.id, G);
+          if (r) {
+            var st = r.state || {}; round = { amount: r.amount, steps: st.steps || 0, raw: +st.mult || 0.98, path: (st.path || []).slice() };
+            $("#og-amt").value = amtIn(r.amount);
+            var last = round.path.length ? LAKE_PADS.map(function (q) { return q.k; }).indexOf(round.path[round.path.length - 1]) : 1;
+            frogAt(round.steps, last, true); paint(); setLive(true);
+          }
+        }
+      };
+    }
+  };
+  /* Pump: balão sobre a bomba de ar; cresce a cada bombada e estoura no ponto escondido */
+  function pumpScene() {
+    var bits = "", i;
+    for (i = 0; i < 12; i++) { var ang = i * 30 * Math.PI / 180; bits += '<path class="pm-bit" style="--dx:' + Math.round(Math.cos(ang) * 130) + 'px;--dy:' + Math.round(Math.sin(ang) * 130) + 'px;--r:' + (i * 47 % 360) + 'deg" d="M246 122 l12 -7 l9 14 l-14 7z"/>'; }
+    return '<svg viewBox="0 0 400 340" class="pm-svg" id="pm-stage-svg"><defs>' +
+      '<radialGradient id="pmBal" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#c6ff9a"/><stop offset=".45" stop-color="#3fdc4a"/><stop offset="1" stop-color="#0c7a24"/></radialGradient>' +
+      '<linearGradient id="pmMetal" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2b3550"/><stop offset=".5" stop-color="#6070a0"/><stop offset="1" stop-color="#262f47"/></linearGradient></defs>' +
+      '<ellipse cx="170" cy="320" rx="150" ry="10" fill="#000" opacity=".28"/>' +
+      '<path d="M128 292 C 200 312 252 300 250 236" stroke="#141a2a" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M128 292 C 200 312 252 300 250 236" stroke="#3a4566" stroke-width="3" fill="none" stroke-linecap="round" stroke-dasharray="2 8"/>' +
+      '<g class="pm-pump"><g id="pm-handle" class="pm-handle"><rect x="96" y="196" width="8" height="52" rx="3" fill="#9aa6c4"/><rect x="70" y="186" width="60" height="14" rx="7" fill="#ff5a7a"/></g>' +
+      '<rect x="72" y="240" width="56" height="72" rx="10" fill="url(#pmMetal)"/><rect x="80" y="252" width="40" height="6" rx="3" fill="#ff5a7a" opacity=".85"/><rect x="62" y="306" width="76" height="12" rx="5" fill="#1a2134"/></g>' +
+      '<rect x="243" y="226" width="14" height="14" rx="3" fill="#141a2a"/>' +
+      '<g id="pm-bal" class="pm-bal" style="transform:scale(.5)">' +
+      '<ellipse cx="250" cy="130" rx="80" ry="92" fill="url(#pmBal)"/><path d="M242 222 L258 222 L250 212 Z" fill="#0c7a24"/>' +
+      '<ellipse cx="220" cy="92" rx="17" ry="28" fill="#fff" opacity=".38" transform="rotate(-24 220 92)"/>' +
+      '<text x="250" y="146" text-anchor="middle" font-size="42" font-weight="900" fill="#fff" fill-opacity=".92" style="font-family:var(--font-display,Arial)">RD</text></g>' +
+      '<g class="pm-bits">' + bits + "</g></svg>";
+  }
+
+  OG.pump = {
+    label: function (b) { return b.multiplier ? b.multiplier.toFixed(2) + "×" : "0.00×"; },
+    cfg: function () {
+      var d = ogPrefs.pmDiff || "low";
+      return {
+        side: '<div><div class="ogx-label">Difficulty</div><div class="ogx-split pm-diff">' + ["low", "medium", "high", "degen"].map(function (k) { return '<button data-pmd="' + k + '"' + (k === d ? ' class="active"' : "") + ">" + k[0].toUpperCase() + k.slice(1) + "</button>"; }).join("") + "</div></div>" +
+          '<div id="pm-live" class="hidden">' + profitField("Total profit") + "</div>" +
+          '<div class="pm-next"><span>Next pump</span><b id="pm-next">—</b></div>',
+        after: '<button class="btn btn-secondary btn-block hidden" id="pm-pump" style="height:46px">' + ic("zap", 16) + "Pump</button>",
+        center: '<div class="pm"><div class="pm-stage"><div class="sp-badge hidden" id="pm-badge"></div>' + pumpScene() + '</div><div class="ladder no-n" id="pm-ladder"></div></div>'
+      };
+    },
+    bind: function (ctx) {
+      var G = "pump", round = null, pending = false, diffSel = ogPrefs.pmDiff || "low"; // round: { amount, diff, steps }
+      function D() { return round ? round.diff : diffSel; }
+      function bad() { return SPILL_BAD[D()]; }
+      function maxSteps() { return 25 - bad(); }
+      function setLevel(steps, over) {
+        var bl = $("#pm-bal"); if (!bl) return;
+        var k = Math.min(steps, 25) / 25;
+        bl.style.transform = "scale(" + (0.5 + k * 0.62).toFixed(3) + ")";
+        var st = $("#pm-stage-svg"); if (st) st.classList.toggle("popped", !!over);
+      }
+      function paint() {
+        var k = round ? round.steps : 0, ms = []; for (var i = 1; i <= maxSteps(); i++) ms.push(spillMult(bad(), i));
+        var box = $("#pm-ladder"); if (box) box.innerHTML = ladderWin(ms, k, !!round);
+        var nx = $("#pm-next"); if (nx) nx.textContent = k < maxSteps() ? spillMult(bad(), k + 1).toFixed(2) + "×" : "—";
+        if (round) { var m = k ? spillMult(bad(), k) : 1; ctx.setProfit(m, m.toFixed(2)); var p = $("#og-profit"); if (p) p.value = amtIn(round.amount * (m - 1)); }
+        else ctx.setProfit(spillMult(bad(), 1), spillMult(bad(), 1).toFixed(2));
+      }
+      function setLive(on) {
+        if (!$("#pm-live")) return;
+        $("#pm-live").classList.toggle("hidden", !on); $("#pm-pump").classList.toggle("hidden", !on); ctx.lock(on);
+        var b = ctx.btn(); b.textContent = on ? "Cashout" : "Bet"; b.disabled = on && (!round || !round.steps);
+        $("#pm-pump").disabled = !on || pending; $$(".pm-diff button").forEach(function (x) { x.disabled = on; });
+      }
+      function badge(txt, cls) { var b = $("#pm-badge"); if (!b) return; b.className = "sp-badge " + cls; b.textContent = txt; }
+      function end(win, detail) {
+        var u = me(), k = round.steps, mult = win ? capMult(round.amount, spillMult(bad(), k)) : 0;
+        var b = db.settleRound(u.id, G, mult, win, detail);
+        round = null; setLive(false); paint(); ctx.record(b);
+        if (win) { badge("+" + mult.toFixed(2) + "×", "win"); RD.sfx.play("cash"); }
+      }
+      function pump() {
+        if (!round || pending) return;
+        var u = me(), r = db.activeRound(u.id, G); if (!r) return;
+        pending = true; $("#pm-pump").disabled = true; ctx.btn().disabled = true;
+        var hd = $("#pm-handle"); if (hd) { hd.classList.remove("on"); void hd.getBoundingClientRect(); hd.classList.add("on"); }
+        RD.sfx.play("step");
+        var got = RD.live ? db.roundAct(G, "pour").then(function (x) { if (x.error) { pending = false; setLive(true); ctx.msg(x.error); return null; } return { ok: x.ok, bad: x.bad || [], done: !!x.bet && x.ok }; })
+          : floats(r.server, r.client, r.nonce, 24).then(function (fs) { var pos = minesFrom(fs, bad()); return { ok: pos.indexOf(round.steps) < 0, bad: pos }; });
+        got.then(function (x) {
+          if (!x || !round) { pending = false; return; }
+          setTimeout(function () {
+            pending = false; if (!round) return;
+            round.steps++;
+            var detail = { diff: round.diff, steps: round.steps, bad: x.bad };
+            if (!x.ok) { setLevel(25, true); badge("Popped!", "lose"); RD.sfx.play("boom"); detail.pop = round.steps; return end(false, detail); }
+            setLevel(round.steps); RD.sfx.play("gem");
+            if (!RD.live) db.updateRound(u.id, G, { diff: round.diff, steps: round.steps });
+            if (round.steps >= maxSteps()) return end(true, detail);
+            if (!$("#pm-pump")) return;
+            paint(); setLive(true);
+          }, 420);
+        });
+      }
+      $("#pm-pump").addEventListener("click", pump);
+      $$(".pm-diff button").forEach(function (b) { b.addEventListener("click", function () { if (round) return; diffSel = b.getAttribute("data-pmd"); ogPrefs.pmDiff = diffSel; savePrefs(); $$(".pm-diff button").forEach(function (x) { x.classList.toggle("active", x === b); }); paint(); }); });
+      function start() {
+        var a = ctx.amount(), u = ctx.validate(a); if (!u || pending) return;
+        var df = diffSel; pending = true;
+        rStart(u, G, a, { diff: df, steps: 0 }).then(function (r) {
+          pending = false; if (r.error) return ctx.msg(r.error);
+          round = { amount: a, diff: df, steps: 0 }; badge("", "hidden"); setLevel(0); renderHeader(); ctx.refresh(); paint(); setLive(true);
+        });
+      }
+      setLevel(0); paint();
+      return {
+        refresh: paint,
+        click: function () {
+          if (!round) return start();
+          if (!round.steps || pending) return;
+          var u = me(), r = db.activeRound(u.id, G); if (!r) return;
+          pending = true;
+          if (RD.live) return db.roundAct(G, "cashout").then(function (x) { pending = false; if (x.error) return ctx.msg(x.error); if (round) end(true, { diff: round.diff, steps: round.steps, bad: x.bad || [] }); });
+          floats(r.server, r.client, r.nonce, 24).then(function (fs) { pending = false; if (round) end(true, { diff: round.diff, steps: round.steps, bad: minesFrom(fs, bad()) }); });
+        },
+        resume: function () {
+          var u = me(), r = u && db.activeRound(u.id, G);
+          if (r) { round = { amount: r.amount, diff: r.state.diff, steps: r.state.steps || 0 }; diffSel = round.diff; $$(".pm-diff button").forEach(function (x) { x.classList.toggle("active", x.getAttribute("data-pmd") === round.diff); }); $("#og-amt").value = amtIn(r.amount); setLevel(round.steps); paint(); setLive(true); }
+        }
+      };
+    }
   };
 
   /* ---------- DOUBLE (estilo Blaze: 15 casas — 7 vermelhas 2,1×, 7 pretas 2,1×, 1 branca RD 14,7×; RTP 98%) ---------- */
@@ -3183,9 +3443,11 @@
   var currentPath = "";
   function route(keep) {
     inFlight = {}; // trocar de página encerra animações pendentes: mostra o saldo real
+    if (RD.sfx.music) RD.sfx.music.stop();
     var path = (location.hash || "#/").replace(/^#\/?/, "").replace(/\/$/, "");
     var parts = path.split("/"), name = parts[0] || "home", arg = parts[1];
     var fn = pages[name] || pages.notfound, u = me();
+    document.body.classList.toggle("on-game", name === "game");
     currentPath = path;
     var banner = u && u.status !== "Active" ? '<div class="container" style="padding-bottom:0"><div class="notice" style="background:var(--danger-soft);border-color:rgba(255,122,89,.3);color:var(--danger)">' + ic("ban", 16) + "<span><strong>Your account is suspended.</strong> Deposits, bets and withdrawals are disabled. Contact support.</span></div></div>" : "";
     $("#view").innerHTML = banner + fn(arg);

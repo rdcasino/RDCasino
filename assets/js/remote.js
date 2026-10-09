@@ -244,6 +244,9 @@
   function loadPub() {
     return sb.rpc("public_bets", { p_limit: 300 }).then(function (r) {
       if (!r.data) return;
+      var top = r.data[0] ? r.data[0].id : null;
+      if (top === state.pubTop && state.pub.length) return; // nada novo: não redesenha a tela
+      state.pubTop = top;
       state.pub = r.data.map(function (b) { return { id: "B-" + b.id, userId: null, user: b.username, game: b.game, amount: n(b.amount), multiplier: +b.multiplier, payout: n(b.payout), date: b.created_at, detail: b.detail || {} }; });
       if (!RD.isAdminPage) db.emit();
     });

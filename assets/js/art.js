@@ -54,28 +54,40 @@ window.RD = window.RD || {};
   function spark(x, y, s, color, op) {
     return '<path d="M' + x + " " + (y - s) + " Q" + x + " " + y + " " + (x + s) + " " + y + " Q" + x + " " + y + " " + x + " " + (y + s) + " Q" + x + " " + y + " " + (x - s) + " " + y + " Q" + x + " " + y + " " + x + " " + (y - s) + 'Z" fill="' + (color || "#fff") + '" opacity="' + (op == null ? 0.9 : op) + '"/>';
   }
+  var SUITP = {
+    "♠": "M12 2C9 6.5 3.5 9.5 3.5 14a4.5 4.5 0 0 0 7.6 3.2L10 22h4l-1.1-4.8A4.5 4.5 0 0 0 20.5 14C20.5 9.5 15 6.5 12 2z",
+    "♥": "M12 21s-7.5-4.6-9.6-9.2C.9 8 3.2 4 7 4c2.1 0 3.6 1.1 5 2.9C13.4 5.1 14.9 4 17 4c3.8 0 6.1 4 4.6 7.8C19.5 16.4 12 21 12 21z",
+    "♦": "M12 2 L20 12 L12 22 L4 12 Z",
+    "♣": "M12 2.5a4.3 4.3 0 0 0-3.6 6.7A4.3 4.3 0 1 0 10.6 17L10 22h4l-.6-5a4.3 4.3 0 1 0 2.2-7.8A4.3 4.3 0 0 0 12 2.5z"
+  };
+  function suitAt(suit, x, y, size, col) { return '<path d="' + SUITP[suit] + '" fill="' + col + '" transform="translate(' + (x - size / 2) + " " + (y - size / 2) + ") scale(" + (size / 24) + ')"/>'; }
   function card(x, y, w, rot, rank, suit, red) {
-    var h = w * 1.4, col = red ? "#e11d48" : "#111827", id = U("cd");
+    var h = w * 1.4, col = red ? "#e11d48" : "#141a2b", id = U("cd"), fs = w * 0.24, r = w * 0.09;
+    var corner = '<text x="' + (-w / 2 + w * 0.1) + '" y="' + (-h / 2 + w * 0.27) + '" font-size="' + fs + '" font-weight="900" fill="' + col + '" style="font-family:Arial Black,Arial,sans-serif" letter-spacing="-1">' + rank + "</text>" + suitAt(suit, -w / 2 + w * 0.17, -h / 2 + w * 0.41, w * 0.15, col);
     return '<g transform="translate(' + x + " " + y + ") rotate(" + rot + ')">' +
-      "<defs>" + lin(id, [[0, "#ffffff"], [1, "#e8edf7"]]) + "</defs>" +
-      '<rect x="' + (-w / 2 + 6) + '" y="' + (-h / 2 + 10) + '" width="' + w + '" height="' + h + '" rx="' + (w * 0.1) + '" fill="#000" opacity=".25"/>' +
-      '<rect x="' + (-w / 2) + '" y="' + (-h / 2) + '" width="' + w + '" height="' + h + '" rx="' + (w * 0.1) + '" fill="url(#' + id + ')"/>' +
-      '<text x="' + (-w / 2 + w * 0.12) + '" y="' + (-h / 2 + w * 0.3) + '" font-size="' + (w * 0.26) + '" font-weight="800" fill="' + col + '" style="font-family:var(--font-display,Arial)">' + rank + "</text>" +
-      '<text x="' + (-w / 2 + w * 0.13) + '" y="' + (-h / 2 + w * 0.52) + '" font-size="' + (w * 0.2) + '" fill="' + col + '">' + suit + "</text>" +
-      '<text x="0" y="' + (w * 0.2) + '" text-anchor="middle" font-size="' + (w * 0.62) + '" fill="' + col + '">' + suit + "</text>" +
-      '<g transform="rotate(180)"><text x="' + (-w / 2 + w * 0.12) + '" y="' + (-h / 2 + w * 0.3) + '" font-size="' + (w * 0.26) + '" font-weight="800" fill="' + col + '" style="font-family:var(--font-display,Arial)">' + rank + "</text></g></g>";
+      "<defs>" + lin(id, [[0, "#ffffff"], [1, "#e9eef7"]]) + "</defs>" +
+      '<rect x="' + (-w / 2 + 5) + '" y="' + (-h / 2 + 9) + '" width="' + w + '" height="' + h + '" rx="' + r + '" fill="#000" opacity=".28"/>' +
+      '<rect x="' + (-w / 2) + '" y="' + (-h / 2) + '" width="' + w + '" height="' + h + '" rx="' + r + '" fill="url(#' + id + ')"/>' +
+      '<rect x="' + (-w / 2 + w * 0.05) + '" y="' + (-h / 2 + w * 0.05) + '" width="' + (w * 0.9) + '" height="' + (h - w * 0.1) + '" rx="' + (r * 0.7) + '" fill="none" stroke="' + col + '" stroke-opacity=".12" stroke-width="1.5"/>' +
+      corner + suitAt(suit, 0, w * 0.1, w * 0.5, col) + '<g transform="rotate(180)">' + corner + "</g></g>";
   }
+
   function chip(cx, cy, r, color, n) {
-    var out = "";
-    for (var i = (n || 1) - 1; i >= 0; i--) {
-      var y = cy - i * r * 0.22;
-      out += '<ellipse cx="' + cx + '" cy="' + (y + r * 0.12) + '" rx="' + r + '" ry="' + (r * 0.42) + '" fill="#000" opacity=".25"/>' +
-        '<ellipse cx="' + cx + '" cy="' + y + '" rx="' + r + '" ry="' + (r * 0.42) + '" fill="' + color + '"/>' +
-        '<ellipse cx="' + cx + '" cy="' + y + '" rx="' + (r * 0.8) + '" ry="' + (r * 0.32) + '" fill="none" stroke="#fff" stroke-width="' + (r * 0.14) + '" stroke-dasharray="' + (r * 0.32) + " " + (r * 0.32) + '"/>' +
-        '<ellipse cx="' + cx + '" cy="' + y + '" rx="' + (r * 0.55) + '" ry="' + (r * 0.22) + '" fill="' + color + '" stroke="#fff" stroke-opacity=".5" stroke-width="1.5"/>';
+    var out = "", ry = r * 0.42, th = r * 0.2;
+    for (var i = 0; i < (n || 1); i++) {
+      var y = cy - i * th, top = i === (n || 1) - 1;
+      out += '<path d="M' + (cx - r) + " " + y + " v" + th + " a" + r + " " + ry + " 0 0 0 " + (2 * r) + " 0 v" + (-th) + 'Z" fill="' + color + '"/>' +
+        '<path d="M' + (cx - r) + " " + y + " v" + th + " a" + r + " " + ry + " 0 0 0 " + (2 * r) + " 0 v" + (-th) + 'Z" fill="#000" opacity=".32"/>' +
+        '<path d="M' + (cx - r) + " " + (y + th / 2) + " a" + r + " " + ry + " 0 0 0 " + (2 * r) + ' 0" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="' + th * 0.5 + '" stroke-dasharray="' + r * 0.22 + " " + r * 0.3 + '"/>';
+      if (i === 0) out = '<ellipse cx="' + cx + '" cy="' + (cy + th + ry * 0.2) + '" rx="' + r * 1.05 + '" ry="' + ry * 1.05 + '" fill="#000" opacity=".28"/>' + out;
+      if (top) out += '<ellipse cx="' + cx + '" cy="' + y + '" rx="' + r + '" ry="' + ry + '" fill="' + color + '"/>' +
+        '<ellipse cx="' + cx + '" cy="' + y + '" rx="' + r * 0.9 + '" ry="' + ry * 0.9 + '" fill="none" stroke="#fff" stroke-width="' + r * 0.16 + '" stroke-dasharray="' + r * 0.26 + " " + r * 0.36 + '"/>' +
+        '<ellipse cx="' + cx + '" cy="' + y + '" rx="' + r * 0.6 + '" ry="' + ry * 0.6 + '" fill="#fff" fill-opacity=".14" stroke="#fff" stroke-opacity=".55" stroke-width="1.4"/>' +
+        '<text x="' + cx + '" y="' + (y + r * 0.08) + '" text-anchor="middle" font-size="' + r * 0.42 + '" font-weight="900" fill="#fff" transform="translate(0 ' + (y * 0.58) + ') scale(1 .42)" style="font-family:Arial Black,Arial">RD</text>';
     }
     return out;
   }
+
   function gem(cx, cy, s, shades) {
     var S = shades || ["#7dffd6", "#3cf0b4", "#1dd396", "#12b57d", "#10a774", "#0c8c61", "#0a7a55", "#086646"];
     var P = function (x, y) { return [cx + x * s, cy + y * s]; };
@@ -217,15 +229,45 @@ window.RD = window.RD || {};
   }
   function hen() { return '<ellipse cx="24" cy="44.5" rx="11" ry="2.3" fill="#000" opacity=".3"/> <path d="M19.5 38v5.5M27.5 38v5.5M17.3 43.6h4.4M25.3 43.6h4.4" stroke="#ff9d1a" stroke-width="2.2" stroke-linecap="round"/> <ellipse cx="24" cy="30" rx="12.5" ry="10.8" fill="#fff"/> <path d="M11.8 29.5c-3.4-1.2-5.6 1.2-5.2 4.4 3.2.2 5.4-1 6.6-2.4z" fill="#e8edf7"/> <path d="M16.5 30.5c3 4.2 9.6 4.4 12.6 1" stroke="#dfe6f5" stroke-width="2" fill="none" stroke-linecap="round"/> <circle cx="27" cy="16.5" r="8.2" fill="#fff"/> <path d="M34.6 17.8l5.2 1.7-5.2 1.6z" fill="#ffb020"/> <circle cx="30.2" cy="17.4" r="1.6" fill="#1a1205"/><circle cx="30.7" cy="16.9" r=".5" fill="#fff"/>  <path d="M19.4 21.6c4.6 2.6 10 2.6 14.6-.3l.4 3.1c-5 3-10.6 3-15.4.3z" fill="#ff2e55"/> <path d="M22 23.6l3.6 6.2 3.4-6.4z" fill="#ff2e55"/> <path d="M22.6 24.4l3 4.8 2.8-5" fill="none" stroke="#c2133a" stroke-width=".6"/> <circle cx="23.4" cy="22.9" r=".45" fill="#fff" opacity=".8"/><circle cx="28.6" cy="23.4" r=".45" fill="#fff" opacity=".8"/><circle cx="32" cy="22.4" r=".45" fill="#fff" opacity=".8"/><circle cx="25.6" cy="26.2" r=".4" fill="#fff" opacity=".8"/> <path d="M19.6 22.4l-3.6 2.6 2.4 1.6z M19.8 23.6l-2 4.2 2.8-1z" fill="#c2133a"/>  <path d="M18.9 15.2c-.2-5.6 3.6-8.4 8.1-8.4s8.3 2.8 8.1 8.2z" fill="#ff2e55"/> <path d="M18.9 15.2h16.2" stroke="#c2133a" stroke-width="1.2"/> <path d="M33.6 14.4h7.2c1.4 0 1.4 2.2 0 2.2h-7.4z" fill="#c2133a"/> <circle cx="27" cy="6.9" r="1" fill="#c2133a"/> <path d="M21.5 9.5c1.6-1.6 3.4-2.1 5.5-2.1" stroke="#ff8fa3" stroke-width="1" fill="none" stroke-linecap="round" opacity=".8"/> <text x="27.4" y="13.6" text-anchor="middle" font-size="5" font-weight="900" fill="#ffc85c" style="font-family:var(--font-display,Arial)" letter-spacing="-.2">RD</text>'; }
 
+  function frog() {
+    return '<ellipse cx="60" cy="108" rx="34" ry="6" fill="#000" opacity=".25"/>' +
+      '<path d="M24 96 Q14 104 30 106 L46 104 Z M96 96 Q106 104 90 106 L74 104 Z" fill="#3fae3a"/>' +
+      '<ellipse cx="60" cy="82" rx="32" ry="24" fill="#4cc44a"/><ellipse cx="62" cy="88" rx="20" ry="14" fill="#c9f2a0"/>' +
+      '<path d="M40 74 Q60 92 82 74" stroke="#f6c945" stroke-width="3.5" fill="none" stroke-linecap="round"/><circle cx="61" cy="85" r="6" fill="#f6c945" stroke="#c9961c" stroke-width="1.5"/><text x="61" y="87.6" text-anchor="middle" font-size="6.5" font-weight="900" fill="#7a5600" style="font-family:Arial">RD</text>' +
+      '<ellipse cx="60" cy="54" rx="34" ry="26" fill="#55d052"/>' +
+      '<circle cx="44" cy="38" r="12" fill="#55d052"/><circle cx="76" cy="38" r="12" fill="#55d052"/>' +
+      '<rect x="31" y="34" width="26" height="14" rx="6" fill="#10131c"/><rect x="63" y="34" width="26" height="14" rx="6" fill="#10131c"/><rect x="55" y="38" width="10" height="3" rx="1.5" fill="#10131c"/>' +
+      '<path d="M35 37 L44 37" stroke="#7ad7ff" stroke-width="2" stroke-linecap="round" opacity=".8"/><path d="M67 37 L76 37" stroke="#7ad7ff" stroke-width="2" stroke-linecap="round" opacity=".8"/>' +
+      '<path d="M46 64 Q62 72 76 62" stroke="#1f6b1d" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+      '<path d="M28 30 Q30 8 60 8 Q90 8 92 30 Q60 22 28 30 Z" fill="#1f6fff"/><path d="M28 30 Q60 22 92 30 L92 33 Q60 25 28 33 Z" fill="#0d3fb0"/>' +
+      '<path d="M30 28 Q14 30 6 38 Q20 38 32 33 Z" fill="#0d3fb0"/>' +
+      '<text x="62" y="25" text-anchor="middle" font-size="13" font-weight="900" fill="#fff" style="font-family:Arial Black,Arial">RD</text>';
+  }
+  function chick() {
+    return '<ellipse cx="60" cy="112" rx="30" ry="5" fill="#000" opacity=".3"/>' +
+      '<path d="M50 96 v14 M66 96 v14 M44 110 h12 M60 110 h12" stroke="#ff9d1a" stroke-width="4" stroke-linecap="round"/>' +
+      '<path d="M22 66 Q14 40 40 34 Q48 18 68 22 Q92 26 94 52 Q100 84 74 98 Q48 106 32 92 Q20 82 22 66Z" fill="#fff"/>' +
+      '<path d="M30 70 Q40 84 56 78 Q46 66 30 70Z" fill="#e6ecf5"/>' +
+      '<path d="M58 14 q4 -10 10 -4 q4 -8 10 0 q6 -4 6 6 q-2 6 -10 6 h-12z" fill="#ff2e55"/>' +
+      '<circle cx="76" cy="40" r="4.5" fill="#111827"/><circle cx="77.5" cy="38.5" r="1.5" fill="#fff"/>' +
+      '<path d="M90 44 L106 50 L90 56 Z" fill="#ff9d1a"/><path d="M88 58 q4 8 -2 12 q-6 -2 -4 -10z" fill="#ff2e55"/>' +
+      '<path d="M40 28 Q44 8 66 10 Q86 12 86 30 Q62 22 40 28Z" fill="#1f6fff"/><path d="M40 28 Q62 22 86 30 L86 33 Q62 25 40 31Z" fill="#0d3fb0"/><path d="M42 27 Q28 26 22 33 Q34 34 44 31Z" fill="#0d3fb0"/>' +
+      '<text x="66" y="25" text-anchor="middle" font-size="9" font-weight="900" fill="#fff" style="font-family:Arial Black,Arial">RD</text>';
+  }
+
   /* ---------- Capas (300×400) ---------- */
   var COVERS = {
     dice: { a: "#3b6cff", b: "#0b1a4a", draw: function () { return die(118, 168, 64, 5, 2, 3, "#e11d48") + die(196, 222, 50, 6, 1, 4, "#2f6bff") + spark(232, 92, 12) + spark(70, 96, 8, "#fff", 0.6); } },
     limbo: { a: "#ffb020", b: "#7a2e00", draw: function () {
-      var id = U("lr");
-      return "<defs>" + rad(id, [[0, "#fff"], [0.35, "#ffe08a"], [1, "#ff9d00", 0]]) + "</defs>" +
-        '<circle cx="150" cy="170" r="104" fill="none" stroke="#fff" stroke-opacity=".18" stroke-width="10"/><circle cx="150" cy="170" r="76" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="10"/><circle cx="150" cy="170" r="48" fill="#fff" fill-opacity=".9"/><circle cx="150" cy="170" r="26" fill="#ff7a00"/>' +
-        '<path d="M70 262 L196 112" stroke="#1e3a8a" stroke-width="12" stroke-linecap="round"/><path d="M226 78 L178 98 L206 126 Z" fill="#1e3a8a"/><path d="M64 270 l-18 -4 l10 -14 z M74 278 l-6 18 l-12 -12z" fill="#1e3a8a"/>' +
-        '<rect x="188" y="208" width="88" height="40" rx="12" fill="#1e3a8a"/><text x="232" y="235" text-anchor="middle" font-size="22" font-weight="900" fill="#fff" style="font-family:var(--font-display,Arial)">100×</text>' + spark(80, 90, 12) + spark(240, 60, 8);
+      // campo magnético do jogo: órbitas girando em volta do multiplicador
+      var g = U("lg"), out = "";
+      for (var i = 0; i < 3; i++) out += '<ellipse cx="150" cy="170" rx="118" ry="44" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="3" transform="rotate(' + (i * 60 - 20) + ' 150 170)"/>';
+      return "<defs>" + rad(g, [[0, "#fff6c9", 0.95], [0.4, "#ffd23f", 0.5], [1, "#ff8a00", 0]]) + "</defs>" +
+        '<circle cx="150" cy="170" r="120" fill="url(#' + g + ')"/>' + out +
+        '<circle cx="150" cy="170" r="140" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="2" stroke-dasharray="3 9"/>' +
+        '<circle cx="262" cy="150" r="8" fill="#fff"/><circle cx="66" cy="232" r="6" fill="#fff"/><circle cx="196" cy="58" r="5" fill="#fff"/>' +
+        '<text x="150" y="190" text-anchor="middle" font-size="58" font-weight="900" fill="#7a2e00" opacity=".35" style="font-family:var(--font-display,Arial)" transform="translate(3 4)">100×</text>' +
+        '<text x="150" y="190" text-anchor="middle" font-size="58" font-weight="900" fill="#fff" style="font-family:var(--font-display,Arial)">100×</text>' + spark(56, 80, 12) + spark(250, 262, 9);
     } },
     crash: { a: "#1aa3ff", b: "#05213f", draw: function () {
       var f1 = U("fl"), f2 = U("fi"), bd = U("rb");
@@ -242,12 +284,13 @@ window.RD = window.RD || {};
     } },
     mines: { a: "#8b5cf6", b: "#22094a", draw: function () { var g = U("mg"); return "<defs>" + rad(g, [[0, "#5fffd0", 0.6], [1, "#5fffd0", 0]]) + '</defs><circle cx="150" cy="190" r="110" fill="url(#' + g + ')"/>' + bomb(222, 104, 28) + gem(146, 196, 72) + spark(78, 108, 12) + spark(248, 250, 9); } },
     plinko: { a: "#ff4fa0", b: "#4a0429", draw: function () {
-      var out = "", ball = U("pb");
-      for (var i = 0; i < 6; i++) for (var j = 0; j < i + 3; j++) out += '<circle cx="' + (150 + (j - (i + 2) / 2) * 32) + '" cy="' + (90 + i * 30) + '" r="5.5" fill="#fff" opacity=".95"/>';
-      var cols = ["#ff3b3b", "#ff7a1a", "#ffb31a", "#ffe03a", "#ffb31a", "#ff7a1a", "#ff3b3b"];
-      cols.forEach(function (c, k) { out += '<rect x="' + (150 + (k - 3) * 32 - 13) + '" y="262" width="26" height="20" rx="5" fill="' + c + '"/>'; });
-      return "<defs>" + rad(ball, [[0, "#fff8c4"], [0.5, "#ffd23f"], [1, "#ff9d00"]], 0.35, 0.3, 0.7) + "</defs>" + out +
-        '<circle cx="134" cy="132" r="13" fill="url(#' + ball + ')"/><circle cx="182" cy="196" r="13" fill="url(#' + ball + ')"/>' + spark(240, 80, 10) + spark(60, 230, 8);
+      var out = "", ball = U("pb"), tr = U("pt");
+      for (var i = 0; i < 6; i++) for (var j = 0; j < i + 3; j++) out += '<circle cx="' + (150 + (j - (i + 2) / 2) * 32) + '" cy="' + (88 + i * 30) + '" r="5" fill="#fff" opacity=".95"/>';
+      var cols = ["#ff2e55", "#ff6a2e", "#ffa21a", "#ffd23f", "#ffa21a", "#ff6a2e", "#ff2e55"], lab = ["9×", "2×", "1×", ".5", "1×", "2×", "9×"];
+      cols.forEach(function (c, k) { out += '<rect x="' + (150 + (k - 3) * 32 - 14) + '" y="262" width="28" height="22" rx="6" fill="' + c + '"/><text x="' + (150 + (k - 3) * 32) + '" y="277.5" text-anchor="middle" font-size="9.5" font-weight="900" fill="#3a0716" style="font-family:Arial">' + lab[k] + "</text>"; });
+      return "<defs>" + rad(ball, [[0, "#ffffff"], [0.55, "#ffd6ec"], [1, "#ff4fa0"]], 0.35, 0.3, 0.75) + lin(tr, [[0, "#ffffff", 0], [1, "#ffffff", 0.55]]) + "</defs>" + out +
+        '<path d="M150 64 C 140 92 162 120 150 150 C 140 176 172 196 178 214" stroke="url(#' + tr + ')" stroke-width="12" fill="none" stroke-linecap="round"/>' +
+        '<circle cx="178" cy="214" r="28" fill="#ff4fa0" opacity=".35"/><circle cx="178" cy="214" r="19" fill="url(#' + ball + ')"/><circle cx="171" cy="207" r="5.5" fill="#fff" opacity=".9"/>' + spark(250, 80, 10) + spark(56, 120, 8);
     } },
     hilo: { a: "#14c8e6", b: "#053344", draw: function () {
       return card(112, 182, 108, -12, "A", "♠", false) + card(190, 172, 108, 10, "K", "♥", true) +
@@ -255,8 +298,10 @@ window.RD = window.RD || {};
         '<circle cx="58" cy="270" r="24" fill="#e11d48"/><path d="M58 282 l12 -14 h-8 v-12 h-8 v12 h-8z" fill="#fff"/>';
     } },
     blackjack: { a: "#22b35e", b: "#063a1c", draw: function () {
-      return card(116, 168, 104, -10, "A", "♠", false) + card(186, 162, 104, 9, "K", "♥", true) + chip(230, 274, 30, "#e11d48", 4) + chip(78, 286, 24, "#1d4ed8", 3) +
-        '<circle cx="66" cy="84" r="30" fill="#ffd23f"/><text x="66" y="95" text-anchor="middle" font-size="30" font-weight="900" fill="#7a4a00" style="font-family:var(--font-display,Arial)">21</text>';
+      var g = U("bj");
+      return "<defs>" + lin(g, [[0, "#fff1b8"], [0.5, "#ffd23f"], [1, "#d98a00"]]) + "</defs>" +
+        card(118, 164, 104, -10, "A", "♠", false) + card(188, 158, 104, 9, "K", "♥", true) + chip(236, 262, 28, "#e11d48", 4) + chip(70, 272, 24, "#1d4ed8", 3) +
+        '<g transform="translate(150 54)"><rect x="-44" y="-22" width="88" height="44" rx="22" fill="#062a16" stroke="url(#' + g + ')" stroke-width="3"/><text x="0" y="12" text-anchor="middle" font-size="30" font-weight="900" fill="url(#' + g + ')" style="font-family:var(--font-display,Arial)">21</text></g>';
     } },
     roulette: { a: "#5b5bf0", b: "#15124a", draw: function () {
       var cx = 150, cy = 178, out = "", rim = U("rr"), hub = U("rh");
@@ -305,13 +350,14 @@ window.RD = window.RD || {};
         '<path d="M133 54 q8.5 6 17 0 t17 0" stroke="#c97800" stroke-width="2.5" fill="none" opacity=".7"/>' + spark(214, 44, 12) + spark(80, 78, 9) + spark(236, 120, 7);
     } },
     chicken: { a: "#ffc23a", b: "#8a3300", draw: function () {
-      // estrada em perspectiva, carro com farol vindo de longe e a galinha grande atravessando na frente
-      var road = '<path d="M118 120 H182 L300 300 H0 Z" fill="#2a1d24"/><path d="M118 120 L0 300 M182 120 L300 300" stroke="#fff" stroke-opacity=".55" stroke-width="3"/>';
-      var dash = ""; [[148, 128, 2, 8], [146, 150, 3, 12], [144, 180, 4, 18], [141, 222, 6, 26]].forEach(function (d) { dash += '<rect x="' + d[0] + '" y="' + d[1] + '" width="' + d[2] * 2 + '" height="' + d[3] + '" rx="1" fill="#ffd23f"/>'; });
-      var car = '<g transform="translate(176 132) scale(.72)"><path d="M-46 -6 L-110 -40 L-110 30 Z M46 -6 L110 -40 L110 30 Z" fill="#fff4c2" opacity=".18"/><rect x="-24" y="-14" width="48" height="26" rx="7" fill="#ff2e55"/><rect x="-17" y="-22" width="34" height="12" rx="5" fill="#d61f45"/><rect x="-14" y="-20" width="28" height="7" rx="3" fill="#2a1a24"/><circle cx="-15" cy="-2" r="4.5" fill="#fff8d6"/><circle cx="15" cy="-2" r="4.5" fill="#fff8d6"/><rect x="-22" y="10" width="9" height="6" rx="2" fill="#1b1220"/><rect x="13" y="10" width="9" height="6" rx="2" fill="#1b1220"/></g>';
-      var chick = '<ellipse cx="122" cy="262" rx="52" ry="10" fill="#000" opacity=".35"/><g transform="translate(40 110) scale(3.4)">' + hen() + "</g>";
-      var chip = '<g transform="translate(206 44)"><rect width="74" height="32" rx="16" fill="#22e08a"/><text x="37" y="22" text-anchor="middle" font-size="16" font-weight="900" fill="#05301c" style="font-family:var(--font-display,Arial)">2.46×</text></g>';
-      return road + dash + car + chick + chip + coinFront(46, 70, 15) + spark(84, 40, 10) + spark(262, 112, 8);
+      // estrada vista de cima: tampas de bueiro com multiplicador, carro vindo e a galinha de boné RD
+      var out = '<rect x="40" y="0" width="220" height="300" fill="#2a2230"/>';
+      [100, 160, 220].forEach(function (x) { out += '<path d="M' + x + ' 0 V300" stroke="#fff" stroke-opacity=".5" stroke-width="3" stroke-dasharray="18 14"/>'; });
+      out += '<rect x="40" y="0" width="6" height="300" fill="#ffd23f"/><rect x="254" y="0" width="6" height="300" fill="#ffd23f"/>';
+      var cover = function (x, y, m, on) { return '<ellipse cx="' + x + '" cy="' + y + '" rx="26" ry="26" fill="' + (on ? "#ffd23f" : "#4a4458") + '"/><ellipse cx="' + x + '" cy="' + y + '" rx="20" ry="20" fill="none" stroke="' + (on ? "#b46f00" : "#3a3446") + '" stroke-width="3"/><text x="' + x + '" y="' + (y + 5) + '" text-anchor="middle" font-size="13" font-weight="900" fill="' + (on ? "#5a3300" : "#cfc8dc") + '" style="font-family:Arial">' + m + "</text>"; };
+      out += cover(70, 236, "1.09×", true) + cover(130, 236, "1.51×", false) + cover(190, 236, "2.46×", false);
+      out += '<g transform="translate(190 70)"><path d="M-18 40 L-40 140 L40 140 L18 40Z" fill="#fff4c2" opacity=".14"/><rect x="-22" y="-34" width="44" height="74" rx="10" fill="#ff2e55"/><rect x="-16" y="-24" width="32" height="16" rx="4" fill="#2a1a24"/><rect x="-16" y="16" width="32" height="12" rx="4" fill="#2a1a24"/><circle cx="-13" cy="38" r="4" fill="#fff8d6"/><circle cx="13" cy="38" r="4" fill="#fff8d6"/></g>';
+      return out + '<g transform="translate(-4 108) scale(1.3)">' + chick() + "</g>" + spark(276, 40, 10, "#fff") + spark(24, 60, 8, "#fff");
     } },
     coinflip: { a: "#ffc23a", b: "#7a4a00", draw: function () {
       // moeda girando no ar (inclinada, com a espessura da borda), moeda de prata atrás e rastro de movimento
@@ -360,6 +406,20 @@ window.RD = window.RD || {};
         '<g transform="translate(206 112)"><circle r="24" fill="#fff"/><path d="M0 -9 l9 6 -3 10 h-12 l-3 -10z" fill="#111"/><path d="M0 -24 v15 M9 -3 l14 -4 M6 7 l8 12 M-6 7 l-8 12 M-9 -3 l-14 -4" stroke="#111" stroke-width="3"/></g>' +
         '<path d="M206 140 q-40 70 -70 120" stroke="#fff" stroke-opacity=".35" stroke-width="5" stroke-dasharray="2 12" stroke-linecap="round" fill="none"/>' + spark(60, 240, 10) + spark(250, 240, 12);
     } },
+    lake: { a: "#1fb6ff", b: "#0a3a7a", draw: function () {
+      var w = U("lw"), pad = function (x, y, s, m, c) { return '<g transform="translate(' + x + " " + y + ") scale(" + s + ')"><ellipse cx="0" cy="6" rx="46" ry="30" fill="#0b4a8a" opacity=".5"/><path d="M0 0 L44 -8 A44 34 0 1 1 16 -32 Z" fill="#3fbf4a" stroke="#2a9a38" stroke-width="3"/><path d="M0 0 L-28 -18 M0 0 L-30 12 M0 0 L-6 30 M0 0 L28 24" stroke="#2f9e3a" stroke-width="3" stroke-linecap="round"/>' + (m ? '<text x="0" y="8" text-anchor="middle" font-size="24" font-weight="900" fill="' + c + '" stroke="#0b3a20" stroke-width="5" paint-order="stroke" style="font-family:var(--font-display,Arial)">' + m + "</text>" : "") + "</g>"; };
+      var rip = ""; [[60, 70, 30], [240, 120, 40], [90, 250, 34], [230, 250, 26]].forEach(function (r) { rip += '<ellipse cx="' + r[0] + '" cy="' + r[1] + '" rx="' + r[2] + '" ry="' + r[2] * 0.35 + '" fill="none" stroke="#fff" stroke-opacity=".3" stroke-width="2"/>'; });
+      return "<defs>" + rad(w, [[0, "#7fe0ff", 0.5], [1, "#7fe0ff", 0]]) + "</defs>" + rip + '<circle cx="150" cy="190" r="120" fill="url(#' + w + ')"/>' +
+        pad(228, 90, 0.95, "1.66×", "#ffb3f0") + pad(232, 206, 0.95, "1.23×", "#ffe0a8") + pad(122, 214, 1.25, "", "") +
+        '<g transform="translate(64 112) scale(1.2)">' + frog() + "</g>" + spark(44, 66, 10, "#fff") + spark(278, 160, 8, "#fff");
+    } },
+    pump: { a: "#33d14a", b: "#0b3d1a", draw: function () {
+      var bal = function (x, y, s, rot) { var g = U("pg"); return "<defs>" + rad(g, [[0, "#d6ffb0"], [0.45, "#4ee05a"], [1, "#0c7a24"]], 0.35, 0.3, 0.8) + "</defs>" + '<g transform="translate(' + x + " " + y + ") rotate(" + rot + ") scale(" + s + ')"><path d="M0 64 C -10 96 10 120 -4 150" stroke="#e9ffe0" stroke-opacity=".7" stroke-width="2.5" fill="none"/><ellipse cx="0" cy="0" rx="52" ry="60" fill="url(#' + g + ')"/><path d="M-7 58 L7 58 L0 66Z" fill="#0c7a24"/><ellipse cx="-20" cy="-26" rx="11" ry="18" fill="#fff" opacity=".4" transform="rotate(-22 -20 -26)"/></g>'; };
+      var bolt = function (x, y, s) { return '<path transform="translate(' + x + " " + y + ") scale(" + s + ')" d="M13 2 4 14h7l-1 8 9-12h-7z" fill="#eaff7a"/>'; };
+      return '<circle cx="150" cy="160" r="130" fill="#b6ff7a" opacity=".12"/>' + bolt(30, 60, 2.6) + bolt(240, 40, 2) + bolt(250, 220, 1.6) +
+        bal(74, 168, 0.85, -16) + bal(226, 158, 0.9, 14) + bal(150, 112, 1.15, 0) +
+        '<text x="150" y="124" text-anchor="middle" font-size="34" font-weight="900" fill="#fff" fill-opacity=".92" style="font-family:var(--font-display,Arial)">RD</text>';
+    } },
     spill: { a: "#1f8fff", b: "#071a44", draw: function () {
       // copo quase transbordando embaixo da torneira, com gotas e o multiplicador
       var w = U("sw"), m = U("sm"), gl = U("sg"), cp = U("sc");
@@ -402,7 +462,7 @@ window.RD = window.RD || {};
 
   function cover(id) {
     var c = COVERS[id]; if (!c) return "";
-    var bg = U("bg"), gl = U("gw"), fd = U("fd"), name = { dice: "DICE", limbo: "LIMBO", crash: "CRASH", mines: "MINES", plinko: "PLINKO", hilo: "HI-LO", blackjack: "BLACKJACK", roulette: "ROULETTE", wheel: "WHEEL", keno: "KENO", tower: "TOWER", chicken: "CHICKEN", coinflip: "COINFLIP", rps: "ROCK PAPER SCISSORS", spill: "SPILL", baccarat: "BACCARAT", double: "DOUBLE", soccer: "SOCCER", door: "DOOR" }[id];
+    var bg = U("bg"), gl = U("gw"), fd = U("fd"), name = { dice: "DICE", limbo: "LIMBO", crash: "CRASH", mines: "MINES", plinko: "PLINKO", hilo: "HI-LO", blackjack: "BLACKJACK", roulette: "ROULETTE", wheel: "WHEEL", keno: "KENO", tower: "TOWER", chicken: "CHICKEN", coinflip: "COINFLIP", rps: "ROCK PAPER SCISSORS", spill: "SPILL", lake: "CROSS THE LAKE", pump: "PUMP", baccarat: "BACCARAT", double: "DOUBLE", soccer: "SOCCER", door: "DOOR" }[id];
     return '<svg class="art" viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + name + '"><defs>' +
       lin(bg, [[0, c.a], [1, c.b]]) + rad(gl, [[0, "#ffffff", 0.35], [1, "#ffffff", 0]]) + lin(fd, [[0, "#000", 0], [1, "#000", 0.55]]) + "</defs>" +
       '<rect width="300" height="400" fill="url(#' + bg + ')"/>' +
@@ -458,7 +518,7 @@ window.RD = window.RD || {};
   }
 
   RD.art = {
-    cover: cover, ownerBadge: ownerBadge,
+    cover: cover, ownerBadge: ownerBadge, frog: frog, chick: chick,
     has: function (key) { var k = String(key).split(":"); return k[0] === "cover" ? !!COVERS[k[1]] : k[0] === "scene" ? !!SCENES[k[1]] : false; },
     render: function (key, o) {
       var k = String(key).split(":");

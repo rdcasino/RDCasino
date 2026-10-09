@@ -95,6 +95,8 @@ RD.games = [
   { id: "wheel", name: "Wheel", provider: "RD Originals", cat: "originals", rtp: 98, edge: 2, playable: true, c1: "#4338ca", c2: "#1e1b4b" },
   { id: "rps", name: "Rock Paper Scissors", provider: "RD Originals", cat: "originals", rtp: 98, edge: 2, playable: true, tag: "new", c1: "#7c5cff", c2: "#21124f" },
   { id: "spill", name: "Spill", provider: "RD Originals", cat: "originals", rtp: 98, edge: 2, playable: true, tag: "new", c1: "#1f8fff", c2: "#0b1d4f" },
+  { id: "pump", name: "Pump", provider: "RD Originals", cat: "originals", rtp: 98, edge: 2, playable: true, tag: "new", c1: "#3fdc4a", c2: "#0b3d1a" },
+  { id: "lake", name: "Cross the Lake", provider: "RD Originals", cat: "originals", rtp: 98, edge: 2, playable: true, tag: "new", c1: "#1fb6ff", c2: "#0a3a5c" },
   { id: "gates-olympus", name: "Gates of Olympus 1000", provider: "Pragmatic Play", cat: "slots", rtp: 96.5, tag: "hot", c1: "#a16207", c2: "#3f2a04" },
   { id: "sweet-bonanza", name: "Sweet Bonanza 1000", provider: "Pragmatic Play", cat: "slots", rtp: 96.53, c1: "#db2777", c2: "#500724" },
   { id: "sugar-rush", name: "Sugar Rush 1000", provider: "Pragmatic Play", cat: "slots", rtp: 96.53, c1: "#e11d48", c2: "#4c0519" },
@@ -286,10 +288,53 @@ RD.sfx = (function () {
     boom: function () { noise(0.45, 0.45, 700); tone(110, 0.35, "sine", 0.12, 0, 50); },
     cash: function () { tone(1568, 0.08, "square", 0.04); tone(2093, 0.22, "triangle", 0.07, 0.07); }
   };
+  /* Música ambiente (Cross the Lake): batida lo-fi de hip-hop gerada aqui, volume baixo, sem arquivo */
+  var mus = { on: false, timer: null, step: 0, next: 0, out: null };
+  try { mus.pref = localStorage.getItem("rd_music") !== "0"; } catch (e) { mus.pref = true; }
+  var BPM = 84, SIX = 60 / BPM / 4;
+  var CH = [[57, 60, 64, 67], [50, 57, 60, 65], [55, 59, 62, 65], [48, 55, 59, 64]]; // Am7 Dm7 G7 Cmaj7
+  function hz(m) { return 440 * Math.pow(2, (m - 69) / 12); }
+  function mtone(a, f, t, dur, type, vol, slide) {
+    var o = a.createOscillator(), g = a.createGain(); o.type = type; o.frequency.setValueAtTime(f, t); if (slide) o.frequency.exponentialRampToValueAtTime(slide, t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(mus.out); o.start(t); o.stop(t + dur + 0.05);
+  }
+  function mnoise(a, t, dur, vol, type, freq) {
+    var n = Math.floor(a.sampleRate * dur), b = a.createBuffer(1, n, a.sampleRate), d = b.getChannelData(0);
+    for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 3);
+    var src = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); f.type = type; f.frequency.value = freq; g.gain.value = vol;
+    src.buffer = b; src.connect(f); f.connect(g); g.connect(mus.out); src.start(t);
+  }
+  function beat(a, i, t) {
+    var s16 = i % 16, bar = Math.floor(i / 16) % 4, sw = (i % 2) ? SIX * 0.12 : 0; t += sw;
+    if (s16 === 0 || s16 === 10) mtone(a, 120, t, 0.32, "sine", 0.9, 45);            // bumbo
+    if (s16 === 4 || s16 === 12) mnoise(a, t, 0.18, 0.45, "bandpass", 1800);           // caixa
+    if (s16 % 2 === 0) mnoise(a, t, 0.04, s16 % 4 ? 0.12 : 0.2, "highpass", 7000);     // chimbal
+    if (s16 === 0) CH[bar].forEach(function (m, k) { mtone(a, hz(m), t + k * 0.012, SIX * 15, "triangle", 0.08); }); // acorde
+    if (s16 === 0 || s16 === 7 || s16 === 10) mtone(a, hz(CH[bar][0] - 12), t, SIX * 2.6, "sine", 0.45);              // baixo
+    if (s16 === 14 && bar === 3) mtone(a, hz(CH[bar][3] + 12), t, 0.4, "sine", 0.06);
+  }
+  function startMusic() {
+    if (mus.on || muted || !mus.pref) return; var a = ctx(); if (!a) return;
+    if (!mus.out) { var lp = a.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 2400; mus.out = a.createGain(); mus.out.connect(lp); lp.connect(a.destination); }
+    mus.out.gain.cancelScheduledValues(a.currentTime); mus.out.gain.setValueAtTime(0.0001, a.currentTime); mus.out.gain.exponentialRampToValueAtTime(0.055, a.currentTime + 1.5);
+    mus.on = true; mus.next = a.currentTime + 0.1;
+    mus.timer = setInterval(function () {
+      if (a.state !== "running") return;
+      while (mus.next < a.currentTime + 0.25) { beat(a, mus.step, mus.next); mus.step++; mus.next += SIX; }
+      if (mus.next < a.currentTime) mus.next = a.currentTime + 0.05;
+    }, 60);
+  }
+  function stopMusic() {
+    if (!mus.on) return; mus.on = false; clearInterval(mus.timer); mus.timer = null;
+    if (ac && mus.out) { mus.out.gain.cancelScheduledValues(ac.currentTime); mus.out.gain.setValueAtTime(mus.out.gain.value, ac.currentTime); mus.out.gain.linearRampToValueAtTime(0, ac.currentTime + 0.3); }
+  }
   return {
+    music: { start: startMusic, stop: stopMusic, on: function () { return mus.pref && !muted; },
+      toggle: function () { mus.pref = !mus.pref; try { localStorage.setItem("rd_music", mus.pref ? "1" : "0"); } catch (e) {} if (mus.pref) startMusic(); else stopMusic(); return mus.pref; } },
     play: function (k, gap) { if (muted || !S[k]) return; var now = Date.now(); if (now - (last[k] || 0) < (gap == null ? 40 : gap)) return; last[k] = now; try { S[k](); } catch (e) {} },
     muted: function () { return muted; },
-    toggle: function () { muted = !muted; try { localStorage.setItem("rd_mute", muted ? "1" : "0"); } catch (e) {} if (!muted) S.small(); return muted; }
+    toggle: function () { muted = !muted; try { localStorage.setItem("rd_mute", muted ? "1" : "0"); } catch (e) {} if (!muted) S.small(); if (muted) stopMusic(); return muted; }
   };
 })();
 
