@@ -97,7 +97,7 @@
     var v = shownBal(u), el = $("#hdr-bal"), tag = $("#hdr-coin");
     if (!fxRate(disp.cur)) disp.cur = "USD";
     el.textContent = inCur(v, disp.cur);
-    if (tag && !tag.firstChild) tag.innerHTML = BAL_IC;
+    if (tag) tag.remove(); // só o saldo na moeda escolhida, sem o ícone ao lado
     if (!$("#bal-menu").classList.contains("hidden")) renderBalMenu();
   }
   /* um saldo só (como na Shuffle), mostrado na moeda que o jogador escolher */
