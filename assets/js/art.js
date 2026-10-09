@@ -360,6 +360,23 @@ window.RD = window.RD || {};
         '<g transform="translate(206 112)"><circle r="24" fill="#fff"/><path d="M0 -9 l9 6 -3 10 h-12 l-3 -10z" fill="#111"/><path d="M0 -24 v15 M9 -3 l14 -4 M6 7 l8 12 M-6 7 l-8 12 M-9 -3 l-14 -4" stroke="#111" stroke-width="3"/></g>' +
         '<path d="M206 140 q-40 70 -70 120" stroke="#fff" stroke-opacity=".35" stroke-width="5" stroke-dasharray="2 12" stroke-linecap="round" fill="none"/>' + spark(60, 240, 10) + spark(250, 240, 12);
     } },
+    spill: { a: "#1f8fff", b: "#071a44", draw: function () {
+      // copo quase transbordando embaixo da torneira, com gotas e o multiplicador
+      var w = U("sw"), m = U("sm"), gl = U("sg"), cp = U("sc");
+      var glass = "M92 98 L208 98 L197 268 Q196 276 188 276 L112 276 Q104 276 103 268 Z";
+      return "<defs>" + lin(w, [[0, "#9fe2ff"], [1, "#2f9cf0"]], 0, 0, 0, 1) + lin(m, [[0, "#5a6578"], [0.5, "#b4bfd0"], [1, "#4a5466"]], 0, 0, 1, 0) + rad(gl, [[0, "#7dd3fc", 0.55], [1, "#7dd3fc", 0]]) +
+        '<clipPath id="' + cp + '"><path d="' + glass + '"/></clipPath></defs>' +
+        '<circle cx="150" cy="170" r="130" fill="url(#' + gl + ')"/>' +
+        '<rect x="136" y="20" width="28" height="30" fill="url(#' + m + ')"/><rect x="124" y="46" width="52" height="14" rx="5" fill="url(#' + m + ')"/><rect x="140" y="58" width="20" height="12" rx="3" fill="#3c4556"/>' +
+        '<rect x="145" y="68" width="10" height="44" rx="5" fill="url(#' + w + ')"/>' +
+        '<ellipse cx="150" cy="282" rx="66" ry="9" fill="#000" opacity=".3"/>' +
+        '<g clip-path="url(#' + cp + ')"><rect x="80" y="112" width="140" height="180" fill="url(#' + w + ')"/><path d="M80 112 q15 -7 30 0 t30 0 t30 0 t30 0 t30 0 v6 h-150z" fill="#d6f4ff"/></g>' +
+        '<path d="' + glass + '" fill="rgba(255,255,255,.08)" stroke="#fff" stroke-opacity=".7" stroke-width="3.5" stroke-linejoin="round"/><path d="M104 112 L113 254" stroke="#fff" stroke-opacity=".35" stroke-width="6" stroke-linecap="round"/>' +
+        '<path d="M92 98 q-12 4 -14 26 q-1 14 6 18 q4 -8 3 -20 q-1 -14 9 -22z M208 98 q12 6 13 30 q1 14 -6 18 q-4 -8 -3 -22 q1 -14 -8 -24z" fill="url(#' + w + ')"/>' +
+        '<circle cx="74" cy="168" r="5" fill="#9fe2ff"/><circle cx="230" cy="180" r="4" fill="#9fe2ff"/><circle cx="66" cy="196" r="3" fill="#9fe2ff"/>' +
+        '<g transform="translate(206 38)"><rect width="70" height="30" rx="15" fill="#22e08a"/><text x="35" y="21" text-anchor="middle" font-size="15" font-weight="900" fill="#05301c" style="font-family:var(--font-display,Arial)">24.5×</text></g>' +
+        spark(48, 76, 11) + spark(256, 236, 9);
+    } },
     door: { a: "#6a4bd8", b: "#170a3a", draw: function () {
       // três portas vermelhas com número e luz; a do meio aberta mostrando o diamante
       var gl = U("dg");
@@ -385,7 +402,7 @@ window.RD = window.RD || {};
 
   function cover(id) {
     var c = COVERS[id]; if (!c) return "";
-    var bg = U("bg"), gl = U("gw"), fd = U("fd"), name = { dice: "DICE", limbo: "LIMBO", crash: "CRASH", mines: "MINES", plinko: "PLINKO", hilo: "HI-LO", blackjack: "BLACKJACK", roulette: "ROULETTE", wheel: "WHEEL", keno: "KENO", tower: "TOWER", chicken: "CHICKEN", coinflip: "COINFLIP", rps: "ROCK PAPER SCISSORS", baccarat: "BACCARAT", double: "DOUBLE", soccer: "SOCCER", door: "DOOR" }[id];
+    var bg = U("bg"), gl = U("gw"), fd = U("fd"), name = { dice: "DICE", limbo: "LIMBO", crash: "CRASH", mines: "MINES", plinko: "PLINKO", hilo: "HI-LO", blackjack: "BLACKJACK", roulette: "ROULETTE", wheel: "WHEEL", keno: "KENO", tower: "TOWER", chicken: "CHICKEN", coinflip: "COINFLIP", rps: "ROCK PAPER SCISSORS", spill: "SPILL", baccarat: "BACCARAT", double: "DOUBLE", soccer: "SOCCER", door: "DOOR" }[id];
     return '<svg class="art" viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + name + '"><defs>' +
       lin(bg, [[0, c.a], [1, c.b]]) + rad(gl, [[0, "#ffffff", 0.35], [1, "#ffffff", 0]]) + lin(fd, [[0, "#000", 0], [1, "#000", 0.55]]) + "</defs>" +
       '<rect width="300" height="400" fill="url(#' + bg + ')"/>' +
