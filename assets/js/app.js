@@ -339,7 +339,7 @@
   }
   function sha256(s) { return crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)).then(hexOf); }
   function floatFrom(buf) { var b = new Uint8Array(buf); return b[0] / 256 + b[1] / 65536 + b[2] / 16777216 + b[3] / 4294967296; }
-  function outcome(game, f) { return game === "dice" ? Math.floor(f * 10001) / 100 : Math.max(1, Math.floor((0.99 / Math.max(f, 1e-8)) * 100) / 100); }
+  function outcome(game, f) { return game === "dice" ? Math.floor(f * 10001) / 100 : Math.max(1, Math.floor((0.98 / Math.max(f, 1e-8)) * 100) / 100); }
   /* Vários números por aposta: HMAC(server, client:nonce:cursor), 8 números por cursor */
   function floats(server, client, nonce, count) {
     var ps = [];
@@ -370,21 +370,21 @@
   }
 
   /* ---------- Tabelas e fórmulas ---------- */
-  /* Tabelas iguais às da Stake (8 a 16 linhas, RTP ≈ 99%) */
+  /* Plinko: mesmo formato das tabelas da Stake, calibradas para RTP 98% (±0,05) */
   var PLINKO = {
-    8: { low: [5.6, 2.1, 1.1, 1, 0.5, 1, 1.1, 2.1, 5.6], medium: [13, 3, 1.3, 0.7, 0.4, 0.7, 1.3, 3, 13], high: [29, 4, 1.5, 0.3, 0.2, 0.3, 1.5, 4, 29] },
-    9: { low: [5.6, 2, 1.6, 1, 0.7, 0.7, 1, 1.6, 2, 5.6], medium: [18, 4, 1.7, 0.9, 0.5, 0.5, 0.9, 1.7, 4, 18], high: [43, 7, 2, 0.6, 0.2, 0.2, 0.6, 2, 7, 43] },
-    10: { low: [8.9, 3, 1.4, 1.1, 1, 0.5, 1, 1.1, 1.4, 3, 8.9], medium: [22, 5, 2, 1.4, 0.6, 0.4, 0.6, 1.4, 2, 5, 22], high: [76, 10, 3, 0.9, 0.3, 0.2, 0.3, 0.9, 3, 10, 76] },
-    11: { low: [8.4, 3, 1.9, 1.3, 1, 0.7, 0.7, 1, 1.3, 1.9, 3, 8.4], medium: [24, 6, 3, 1.8, 0.7, 0.5, 0.5, 0.7, 1.8, 3, 6, 24], high: [120, 14, 5.2, 1.4, 0.4, 0.2, 0.2, 0.4, 1.4, 5.2, 14, 120] },
-    12: { low: [10, 3, 1.6, 1.4, 1.1, 1, 0.5, 1, 1.1, 1.4, 1.6, 3, 10], medium: [33, 11, 4, 2, 1.1, 0.6, 0.3, 0.6, 1.1, 2, 4, 11, 33], high: [170, 24, 8.1, 2, 0.7, 0.2, 0.2, 0.2, 0.7, 2, 8.1, 24, 170] },
-    13: { low: [8.1, 4, 3, 1.9, 1.2, 0.9, 0.7, 0.7, 0.9, 1.2, 1.9, 3, 4, 8.1], medium: [43, 13, 6, 3, 1.3, 0.7, 0.4, 0.4, 0.7, 1.3, 3, 6, 13, 43], high: [260, 37, 11, 4, 1, 0.2, 0.2, 0.2, 0.2, 1, 4, 11, 37, 260] },
-    14: { low: [7.1, 4, 1.9, 1.4, 1.3, 1.1, 1, 0.5, 1, 1.1, 1.3, 1.4, 1.9, 4, 7.1], medium: [58, 15, 7, 4, 1.9, 1, 0.5, 0.2, 0.5, 1, 1.9, 4, 7, 15, 58], high: [420, 56, 18, 5, 1.9, 0.3, 0.2, 0.2, 0.2, 0.3, 1.9, 5, 18, 56, 420] },
-    15: { low: [15, 8, 3, 2, 1.5, 1.1, 1, 0.7, 0.7, 1, 1.1, 1.5, 2, 3, 8, 15], medium: [88, 18, 11, 5, 3, 1.3, 0.5, 0.3, 0.3, 0.5, 1.3, 3, 5, 11, 18, 88], high: [620, 83, 27, 8, 3, 0.5, 0.2, 0.2, 0.2, 0.2, 0.5, 3, 8, 27, 83, 620] },
-    16: { low: [16, 9, 2, 1.4, 1.4, 1.2, 1.1, 1, 0.5, 1, 1.1, 1.2, 1.4, 1.4, 2, 9, 16], medium: [110, 41, 10, 5, 3, 1.5, 1, 0.5, 0.3, 0.5, 1, 1.5, 3, 5, 10, 41, 110], high: [1000, 130, 26, 9, 4, 2, 0.2, 0.2, 0.2, 0.2, 0.2, 2, 4, 9, 26, 130, 1000] }
+    8: { low: [5.55, 1.95, 1.1, 1, 0.5, 1, 1.1, 1.95, 5.55], medium: [13, 2.85, 1.3, 0.7, 0.4, 0.7, 1.3, 2.85, 13], high: [29, 4, 1.45, 0.3, 0.2, 0.3, 1.45, 4, 29] },
+    9: { low: [5.35, 1.75, 1.6, 1, 0.7, 0.7, 1, 1.6, 1.75, 5.35], medium: [16, 3.9, 1.7, 0.9, 0.5, 0.5, 0.9, 1.7, 3.9, 16], high: [43, 6.7, 2, 0.6, 0.2, 0.2, 0.6, 2, 6.7, 43] },
+    10: { low: [8.75, 2.5, 1.4, 1.1, 1, 0.5, 1, 1.1, 1.4, 2.5, 8.75], medium: [22, 4.75, 1.95, 1.4, 0.6, 0.4, 0.6, 1.4, 1.95, 4.75, 22], high: [76, 9.45, 3, 0.9, 0.3, 0.2, 0.3, 0.9, 3, 9.45, 76] },
+    11: { low: [8, 2.85, 1.9, 1.25, 1, 0.7, 0.7, 1, 1.25, 1.9, 2.85, 8], medium: [19, 6, 2.9, 1.8, 0.7, 0.5, 0.5, 0.7, 1.8, 2.9, 6, 19], high: [108, 14, 5.2, 1.4, 0.4, 0.2, 0.2, 0.4, 1.4, 5.2, 14, 108] },
+    12: { low: [9.75, 3, 1.3, 1.4, 1.1, 1, 0.5, 1, 1.1, 1.4, 1.3, 3, 9.75], medium: [32.5, 11, 3.7, 2, 1.1, 0.6, 0.3, 0.6, 1.1, 2, 3.7, 11, 32.5], high: [167, 24, 7.8, 2, 0.7, 0.2, 0.2, 0.2, 0.7, 2, 7.8, 24, 167] },
+    13: { low: [8.1, 3.6, 3, 1.9, 1.15, 0.9, 0.7, 0.7, 0.9, 1.15, 1.9, 3, 3.6, 8.1], medium: [38, 13, 6, 3, 1.25, 0.7, 0.4, 0.4, 0.7, 1.25, 3, 6, 13, 38], high: [248, 34.5, 11, 4, 1, 0.2, 0.2, 0.2, 0.2, 1, 4, 11, 34.5, 248] },
+    14: { low: [7.1, 4, 1.8, 1.2, 1.3, 1.1, 1, 0.5, 1, 1.1, 1.3, 1.2, 1.8, 4, 7.1], medium: [58, 10.5, 7, 3.95, 1.9, 1, 0.5, 0.2, 0.5, 1, 1.9, 3.95, 7, 10.5, 58], high: [417, 50.5, 18, 5, 1.9, 0.3, 0.2, 0.2, 0.2, 0.3, 1.9, 5, 18, 50.5, 417] },
+    15: { low: [15, 7.7, 3, 1.65, 1.5, 1.1, 1, 0.7, 0.7, 1, 1.1, 1.5, 1.65, 3, 7.7, 15], medium: [88, 15.5, 9.8, 5, 3, 1.3, 0.5, 0.3, 0.3, 0.5, 1.3, 3, 5, 9.8, 15.5, 88], high: [611, 83, 27, 7.65, 3, 0.5, 0.2, 0.2, 0.2, 0.2, 0.5, 3, 7.65, 27, 83, 611] },
+    16: { low: [10.5, 9, 2, 1.4, 1.4, 1.2, 1.1, 1, 0.45, 1, 1.1, 1.2, 1.4, 1.4, 2, 9, 10.5], medium: [108, 41, 10, 5, 3, 1.5, 1, 0.5, 0.25, 0.5, 1, 1.5, 3, 5, 10, 41, 108], high: [1000, 130, 24.5, 8.75, 4, 2, 0.2, 0.2, 0.2, 0.2, 0.2, 2, 4, 8.75, 24.5, 130, 1000] }
   };
 
   RD.fair.plinko = PLINKO;
-  function minesMult(k, m) { var x = 0.99; for (var i = 0; i < k; i++) x *= (25 - i) / (25 - m - i); return Math.floor(x * 100) / 100; }
+  function minesMult(k, m) { var x = 0.98; for (var i = 0; i < k; i++) x *= (25 - i) / (25 - m - i); return Math.floor(x * 100) / 100; }
   var RANKS = ["", "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"], SUITS = ["♠", "♥", "♦", "♣"];
   /* Carta de baralho (Blackjack, Hi-Lo, Baccarat): naipes desenhados em SVG, frente/verso com virada 3D */
   var SUIT_D = ["M12 2C9 6.5 3.5 9.5 3.5 14a4.5 4.5 0 0 0 7.6 3.2L10 22h4l-1.1-4.8A4.5 4.5 0 0 0 20.5 14C20.5 9.5 15 6.5 12 2z",
@@ -454,22 +454,22 @@
   }
 
   var ABOUT = {
-    dice: "<p><strong>Dice</strong> is the classic crypto casino game. Set your win chance anywhere from 0.01% to 98% and roll over or under the target. The lower your win chance, the higher the multiplier — up to 9,900×.</p><p>Every roll lands between 0.00 and 100.00.</p>",
+    dice: "<p><strong>Dice</strong> is the classic crypto casino game. Set your win chance anywhere from 0.01% to 97% and roll over or under the target. The lower your win chance, the higher the multiplier — up to 9,800×.</p><p>Every roll lands between 0.00 and 100.00.</p>",
     limbo: "<p><strong>Limbo</strong>: set a target multiplier and bet. If the result reaches your target, you win your bet times the target. Targets go from 1.01× to 1,000,000×.</p>",
     plinko: "<p><strong>Plinko</strong>: drop the ball and watch it bounce down the pegs. Where it lands sets your multiplier. Choose 8 to 16 rows and low, medium or high risk — 16 rows on high risk pays up to 1,000× on the edges.</p>",
     crash: "<p><strong>Crash</strong>: the multiplier starts at 1.00× and climbs until it crashes. Cash out before the crash to win your bet times the multiplier. Set an automatic cashout to lock in a target.</p>",
     mines: "<p><strong>Mines</strong>: a 5×5 grid hides gems and mines. Choose how many mines (1–24), then reveal tiles. Every gem raises your multiplier — cash out any time, but hit a mine and the round is lost.</p>",
-    wheel: "<p><strong>Wheel</strong>: spin the wheel and win the multiplier it stops on. Choose 10 to 50 segments and low, medium or high risk — high risk has a single big segment worth up to 49.5×.</p>",
-    keno: "<p><strong>Keno</strong>: pick 1 to 10 numbers from 40. We draw 10. The more of your numbers are drawn, the bigger the multiplier — up to 1,000×. Choose Classic, Low, Medium or High risk; the payout table updates as you pick.</p>",
-    blackjack: "<p><strong>Blackjack</strong>: get closer to 21 than the dealer without going over. Blackjack pays 3 to 2, the dealer stands on all 17s, you can double, or split a pair once, and when the dealer shows an Ace you can take insurance (half your bet, pays 2 to 1 if the dealer has Blackjack). Cards are dealt from an infinite deck. RTP shown assumes basic strategy (approximate).</p>",
-    roulette: "<p><strong>Roulette</strong>: European wheel with a single zero. Place chips on numbers or outside bets — a number pays 35 to 1, dozens and columns 2 to 1, and red/black, even/odd and 1–18/19–36 pay 1 to 1.</p>",
+    wheel: "<p><strong>Wheel</strong>: spin the wheel and win the multiplier it stops on. Choose 10 to 50 segments and low, medium or high risk — high risk has a single big segment worth up to 49×.</p>",
+    keno: "<p><strong>Keno</strong>: pick 1 to 10 numbers from 40. We draw 10. The more of your numbers are drawn, the bigger the multiplier — up to 1,140×. Choose Classic, Low, Medium or High risk; the payout table updates as you pick.</p>",
+    blackjack: "<p><strong>Blackjack</strong>: get closer to 21 than the dealer without going over. Blackjack pays 3 to 2, the dealer hits soft 17 and stands on hard 17, you can double on your first two cards or split a pair once (no doubling after a split), and when the dealer shows an Ace you can take insurance (half your bet, pays 2 to 1 if the dealer has Blackjack). Cards are dealt from an infinite deck. RTP shown assumes basic strategy (approximate).</p>",
+    roulette: "<p><strong>Roulette</strong>: European wheel with a single zero. Place chips on numbers or outside bets — a number pays 36.26×, dozens and columns 3.02×, and red/black, even/odd and 1–18/19–36 pay 2.01× (your bet included). RTP 98% on every bet.</p>",
     tower: "<p><strong>Tower</strong>: climb 9 floors. On every floor pick a tile — find the egg and you go up, hit the skull and the round ends. Cash out whenever you want. Five difficulties, from Easy (3 eggs in 4 tiles) to Master (1 egg in 4 tiles, up to 256,901×).</p>",
     spill: "<p><strong>Spill</strong>: fill the cup one pour at a time. Every pour raises your multiplier, but a hidden pour makes the cup spill over. Cash out any time. Low hides 1 spill in 25 pours, Medium 3, High 5 and Degen 10.</p>",
     chicken: "<p><strong>Chicken</strong>: help the chicken cross the road, one lane at a time. Every lane you cross raises your multiplier, but some lanes hide a car. Cash out before you get hit. Easy hides 1 car in 20 lanes, Expert hides 10.</p>",
-    coinflip: "<p><strong>Coinflip</strong>: pick Heads or Tails and flip. <b>Classic</b> is one flip at 1.98×. <b>Target</b> asks for 2 to 10 flips in a row on your side — every extra flip doubles the multiplier, up to 1,013.76×. Heads is the gold RD coin, Tails the silver one.</p>",
+    coinflip: "<p><strong>Coinflip</strong>: pick Heads or Tails and flip. <b>Classic</b> is one flip at 1.96×. <b>Target</b> asks for 2 to 10 flips in a row on your side — every extra flip doubles the multiplier, up to 1,003.52×. Heads is the gold RD coin, Tails the silver one.</p>",
     rps: "<p><strong>Rock Paper Scissors</strong>: beat the house hand to climb the ladder — 1.96×, 3.92×, 7.84× and up to 1,003.52× after 10 wins. A tie gives you another throw at no cost. Cash out after any win. Scissors cut paper, rock smashes scissors, paper wraps rock.</p>",
     baccarat: "<p><strong>Baccarat</strong>: bet on Player, Banker or Tie. The hand closest to 9 wins. Player pays 1:1, Banker pays 0.95:1 and Tie pays 8:1 (on a tie, Player and Banker bets are returned). Standard third-card rules, infinite deck. House edge: 1.24% on Player, 1.06% on Banker, 14.4% on Tie.</p>",
-    double: "<p><strong>Double</strong>: pick a color and spin. 15 tiles: 7 red and 7 black pay 2×, the white RD tile pays 14×.</p>",
+    double: "<p><strong>Double</strong>: pick a color and spin. 15 tiles: 7 red and 7 black pay 2.1×, the white RD tile pays 14.7×. RTP 98%.</p>",
     soccer: "<p><strong>Soccer</strong>: choose a corner and shoot. The keeper covers 1 to 4 of the 5 corners depending on difficulty. Every goal multiplies your win — cash out any time, or keep shooting for up to 15,000×.</p>",
     door: "<p><strong>Door</strong>: pick one door on each of 10 floors. Behind most doors is a coin, behind the trap door you lose. Every floor raises your multiplier — cash out whenever you want.</p>",
     hilo: "<p><strong>Hi-Lo</strong>: guess whether the next card is higher or lower than the current one. Each correct guess multiplies your win. Skip cards you don't like and cash out whenever you want. The last card stays on the table for your next round, win or lose. Aces are low, kings are high.</p>"
@@ -655,9 +655,9 @@
     },
     bind: function (ctx) {
       var dr = $("#dx-range"), over = true;
-      /* Como na Stake: chance de 0,01% a 98% (multiplicador de 1,0102× a 9.900×) */
-      function clampT() { var t = parseFloat(dr.value), lo = over ? 2 : 0.01, hi = over ? 99.99 : 98; if (t < lo || t > hi) dr.value = Math.max(lo, Math.min(hi, t)).toFixed(2); }
-      function params() { clampT(); var t = parseFloat(dr.value), c = Math.round((over ? 100 - t : t) * 100) / 100; return { target: t, chance: c, mult: Math.floor((99 / c) * 10000) / 10000 }; }
+      /* RTP 98%: chance de 0,01% a 97% (multiplicador de 1,0103× a 9.800×) */
+      function clampT() { var t = parseFloat(dr.value), lo = over ? 3 : 0.01, hi = over ? 99.99 : 97; if (t < lo || t > hi) dr.value = Math.max(lo, Math.min(hi, t)).toFixed(2); }
+      function params() { clampT(); var t = parseFloat(dr.value), c = Math.round((over ? 100 - t : t) * 100) / 100; return { target: t, chance: c, mult: Math.floor((98 / c) * 10000) / 10000 }; }
       function refresh() {
         var p = params(); ctx.setProfit(p.mult);
         $("#dx").style.setProperty("--t", p.target + "%"); $("#dx").classList.toggle("under", !over);
@@ -667,8 +667,8 @@
       }
       dr.addEventListener("input", refresh);
       $("#dx-mode").addEventListener("click", function () { over = !over; dr.value = (100 - parseFloat(dr.value)).toFixed(2); refresh(); });
-      $("#dx-mult").addEventListener("change", function () { var m = Math.max(1.0102, Math.min(9900, parseFloat(this.value) || 2)), c = Math.round((99 / m) * 100) / 100; dr.value = (over ? 100 - c : c).toFixed(2); this.blur(); refresh(); });
-      $("#dx-chance").addEventListener("change", function () { var c = Math.max(0.01, Math.min(98, parseFloat(this.value) || 49.5)); dr.value = (over ? 100 - c : c).toFixed(2); this.blur(); refresh(); });
+      $("#dx-mult").addEventListener("change", function () { var m = Math.max(1.0103, Math.min(9800, parseFloat(this.value) || 2)), c = Math.round((98 / m) * 100) / 100; dr.value = (over ? 100 - c : c).toFixed(2); this.blur(); refresh(); });
+      $("#dx-chance").addEventListener("change", function () { var c = Math.max(0.01, Math.min(97, parseFloat(this.value) || 49.5)); dr.value = (over ? 100 - c : c).toFixed(2); this.blur(); refresh(); });
       return {
         refresh: refresh,
         play: function () {
@@ -698,11 +698,11 @@
     bind: function (ctx) {
       function target() { return Math.max(1.01, Math.min(1000000, parseFloat($("#lb-target").value) || 1.01)); }
       function refresh() {
-        var m = target(), c = 99 / m; ctx.setProfit(m);
+        var m = target(), c = 98 / m; ctx.setProfit(m);
         if (document.activeElement !== $("#lb-chance")) $("#lb-chance").value = c.toFixed(4);
       }
       $("#lb-target").addEventListener("input", refresh);
-      $("#lb-chance").addEventListener("change", function () { var c = Math.max(0.0001, Math.min(98.02, parseFloat(this.value) || 49.5)); $("#lb-target").value = (99 / c).toFixed(2); this.blur(); refresh(); });
+      $("#lb-chance").addEventListener("change", function () { var c = Math.max(0.0001, Math.min(97.02, parseFloat(this.value) || 49)); $("#lb-target").value = (98 / c).toFixed(2); this.blur(); refresh(); });
       return {
         refresh: refresh, cooldown: 320,
         play: function () {
@@ -1090,7 +1090,7 @@
         [["up", o.up], ["down", o.down]].forEach(function (x) {
           $("#hl-" + x[0] + "-l").textContent = x[1].label;
           $("#hl-" + x[0] + "-p").textContent = (x[1].p * 100).toFixed(2) + "%";
-          $("#hl-" + x[0] + "-m").textContent = (0.99 / x[1].p).toFixed(2) + "×";
+          $("#hl-" + x[0] + "-m").textContent = (0.98 / x[1].p).toFixed(2) + "×";
           $("#hl-" + x[0]).disabled = !live;
         });
         $("#hl-skip").disabled = live ? false : !me();
@@ -1138,7 +1138,7 @@
               setTimeout(function () { if (!round && $("#hl-card")) { loadPreview(); } }, 1600);
               return;
             }
-            round.mult = RD.live ? x.state.mult : Math.floor(round.mult * (0.99 / opt.p) * 100) / 100;
+            round.mult = RD.live ? x.state.mult : Math.floor(round.mult * (0.98 / opt.p) * 100) / 100;
           }
           db.updateRound(u.id, G, { cards: round.cards, mult: round.mult }); keepCard(next); busyCard = false; show(true);
         });
@@ -1179,18 +1179,18 @@
     }
   };
 
-  /* ---------- Tabelas: Wheel e Keno (RTP ≈ 99%, conferidas) ---------- */
-  /* Tabelas de Wheel iguais às da Stake (RTP 99% em todas as combinações) */
-  var WHEEL_MED = {"10":[0,1.9,0,1.5,0,2,0,1.5,0,3],"20":[1.5,0,2,0,2,0,2,0,1.5,0,3,0,1.8,0,2,0,2,0,2,0],"30":[1.5,0,1.5,0,2,0,1.5,0,2,0,2,0,1.5,0,3,0,1.5,0,2,0,2,0,1.7,0,4,0,1.5,0,2,0],"40":[2,0,3,0,2,0,1.5,0,3,0,1.5,0,1.5,0,2,0,1.5,0,3,0,1.5,0,2,0,2,0,1.6,0,2,0,1.5,0,3,0,1.5,0,2,0,1.5,0],"50":[2,0,1.5,0,2,0,1.5,0,3,0,1.5,0,1.5,0,2,0,1.5,0,3,0,1.5,0,2,0,1.5,0,2,0,2,0,1.5,0,3,0,1.5,0,2,0,1.5,0,1.5,0,5,0,1.5,0,2,0,1.5,0]};
+  /* ---------- Tabelas: Wheel e Keno (RTP 98%, conferidas) ---------- */
+  /* Wheel: RTP 98% em todas as combinações */
+  var WHEEL_MED = {"10":[0,1.8,0,1.5,0,2,0,1.5,0,3],"20":[1.4,0,2,0,2,0,2,0,1.4,0,3,0,1.8,0,2,0,2,0,2,0],"30":[1.5,0,1.5,0,2,0,1.5,0,2,0,2,0,1.5,0,3,0,1.5,0,2,0,2,0,1.4,0,4,0,1.5,0,2,0],"40":[2,0,3,0,2,0,1.5,0,3,0,1.5,0,1.5,0,2,0,1.5,0,3,0,1.5,0,2,0,2,0,1.2,0,2,0,1.5,0,3,0,1.5,0,2,0,1.5,0],"50":[2,0,1.5,0,2,0,1.5,0,3,0,1.5,0,1.5,0,2,0,1.5,0,3,0,1.5,0,2,0,1.5,0,2,0,2,0,1.5,0,3,0,1.5,0,2,0,1.5,0,1.5,0,4.5,0,1.5,0,2,0,1.5,0]};
   function wheelTable(n, risk) {
     if (risk === "medium") return WHEEL_MED[n].slice();
-    var low = [1.5, 1.2, 1.2, 1.2, 0, 1.2, 1.2, 1.2, 1.2, 0], t = [];
-    for (var i = 0; i < n; i++) t.push(risk === "high" ? (i === n - 1 ? Math.round(0.99 * n * 100) / 100 : 0) : low[i % 10]);
+    var low = [1.4, 1.2, 1.2, 1.2, 0, 1.2, 1.2, 1.2, 1.2, 0], t = [];
+    for (var i = 0; i < n; i++) t.push(risk === "high" ? (i === n - 1 ? Math.round(0.98 * n * 100) / 100 : 0) : low[i % 10]);
     return t;
   }
   function comb(n, k) { if (k < 0 || k > n) return 0; var r = 1; for (var i = 1; i <= k; i++) r = r * (n - k + i) / i; return r; }
-  /* Tabelas de Keno iguais às da Stake (multiplicador por acertos, RTP ≈ 99%) */
-  var KENO = {"classic":[[0,3.96],[0,1.9,4.5],[0,1,3.1,10.4],[0,0.8,1.8,5,22.5],[0,0.25,1.4,4.1,16.5,36],[0,0,1,3.68,7,16.5,40],[0,0,0.47,3,4.5,14,31,60],[0,0,0,2.2,4,13,22,55,70],[0,0,0,1.55,3,8,15,44,60,85],[0,0,0,1.4,2.25,4.5,8,17,50,80,100]],"low":[[0.7,1.85],[0,2,3.8],[0,1.1,1.38,26],[0,0,2.2,7.9,90],[0,0,1.5,4.2,13,300],[0,0,1.1,2,6.2,100,700],[0,0,1.1,1.6,3.5,15,225,700],[0,0,1.1,1.5,2,5.5,39,100,800],[0,0,1.1,1.3,1.7,2.5,7.5,50,250,1000],[0,0,1.1,1.2,1.3,1.8,3.5,13,50,250,1000]],"medium":[[0.4,2.75],[0,1.8,5.1],[0,0,2.8,50],[0,0,1.7,10,100],[0,0,1.4,4,14,390],[0,0,0,3,9,180,710],[0,0,0,2,7,30,400,800],[0,0,0,2,4,11,67,400,900],[0,0,0,2,2.5,5,15,100,500,1000],[0,0,0,1.6,2,4,7,26,100,500,1000]],"high":[[0,3.96],[0,0,17.1],[0,0,0,81.5],[0,0,0,10,259],[0,0,0,4.5,48,450],[0,0,0,0,11,350,710],[0,0,0,0,7,90,400,800],[0,0,0,0,5,20,270,600,900],[0,0,0,0,4,11,56,500,800,1000],[0,0,0,0,3.5,8,13,63,500,800,1000]]};
+  /* Keno: multiplicador por acertos, RTP 98% (±0,05) */
+  var KENO = {"low":[[0.69,1.85],[0,1.99,3.72],[0,1.1,1.33,25.85],[0,0,2.2,7.67,89.93],[0,0,1.5,4.12,13,293],[0,0,1.07,2,6.2,100,692],[0,0,1.09,1.6,3.37,15,225,700],[0,0,1.1,1.5,1.88,5.42,39,100,800],[0,0,1.1,1.28,1.65,2.5,7.5,50,250,1000],[0,0,1.1,1.2,1.3,1.62,3.5,13,50,250,1000]],"high":[[0,3.92],[0,0,16.99],[0,0,0,80.69],[0,0,0,9.77,259],[0,0,0,4.47,48,433],[0,0,0,0,10.58,350,710],[0,0,0,0,6.79,90,400,800],[0,0,0,0,5,19.28,270,600,900],[0,0,0,0,4,10.86,56,468,800,1000],[0,0,0,0,3.5,7.77,12.95,63,500,800,1000]],"medium":[[0.39,2.75],[0,1.8,4.99],[0,0,2.75,49.75],[0,0,1.68,9.91,100],[0,0,1.4,3.91,14,384],[0,0,0,3,8.65,180,710],[0,0,0,2,6.79,30,400,800],[0,0,0,2,3.88,10.98,67,400,900],[0,0,0,2,2.43,4.93,15,100,500,1000],[0,0,0,1.6,2,3.77,7,26,100,500,1000]],"classic":[[0,3.92],[0,1.9,4.32],[0,0.98,3.09,10.4],[0,0.78,1.8,5,22.19],[0,0.23,1.4,4.1,16.34,36],[0,0,0.97,3.68,7,16.5,40],[0,0,0.47,2.95,4.5,13.83,31,60],[0,0,0,2.16,4,12.9,22,55,70],[0,0,0,1.53,3,7.82,15,44,60,85],[0,0,0,1.4,2.18,4.5,7.99,17,50,80,100]]};
   function kenoTable(k, risk) { return (KENO[risk] || KENO.classic)[k - 1].slice(); }
   function kenoFrom(fs) { var a = []; for (var i = 1; i <= 40; i++) a.push(i); for (var j = 0; j < 10; j++) { var k = j + Math.floor(fs[j] * (40 - j)), t = a[j]; a[j] = a[k]; a[k] = t; } return a.slice(0, 10); }
   RD.fair.wheelTable = wheelTable; RD.fair.kenoTable = kenoTable; RD.fair.kenoFrom = kenoFrom;
@@ -1335,7 +1335,7 @@
     cfg: function () {
       return {
         after: '<div class="bj-actions"><button class="btn btn-secondary" id="bj-hit" disabled>' + ic("plus", 16) + 'Hit</button><button class="btn btn-secondary" id="bj-stand" disabled>' + ic("ban", 16) + 'Stand</button><button class="btn btn-secondary" id="bj-split" disabled>' + ic("swap", 16) + 'Split</button><button class="btn btn-secondary" id="bj-double" disabled>' + ic("coins", 16) + "Double</button></div>",
-        center: '<div class="bj"><div class="bj-side"><div class="bj-cards" id="bj-dealer"></div><span class="bj-val" id="bj-dval"></span></div><div class="bj-mid"><div class="bj-rules">Blackjack pays 3 to 2 · Dealer stands on 17 · Insurance pays 2 to 1</div><div class="bj-ins hidden" id="bj-ins"><span>Dealer shows an Ace. <b>Insurance?</b><small id="bj-ins-cost"></small></span><div><button class="btn btn-gold btn-sm" id="bj-ins-yes">Accept</button><button class="btn btn-secondary btn-sm" id="bj-ins-no">No thanks</button></div></div><div class="bj-result hidden" id="bj-result"></div></div><div class="bj-hands" id="bj-hands"></div></div>'
+        center: '<div class="bj"><div class="bj-side"><div class="bj-cards" id="bj-dealer"></div><span class="bj-val" id="bj-dval"></span></div><div class="bj-mid"><div class="bj-rules">Blackjack pays 3 to 2 · Dealer hits soft 17 · Insurance pays 2 to 1</div><div class="bj-ins hidden" id="bj-ins"><span>Dealer shows an Ace. <b>Insurance?</b><small id="bj-ins-cost"></small></span><div><button class="btn btn-gold btn-sm" id="bj-ins-yes">Accept</button><button class="btn btn-secondary btn-sm" id="bj-ins-no">No thanks</button></div></div><div class="bj-result hidden" id="bj-result"></div></div><div class="bj-hands" id="bj-hands"></div></div>'
       };
     },
     bind: function (ctx) {
@@ -1404,7 +1404,7 @@
         if (insOpen) { $("#bj-ins-cost").textContent = "Costs " + money(insCost()) + " · pays " + money(insCost() * 3) + " if the dealer has Blackjack"; $("#bj-ins-yes").disabled = (u() ? u().balance : 0) < insCost(); }
         var h = S && !S.over && !insOpen && !animating && !busyB ? S.hands[S.active] : null, bal = u() ? u().balance : 0;
         $("#bj-hit").disabled = !h; $("#bj-stand").disabled = !h;
-        $("#bj-double").disabled = !(h && h.cards.length === 2 && bal >= h.bet);
+        $("#bj-double").disabled = !(h && S.hands.length === 1 && h.cards.length === 2 && bal >= h.bet);
         $("#bj-split").disabled = !(h && S.hands.length === 1 && h.cards.length === 2 && bjVal(h.cards[0].rank) === bjVal(h.cards[1].rank) && bal >= h.bet);
         var b = ctx.btn(); if (b) b.disabled = animating > 0 || !!(S && !S.over);
       }
@@ -1482,7 +1482,7 @@
         var allBust = S.hands.every(function (h) { return bjTotal(h.cards).t > 21; });
         if (allBust) return finish();
         (function step() {
-          if (bjTotal(S.dealer).t >= 17) return finish();
+          var dt = bjTotal(S.dealer); if (dt.t > 17 || (dt.t === 17 && !dt.soft)) return finish();
           draw(1).then(function (c) { S.dealer.push(c[0]); persist(); render(true); setTimeout(step, 420); });
         })();
       }
@@ -1496,6 +1496,7 @@
         if (RD.live) return liveDo(kind);
         var h = S.hands[S.active];
         if (kind === "stand") { h.done = true; busyB = false; return nextHand(); }
+        if (kind === "double" && S.hands.length > 1) { busyB = false; return ctx.msg("You can't double after a split."); }
         if (kind === "double") { var r1 = db.addToRound(u().id, G, h.bet); if (r1.error) { busyB = false; return ctx.msg(r1.error); } h.bet *= 2; renderHeader(); ctx.refresh(); }
         if (kind === "split") {
           var r2 = db.addToRound(u().id, G, h.bet); if (r2.error) { busyB = false; return ctx.msg(r2.error); } renderHeader(); ctx.refresh();
@@ -1567,7 +1568,7 @@
     if (key.indexOf("col:") === 0) return ((n - 1) % 3) + 1 === +key.slice(4);
     return false;
   }
-  function rlPays(key) { return key.indexOf("n:") === 0 ? 36 : key.indexOf("doz:") === 0 || key.indexOf("col:") === 0 ? 3 : 2; }
+  function rlPays(key) { return key.indexOf("n:") === 0 ? 36.26 : key.indexOf("doz:") === 0 || key.indexOf("col:") === 0 ? 3.0216 : 2.0144; } // RTP 98%
   function rlColor(n) { return n === 0 ? "g" : RL_RED.indexOf(n) > -1 ? "r" : "b"; }
   OG.roulette = {
     label: function (b) { var n = b.detail.result; return '<b class="rl-n ' + rlColor(n) + '">' + n + "</b>"; },
@@ -2021,9 +2022,9 @@
     }
   };
 
-  /* ---------- DOUBLE (estilo Blaze: 15 casas — 7 vermelhas 2×, 7 pretas 2×, 1 branca RD 14×) ---------- */
+  /* ---------- DOUBLE (estilo Blaze: 15 casas — 7 vermelhas 2,1×, 7 pretas 2,1×, 1 branca RD 14,7×; RTP 98%) ---------- */
   var DBL_ORDER = [0, 11, 5, 10, 6, 9, 7, 8, 1, 14, 2, 13, 3, 12, 4];
-  var DBL_PAY = { red: 2, black: 2, white: 14 };
+  var DBL_PAY = { red: 2.1, black: 2.1, white: 14.7 }; // RTP 98%
   function dblColor(n) { return n === 0 ? "white" : n <= 7 ? "red" : "black"; }
   function dblFrom(f) { return Math.floor(f * 15); }
   RD.fair.doubleFrom = dblFrom;
@@ -2034,7 +2035,7 @@
     cfg: function () {
       return {
         auto: true,
-        side: '<div><div class="ogx-label">Color</div><div class="dbl-pick"><button class="dbl-c red" data-dbl="red">2×</button><button class="dbl-c white" data-dbl="white">14×</button><button class="dbl-c black" data-dbl="black">2×</button></div></div>' +
+        side: '<div><div class="ogx-label">Color</div><div class="dbl-pick"><button class="dbl-c red" data-dbl="red">2.1×</button><button class="dbl-c white" data-dbl="white">14.7×</button><button class="dbl-c black" data-dbl="black">2.1×</button></div></div>' +
           '<div class="og-manual-only">' + profitField() + "</div>",
         center: '<div class="dbl"><div class="dbl-stage" id="dbl-stage"><div class="dbl-ptr"></div><div class="dbl-strip" id="dbl-strip"></div></div></div>'
       };
@@ -2313,8 +2314,8 @@
     }
   };
 
-  /* ---------- COINFLIP (RTP 99%) ---------- */
-  function coinMult(k) { return Math.floor(0.99 * Math.pow(2, k) * 100) / 100; }
+  /* ---------- COINFLIP (RTP 98%) ---------- */
+  function coinMult(k) { return Math.floor(0.98 * Math.pow(2, k) * 100) / 100; }
   function coinFrom(fs) { return fs.map(function (f) { return f < 0.5 ? "heads" : "tails"; }); }
   RD.fair.coinFrom = coinFrom;
   OG.coinflip = {
@@ -2944,7 +2945,7 @@
   pages.fairness = function () {
     return '<div class="container prose"><h1>Provably fair</h1><p class="muted" style="margin-top:8px">Every RD Originals result can be verified by you. We commit to the server seed (showing its hash) before you bet, so nobody can change a result afterwards.</p>' +
       "<h2>How results are made</h2><ul>" +
-      "<li><strong>Dice / Limbo / Crash:</strong> <code>HMAC_SHA256(server_seed, client_seed:nonce)</code> → first 4 bytes → number between 0 and 1. Dice: <code>floor(n × 10001) / 100</code>. Limbo and Crash: <code>floor(0.99 / n × 100) / 100</code> (min 1.00×).</li>" +
+      "<li><strong>Dice / Limbo / Crash:</strong> <code>HMAC_SHA256(server_seed, client_seed:nonce)</code> → first 4 bytes → number between 0 and 1. Dice: <code>floor(n × 10001) / 100</code>. Limbo and Crash: <code>floor(0.98 / n × 100) / 100</code> (min 1.00×). Bets placed before 9 Oct 2026 used 0.99 (RTP 99%) in Dice, Limbo, Crash, Mines, Hi-Lo, Coinflip, Wheel, Plinko and Keno.</li>" +
       "<li><strong>All other games:</strong> need several numbers, made with <code>HMAC_SHA256(server_seed, client_seed:nonce:cursor)</code>, 8 numbers per cursor. Plinko: each row goes right if <code>n ≥ 0.5</code>. Mines: Fisher–Yates shuffle of the 25 tiles, the first N are mines. Hi-Lo and Blackjack: card = <code>floor(n × 52)</code> (infinite deck). In Hi-Lo the first card on the table is the last card of your previous round; every card after it comes from your seeds. Keno: shuffle of 1–40, first 10 are drawn. Wheel: segment = <code>floor(n × segments)</code>. Roulette: number = <code>floor(n × 37)</code>. Tower: on each of the 9 floors, Fisher–Yates shuffle of the tiles, the first ones are eggs. Chicken: Fisher–Yates shuffle of the 20 lanes, the first ones hide a car. Spill: Fisher–Yates shuffle of the 25 pours (like Mines), the first ones spill (1, 3, 5 or 10 by difficulty); multiplier after k pours = 0.98 ÷ chance of surviving k pours. Coinflip: heads if <code>n &lt; 0.5</code>. Rock Paper Scissors: house hand = <code>floor(n × 3)</code> (rock, paper, scissors), one number per throw. Baccarat: 6 cards in order P1 B1 P2 B2, then third cards when the standard rules ask for them.</li></ul>" +
       '<h2>Verify a bet</h2><div class="card card-pad"><div class="row wrap" style="gap:0 12px;align-items:flex-start"><div class="field grow" style="min-width:160px"><label>Game</label><select class="select" id="v-game"><option value="dice">Dice</option><option value="limbo">Limbo</option><option value="crash">Crash</option><option value="plinko">Plinko</option><option value="mines">Mines</option><option value="hilo">Hi-Lo</option><option value="keno">Keno</option><option value="wheel">Wheel</option><option value="roulette">Roulette</option><option value="blackjack">Blackjack</option><option value="tower">Tower</option><option value="chicken">Chicken</option><option value="coinflip">Coinflip</option><option value="rps">Rock Paper Scissors</option><option value="baccarat">Baccarat</option></select></div>' +
       '<div class="field grow" style="min-width:160px" id="v-extra-wrap"><label id="v-extra-l">—</label><input class="input" id="v-extra" disabled></div></div>' +
