@@ -176,7 +176,7 @@
         kyc: "Not started", kycInfo: null, kycReason: "", status: "Active", note: "",
         refCode: username.toUpperCase(), referredBy: refOwner ? ref : "", referrerId: refOwner ? refOwner.id : "",
         affShare: null, affPaid: 0, campaigns: [],
-        seeds: { server: rnd(32), client: rnd(8), nonce: 0, revealed: [] }
+        seeds: { server: rnd(32), next: rnd(32), client: rnd(8), nonce: 0, revealed: [] }
       };
       D.players.push(p);
       log(username, "Criou conta (" + p.country + ")" + (refOwner ? " — indicado por " + refOwner.username + " via " + ref : ""));
@@ -308,7 +308,7 @@
       if (Object.keys(p.rounds || {}).length) return { error: "Finish your open rounds before rotating seeds." };
       s.revealed.unshift({ server: s.server, client: s.client, lastNonce: s.nonce - 1, at: nowIso() });
       s.revealed = s.revealed.slice(0, 20);
-      s.server = rnd(32); s.client = newClient || rnd(8); s.nonce = 0; save();
+      s.server = s.next || rnd(32); s.next = rnd(32); s.client = newClient || rnd(8); s.nonce = 0; save();
       return { ok: true };
     },
     /* Reserva o próximo nonce na hora (síncrono): duas apostas seguidas nunca
