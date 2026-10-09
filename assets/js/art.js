@@ -61,6 +61,17 @@ window.RD = window.RD || {};
     "♣": "M12 2.5a4.3 4.3 0 0 0-3.6 6.7A4.3 4.3 0 1 0 10.6 17L10 22h4l-.6-5a4.3 4.3 0 1 0 2.2-7.8A4.3 4.3 0 0 0 12 2.5z"
   };
   function suitAt(suit, x, y, size, col) { return '<path d="' + SUITP[suit] + '" fill="' + col + '" transform="translate(' + (x - size / 2) + " " + (y - size / 2) + ") scale(" + (size / 24) + ')"/>'; }
+  function cardBack(x, y, w, rot) {
+    var h = w * 1.4, id = U("cb"), pt = U("cp");
+    return '<g transform="translate(' + x + " " + y + ") rotate(" + rot + ')"><defs>' + lin(id, [[0, "#2a7bff"], [1, "#0d3fb0"]], 0, 0, 1, 1) +
+      '<pattern id="' + pt + '" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="12" height="12" fill="none"/><path d="M0 6 H12" stroke="#fff" stroke-opacity=".12" stroke-width="3"/></pattern></defs>' +
+      '<rect x="' + (-w / 2 + 5) + '" y="' + (-h / 2 + 9) + '" width="' + w + '" height="' + h + '" rx="' + w * 0.09 + '" fill="#000" opacity=".28"/>' +
+      '<rect x="' + (-w / 2) + '" y="' + (-h / 2) + '" width="' + w + '" height="' + h + '" rx="' + w * 0.09 + '" fill="#fff"/>' +
+      '<rect x="' + (-w / 2 + w * 0.07) + '" y="' + (-h / 2 + w * 0.07) + '" width="' + w * 0.86 + '" height="' + (h - w * 0.14) + '" rx="' + w * 0.06 + '" fill="url(#' + id + ')"/>' +
+      '<rect x="' + (-w / 2 + w * 0.07) + '" y="' + (-h / 2 + w * 0.07) + '" width="' + w * 0.86 + '" height="' + (h - w * 0.14) + '" rx="' + w * 0.06 + '" fill="url(#' + pt + ')"/>' +
+      '<rect x="' + (-w * 0.26) + '" y="' + (-w * 0.16) + '" width="' + w * 0.52 + '" height="' + w * 0.32 + '" rx="' + w * 0.06 + '" fill="#fff"/>' +
+      '<text x="0" y="' + w * 0.09 + '" text-anchor="middle" font-size="' + w * 0.24 + '" font-weight="900" fill="#1656d6" style="font-family:Arial Black,Arial">RD</text></g>';
+  }
   function card(x, y, w, rot, rank, suit, red) {
     var h = w * 1.4, col = red ? "#e11d48" : "#141a2b", id = U("cd"), fs = w * 0.24, r = w * 0.09;
     var corner = '<text x="' + (-w / 2 + w * 0.1) + '" y="' + (-h / 2 + w * 0.27) + '" font-size="' + fs + '" font-weight="900" fill="' + col + '" style="font-family:Arial Black,Arial,sans-serif" letter-spacing="-1">' + rank + "</text>" + suitAt(suit, -w / 2 + w * 0.17, -h / 2 + w * 0.41, w * 0.15, col);
@@ -293,15 +304,20 @@ window.RD = window.RD || {};
         '<circle cx="178" cy="214" r="28" fill="#ff4fa0" opacity=".35"/><circle cx="178" cy="214" r="19" fill="url(#' + ball + ')"/><circle cx="171" cy="207" r="5.5" fill="#fff" opacity=".9"/>' + spark(250, 80, 10) + spark(56, 120, 8);
     } },
     hilo: { a: "#14c8e6", b: "#053344", draw: function () {
-      return card(112, 182, 108, -12, "A", "♠", false) + card(190, 172, 108, 10, "K", "♥", true) +
-        '<circle cx="244" cy="86" r="24" fill="#16a34a"/><path d="M244 74 l12 14 h-8 v12 h-8 v-12 h-8z" fill="#fff"/>' +
-        '<circle cx="58" cy="270" r="24" fill="#e11d48"/><path d="M58 282 l12 -14 h-8 v-12 h-8 v12 h-8z" fill="#fff"/>';
+      // uma carta só, grande, com as setas de maior e menor brilhando
+      var gu = U("hu"), gd = U("hd");
+      var arrow = function (x, y, up, fill) { return '<g transform="translate(' + x + " " + y + (up ? "" : ") rotate(180") + ')"><circle r="30" fill="' + fill + '" opacity=".25"/><circle r="22" fill="' + fill + '"/><path d="M0 -11 L11 2 H4 V11 H-4 V2 H-11 Z" fill="#fff"/></g>'; };
+      return "<defs>" + rad(gu, [[0, "#ffffff", 0.5], [1, "#ffffff", 0]]) + "</defs>" + '<circle cx="150" cy="168" r="110" fill="url(#' + gu + ')"/>' +
+        card(150, 168, 128, 6, "6", "♥", true) + arrow(244, 78, true, "#16c25a") + arrow(58, 258, false, "#ff2e55") + spark(64, 86, 12) + spark(250, 250, 9);
     } },
     blackjack: { a: "#22b35e", b: "#063a1c", draw: function () {
+      // mesa: o arco do feltro, o verso da carta do dealer e o Ás virado, fichas altas
       var g = U("bj");
       return "<defs>" + lin(g, [[0, "#fff1b8"], [0.5, "#ffd23f"], [1, "#d98a00"]]) + "</defs>" +
-        card(118, 164, 104, -10, "A", "♠", false) + card(188, 158, 104, 9, "K", "♥", true) + chip(236, 262, 28, "#e11d48", 4) + chip(70, 272, 24, "#1d4ed8", 3) +
-        '<g transform="translate(150 54)"><rect x="-44" y="-22" width="88" height="44" rx="22" fill="#062a16" stroke="url(#' + g + ')" stroke-width="3"/><text x="0" y="12" text-anchor="middle" font-size="30" font-weight="900" fill="url(#' + g + ')" style="font-family:var(--font-display,Arial)">21</text></g>';
+        '<path d="M-10 300 Q150 150 310 300" fill="none" stroke="#fff" stroke-opacity=".22" stroke-width="3"/><path d="M-10 320 Q150 176 310 320" fill="none" stroke="#ffd23f" stroke-opacity=".35" stroke-width="2" stroke-dasharray="4 8"/>' +
+        cardBack(124, 150, 100, -14) + card(180, 164, 100, 10, "A", "♠", false) +
+        chip(56, 270, 30, "#e11d48", 5) + chip(250, 274, 26, "#1d4ed8", 4) + chip(250, 230, 22, "#ffd23f", 1) +
+        '<g transform="translate(150 54)"><rect x="-38" y="-20" width="76" height="40" rx="20" fill="#062a16" stroke="url(#' + g + ')" stroke-width="3"/><text x="0" y="11" text-anchor="middle" font-size="27" font-weight="900" fill="url(#' + g + ')" style="font-family:var(--font-display,Arial)">21</text></g>';
     } },
     roulette: { a: "#5b5bf0", b: "#15124a", draw: function () {
       var cx = 150, cy = 178, out = "", rim = U("rr"), hub = U("rh");
@@ -391,8 +407,15 @@ window.RD = window.RD || {};
         '<path d="M150 136 v-6 M150 238 v8 M138 246 l-6 8 M162 246 l6 8" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".7"/>' + spark(262, 58, 12) + spark(36, 98, 9) + spark(266, 270, 8);
     } },
     baccarat: { a: "#ff2e55", b: "#4a0716", draw: function () {
-      return card(112, 172, 104, -12, "9", "♦", true) + card(190, 166, 104, 10, "K", "♠", false) + chip(238, 282, 28, "#ffd23f", 4) + chip(70, 290, 24, "#1d4ed8", 3) +
-        '<rect x="34" y="62" width="74" height="34" rx="17" fill="#fff" fill-opacity=".92"/><text x="71" y="85" text-anchor="middle" font-size="18" font-weight="900" fill="#b0102e" style="font-family:var(--font-display,Arial)">9 : 0</text>';
+      // Player × Banker: duas torres de fichas frente a frente e o 9 dourado (a mão perfeita) no meio
+      var g = U("bn"), gl = U("bg9");
+      var tag = function (x, txt, c) { return '<g transform="translate(' + x + ' 252)"><rect x="-40" y="-13" width="80" height="26" rx="13" fill="' + c + '"/><text x="0" y="5" text-anchor="middle" font-size="12" font-weight="900" fill="#fff" letter-spacing="1" style="font-family:Arial">' + txt + "</text></g>"; };
+      return "<defs>" + lin(g, [[0, "#fff6c9"], [0.45, "#ffd23f"], [1, "#c97a00"]]) + rad(gl, [[0, "#ffd23f", 0.55], [1, "#ffd23f", 0]]) + "</defs>" +
+        '<circle cx="150" cy="150" r="100" fill="url(#' + gl + ')"/>' +
+        chip(62, 214, 32, "#1d4ed8", 6) + chip(238, 214, 32, "#e11d48", 6) +
+        '<text x="154" y="210" text-anchor="middle" font-size="150" font-weight="900" fill="#5a0010" opacity=".45" style="font-family:var(--font-display,Arial)">9</text>' +
+        '<text x="150" y="204" text-anchor="middle" font-size="150" font-weight="900" fill="url(#' + g + ')" stroke="#7a3f00" stroke-width="3" style="font-family:var(--font-display,Arial)">9</text>' +
+        tag(62, "PLAYER", "#1d4ed8") + tag(238, "BANKER", "#e11d48") + spark(150, 46, 12) + spark(40, 90, 8) + spark(262, 96, 9);
     } },
     double: { a: "#ff2e55", b: "#2a0710", draw: function () {
       var t = function (x, y, w, fill, stroke, txt, rot, op) { return '<g transform="translate(' + x + " " + y + ") rotate(" + rot + ')" opacity="' + (op || 1) + '"><rect x="' + (-w / 2) + '" y="' + (-w * 0.62) + '" width="' + w + '" height="' + (w * 1.24) + '" rx="' + (w * 0.18) + '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="5"/>' + txt + "</g>"; };
@@ -400,11 +423,20 @@ window.RD = window.RD || {};
       return '<path d="M150 58 l-14 -22 h28z" fill="#fff" opacity=".9"/>' + t(58, 186, 70, "#1b1220", "#3a2a3a", "", -10, 0.9) + t(242, 186, 70, "#b0102e", "#ff6b86", "", 10, 0.9) + t(150, 176, 96, "#ffffff", "#ffd6de", gem, 0, 1) + chip(70, 290, 24, "#ffd23f", 4) + chip(232, 292, 26, "#ff2e55", 3) + spark(250, 80, 12) + spark(52, 92, 9);
     } },
     soccer: { a: "#22b35e", b: "#062a16", draw: function () {
-      var net = ""; for (var x = 50; x <= 250; x += 20) net += '<path d="M' + x + ' 74 V190" stroke="#fff" stroke-opacity=".18"/>'; for (var y = 84; y <= 190; y += 18) net += '<path d="M44 ' + y + ' H256" stroke="#fff" stroke-opacity=".18"/>';
-      return '<rect x="44" y="70" width="212" height="122" fill="#000" opacity=".25"/>' + net + '<path d="M40 194 V66 H260 V194" fill="none" stroke="#fff" stroke-width="9" stroke-linejoin="round"/>' +
-        '<g transform="translate(110 150) rotate(-28)"><rect x="-20" y="-22" width="40" height="40" rx="11" fill="#3b82f6"/><circle cx="0" cy="-36" r="13" fill="#e8b48a"/><path d="M-13 -40 a13 11 0 0 1 26 0 v-1 h8 v4 h-34z" fill="#ff2e55"/><text x="0" y="-42" text-anchor="middle" font-size="7" font-weight="900" fill="#fff" style="font-family:var(--font-display,Arial)">RD</text><path d="M-20 -14 L-44 -40 M20 -14 L40 -44" stroke="#3b82f6" stroke-width="9" stroke-linecap="round"/><circle cx="-46" cy="-43" r="8" fill="#ffd23f"/><circle cx="42" cy="-48" r="8" fill="#ffd23f"/></g>' +
-        '<g transform="translate(206 112)"><circle r="24" fill="#fff"/><path d="M0 -9 l9 6 -3 10 h-12 l-3 -10z" fill="#111"/><path d="M0 -24 v15 M9 -3 l14 -4 M6 7 l8 12 M-6 7 l-8 12 M-9 -3 l-14 -4" stroke="#111" stroke-width="3"/></g>' +
-        '<path d="M206 140 q-40 70 -70 120" stroke="#fff" stroke-opacity=".35" stroke-width="5" stroke-dasharray="2 12" stroke-linecap="round" fill="none"/>' + spark(60, 240, 10) + spark(250, 240, 12);
+      // gol em perspectiva, goleiro voando para um lado e a bola entrando no ângulo do outro, no fim da linha do chute
+      var net = ""; for (var x = 54; x <= 246; x += 16) net += '<path d="M' + x + ' 64 V176" stroke="#fff" stroke-opacity=".16"/>'; for (var y = 74; y <= 176; y += 14) net += '<path d="M48 ' + y + ' H252" stroke="#fff" stroke-opacity=".16"/>';
+      var keeper = '<g transform="translate(96 132) rotate(-24)">' +
+        '<path d="M-6 26 L-30 54 M8 26 L-6 60" stroke="#111827" stroke-width="12" stroke-linecap="round"/><path d="M-30 54 l-10 4 M-6 60 l-6 8" stroke="#ffd23f" stroke-width="8" stroke-linecap="round"/>' +
+        '<path d="M-18 -18 Q0 -26 18 -18 L22 26 Q0 34 -22 26 Z" fill="#1f6fff"/><path d="M-18 -18 Q0 -26 18 -18 L19 -8 Q0 -14 -19 -8 Z" fill="#0d3fb0"/>' +
+        '<text x="0" y="12" text-anchor="middle" font-size="15" font-weight="900" fill="#fff" style="font-family:Arial Black,Arial">RD</text>' +
+        '<path d="M-16 -14 Q-40 -30 -52 -58 M16 -14 Q30 -40 26 -70" stroke="#1f6fff" stroke-width="11" stroke-linecap="round" fill="none"/>' +
+        '<circle cx="-54" cy="-64" r="10" fill="#ffd23f" stroke="#c98a00" stroke-width="2"/><circle cx="26" cy="-78" r="10" fill="#ffd23f" stroke="#c98a00" stroke-width="2"/>' +
+        '<circle cx="0" cy="-40" r="15" fill="#f1c19a"/><path d="M-15 -44 Q-14 -60 0 -60 Q14 -60 15 -44 Q0 -50 -15 -44Z" fill="#3a2418"/><circle cx="5" cy="-40" r="2" fill="#2a1a12"/><path d="M2 -33 q4 2 7 -1" stroke="#a5634a" stroke-width="2" fill="none" stroke-linecap="round"/></g>';
+      var ball = '<g transform="translate(222 92) rotate(18)"><circle r="21" fill="#fff" stroke="#d4dbe6" stroke-width="2"/><path d="M0 -8 L8 -2 L5 8 H-5 L-8 -2 Z" fill="#111"/><path d="M0 -21 V-8 M8 -2 L20 -6 M5 8 L12 18 M-5 8 L-12 18 M-8 -2 L-20 -6" stroke="#111" stroke-width="2.5"/></g>';
+      return '<rect x="48" y="62" width="204" height="116" fill="#000" opacity=".22"/>' + net + '<path d="M44 182 V58 H256 V182" fill="none" stroke="#fff" stroke-width="8" stroke-linejoin="round"/>' +
+        '<path d="M150 292 Q 214 210 222 112" stroke="#fff" stroke-opacity=".45" stroke-width="5" stroke-dasharray="2 12" stroke-linecap="round" fill="none"/>' +
+        '<ellipse cx="150" cy="294" rx="16" ry="5" fill="#fff" opacity=".35"/>' + keeper + ball +
+        '<path d="M236 78 l14 -10 M240 92 l16 -2 M232 66 l6 -14" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".7"/>' + spark(40, 240, 10) + spark(266, 244, 12);
     } },
     lake: { a: "#1fb6ff", b: "#0a3a7a", draw: function () {
       var w = U("lw"), pad = function (x, y, s, m, c) { return '<g transform="translate(' + x + " " + y + ") scale(" + s + ')"><ellipse cx="0" cy="6" rx="46" ry="30" fill="#0b4a8a" opacity=".5"/><path d="M0 0 L44 -8 A44 34 0 1 1 16 -32 Z" fill="#3fbf4a" stroke="#2a9a38" stroke-width="3"/><path d="M0 0 L-28 -18 M0 0 L-30 12 M0 0 L-6 30 M0 0 L28 24" stroke="#2f9e3a" stroke-width="3" stroke-linecap="round"/>' + (m ? '<text x="0" y="8" text-anchor="middle" font-size="24" font-weight="900" fill="' + c + '" stroke="#0b3a20" stroke-width="5" paint-order="stroke" style="font-family:var(--font-display,Arial)">' + m + "</text>" : "") + "</g>"; };

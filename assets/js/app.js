@@ -106,6 +106,12 @@
     $("#bal-menu").innerHTML = '<div class="bm-one">' + BAL_IC + '<b class="num">' + inCur(shownBal(u), disp.cur) + "</b></div>" +
       '<div class="bm-title">Display currency</div><div class="bm-cur"><select class="select" data-disp-cur>' + RD.fiats.filter(function (f) { return fxRate(f[0]); }).map(function (f) { return '<option value="' + f[0] + '"' + (f[0] === disp.cur ? " selected" : "") + ">" + f[0] + " · " + f[2] + "</option>"; }).join("") + "</select></div>";
   }
+  document.addEventListener("click", function (e) { var b = e.target.closest("[data-txcat]"); if (!b) return; state.txCat = b.getAttribute("data-txcat"); route(true); });
+  document.addEventListener("input", function (e) {
+    if (e.target.id !== "tx-q") return; var v = e.target.value.trim().toLowerCase(), shown = 0;
+    $$(".tx-row").forEach(function (r) { var ok = !v || r.getAttribute("data-q").indexOf(v) > -1; r.classList.toggle("hidden", !ok); if (ok) shown++; });
+    var none = $(".tx-none"); if (none) none.classList.toggle("hidden", shown > 0);
+  });
   document.addEventListener("change", function (e) {
     var t = e.target; if (!t.hasAttribute) return;
     if (t.hasAttribute("data-disp-fiat")) { disp.fiat = t.checked; saveDisp(); renderHeader(); renderBalMenu(); }
@@ -1950,27 +1956,31 @@
   function spillMult(bad, k) { var sv = 1; for (var i = 0; i < bad; i++) sv *= (25 - k - i) / (25 - i); return sv > 0 ? Math.floor(0.98 / sv * 100) / 100 : 0; }
   RD.fair.spillMult = spillMult;
   function spillScene() {
-    var ticks = ""; for (var i = 0; i <= 4; i++) { var y = 280 - i * 50; ticks += '<path d="M96 ' + y + ' H112" stroke="#ff5a7a" stroke-opacity=".75" stroke-width="2"/><text x="88" y="' + (y + 4) + '" text-anchor="end" font-size="12" font-weight="700" fill="#ff5a7a" fill-opacity=".85">' + i * 25 + "%</text>" + (i < 4 ? '<path d="M102 ' + (y - 25) + ' H112" stroke="#ff5a7a" stroke-opacity=".45" stroke-width="2"/>' : ""); }
-    var glass = "M138 74 L262 74 L250 282 Q249 290 241 290 L159 290 Q151 290 150 282 Z";
-    return '<svg viewBox="0 0 400 330" class="sp-svg"><defs><clipPath id="spClip"><path d="' + glass + '"/></clipPath>' +
-      '<linearGradient id="spWater" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5cc8ff"/><stop offset=".5" stop-color="#9fe2ff"/><stop offset="1" stop-color="#4ab3f5"/></linearGradient>' +
-      '<linearGradient id="spMetal" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4b5568"/><stop offset=".5" stop-color="#9aa5b8"/><stop offset="1" stop-color="#3c4556"/></linearGradient><linearGradient id="spMetalV" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c9d2df"/><stop offset=".5" stop-color="#8b96aa"/><stop offset="1" stop-color="#4a5466"/></linearGradient></defs>' +
+    // estilo da referência: bico simples no topo (com detalhe neon), copo 3D com borda em elipse, base em perspectiva e caixa do multiplicador
+    var ticks = ""; for (var i = 0; i <= 4; i++) { var y = 282 - i * 50; ticks += '<path class="sp-tk" data-v="' + i * 25 + '" d="M100 ' + y + ' H118" stroke="#8a97b3" stroke-opacity=".55" stroke-width="2"/><text class="sp-tl" data-v="' + i * 25 + '" x="92" y="' + (y + 4) + '" text-anchor="end" font-size="12" font-weight="700" fill="#8a97b3">' + i * 25 + "%</text>" + (i < 4 ? '<path d="M108 ' + (y - 25) + ' H118" stroke="#8a97b3" stroke-opacity=".3" stroke-width="2"/>' : ""); }
+    var glass = "M130 80 A70 12 0 0 0 270 80 L254 282 A54 9 0 0 1 146 282 Z";
+    return '<svg viewBox="0 0 400 330" class="sp-svg"><defs><clipPath id="spClip"><path d="M130 80 L270 80 L254 282 A54 9 0 0 1 146 282 Z"/></clipPath>' +
+      '<linearGradient id="spWater" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3fb7f5"/><stop offset=".5" stop-color="#8fdcff"/><stop offset="1" stop-color="#2f9cf0"/></linearGradient>' +
+      '<linearGradient id="spGlass" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset=".3" stop-color="#fff" stop-opacity=".04"/><stop offset=".8" stop-color="#fff" stop-opacity=".02"/><stop offset="1" stop-color="#fff" stop-opacity=".14"/></linearGradient>' +
+      '<linearGradient id="spSlabT" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b4256"/><stop offset="1" stop-color="#2a3042"/></linearGradient></defs>' +
       ticks +
-      /* torneira de parede (bica curva) vindo da direita */
-      '<rect x="334" y="0" width="16" height="38" rx="5" fill="url(#spMetalV)"/><rect x="326" y="7" width="10" height="24" rx="2" fill="#59647a"/>' +
-      '<path d="M330 19 H224 A24 24 0 0 0 200 43 V52" fill="none" stroke="#7c879b" stroke-width="16"/>' +
-      '<path d="M330 13.5 H224 A29.5 29.5 0 0 0 194.5 43 V52" fill="none" stroke="#c9d2df" stroke-opacity=".8" stroke-width="3"/>' +
-      '<path d="M330 24.5 H224 A18.5 18.5 0 0 0 205.5 43 V52" fill="none" stroke="#4a5466" stroke-width="3"/>' +
-      '<rect x="189" y="50" width="22" height="9" rx="3" fill="url(#spMetal)"/><rect x="192" y="58" width="16" height="3" rx="1.5" fill="#2b3242"/>' +
-      '<rect x="283" y="6" width="12" height="6" rx="2" fill="#59647a"/><rect x="266" y="1" width="46" height="7" rx="3.5" fill="url(#spMetalV)"/><circle cx="289" cy="4.5" r="4.5" fill="#c9d2df"/>' +
-      '<rect id="sp-stream" x="194.5" y="60" width="11" height="226" rx="5.5" fill="url(#spWater)" opacity="0"/>' +
-      '<rect x="132" y="290" width="136" height="20" rx="4" fill="#20283a"/><rect x="124" y="304" width="152" height="14" rx="4" fill="#161c2a"/>' +
-      '<g clip-path="url(#spClip)"><g id="sp-water" style="transform:translateY(210px)"><rect x="120" y="80" width="160" height="230" fill="url(#spWater)" opacity=".92"/><path d="M120 80 q20 -8 40 0 t40 0 t40 0 t40 0 v8 h-160z" fill="#c9f0ff" opacity=".85"/></g></g>' +
-      '<path d="' + glass + '" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.55)" stroke-width="3" stroke-linejoin="round"/>' +
-      '<path d="M150 90 L160 270" stroke="#fff" stroke-opacity=".25" stroke-width="5" stroke-linecap="round"/>' +
-      '<g id="sp-over" opacity="0"><path d="M138 74 q-14 4 -18 30 q-3 22 6 30 q6 -10 4 -26 q-2 -18 12 -26z M262 74 q14 4 18 34 q3 22 -6 32 q-6 -12 -4 -28 q2 -18 -12 -30z" fill="url(#spWater)"/><path d="M138 70 q62 -18 124 0 q-62 10 -124 0z" fill="#c9f0ff"/></g>' +
+      // bico
+      '<rect x="182" y="0" width="36" height="36" rx="6" fill="#262c3d"/><rect x="186" y="34" width="28" height="10" rx="4" fill="#1b2030"/><rect x="190" y="43" width="20" height="3" rx="1.5" fill="#22d3ee" class="sp-neon"/>' +
+      '<rect id="sp-stream" x="194.5" y="46" width="11" height="236" rx="5.5" fill="url(#spWater)" opacity="0"/>' +
+      // base 3D
+      '<path d="M118 292 L282 292 L296 312 L104 312 Z" fill="url(#spSlabT)"/><rect x="104" y="312" width="192" height="12" fill="#1c2130"/>' +
+      // água
+      '<g clip-path="url(#spClip)"><g id="sp-water" style="transform:translateY(210px)"><rect x="120" y="80" width="160" height="230" fill="url(#spWater)" opacity=".9"/><ellipse cx="200" cy="80" rx="80" ry="11" fill="#c9f0ff" opacity=".9"/></g></g>' +
+      // copo
+      '<path d="' + glass + '" fill="url(#spGlass)" stroke="#e8f2ff" stroke-opacity=".55" stroke-width="2.5"/>' +
+      '<ellipse cx="200" cy="80" rx="70" ry="12" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="2.5"/>' +
+      '<path d="M146 98 L158 268" stroke="#fff" stroke-opacity=".22" stroke-width="7" stroke-linecap="round"/><path d="M246 104 L238 250" stroke="#fff" stroke-opacity=".1" stroke-width="4" stroke-linecap="round"/>' +
+      // caixa do multiplicador
+      '<g class="sp-mbox"><rect x="300" y="150" width="88" height="56" rx="12" fill="#151a28" stroke="#2c3550" stroke-width="3"/><text id="sp-mbox" x="344" y="185" text-anchor="middle" font-size="18" font-weight="800" fill="#cfd8ea" style="font-family:var(--font-display,Arial)">—</text></g>' +
+      '<g id="sp-over" opacity="0"><path d="M130 80 q-14 4 -18 30 q-3 22 6 30 q6 -10 4 -26 q-2 -18 12 -26z M270 80 q14 4 18 34 q3 22 -6 32 q-6 -12 -4 -28 q2 -18 -12 -30z" fill="url(#spWater)"/><ellipse cx="200" cy="78" rx="74" ry="13" fill="#c9f0ff"/></g>' +
       "</svg>";
   }
+
   OG.spill = {
     label: function (b) { return b.multiplier ? b.multiplier.toFixed(2) + "×" : "0.00×"; },
     cfg: function () {
@@ -1990,13 +2000,16 @@
       function maxSteps() { return 25 - bad(); }
       function setLevel(steps, over) {
         var w = $("#sp-water"); if (!w) return;
-        w.style.transform = "translateY(" + (210 - Math.min(steps, 25) * 8.4) + "px)";
+        w.style.transform = "translateY(" + (210 - Math.min(steps, 25) * 8.08) + "px)";
+        var pct = Math.min(steps, 25) / 25 * 100;
+        $$(".sp-tl, .sp-tk").forEach(function (el) { var v = +el.getAttribute("data-v"), on = v <= pct && pct < v + 25 || (v === 100 && pct >= 100); el.classList.toggle("on", on); });
         var o = $("#sp-over"); if (o) { o.style.opacity = over ? 1 : 0; o.classList.toggle("on", !!over); }
       }
       function paint() {
         var k = round ? round.steps : 0, ms = []; for (var i = 1; i <= maxSteps(); i++) ms.push(spillMult(bad(), i));
         var box = $("#sp-ladder"); if (box) box.innerHTML = ladderWin(ms, k, !!round);
         var nx = $("#sp-next"); if (nx) nx.textContent = k < maxSteps() ? spillMult(bad(), k + 1).toFixed(2) + "×" : "—";
+        var mb = $("#sp-mbox"); if (mb) { mb.textContent = round && k ? spillMult(bad(), k).toFixed(2) + "×" : "—"; mb.classList.toggle("on", !!(round && k)); }
         if (round) { var m = k ? spillMult(bad(), k) : 1; ctx.setProfit(m, m.toFixed(2)); var p = $("#og-profit"); if (p) p.value = amtIn(round.amount * (m - 1)); }
         else ctx.setProfit(spillMult(bad(), 1), spillMult(bad(), 1).toFixed(2));
       }
@@ -2971,7 +2984,9 @@
   });
   function renderVipDrawer() {
     var u = me(), v = vipState(u), box = $("#vip-drawer-body"); if (!box) return;
-    box.innerHTML = '<div class="vd-card"><div class="vd-banner">' + badge(v.cur, 84) + (v.next ? '<span class="vd-arrow">' + ic("chevronRight", 18) + "</span>" + badge(v.next, 64) : "") + "</div>" +
+    var tc = (v.cur && v.cur.color) || "#4da3ff";
+    box.innerHTML = '<div class="vd-card"><div class="vd-banner" style="--tc:' + tc + '"><span class="vd-rays"></span><span class="vd-dots"></span>' +
+      '<span class="vd-ped">' + badge(v.cur, 70) + "</span>" + (v.next ? '<span class="vd-track"><i></i><i></i><i></i>' + ic("chevronRight", 16) + '</span><span class="vd-ped next">' + badge(v.next, 50) + "</span>" : "") + "</div>" +
       '<div class="row between vd-prog-head"><span>Your VIP progress</span><strong>' + v.pct.toFixed(2) + "%</strong></div>" +
       '<div class="progress"><span style="width:' + v.pct + '%"></span></div>' +
       '<div class="row between vd-tiers"><span>' + badge(v.cur, 18) + (v.cur ? v.cur.name : "Unranked") + "</span><span>" + (v.next ? badge(v.next, 18) + v.next.name : "Max level") + "</span></div>" +
@@ -3155,6 +3170,38 @@
 
   /* ---------- Account ---------- */
   var KYC_LABEL = { "Not started": ["Not verified", ""], Pending: ["Under review", "badge-warn"], Verified: ["Verified", "badge-success"], Rejected: ["Rejected — resubmit", "badge-danger"] };
+  /* ---------- Transações (estilo Rainbet/Razed): categorias, busca, CSV, status em ícone, hash com link ---------- */
+  var TX_LABEL = { Deposit: "Deposit", Withdrawal: "Withdrawal", Adjustment: "Adjustment", Bonus: "Bonus", Rakeback: "Rakeback", "Level reward": "VIP reward", Commission: "Affiliate", "Tip sent": "Tip sent", "Tip received": "Tip received" };
+  var TX_CATS = [["all", "All", "list"], ["dep", "Deposits", "download"], ["wd", "Withdrawals", "upload"], ["rw", "Rewards", "gift"], ["tip", "Tips", "send"], ["other", "Other", "more"]];
+  function txCat(t) { return t.type === "Deposit" ? "dep" : t.type === "Withdrawal" ? "wd" : /Bonus|Rakeback|Level reward|Commission/.test(t.type) ? "rw" : /^Tip/.test(t.type) ? "tip" : "other"; }
+  var EXPLORER = { TRC20: "https://tronscan.org/#/transaction/", ERC20: "https://etherscan.io/tx/", ETH: "https://etherscan.io/tx/", BEP20: "https://bscscan.com/tx/", BSC: "https://bscscan.com/tx/", BTC: "https://mempool.space/tx/", SOL: "https://solscan.io/tx/", SPL: "https://solscan.io/tx/", LTC: "https://blockchair.com/litecoin/transaction/", DOGE: "https://blockchair.com/dogecoin/transaction/" };
+  function txExplorer(t) { var base = EXPLORER[(t.net || "").toUpperCase()] || EXPLORER[(t.coin || "").toUpperCase()]; return base && t.txHash ? base + encodeURIComponent(t.txHash) : null; }
+  function txDate(iso) { var d = new Date(iso); return isNaN(d) ? "—" : d.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
+  function txRow(t) {
+    var out = t.type === "Withdrawal" || t.sign === -1, st = t.status === "Completed" ? ["ok", "check", t.type === "Withdrawal" ? "Sent" : "Complete"] : t.status === "Pending" ? ["wait", "clock", "Processing"] : ["bad", "x", "Rejected"];
+    var link = txExplorer(t), mid;
+    if (t.coin) mid = '<div class="tx-mid"><span class="tx-coin">' + coinDot(t.coin) + "<b>" + esc(t.coin) + "</b>" + (t.net ? '<small>' + esc(t.net) + "</small>" : "") + "</span>" +
+      (t.txHash ? (link ? '<a class="tx-hash" href="' + esc(link) + '" target="_blank" rel="noopener noreferrer">' + esc(t.txHash.slice(0, 22)) + "…" + ic("external", 13) + "</a>" : '<span class="tx-hash">' + esc(t.txHash.slice(0, 22)) + "…</span>") : '<span class="tx-hash faint">' + (t.address ? esc(t.address.slice(0, 22)) + "…" : "—") + "</span>") + "</div>";
+    else mid = '<div class="tx-mid"><span class="tx-note">' + esc(t.note || "—") + "</span></div>";
+    return '<div class="tx-row" data-q="' + esc((t.id + " " + (t.txHash || "") + " " + (t.note || "") + " " + (TX_LABEL[t.type] || t.type)).toLowerCase()) + '">' +
+      '<span class="tx-st ' + st[0] + '" title="' + st[2] + '">' + ic(st[1], 15) + "</span>" +
+      '<div class="tx-main"><b>' + esc(TX_LABEL[t.type] || t.type) + '</b><small>' + st[2] + " · " + esc(String(t.id).replace(/^TX-/, "#")) + "</small></div>" + mid +
+      '<div class="tx-amt"><b class="' + (out ? "" : "pos") + '">' + (out ? "−" : "+") + money(t.amount) + "</b><small>" + txDate(t.date) + "</small></div></div>";
+  }
+  function txView(u, txs) {
+    var cat = state.txCat || "all", list = txs.filter(function (t) { return cat === "all" || txCat(t) === cat; });
+    var count = function (c) { return c === "all" ? txs.length : txs.filter(function (t) { return txCat(t) === c; }).length; };
+    return '<div class="tx-wrap"><nav class="tx-nav">' + TX_CATS.map(function (c) { return '<button class="' + (c[0] === cat ? "active" : "") + '" data-txcat="' + c[0] + '">' + ic(c[2], 16) + "<span>" + c[1] + "</span><i>" + count(c[0]) + "</i></button>"; }).join("") + "</nav>" +
+      '<div class="tx-body"><div class="tx-bar"><label class="tx-search">' + ic("search", 16) + '<input id="tx-q" placeholder="Search by ID, hash or note" autocomplete="off"></label><button class="btn btn-secondary" data-action="tx-csv">' + ic("download", 16) + "<span>Export CSV</span></button></div>" +
+      (list.length ? '<div class="tx-list">' + list.map(txRow).join("") + '</div><div class="tx-none hidden">' + empty("No matches", "Try another ID or hash.") + "</div>"
+        : empty("Nothing here yet", cat === "dep" || cat === "all" ? "Your deposits show up here as soon as they arrive." : "Transactions of this type show up here.", cat === "dep" || cat === "all" ? '<button class="btn btn-primary btn-sm" data-open="wallet">Deposit</button>' : "")) + "</div></div>";
+  }
+  function txCsv(u) {
+    var cat = state.txCat || "all", rows = db.txOf(u.id).filter(function (t) { return cat === "all" || txCat(t) === cat; });
+    var q = function (v) { v = v == null ? "" : String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+    var csv = ["id,type,status,amount_usd,coin,network,tx_hash,note,date"].concat(rows.map(function (t) { return [t.id, TX_LABEL[t.type] || t.type, t.status, (t.type === "Withdrawal" || t.sign === -1 ? "-" : "") + t.amount, t.coin, t.net, t.txHash, t.note, t.date].map(q).join(","); })).join("\n");
+    var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" })); a.download = "rdcasino-transactions.csv"; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
   pages.account = function (tab) {
     var u = me();
     if (!u && RD.live && db.live && !db.live.ready) return '<div class="container"><div class="card empty" style="padding:60px 20px"><p>Loading your account…</p></div></div>'; /* sessão ainda carregando */
@@ -3171,13 +3218,7 @@
     else if (tab === "stats") {
       var t = db.tierOf(u.wagered);
       body = '<div class="kpi-grid"><div class="kpi"><div class="kpi-label">Total wagered</div><div class="kpi-value num">' + fmt.usd(u.wagered) + '</div></div><div class="kpi"><div class="kpi-label">Bets</div><div class="kpi-value num">' + fmt.int(u.bets) + '</div></div><div class="kpi"><div class="kpi-label">Profit</div><div class="kpi-value num ' + (u.profit >= 0 ? "pos" : "neg") + '">' + fmt.usd(u.profit) + '</div></div><div class="kpi"><div class="kpi-label">VIP level</div><div class="kpi-value">' + (t ? t.name : "Unranked") + "</div></div></div>";
-    } else {
-      var label = { Deposit: "Deposit", Withdrawal: "Withdrawal", Adjustment: "Balance adjustment", Bonus: "Bonus", Rakeback: "Rakeback", "Level reward": "VIP reward", Commission: "Affiliate commission", "Tip sent": "Tip sent", "Tip received": "Tip received" };
-      body = '<div class="card">' + (txs.length ? '<div class="table-wrap"><table class="table"><thead><tr><th>Type</th><th>Date</th><th class="right">Amount</th><th>Status</th></tr></thead><tbody>' + txs.map(function (t) {
-        var out = t.type === "Withdrawal" || t.sign === -1, st = t.status === "Completed" ? "badge-success" : t.status === "Pending" ? "badge-warn" : "badge-danger";
-        return '<tr><td class="strong">' + (label[t.type] || t.type) + (t.note && t.type !== "Withdrawal" ? '<br><small class="faint">' + esc(t.note) + "</small>" : "") + '</td><td class="faint">' + fmt.date(t.date) + '</td><td class="right num strong ' + (out ? "" : "pos") + '">' + (out ? "-" : "+") + fmt.usd(t.amount) + '</td><td><span class="badge ' + st + '">' + (t.status === "Completed" ? (t.type === "Withdrawal" ? "Sent" : "Completed") : t.status === "Pending" ? "Processing" : "Rejected") + "</span></td></tr>";
-      }).join("") + "</tbody></table></div>" : empty("No transactions yet", "Make a deposit to get started.", '<button class="btn btn-primary btn-sm" data-open="wallet">Deposit</button>')) + "</div>";
-    }
+    } else body = txView(u, txs);
     return '<div class="container">' + head + body + "</div>";
   };
   /* ---------- Verificação de identidade (KYC) ---------- */
@@ -3523,6 +3564,7 @@
       }
       case "rakeback": { if (needLogin()) return; t.disabled = true; Promise.resolve(db.claimRakeback(u.id)).then(function (rb) { if ($("#drawer-vip").classList.contains("open")) renderVipDrawer(); RD.toast(rb.error || "Claimed " + fmt.usd(rb.amount), rb.error ? "error" : ""); renderHeader(); route(true); }); return; }
       case "seeds": return seedsModal();
+      case "tx-csv": return txCsv(u);
       case "rotate": { t.disabled = true; Promise.resolve(db.rotateSeed(u.id, ($("#new-client").value || "").trim())).then(function (rs) { t.disabled = false; if (rs && rs.error) return RD.toast(rs.error, "error"); RD.toast("Seed pair changed — previous server seed revealed"); seedsModal(); }); return; }
       case "open-withdraw": state.walletTab = "withdraw"; openModal("wallet"); return renderWallet();
       case "wd-max": $("#wd-amt").value = u.balance.toFixed(2); return;
