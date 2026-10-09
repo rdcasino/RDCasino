@@ -41,7 +41,11 @@
         return '<a class="sb-link" href="#/' + n.route + '" data-route="' + n.route + '" title="' + n.label + '">' + ic(n.icon) + "<span>" + n.label + "</span>" + (n.badge ? '<span class="badge badge-brand">' + n.badge + "</span>" : "") + "</a>";
       }).join("") + "</div>";
     });
-    $("#sb-nav").innerHTML = h; if (typeof supBadge === "function" && $("#sup-fab")) supBadge();
+    var nav = $("#sb-nav"), vw = vipWidget(), rest = h.slice(vw.length), old = nav.querySelector(".sb-vip");
+    /* aposta só muda o card VIP: troca só ele */
+    if (nav._rest === rest && nav._vip !== vw && old && vw) { var tmp = document.createElement("div"); tmp.innerHTML = vw; old.replaceWith(tmp.firstChild); nav._vip = vw; }
+    else if (nav._rest !== rest || nav._vip !== vw) { nav.innerHTML = h; nav._rest = rest; nav._vip = vw; }
+    if (typeof supBadge === "function" && $("#sup-fab")) supBadge();
   }
   function markActive(path) {
     var parts = path.split("/"), base = parts[0] === "casino" ? parts.slice(0, 2).join("/") : parts[0];
@@ -59,7 +63,12 @@
   function isStaff(name) { return !!name && (RD.staff || []).some(function (x) { return x.toLowerCase() === String(name).toLowerCase(); }); }
   function topTier() { return RD.vipTiers[RD.vipTiers.length - 1]; }
   function uBadge(name, wagered, size) { return RD.art.tierBadge(isStaff(name) ? topTier() : db.tierOf(wagered || 0), size); }
-  function shownBal(u) { var t = 0; for (var k in inFlight) t += inFlight[k]; return Math.round((u.balance - t) * 100) / 100; }
+  var pendStake = 0; // apostas enviadas ao servidor que ainda não voltaram: já saem do saldo mostrado no clique
+  function shownBal(u) { var t = pendStake; for (var k in inFlight) t += inFlight[k]; return Math.round((u.balance - t) * 100) / 100; }
+  function stakeOut(a) { pendStake = Math.round((pendStake + a) * 100) / 100; var u = me(); if (u) paintBal(u); }
+  function stakeBack(a) { pendStake = Math.max(0, Math.round((pendStake - a) * 100) / 100); var u = me(); if (u) paintBal(u); }
+  /* Troca o HTML só quando mudou (evita redesenhar menu, rodapé e tabelas a cada aposta) */
+  function setHTML(el, html) { if (!el || el._h === html) return false; el.innerHTML = html; el._h = html; return true; }
   function hold(b) { if (b && !b.error && b.payout > 0) inFlight[b.id] = b.payout; renderHeader(); }
   function release(b) {
     if (!b || !(b.id in inFlight)) return; delete inFlight[b.id];
@@ -134,15 +143,16 @@
     if (!u) return;
     paintBal(u);
     if (typeof vipDot === "function") vipDot();
-    var t = db.tierOf(u.wagered);
-    $("#user-menu").innerHTML =
+    var t = db.tierOf(u.wagered), mk = u.username + "|" + (t ? t.name : "") + "|" + isStaff(u.username), um = $("#user-menu");
+    if (um._k === mk) return; um._k = mk; // menu só muda quando muda o nível
+    setHTML(um,
       '<div class="menu-head row" style="gap:10px">' + uBadge(u.username, u.wagered, 30) + '<div><strong>' + esc(u.username) + '</strong><small class="faint">' + (isStaff(u.username) ? topTier().name : t ? t.name : "Unranked") + "</small></div></div>" +
       '<button data-open="wallet">' + ic("wallet", 16) + "Wallet</button>" +
       '<a href="#/account">' + ic("user", 16) + "Account & verification</a>" +
       '<a href="#/account/bets">' + ic("chart", 16) + "My bets</a>" +
       '<a href="#/vip">' + ic("crown", 16) + "VIP Club</a>" +
       '<a href="#/affiliate">' + ic("link", 16) + "Affiliate</a>" +
-      '<button class="danger" data-action="logout">' + ic("logout", 16) + "Sign out</button>";
+      '<button class="danger" data-action="logout">' + ic("logout", 16) + "Sign out</button>");
   }
 
   /* ---------- Modals & drawers ---------- */
@@ -419,12 +429,16 @@
      Modo real: o servidor sorteia, calcula e grava antes (db.playBet); place()
      só aplica o resultado que veio do servidor. */
   /* Rodada (Mines, Tower...): modo real começa no servidor; demonstração começa aqui */
-  function rStart(u, G, a, state, params) { return RD.live ? db.roundStart(G, a, params || state) : Promise.resolve(db.startRound(u.id, G, a, state)); }
+  function rStart(u, G, a, state, params) {
+    if (!RD.live) return Promise.resolve(db.startRound(u.id, G, a, state));
+    stakeOut(a); return db.roundStart(G, a, params || state).then(function (r) { stakeBack(a); return r; });
+  }
   function roll(u, game, amount, params, count, single) {
-    if (db.playBet) return db.playBet(game, amount, params).then(function (r) {
+    if (db.playBet) { stakeOut(amount); return db.playBet(game, amount, params).then(function (r) {
+      stakeBack(amount);
       if (r.error) { var z = []; for (var i = 0; i < count; i++) z.push(0); return { fs: z, nonce: 0, client: "", place: function () { return { error: r.error }; } }; }
       return r;
-    });
+    }); }
     var s = db.reserve(u.id);
     var p = single ? hmac(s.server, s.client + ":" + s.nonce).then(function (buf) { return [floatFrom(buf)]; }) : floats(s.server, s.client, s.nonce, count);
     return p.then(function (fs) { return { fs: fs, nonce: s.nonce, client: s.client, place: function (mult, win, detail) { return db.placeBet(u.id, game, amount, mult, win, detail); } }; });
@@ -545,10 +559,10 @@
     if (tab === "recent") list = all.slice(0, 12);
     if (tab === "mine") list = all.filter(function (b) { return b.userId === u.id; }).slice(0, 12);
     if (tab === "high") list = all.filter(function (b) { return b.amount >= HIGH_ROLLER; }).slice(0, 12);
-    box.innerHTML = list.length ? '<div class="table-wrap"><table class="table"><thead><tr><th>Player</th><th>Time</th><th class="right">Bet</th><th class="right">Result</th><th class="right">Multiplier</th><th class="right">Profit</th></tr></thead><tbody>' +
+    setHTML(box, list.length ? '<div class="table-wrap"><table class="table"><thead><tr><th>Player</th><th>Time</th><th class="right">Bet</th><th class="right">Result</th><th class="right">Multiplier</th><th class="right">Profit</th></tr></thead><tbody>' +
       list.map(function (b) {
         return '<tr><td class="strong">' + esc(b.user) + '</td><td class="faint">' + b.date.slice(11, 16) + '</td><td class="right num">' + money(b.amount) + '</td><td class="right num">' + mod.label(b) + '</td><td class="right num">' + b.multiplier.toFixed(2) + '×</td><td class="right num strong ' + (b.payout > b.amount ? "pos" : "faint") + '">' + money(b.payout - b.amount, { sign: true }) + "</td></tr>";
-      }).join("") + "</tbody></table></div>" : empty("Nothing here yet", tab === "mine" ? "Your bets on " + g.name + " show up here." : tab === "recent" ? "Plays on " + g.name + " show up here in real time." : "Bets of " + money(HIGH_ROLLER, { dec: 0 }) + " or more on " + g.name + " show up here.");
+      }).join("") + "</tbody></table></div>" : empty("Nothing here yet", tab === "mine" ? "Your bets on " + g.name + " show up here." : tab === "recent" ? "Plays on " + g.name + " show up here in real time." : "Bets of " + money(HIGH_ROLLER, { dec: 0 }) + " or more on " + g.name + " show up here."));
   }
 
   function bindOriginal(g) {
@@ -566,7 +580,7 @@
         if (!u) { openAuth("register"); return null; }
         if (u.status !== "Active") { ctx.msg("Your account is suspended."); return null; }
         if (a < 0.01) { ctx.msg("Minimum bet is $0.01."); return null; }
-        if (a > u.balance) { ctx.msg("Insufficient balance.", ' <a href="#" class="link-sm" data-open="wallet">Deposit</a>'); return null; }
+        if (a > u.balance - pendStake + 1e-9) { ctx.msg("Insufficient balance.", ' <a href="#" class="link-sm" data-open="wallet">Deposit</a>'); return null; }
         if (maxMult && maxProfit() && a * (maxMult - 1) > maxProfit()) { ctx.msg("Max profit per bet is " + money(maxProfit(), { dec: 0 }) + "."); return null; }
         return u;
       },
@@ -603,15 +617,15 @@
     ogRefresh = ctx.refresh;
     function history() {
       var u = me(), h = $("#og-hist"); if (!h) return;
-      h.innerHTML = u ? db.betsOf(u.id).filter(function (b) { return b.game === g.id; }).slice(0, 7).reverse().map(function (b) {
+      setHTML(h, u ? db.betsOf(u.id).filter(function (b) { return b.game === g.id; }).slice(0, 7).reverse().map(function (b) {
         return '<span class="' + (b.payout > b.amount ? "w" : "") + '">' + mod.label(b) + "</span>";
-      }).join("") : "";
+      }).join("") : "");
     }
     function stats() { var el = $("#og-stats"); if (el && !el.classList.contains("hidden")) { el.innerHTML = statsHtml(g.id); bindStatsButtons(); } }
     function manual() {
       if (api.click) return api.click();
       if (busy) return; busy = true; ctx.btn().disabled = true;
-      api.play().then(function () { setTimeout(function () { busy = false; var b = ctx.btn(); if (b) b.disabled = false; }, api.cooldown || 180); });
+      api.play().then(function () { function done() { busy = false; var b = ctx.btn(); if (b) b.disabled = false; } if (api.cooldown) setTimeout(done, api.cooldown); else done(); });
     }
     function startAuto() {
       var base = ctx.amount(), count = 0, total = parseInt($("#au-n").value, 10) || 0, start = sess(g.id).profit;
@@ -657,9 +671,8 @@
     });
     ctx.btn().addEventListener("click", function () {
       if (!me()) return openAuth("register");
-      RD.sfx.play("bet");
-      if (mode === "auto") return auto ? stopAuto() : startAuto();
-      manual();
+      if (mode === "auto") { RD.sfx.play("bet"); return auto ? stopAuto() : startAuto(); }
+      manual(); RD.sfx.play("bet");
     });
     $$("[data-ogtab]").forEach(function (b) { b.addEventListener("click", function () { tab = b.getAttribute("data-ogtab"); ogTab(g, tab); }); });
     $$(".ogx-bar [data-ogx]").forEach(function (b) { b.addEventListener("click", function () { ogBar(b.getAttribute("data-ogx")); }); });
@@ -777,15 +790,16 @@
       $("#lb-target").addEventListener("input", refresh);
       $("#lb-chance").addEventListener("change", function () { var c = Math.max(0.0001, Math.min(97.02, parseFloat(this.value) || 49)); $("#lb-target").value = (98 / c).toFixed(2); this.blur(); refresh(); });
       return {
-        refresh: refresh, cooldown: 320,
+        refresh: refresh, cooldown: 120,
         play: function () {
           var a = ctx.amount(), m = target(), u = ctx.validate(a, m); if (!u) return Promise.resolve(null);
+          var st0 = $("#lb"); if (st0) { st0.classList.remove("win", "lose"); void st0.offsetWidth; st0.classList.add("rolling"); }
           return roll(u, "limbo", a, { target: m }, 1, true).then(function (s) {
             var nonce = s.nonce, client = s.client, res = outcome("limbo", s.fs[0]), win = res >= m;
-            var b = s.place(m, win, { result: res, target: m, nonce: nonce, client: client }); if (b.error) { ctx.msg(b.error); return null; }
-            var el = $("#lb-num"), st = $("#lb"), t0 = performance.now(), dur = res > 10 ? 520 : 380;
+            var b = s.place(m, win, { result: res, target: m, nonce: nonce, client: client }); if (b.error) { if (st0) st0.classList.remove("rolling"); ctx.msg(b.error); return null; }
+            var el = $("#lb-num"), st = $("#lb"), t0 = performance.now(), dur = res > 10 ? 380 : 260;
             if (el && st) {
-              el.classList.remove("w", "l"); st.classList.remove("win", "lose"); void st.offsetWidth; st.classList.add("rolling");
+              el.classList.remove("w", "l"); st.classList.remove("win", "lose"); st.classList.add("rolling");
               (function step(t) {
                 var k = Math.max(0, Math.min(1, (t - t0) / dur)), e = 1 - Math.pow(1 - k, 3);
                 el.textContent = (1 + (res - 1) * e).toFixed(2) + "×";
@@ -3386,7 +3400,7 @@
     var licenseLine = L.status === "active" && L.number
       ? esc(L.company) + " is licensed and regulated by " + esc(L.authority) + " under license no. " + esc(L.number) + ". " + esc(L.address)
       : "Licensing information will be published here.";
-    $("#footer").innerHTML = '<div class="footer-in"><div class="footer-cols">' +
+    setHTML($("#footer"), '<div class="footer-in"><div class="footer-cols">' +
       '<div class="footer-about"><span class="brand-name">RD<span>Casino</span></span><p>Crypto casino with provably fair originals and fast withdrawals.</p><div class="footer-badges"><span class="age-badge">18+</span><span class="badge">' + ic("shield", 12) + 'Provably fair</span><span class="badge">' + ic("lock", 12) + "SSL</span></div>" + socialLinks() + "</div>" +
       '<div><h4>Casino</h4><a href="#/casino/originals">RD Originals</a><a href="#/casino/slots">Slots</a><a href="#/casino/live">Live Casino</a><a href="#/casino/gameshows">Game Shows</a></div>' +
       '<div><h4>Rewards</h4><a href="#/promotions">Promotions</a><a href="#/vip">VIP Club</a><a href="#/leaderboard">Leaderboard</a><a href="#/affiliate">Affiliate</a></div>' +
@@ -3394,7 +3408,7 @@
       '<div><h4>Legal</h4><a href="#/legal/terms">Terms of Service</a><a href="#/legal/privacy">Privacy Policy</a><a href="#/legal/aml">AML & KYC</a><a href="#/legal/bonus">Bonus Terms</a></div></div>' +
       '<div class="footer-legal"><div class="fl-row"><span class="fl-lbl">' + ic("shield", 13) + "License</span><span>" + licenseLine + '</span></div>' +
       '<div class="fl-row"><span class="fl-lbl">' + ic("ban", 13) + 'Not available in</span><span class="fl-chips">' + RD.config.restrictedCountries.map(function (c) { return "<i>" + esc(c) + "</i>"; }).join("") + "</span></div>" +
-      '<div class="fl-copy">© ' + new Date().getFullYear() + " RDCasino. All rights reserved.</div></div></div>";
+      '<div class="fl-copy">© ' + new Date().getFullYear() + " RDCasino. All rights reserved.</div></div></div>");
   }
 
   /* ---------- Chat ---------- */
