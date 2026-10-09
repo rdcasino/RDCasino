@@ -69,6 +69,17 @@
     var f = curInfo(c), dec = f[3] === 0 ? 0 : 2;
     return f[1] + (usd * r).toLocaleString(f[4] || "en-US", { minimumFractionDigits: dec, maximumFractionDigits: dec });
   }
+  /* Valores do painel do jogo na moeda de exibição (a mesma do topo). O servidor continua em dólar:
+     o que o jogador digita é convertido para USD antes da aposta. */
+  function dispRate() { return fxRate(disp.cur) || 1; }
+  function curSym() { return fxRate(disp.cur) ? curInfo(disp.cur)[1] : "$"; }
+  function curDec() { return fxRate(disp.cur) && curInfo(disp.cur)[3] === 0 ? 0 : 2; }
+  function money(usd, opts) {
+    opts = opts || {}; var v = (usd || 0) * dispRate(), c = fxRate(disp.cur) ? disp.cur : "USD", f = curInfo(c), dec = opts.dec === 0 || curDec() === 0 ? 0 : 2;
+    return (v < 0 ? "-" : opts.sign && v > 0 ? "+" : "") + f[1] + Math.abs(v).toLocaleString(f[4] || "en-US", { minimumFractionDigits: dec, maximumFractionDigits: dec });
+  }
+  function amtIn(usd) { return ((usd || 0) * dispRate()).toFixed(curDec()); }
+  function amtOut(v) { return Math.round((parseFloat(v) || 0) / dispRate() * 100) / 100; }
   function coinDec(c) { var p = RD.prices[c] || 1; return p >= 1000 ? 8 : p >= 50 ? 6 : p >= 5 ? 4 : 2; }
   function inCoin(usd, c) { var p = RD.prices[c] || 1; return (usd / p).toLocaleString("en-US", { minimumFractionDigits: coinDec(c), maximumFractionDigits: coinDec(c) }); }
   function showAmt(usd, c) { return disp.fiat ? inCur(usd, disp.cur) : inCoin(usd, c); }
@@ -92,7 +103,12 @@
     var t = e.target; if (!t.hasAttribute) return;
     if (t.hasAttribute("data-disp-fiat")) { disp.fiat = t.checked; saveDisp(); renderHeader(); renderBalMenu(); }
     else if (t.hasAttribute("data-disp-zero")) { disp.hideZero = t.checked; saveDisp(); renderBalMenu(); }
-    else if (t.hasAttribute("data-disp-cur")) { disp.cur = t.value; saveDisp(); renderHeader(); renderBalMenu(); }
+    else if (t.hasAttribute("data-disp-cur")) {
+      var keep = $$(".ogx-input input").map(function (x) { return [x, amtOut(x.value)]; });
+      disp.cur = t.value; saveDisp(); renderHeader(); renderBalMenu();
+      keep.forEach(function (k) { k[0].value = amtIn(k[1]); }); $$(".ogx-input .cur").forEach(function (x) { x.textContent = curSym(); });
+      if (typeof ogRefresh === "function") ogRefresh();
+    }
   });
   RD.onPrices = function () { var u = me(); if (u) paintBal(u); };
   function renderHeader() {
@@ -389,7 +405,8 @@
   function capMult(amount, mult) { var M = maxProfit(); return M && amount * (mult - 1) > M ? Math.floor(((amount + M) / amount) * 100) / 100 : mult; }
 
   /* ---------- Moldura ---------- */
-  function profitField(label) { return '<div><div class="ogx-label">' + (label || "Profit on win") + '<small id="og-mult-lbl"></small></div><div class="ogx-input ro"><span class="cur">$</span><input id="og-profit" readonly value="0.00"></div></div>'; }
+  var ogRefresh = null;
+  function profitField(label) { return '<div><div class="ogx-label">' + (label || "Profit on win") + '<small id="og-mult-lbl"></small></div><div class="ogx-input ro"><span class="cur">' + curSym() + '</span><input id="og-profit" readonly value="0.00"></div></div>'; }
   function autoRule(k, label) {
     return '<div><div class="ogx-label">' + label + '</div><div class="ogx-split" style="margin-bottom:6px"><button class="active" data-rule="' + k + '" data-val="reset">Reset</button><button data-rule="' + k + '" data-val="inc">Increase by</button></div>' +
       '<div class="ogx-input"><input type="number" id="au-' + k + '" min="0" step="1" value="0" disabled><span class="sfx">' + ic("percent", 14) + "</span></div></div>";
@@ -401,13 +418,13 @@
     var mod = OG[g.id], cfg = mod.cfg(), u = me(), fav = (ogPrefs.favs || []).indexOf(g.id) > -1;
     var side = '<aside class="ogx-side">' +
       (cfg.auto ? '<div class="ogx-mode"><button class="active" data-mode="manual">Manual</button><button data-mode="auto">Auto</button></div>' : "") +
-      '<div><div class="ogx-label">' + (cfg.amountLabel || "Bet amount") + '<small id="og-bal"></small></div><div class="ogx-input"><span class="cur">$</span><input type="number" id="og-amt" min="0" step="0.01" value="1.00" inputmode="decimal"><button class="mini" data-og="half">½</button><button class="mini" data-og="double">2×</button></div>' + (cfg.amountLabel === "Chip value" ? chipRack() : "") + "</div>" +
+      '<div><div class="ogx-label">' + (cfg.amountLabel || "Bet amount") + '<small id="og-bal"></small></div><div class="ogx-input"><span class="cur">' + curSym() + '</span><input type="number" id="og-amt" min="0" step="0.01" value="1.00" inputmode="decimal"><button class="mini" data-og="half">½</button><button class="mini" data-og="double">2×</button></div>' + (cfg.amountLabel === "Chip value" ? chipRack() : "") + "</div>" +
       (cfg.side || "") +
       (cfg.auto ? '<div id="og-auto" class="hidden" style="display:flex;flex-direction:column;gap:14px">' +
         '<div><div class="ogx-label">Number of bets<small>0 = infinite</small></div><div class="ogx-input"><input type="number" id="au-n" min="0" step="1" value="10"><span class="sfx">∞</span></div></div>' +
         autoRule("win", "On win") + autoRule("loss", "On loss") +
-        '<div><div class="ogx-label">Stop on profit</div><div class="ogx-input"><span class="cur">$</span><input type="number" id="au-sp" min="0" step="0.01" value="0"></div></div>' +
-        '<div><div class="ogx-label">Stop on loss</div><div class="ogx-input"><span class="cur">$</span><input type="number" id="au-sl" min="0" step="0.01" value="0"></div></div></div>' : "") +
+        '<div><div class="ogx-label">Stop on profit</div><div class="ogx-input"><span class="cur">' + curSym() + '</span><input type="number" id="au-sp" min="0" step="0.01" value="0"></div></div>' +
+        '<div><div class="ogx-label">Stop on loss</div><div class="ogx-input"><span class="cur">' + curSym() + '</span><input type="number" id="au-sl" min="0" step="0.01" value="0"></div></div></div>' : "") +
       '<button class="btn btn-primary btn-block ogx-bet" id="og-bet">' + (u ? "Bet" : "Sign in to play") + "</button>" + (cfg.after || "") +
       '<div class="ogx-msg" id="og-msg"></div></aside>';
     var stage = '<section class="ogx-stage"><div class="ogx-hist" id="og-hist"></div><div class="ogx-stats' + (ogPrefs.stats ? "" : " hidden") + '" id="og-stats"></div><div class="ogx-center">' + cfg.center + "</div>" + (cfg.fields || "") + "</section>";
@@ -431,7 +448,7 @@
     var line = pts.map(function (v, i) { return x(i).toFixed(2) + "," + y(v).toFixed(2); }).join(" ");
     var color = s.profit >= 0 ? "var(--success)" : "var(--danger)";
     return '<div class="row between"><h4>Live stats</h4><div class="row" style="gap:4px"><button class="btn btn-ghost btn-sm" data-ogx="reset-stats">Reset</button><button class="icon-btn" style="width:28px;height:28px" data-ogx="stats">' + ic("x", 14) + "</button></div></div>" +
-      '<dl><div><dt>Profit</dt><dd class="' + (s.profit >= 0 ? "pos" : "neg") + '">' + fmt.usd(s.profit, { sign: true }) + "</dd></div><div><dt>Wagered</dt><dd>" + fmt.usd(s.wagered) + '</dd></div><div><dt>Wins</dt><dd class="pos">' + s.wins + '</dd></div><div><dt>Losses</dt><dd class="neg">' + s.losses + "</dd></div></dl>" +
+      '<dl><div><dt>Profit</dt><dd class="' + (s.profit >= 0 ? "pos" : "neg") + '">' + money(s.profit, { sign: true }) + "</dd></div><div><dt>Wagered</dt><dd>" + money(s.wagered) + '</dd></div><div><dt>Wins</dt><dd class="pos">' + s.wins + '</dd></div><div><dt>Losses</dt><dd class="neg">' + s.losses + "</dd></div></dl>" +
       '<div class="ogx-chart"><svg viewBox="0 0 100 40" preserveAspectRatio="none"><line x1="0" x2="100" y1="' + y(0) + '" y2="' + y(0) + '" stroke="rgba(255,255,255,.15)" stroke-width="0.4" stroke-dasharray="1.5 1.5"/>' +
       (n > 1 ? '<polygon points="0,' + y(0) + " " + line + " 100," + y(0) + '" fill="' + color + '" fill-opacity="0.15"/><polyline points="' + line + '" fill="none" stroke="' + color + '" stroke-width="1.2" vector-effect="non-scaling-stroke"/>' : "") + "</svg></div>";
   }
@@ -463,7 +480,7 @@
     var u = me(), mod = OG[g.id], mine = function (b) { return b.game === g.id; };
     if (tab === "about") {
       box.innerHTML = '<div class="og-info-body">' +
-        '<div class="og-facts"><div><small>House edge</small><strong>' + (Math.round((100 - g.rtp) * 10) / 10) + '%</strong></div><div><small>RTP</small><strong>' + (g.id === "blackjack" || g.id === "baccarat" ? "≈" : "") + g.rtp + '%</strong></div><div><small>Min bet</small><strong>$0.01</strong></div><div><small>Max profit</small><strong>' + (maxProfit() ? fmt.usd(maxProfit(), { dec: 0 }) : "No limit") + "</strong></div></div></div>";
+        '<div class="og-facts"><div><small>House edge</small><strong>' + (Math.round((100 - g.rtp) * 10) / 10) + '%</strong></div><div><small>RTP</small><strong>' + (g.id === "blackjack" || g.id === "baccarat" ? "≈" : "") + g.rtp + '%</strong></div><div><small>Min bet</small><strong>$0.01</strong></div><div><small>Max profit</small><strong>' + (maxProfit() ? money(maxProfit(), { dec: 0 }) : "No limit") + "</strong></div></div></div>";
       return;
     }
     if (tab === "mine" && !u) { box.innerHTML = empty("Sign in to see your bets", "", '<button class="btn btn-primary btn-sm" data-open="register">Register</button>'); return; }
@@ -474,7 +491,7 @@
     if (tab === "lucky") list = all.filter(function (b) { return b.payout > 0; }).sort(function (a, b) { return b.multiplier - a.multiplier; }).slice(0, 10);
     box.innerHTML = list.length ? '<div class="table-wrap"><table class="table"><thead><tr><th>Player</th><th>Time</th><th class="right">Bet</th><th class="right">Result</th><th class="right">Multiplier</th><th class="right">Profit</th></tr></thead><tbody>' +
       list.map(function (b) {
-        return '<tr><td class="strong">' + esc(b.user) + '</td><td class="faint">' + b.date.slice(11, 16) + '</td><td class="right num">' + fmt.usd(b.amount) + '</td><td class="right num">' + mod.label(b) + '</td><td class="right num">' + b.multiplier.toFixed(2) + '×</td><td class="right num strong ' + (b.payout > b.amount ? "pos" : "faint") + '">' + fmt.usd(b.payout - b.amount, { sign: true }) + "</td></tr>";
+        return '<tr><td class="strong">' + esc(b.user) + '</td><td class="faint">' + b.date.slice(11, 16) + '</td><td class="right num">' + money(b.amount) + '</td><td class="right num">' + mod.label(b) + '</td><td class="right num">' + b.multiplier.toFixed(2) + '×</td><td class="right num strong ' + (b.payout > b.amount ? "pos" : "faint") + '">' + money(b.payout - b.amount, { sign: true }) + "</td></tr>";
       }).join("") + "</tbody></table></div>" : empty("Nothing here yet", tab === "mine" ? "Your bets on " + g.name + " show up here." : tab === "recent" ? "Plays on " + g.name + " show up here in real time." : "Wins on " + g.name + " show up here.");
   }
 
@@ -482,19 +499,19 @@
     var mod = OG[g.id], amt = $("#og-amt"), mode = "manual", auto = false, busy = false, tab = "recent", rules = { win: "reset", loss: "reset" };
     var ctx = {
       g: g,
-      amount: function () { return Math.max(0, Math.round((parseFloat(amt.value) || 0) * 100) / 100); },
-      setAmt: function (v) { amt.value = Math.max(0, v).toFixed(2); ctx.refresh(); },
+      amount: function () { return Math.max(0, amtOut(amt.value)); },
+      setAmt: function (v) { amt.value = amtIn(Math.max(0, v)); ctx.refresh(); },
       msg: function (t, extra) { if (!$("#og-msg")) return; $("#og-msg").innerHTML = t ? errorBox(t, extra) : ""; },
       btn: function () { return $("#og-bet"); },
-      refresh: function () { var u = me(); if (!$("#og-bal")) return; $("#og-bal").textContent = u ? "Balance " + fmt.usd(shownBal(u)) : ""; if (api.refresh) api.refresh(); },
-      setProfit: function (mult, label) { var p = $("#og-profit"); if (!p) return; p.value = (ctx.amount() * (mult - 1)).toFixed(2); $("#og-mult-lbl").textContent = (label || mult.toFixed(2)) + "×"; },
+      refresh: function () { var u = me(); if (!$("#og-bal")) return; $("#og-bal").textContent = u ? "Balance " + money(shownBal(u)) : ""; if (api.refresh) api.refresh(); },
+      setProfit: function (mult, label) { var p = $("#og-profit"); if (!p) return; p.value = amtIn(ctx.amount() * (mult - 1)); $("#og-mult-lbl").textContent = (label || mult.toFixed(2)) + "×"; },
       validate: function (a, maxMult) {
         var u = me(); ctx.msg("");
         if (!u) { openAuth("register"); return null; }
         if (u.status !== "Active") { ctx.msg("Your account is suspended."); return null; }
         if (a < 0.01) { ctx.msg("Minimum bet is $0.01."); return null; }
         if (a > u.balance) { ctx.msg("Insufficient balance.", ' <a href="#" class="link-sm" data-open="wallet">Deposit</a>'); return null; }
-        if (maxMult && maxProfit() && a * (maxMult - 1) > maxProfit()) { ctx.msg("Max profit per bet is " + fmt.usd(maxProfit(), { dec: 0 }) + "."); return null; }
+        if (maxMult && maxProfit() && a * (maxMult - 1) > maxProfit()) { ctx.msg("Max profit per bet is " + money(maxProfit(), { dec: 0 }) + "."); return null; }
         return u;
       },
       hold: function (b) { hold(b); ctx.refresh(); },
@@ -521,12 +538,13 @@
       var stage = $(".ogx-stage"); if (!stage) return;
       var old = stage.querySelector(".ogx-win"); if (old) old.remove();
       var el = document.createElement("div"); el.className = "ogx-win";
-      el.innerHTML = '<div class="m">' + b.multiplier.toFixed(2) + '×</div><div class="v"><span class="coin-dot" style="background:#26a17b">₮</span>' + fmt.usd(b.payout) + "</div>";
+      el.innerHTML = '<div class="m">' + b.multiplier.toFixed(2) + '×</div><div class="v"><span class="coin-dot" style="background:#26a17b">₮</span>' + money(b.payout) + "</div>";
       el.addEventListener("click", function () { el.remove(); });
       stage.appendChild(el); clearTimeout(popTimer);
       popTimer = setTimeout(function () { el.classList.add("out"); setTimeout(function () { el.remove(); }, 250); }, 1700);
     }
     var api = mod.bind(ctx);
+    ogRefresh = ctx.refresh;
     function history() {
       var u = me(), h = $("#og-hist"); if (!h) return;
       h.innerHTML = u ? db.betsOf(u.id).filter(function (b) { return b.game === g.id; }).slice(0, 7).reverse().map(function (b) {
@@ -541,7 +559,7 @@
     }
     function startAuto() {
       var base = ctx.amount(), count = 0, total = parseInt($("#au-n").value, 10) || 0, start = sess(g.id).profit;
-      var sp = parseFloat($("#au-sp").value) || 0, sl = parseFloat($("#au-sl").value) || 0, btn = ctx.btn();
+      var sp = amtOut($("#au-sp").value), sl = amtOut($("#au-sl").value), btn = ctx.btn();
       auto = true; btn.textContent = "Stop autobet"; btn.classList.add("stop"); ctx.lock(true);
       (function loop() {
         if (!auto || !document.contains(btn)) return stopAuto();
@@ -549,7 +567,7 @@
           if (!r) return stopAuto();
           count++;
           var rule = rules[r.win ? "win" : "loss"], pct = parseFloat($("#au-" + (r.win ? "win" : "loss")).value) || 0;
-          amt.value = (rule === "reset" ? base : ctx.amount() * (1 + pct / 100)).toFixed(2); ctx.refresh();
+          amt.value = amtIn(rule === "reset" ? base : ctx.amount() * (1 + pct / 100)); ctx.refresh();
           var run = sess(g.id).profit - start;
           if ((total && count >= total) || (sp && run >= sp) || (sl && -run >= sl)) return stopAuto();
           setTimeout(loop, 300);
@@ -956,7 +974,7 @@
       function refresh() {
         if (!$("#mn-gems")) return;
         $("#mn-gems").value = 25 - m();
-        if (round) { var k = round.revealed.length, cur = k ? minesMult(k, round.m) : 1; ctx.setProfit(cur, cur.toFixed(2)); $("#og-profit").value = (round.amount * (cur - 1)).toFixed(2); }
+        if (round) { var k = round.revealed.length, cur = k ? minesMult(k, round.m) : 1; ctx.setProfit(cur, cur.toFixed(2)); $("#og-profit").value = amtIn(round.amount * (cur - 1)); }
       }
       function tiles() { return $$("#mn-grid .mn-tile"); }
       function paint(final) {
@@ -1033,7 +1051,7 @@
         },
         resume: function () {
           var u = me(), r = u && db.activeRound(u.id, G);
-          if (r) { round = { amount: r.amount, m: r.state.m, revealed: r.state.revealed.slice() }; $("#mn-count").value = r.state.m; $("#og-amt").value = r.amount.toFixed(2); paint(); setLive(true); refresh(); }
+          if (r) { round = { amount: r.amount, m: r.state.m, revealed: r.state.revealed.slice() }; $("#mn-count").value = r.state.m; $("#og-amt").value = amtIn(r.amount); paint(); setLive(true); refresh(); }
         }
       };
     }
@@ -1078,7 +1096,7 @@
         $("#hl-skip").disabled = live ? false : !me();
         $("#hl-hist").innerHTML = round ? round.cards.map(function (k, i) { return miniCard(k, i === 0 ? "" : k.res); }).slice(-8).join("") : "";
         $("#hl-live").classList.toggle("hidden", !live);
-        if (live) { ctx.setProfit(round.mult, round.mult.toFixed(2)); $("#og-profit").value = (round.amount * (round.mult - 1)).toFixed(2); }
+        if (live) { ctx.setProfit(round.mult, round.mult.toFixed(2)); $("#og-profit").value = amtIn(round.amount * (round.mult - 1)); }
         var b = ctx.btn(); b.textContent = live ? "Cashout" : "Bet"; b.disabled = live && round.mult <= 1;
       }
       /* A carta da mesa continua de uma rodada para a outra (ganhando ou perdendo).
@@ -1155,7 +1173,7 @@
         resume: function () {
           var u = me(), r = u && db.activeRound(u.id, G);
           if (r && !RD.live && !(r.state.cards && r.state.cards.length)) { r.state.cards = [preview || randomCard()]; r.state.mult = 1; db.updateRound(u.id, G, r.state); }
-          if (r) { round = { amount: r.amount, cards: r.state.cards.slice(), mult: r.state.mult }; $("#og-amt").value = r.amount.toFixed(2); ctx.lock(true); show(); }
+          if (r) { round = { amount: r.amount, cards: r.state.cards.slice(), mult: r.state.mult }; $("#og-amt").value = amtIn(r.amount); ctx.lock(true); show(); }
         }
       };
     }
@@ -1383,7 +1401,7 @@
         if (!$("#bj-dealer")) return;
         var insOpen = !!(S && S.ins === "offer" && !S.over && !animating), box = $("#bj-ins");
         box.classList.toggle("hidden", !insOpen);
-        if (insOpen) { $("#bj-ins-cost").textContent = "Costs " + fmt.usd(insCost()) + " · pays " + fmt.usd(insCost() * 3) + " if the dealer has Blackjack"; $("#bj-ins-yes").disabled = (u() ? u().balance : 0) < insCost(); }
+        if (insOpen) { $("#bj-ins-cost").textContent = "Costs " + money(insCost()) + " · pays " + money(insCost() * 3) + " if the dealer has Blackjack"; $("#bj-ins-yes").disabled = (u() ? u().balance : 0) < insCost(); }
         var h = S && !S.over && !insOpen && !animating && !busyB ? S.hands[S.active] : null, bal = u() ? u().balance : 0;
         $("#bj-hit").disabled = !h; $("#bj-stand").disabled = !h;
         $("#bj-double").disabled = !(h && h.cards.length === 2 && bal >= h.bet);
@@ -1394,7 +1412,7 @@
       function showResult(outcome, total, amount) {
         var r = $("#bj-result"); if (!r) return;
         r.className = "bj-result " + (total > amount ? "w" : total === amount ? "p" : "l");
-        r.textContent = outcome === "Blackjack" ? "Blackjack! +" + fmt.usd(total - amount) : outcome === "Insured" ? "Dealer Blackjack — insurance paid" + (total > amount ? " +" + fmt.usd(total - amount) : "") : outcome === "Win" ? "You win +" + fmt.usd(total - amount) : outcome === "Push" ? "Push" : "Dealer wins";
+        r.textContent = outcome === "Blackjack" ? "Blackjack! +" + money(total - amount) : outcome === "Insured" ? "Dealer Blackjack — insurance paid" + (total > amount ? " +" + money(total - amount) : "") : outcome === "Win" ? "You win +" + money(total - amount) : outcome === "Push" ? "Push" : "Dealer wins";
       }
       function persist() { db.updateRound(u().id, G, S); }
       /* Seguro: metade da aposta, paga 2:1 se o dealer tiver Blackjack */
@@ -1524,9 +1542,9 @@
         resume: function () {
           var us = u(), r = us && db.activeRound(us.id, G);
           if (!r) return;
-          if (RD.live) { busyB = true; return db.roundAct(G, "view").then(function (x) { busyB = false; if (x.error) return; $("#og-amt").value = (+x.hands[0].bet).toFixed(2); ctx.lock(true); liveShow(x); }); }
-          if (!(r.state && r.state.hands && r.state.hands[0].cards.length)) { $("#og-amt").value = r.amount.toFixed(2); return deal(r.amount); }
-          S = r.state; $("#og-amt").value = S.hands[0].bet.toFixed(2); ctx.lock(true); render();
+          if (RD.live) { busyB = true; return db.roundAct(G, "view").then(function (x) { busyB = false; if (x.error) return; $("#og-amt").value = amtIn((+x.hands[0].bet)); ctx.lock(true); liveShow(x); }); }
+          if (!(r.state && r.state.hands && r.state.hands[0].cards.length)) { $("#og-amt").value = amtIn(r.amount); return deal(r.amount); }
+          S = r.state; $("#og-amt").value = amtIn(S.hands[0].bet); ctx.lock(true); render();
           if (S.ins === "offer") return;
           var p0 = bjTotal(S.hands[0].cards).t, d0 = bjTotal(S.dealer).t;
           if (S.hands.length === 1 && S.hands[0].cards.length === 2 && S.dealer.length === 2 && (p0 === 21 || (d0 === 21 && (S.dealer[0].rank === 1 || bjVal(S.dealer[0].rank) === 10)))) { busyB = true; return setTimeout(finish, 400); }
@@ -1562,7 +1580,7 @@
       [["low", "1 to 18"], ["even", "Even"], ["red", "", "r"], ["black", "", "b"], ["odd", "Odd"], ["high", "19 to 36"]].forEach(function (x, i) { grid += cell(x[0], x[1], "o " + (x[2] || ""), "grid-row:5;grid-column:" + (2 + i * 2) + "/span 2"); });
       return {
         auto: true, amountLabel: "Chip value",
-        side: '<div><div class="ogx-label">Total bet</div><div class="ogx-input ro"><span class="cur">$</span><input id="rl-total" readonly value="0.00"></div></div>',
+        side: '<div><div class="ogx-label">Total bet</div><div class="ogx-input ro"><span class="cur">' + curSym() + '</span><input id="rl-total" readonly value="0.00"></div></div>',
         after: '<div class="ogx-row2"><button class="btn btn-secondary" style="height:42px" id="rl-undo">Undo</button><button class="btn btn-secondary" style="height:42px" id="rl-clear">Clear</button></div>',
         center: '<div class="rl"><div class="rl-top"><div class="rl-wheel"><div class="wh-pointer"></div><svg viewBox="-112 -112 224 224"><defs><linearGradient id="rlWood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7a4a24"/><stop offset=".5" stop-color="#4a2a12"/><stop offset="1" stop-color="#2a170a"/></linearGradient><radialGradient id="rlTrack" r=".5"><stop offset=".88" stop-color="#1a1410"/><stop offset="1" stop-color="#3a2a1c"/></radialGradient></defs><circle r="111" fill="url(#rlWood)"/><circle r="111" fill="none" stroke="#c9a24a" stroke-width="1.5"/><circle r="109" fill="url(#rlTrack)"/><circle r="101.5" fill="none" stroke="#c9a24a" stroke-opacity=".7" stroke-width="1"/><g id="rl-rot"></g><g id="rl-ball" class="hidden"><circle r="5.2" fill="#000" opacity=".35" cx="1" cy="1.5"/><circle r="5.2" fill="#f4f1ee"/><circle r="1.8" cx="-1.6" cy="-1.6" fill="#fff"/></g></svg><div class="rl-out" id="rl-out"></div></div></div><div class="rl-table" id="rl-table">' + grid + "</div></div>"
       };
@@ -1608,7 +1626,7 @@
           chipEl.classList.toggle("hidden", !v); if (v) chipEl.style.setProperty("--cc", chipColor(v)); chipEl.textContent = v ? (v >= 1000 ? (v / 1000).toFixed(1) + "k" : v >= 10 ? Math.round(v) : v.toFixed(v < 1 ? 2 : 1)) : "";
           c.classList.toggle("win", !!winKeys && winKeys.indexOf(k) > -1);
         });
-        $("#rl-total").value = total().toFixed(2);
+        $("#rl-total").value = amtIn(total());
       }
       $("#rl-table").addEventListener("click", function (e) {
         var c = e.target.closest("[data-rl]"); if (!c || spinning) return;
@@ -1702,7 +1720,7 @@
         box.innerHTML = rows;
       }
       function refresh() {
-        if (round) { var m = multNow(); ctx.setProfit(m, m.toFixed(2)); var p = $("#og-profit"); if (p) p.value = (round.amount * (m - 1)).toFixed(2); }
+        if (round) { var m = multNow(); ctx.setProfit(m, m.toFixed(2)); var p = $("#og-profit"); if (p) p.value = amtIn(round.amount * (m - 1)); }
         else ctx.setProfit(TOWER[level()].mult[0], TOWER[level()].mult[0].toFixed(2));
       }
       function setLive(on) {
@@ -1765,7 +1783,7 @@
         },
         resume: function () {
           var u = me(), r = u && db.activeRound(u.id, G);
-          if (r) { round = { amount: r.amount, level: r.state.level, picks: r.state.picks.slice() }; $("#tw-level").value = r.state.level; $("#og-amt").value = r.amount.toFixed(2); paint(); setLive(true); refresh(); }
+          if (r) { round = { amount: r.amount, level: r.state.level, picks: r.state.picks.slice() }; $("#tw-level").value = r.state.level; $("#og-amt").value = amtIn(r.amount); paint(); setLive(true); refresh(); }
         }
       };
     }
@@ -1815,7 +1833,7 @@
         if (at && road.scrollWidth > road.clientWidth) road.scrollTo({ left: Math.max(0, at.offsetLeft - road.clientWidth / 2 + at.offsetWidth / 2), behavior: "smooth" });
       }
       function refresh() {
-        if (round) { var m = multNow(); ctx.setProfit(m, m.toFixed(2)); var p = $("#og-profit"); if (p) p.value = (round.amount * (m - 1)).toFixed(2); }
+        if (round) { var m = multNow(); ctx.setProfit(m, m.toFixed(2)); var p = $("#og-profit"); if (p) p.value = amtIn(round.amount * (m - 1)); }
         else { var T = CHICKEN[diff()]; ctx.setProfit(T.mult[1], T.mult[1].toFixed(2)); }
       }
       function setLive(on) {
@@ -1877,7 +1895,7 @@
         },
         resume: function () {
           var u = me(), r = u && db.activeRound(u.id, G);
-          if (r) { round = { amount: r.amount, diff: r.state.diff, steps: r.state.steps }; $("#ck-diff").value = r.state.diff; $("#og-amt").value = r.amount.toFixed(2); paint(); setLive(true); refresh(); }
+          if (r) { round = { amount: r.amount, diff: r.state.diff, steps: r.state.steps }; $("#ck-diff").value = r.state.diff; $("#og-amt").value = amtIn(r.amount); paint(); setLive(true); refresh(); }
         }
       };
     }
@@ -1929,7 +1947,7 @@
         var k = round ? round.steps : 0, ms = []; for (var i = 1; i <= maxSteps(); i++) ms.push(spillMult(bad(), i));
         var box = $("#sp-ladder"); if (box) box.innerHTML = ladderWin(ms, k, !!round);
         var nx = $("#sp-next"); if (nx) nx.textContent = k < maxSteps() ? spillMult(bad(), k + 1).toFixed(2) + "×" : "—";
-        if (round) { var m = k ? spillMult(bad(), k) : 1; ctx.setProfit(m, m.toFixed(2)); var p = $("#og-profit"); if (p) p.value = (round.amount * (m - 1)).toFixed(2); }
+        if (round) { var m = k ? spillMult(bad(), k) : 1; ctx.setProfit(m, m.toFixed(2)); var p = $("#og-profit"); if (p) p.value = amtIn(round.amount * (m - 1)); }
         else ctx.setProfit(spillMult(bad(), 1), spillMult(bad(), 1).toFixed(2));
       }
       function setLive(on) {
@@ -1991,7 +2009,7 @@
         },
         resume: function () {
           var u = me(), r = u && db.activeRound(u.id, G);
-          if (r) { round = { amount: r.amount, diff: r.state.diff, steps: r.state.steps || 0 }; diffSel = round.diff; $$(".sp-diff button").forEach(function (x) { x.classList.toggle("active", x.getAttribute("data-spd") === round.diff); }); $("#og-amt").value = r.amount.toFixed(2); setLevel(round.steps); paint(); setLive(true); }
+          if (r) { round = { amount: r.amount, diff: r.state.diff, steps: r.state.steps || 0 }; diffSel = round.diff; $$(".sp-diff button").forEach(function (x) { x.classList.toggle("active", x.getAttribute("data-spd") === round.diff); }); $("#og-amt").value = amtIn(r.amount); setLevel(round.steps); paint(); setLive(true); }
         }
       };
     }
@@ -2097,7 +2115,7 @@
       }
       function refresh() {
         var t = T();
-        if (round) { var m = t.mult[round.goals]; ctx.setProfit(m, m.toFixed(2)); var p = $("#og-profit"); if (p) p.value = (round.amount * (m - 1)).toFixed(2); }
+        if (round) { var m = t.mult[round.goals]; ctx.setProfit(m, m.toFixed(2)); var p = $("#og-profit"); if (p) p.value = amtIn(round.amount * (m - 1)); }
         else ctx.setProfit(t.mult[1], t.mult[1].toFixed(2));
         ladder();
       }
@@ -2178,7 +2196,7 @@
         },
         resume: function () {
           var u = me(), r = u && db.activeRound(u.id, G);
-          if (r) { round = { amount: r.amount, diff: r.state.diff, goals: r.state.goals || 0, shots: (r.state.shots || []).slice() }; $("#sc-diff").value = round.diff; $("#og-amt").value = r.amount.toFixed(2); setLive(true); refresh(); }
+          if (r) { round = { amount: r.amount, diff: r.state.diff, goals: r.state.goals || 0, shots: (r.state.shots || []).slice() }; $("#sc-diff").value = round.diff; $("#og-amt").value = amtIn(r.amount); setLive(true); refresh(); }
         }
       };
     }
@@ -2222,7 +2240,7 @@
       }
       function refresh() {
         var c = C();
-        if (round) { var m = c.mult[round.level]; ctx.setProfit(m, m.toFixed(2)); var p = $("#og-profit"); if (p) p.value = (round.amount * (m - 1)).toFixed(2); }
+        if (round) { var m = c.mult[round.level]; ctx.setProfit(m, m.toFixed(2)); var p = $("#og-profit"); if (p) p.value = amtIn(round.amount * (m - 1)); }
         else ctx.setProfit(c.mult[1], c.mult[1].toFixed(2));
         ladder();
       }
@@ -2283,7 +2301,7 @@
         },
         resume: function () {
           var u = me(), r = u && db.activeRound(u.id, G);
-          if (r) { round = { amount: r.amount, diff: r.state.diff, level: r.state.level || 0, picks: (r.state.picks || []).slice() }; $("#dr-diff").value = round.diff; $("#og-amt").value = r.amount.toFixed(2); doors(); setLive(true); refresh(); }
+          if (r) { round = { amount: r.amount, diff: r.state.diff, level: r.state.level || 0, picks: (r.state.picks || []).slice() }; $("#dr-diff").value = round.diff; $("#og-amt").value = amtIn(r.amount); doors(); setLive(true); refresh(); }
         }
       };
     }
@@ -2390,7 +2408,7 @@
         $("#rps-live").classList.toggle("hidden", !on); ctx.lock(on);
         $$("[data-rps]").forEach(function (b) { b.disabled = !on || busy; });
         var b = ctx.btn(); b.textContent = on ? "Cashout" : "Bet"; b.disabled = on && (!round || !round.wins);
-        if (on) { var m = round.wins ? rpsMult(round.wins) : 1; ctx.setProfit(m, m.toFixed(2)); $("#og-profit").value = (round.amount * (m - 1)).toFixed(2); }
+        if (on) { var m = round.wins ? rpsMult(round.wins) : 1; ctx.setProfit(m, m.toFixed(2)); $("#og-profit").value = amtIn(round.amount * (m - 1)); }
         ladder(); hist();
       }
       function settle(win) {
@@ -2461,7 +2479,7 @@
           var u = me(), r = u && db.activeRound(u.id, G); if (!r) return;
           round = { amount: r.amount, throws: (r.state.throws || []).slice(), wins: r.state.wins || 0 };
           if (r.state.lost) return settle(false);
-          $("#og-amt").value = r.amount.toFixed(2); setLive(true);
+          $("#og-amt").value = amtIn(r.amount); setLive(true);
         }
       };
     }
@@ -2493,7 +2511,7 @@
       var spot = function (k, title, pays) { return '<button class="bc-spot ' + k + '" data-bc="' + k + '"><strong>' + title + "</strong><small>" + pays + '</small><i class="rl-chip hidden"></i></button>'; };
       return {
         auto: true, amountLabel: "Chip value",
-        side: '<div><div class="ogx-label">Total bet</div><div class="ogx-input ro"><span class="cur">$</span><input id="bc-total" readonly value="0.00"></div></div>',
+        side: '<div><div class="ogx-label">Total bet</div><div class="ogx-input ro"><span class="cur">' + curSym() + '</span><input id="bc-total" readonly value="0.00"></div></div>',
         after: '<div class="ogx-row2"><button class="btn btn-secondary" style="height:42px" id="bc-undo">Undo</button><button class="btn btn-secondary" style="height:42px" id="bc-clear">Clear</button></div>',
         center: '<div class="bc"><div class="bc-hands"><div class="bc-hand player"><div class="bc-head"><span>Player</span><b id="bc-pt">0</b></div><div class="bj-cards" id="bc-pc"></div></div><div class="bc-hand banker"><div class="bc-head"><span>Banker</span><b id="bc-bt">0</b></div><div class="bj-cards" id="bc-bc"></div></div></div>' +
           '<div class="bc-result hidden" id="bc-result"></div><div class="bc-table">' + spot("player", "Player", "pays 1:1") + spot("tie", "Tie", "pays 8:1") + spot("banker", "Banker", "pays 0.95:1") + "</div></div>"
@@ -2508,7 +2526,7 @@
           chip.classList.toggle("hidden", !v); if (v) chip.style.setProperty("--cc", chipColor(v)); chip.textContent = v ? (v >= 1000 ? (v / 1000).toFixed(1) + "k" : v >= 10 ? Math.round(v) : v.toFixed(v < 1 ? 2 : 1)) : "";
           c.classList.toggle("win", win === k);
         });
-        if ($("#bc-total")) $("#bc-total").value = total().toFixed(2);
+        if ($("#bc-total")) $("#bc-total").value = amtIn(total());
       }
       function empty() { $("#bc-pc").innerHTML = '<div class="bj-card ghost"></div><div class="bj-card ghost"></div>'; $("#bc-bc").innerHTML = '<div class="bj-card ghost"></div><div class="bj-card ghost"></div>'; $("#bc-pt").textContent = "0"; $("#bc-bt").textContent = "0"; }
       $$("[data-bc]").forEach(function (c) { c.addEventListener("click", function () {
