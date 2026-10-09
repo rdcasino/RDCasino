@@ -1615,3 +1615,24 @@ a.tx-hash:hover { color: var(--brand-2, #22d3ee); }
 .sp-tl.on { fill: #22e08a; } .sp-tk.on { stroke: #22e08a; stroke-opacity: 1; }
 #sp-mbox.on { fill: #22e08a; }
 .sp-neon { filter: drop-shadow(0 0 4px #22d3ee); }
+
+/* Selo de RTP real no canto do card (estilo Razed) */
+.g-rtpb { position: absolute; top: 8px; right: 8px; z-index: 3; display: inline-flex; align-items: center; gap: 4px; padding: 3px 7px; border-radius: 7px; font-size: 11px; font-weight: 800; font-variant-numeric: tabular-nums; background: rgba(8, 12, 22, 0.86); }
+.g-rtpb.up { color: #22e08a; box-shadow: inset 0 0 0 1px rgba(34, 224, 138, 0.5); }
+.g-rtpb.down { color: #ffc23a; box-shadow: inset 0 0 0 1px rgba(255, 194, 58, 0.5); }
+/* Provedores */
+.prov-row { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(170px, 1fr); gap: 10px; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; }
+.prov-row::-webkit-scrollbar { display: none; }
+.prov { position: relative; height: 92px; border-radius: 14px; border: 1px solid var(--line); background: linear-gradient(180deg, var(--surface-2), var(--surface)); display: grid; place-items: center; align-content: center; gap: 4px; color: var(--text); cursor: pointer; scroll-snap-align: start; transition: border-color 0.15s, transform 0.15s; }
+.prov:hover { border-color: rgba(var(--brand-rgb), 0.6); transform: translateY(-2px); }
+.prov-mark { font-family: var(--font-display); font-weight: 800; font-size: 16px; letter-spacing: -0.01em; text-align: center; padding: 0 10px; }
+.prov-mark.rd { font-size: 22px; background: var(--brand-grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.prov-mark.rd b { display: block; font-size: 9px; letter-spacing: 0.3em; color: var(--text-3); -webkit-text-fill-color: var(--text-3); }
+.prov small { font-size: 11px; color: var(--text-3); font-weight: 600; }
+/* Redes sociais no rodapé */
+.footer-social { display: flex; gap: 8px; margin-top: 14px; }
+.footer-social .soc { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; color: var(--text-2); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line-2); transition: color 0.15s, background 0.15s, box-shadow 0.15s; }
+.footer-social .soc:hover { color: #fff; }
+.footer-social .soc.telegram:hover { background: #229ed9; box-shadow: none; }
+.footer-social .soc.x:hover { background: #000; box-shadow: inset 0 0 0 1px #333; }
+.footer-social .soc.instagram:hover { background: linear-gradient(45deg, #f09433, #dc2743, #bc1888); box-shadow: none; }

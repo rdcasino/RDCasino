@@ -106,6 +106,7 @@
     $("#bal-menu").innerHTML = '<div class="bm-one">' + BAL_IC + '<b class="num">' + inCur(shownBal(u), disp.cur) + "</b></div>" +
       '<div class="bm-title">Display currency</div><div class="bm-cur"><select class="select" data-disp-cur>' + RD.fiats.filter(function (f) { return fxRate(f[0]); }).map(function (f) { return '<option value="' + f[0] + '"' + (f[0] === disp.cur ? " selected" : "") + ">" + f[0] + " · " + f[2] + "</option>"; }).join("") + "</select></div>";
   }
+  document.addEventListener("click", function (e) { var so = e.target.closest("[data-soon]"); if (so) { e.preventDefault(); RD.toast("Coming soon"); } });
   document.addEventListener("click", function (e) { var b = e.target.closest("[data-txcat]"); if (!b) return; state.txCat = b.getAttribute("data-txcat"); route(true); });
   document.addEventListener("input", function (e) {
     if (e.target.id !== "tx-q") return; var v = e.target.value.trim().toLowerCase(), shown = 0;
@@ -233,7 +234,7 @@
   /* ---------- Fragments ---------- */
   function gameCard(g) {
     var tag = g.tag === "hot" ? '<span class="badge badge-danger g-tag">Hot</span>' : g.tag === "new" ? '<span class="badge badge-brand g-tag">New</span>' : "";
-    return '<a class="game" href="#/game/' + g.id + '">' + tag +
+    return '<a class="game" href="#/game/' + g.id + '">' + tag + rtpBadge(g) +
       media(g, "", '<span class="gf-name">' + esc(g.name) + '</span><span class="gf-prov">' + esc(g.provider) + "</span>") +
       '<div class="game-meta">' + gameMeta(g) + "</div></a>";
   }
@@ -247,6 +248,22 @@
       playCache = { t: now, map: m };
     }
     return playCache.map;
+  }
+  /* RTP real das apostas recentes (mínimo de 20 apostas): pago ÷ apostado. Selo verde acima do RTP do jogo, amarelo abaixo. */
+  var rtpCache = { t: 0, map: {} };
+  function recentRtp(gid) {
+    var now = Date.now();
+    if (now - rtpCache.t > 5000) {
+      var m = {};
+      (db.recentBets ? db.recentBets(2000) : []).forEach(function (b) { var x = m[b.game] = m[b.game] || { a: 0, p: 0, n: 0 }; x.a += b.amount; x.p += b.payout; x.n++; });
+      rtpCache = { t: now, map: m };
+    }
+    var r = rtpCache.map[gid]; return r && r.n >= 20 && r.a > 0 ? { v: r.p / r.a * 100, n: r.n } : null;
+  }
+  function rtpBadge(g) {
+    var r = g.cat === "originals" ? recentRtp(g.id) : null; if (!r) return "";
+    var up = r.v >= g.rtp;
+    return '<span class="g-rtpb ' + (up ? "up" : "down") + '" title="RTP on the last ' + r.n + ' bets">' + ic(up ? "trendUp" : "trendDown", 12) + r.v.toFixed(2) + "%</span>";
   }
   function gameMeta(g) {
     if (!g.playable) return esc(g.provider);
@@ -307,14 +324,28 @@
       '<div class="section"><div class="input-search" style="margin-bottom:16px">' + ic("search") + '<input class="input" id="home-search" type="search" placeholder="Search your game" style="height:46px;background:var(--bg-2);border-color:transparent"></div>' + catTabs("all") + '<div id="search-results"></div></div>' +
       '<div id="home-rows">' +
       '<div class="section">' + sectionHead("RD Originals", "star", "#/casino/originals") + '<div class="game-row">' + gamesOf("originals").map(gameCard).join("") + "</div></div>" +
+      '<div class="section">' + sectionHead("New releases", "flame", "#/casino/originals") + '<div class="game-row">' + RD.games.filter(function (g) { return g.enabled && g.playable && g.tag === "new"; }).reverse().map(gameCard).join("") + "</div></div>" +
       '<div class="section">' + sectionHead("Slots", "cherry", "#/casino/slots") + '<div class="game-row">' + gamesOf("slots").map(gameCard).join("") + "</div></div>" +
-      '<div class="section">' + sectionHead("Live Casino", "play", "#/casino/live") + '<div class="game-row">' + gamesOf("live").concat(gamesOf("gameshows")).map(gameCard).join("") + "</div></div></div>" +
+      '<div class="section">' + sectionHead("Live Casino", "play", "#/casino/live") + '<div class="game-row">' + gamesOf("live").concat(gamesOf("gameshows")).map(gameCard).join("") + "</div></div>" +
+      '<div class="section">' + sectionHead("Providers", "grid") + '<div class="prov-row">' + providerTiles() + "</div></div></div>" +
       '<div class="section"><div class="section-head"><div class="pill-tabs"><button data-btab="all">All bets</button><button data-btab="high">High rollers</button><button data-btab="mine">My bets</button></div></div><div class="card bets-card" id="feed"></div></div>' +
       "</div>";
   };
+  /* Provedores: marca em texto, quantidade de jogos e o RTP real só onde existe dado (RD Originals) */
+  function providerTiles() {
+    var by = {}; RD.games.forEach(function (g) { if (g.enabled) (by[g.provider] = by[g.provider] || []).push(g); });
+    var order = Object.keys(by).sort(function (a, b) { return a === "RD Originals" ? -1 : b === "RD Originals" ? 1 : by[b].length - by[a].length; });
+    return order.map(function (pv) {
+      var rt = null;
+      if (pv === "RD Originals") { var a = 0, p = 0, n = 0; (db.recentBets ? db.recentBets(2000) : []).forEach(function (b) { var g = gameOf(b.game); if (g && g.provider === pv) { a += b.amount; p += b.payout; n++; } }); if (n >= 20 && a > 0) rt = { v: p / a * 100, n: n }; }
+      var mark = pv === "RD Originals" ? '<span class="prov-mark rd">RD<b>ORIGINALS</b></span>' : '<span class="prov-mark">' + esc(pv) + "</span>";
+      return '<button class="prov" data-prov="' + esc(pv) + '">' + (rt ? '<span class="g-rtpb ' + (rt.v >= 98 ? "up" : "down") + '" title="RTP on the last ' + rt.n + ' bets">' + rt.v.toFixed(2) + "%</span>" : "") + mark + "<small>" + by[pv].length + (by[pv].length === 1 ? " game" : " games") + "</small></button>";
+    }).join("");
+  }
   pages.home.after = function () {
     renderTicker(); renderFeed();
     var inp = $("#home-search");
+    $$("[data-prov]").forEach(function (b) { b.addEventListener("click", function () { inp.value = b.getAttribute("data-prov"); inp.dispatchEvent(new Event("input")); inp.scrollIntoView({ behavior: "smooth", block: "center" }); }); });
     inp.addEventListener("input", function () {
       var q = inp.value.trim().toLowerCase();
       $("#home-rows").classList.toggle("hidden", q.length > 1);
@@ -3336,13 +3367,25 @@
     return '<div class="container"><div class="card empty" style="padding:72px 20px"><h2>Page not found</h2><p style="margin:8px 0 20px">The page you are looking for does not exist.</p><a class="btn btn-primary" href="#/">Back to lobby</a></div></div>';
   };
 
+  /* Redes sociais no rodapé (links em RD.config.social; sem link configurado, o ícone não aparece) */
+  var SOCIAL_SVG = {
+    telegram: '<path d="M21.9 4.3 18.6 19.8c-.2 1.1-.9 1.4-1.8.9l-5-3.7-2.4 2.3c-.3.3-.5.5-1 .5l.4-5.1 9.3-8.4c.4-.4-.1-.6-.6-.2L6 13.4 1.1 11.9c-1.1-.3-1.1-1.1.2-1.6L20.6 2.9c.9-.3 1.7.2 1.3 1.4z"/>',
+    x: '<path d="M17.8 3h3.1l-6.8 7.8L22 21h-6.3l-4.9-6.4L5.2 21H2.1l7.3-8.3L1.8 3h6.4l4.4 5.8L17.8 3zm-1.1 16.2h1.7L7.3 4.7H5.5l11.2 14.5z"/>',
+    instagram: '<path d="M12 2.2c3.2 0 3.6 0 4.8.1 3.3.1 4.8 1.7 4.9 4.9.1 1.3.1 1.6.1 4.8s0 3.6-.1 4.8c-.1 3.2-1.7 4.8-4.9 4.9-1.3.1-1.6.1-4.8.1s-3.6 0-4.8-.1c-3.3-.1-4.8-1.7-4.9-4.9C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.8C2.4 3.9 3.9 2.4 7.2 2.3 8.4 2.2 8.8 2.2 12 2.2zm0 4.8a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 8.2a3.2 3.2 0 1 1 0-6.4 3.2 3.2 0 0 1 0 6.4zm5.2-9.6a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4z"/>'
+  };
+  function socialLinks() {
+    var cfg = (RD.config && RD.config.social) || {};
+    return '<div class="footer-social">' + [["telegram", "Telegram"], ["x", "X (Twitter)"], ["instagram", "Instagram"]].map(function (k) {
+      var url = cfg[k[0]]; return '<a class="soc ' + k[0] + '"' + (url ? ' href="' + esc(url) + '" target="_blank" rel="noopener noreferrer"' : ' href="#" data-soon="1"') + ' aria-label="' + k[1] + '" title="' + k[1] + '"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">' + SOCIAL_SVG[k[0]] + "</svg></a>";
+    }).join("") + "</div>";
+  }
   function renderFooter() {
     var L = RD.config.license;
     var licenseLine = L.status === "active" && L.number
       ? esc(L.company) + " is licensed and regulated by " + esc(L.authority) + " under license no. " + esc(L.number) + ". " + esc(L.address)
       : "Licensing information will be published here.";
     $("#footer").innerHTML = '<div class="footer-in"><div class="footer-cols">' +
-      '<div class="footer-about"><span class="brand-name">RD<span>Casino</span></span><p>Crypto casino with provably fair originals and fast withdrawals.</p><div class="footer-badges"><span class="age-badge">18+</span><span class="badge">' + ic("shield", 12) + 'Provably fair</span><span class="badge">' + ic("lock", 12) + "SSL</span></div></div>" +
+      '<div class="footer-about"><span class="brand-name">RD<span>Casino</span></span><p>Crypto casino with provably fair originals and fast withdrawals.</p><div class="footer-badges"><span class="age-badge">18+</span><span class="badge">' + ic("shield", 12) + 'Provably fair</span><span class="badge">' + ic("lock", 12) + "SSL</span></div>" + socialLinks() + "</div>" +
       '<div><h4>Casino</h4><a href="#/casino/originals">RD Originals</a><a href="#/casino/slots">Slots</a><a href="#/casino/live">Live Casino</a><a href="#/casino/gameshows">Game Shows</a></div>' +
       '<div><h4>Rewards</h4><a href="#/promotions">Promotions</a><a href="#/vip">VIP Club</a><a href="#/leaderboard">Leaderboard</a><a href="#/affiliate">Affiliate</a></div>' +
       '<div><h4>Support</h4><a href="#" data-drawer="chat">Chat</a><a href="mailto:' + RD.config.supportEmail + '">Email us</a><a href="#/fairness">Provably fair</a><a href="#/responsible">Responsible gaming</a></div>' +

@@ -47,6 +47,7 @@
 - [x] Spill (0024): copo com 25 despejos, derramamentos escondidos por dificuldade (Low 1, Medium 3, High 5, Degen 10), sorteio no servidor, RTP 98%.
 - [x] RTP 98% (0025): Dice, Limbo, Crash, Mines, Hi-Lo, Coinflip, Wheel, Plinko, Keno, Roleta e Double em 98%; Blackjack H17 e sem dobrar após dividir (≈99,1% com estratégia perfeita), bloqueio das ações internas deal/peek; VIP ≈0,1% do apostado. Rain: só entra quem apostou US$ 5.000 nos últimos 7 dias. Aplicar no SQL Editor antes de publicar o site.
 - [ ] Próxima seed do servidor (0026): o jogador vê o hash da próxima seed antes de trocar o par, como na Shuffle/Stake. Rodar no SQL Editor; o site funciona com ou sem ela.
+- [ ] Pump e Cross the Lake (0027) + sem limite de ganho por aposta (max_profit = 0). Rodar no SQL Editor antes de publicar o site com esses jogos.
 - [x] Provably fair no modo real: troca de seed revela a server seed (migração 0017). Configurações do admin (lucro máximo, países, licença, prêmio do leaderboard, jogos, promoções) salvas no servidor.
 - [x] Resgates no servidor (migração 0016): rakeback, prêmios de nível, bônus diário/semanal/mensal; feed público de apostas recentes. Atenção: se mudar RD.vipTiers ou RD.config.bonuses em data.js, atualize também game_tables (vip_tiers, bonuses).
 
