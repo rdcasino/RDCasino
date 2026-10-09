@@ -49,13 +49,15 @@ begin
 
   -- ---------- rd_bj (regras do Blackjack) ----------
   src := pg_get_functiondef('public.rd_bj(rounds,text,jsonb)'::regprocedure); n := src;
-  n := replace(n, 'while rd_bj_total(dl) < 17 loop', 'while rd_bj_total(dl) < 17 or (rd_bj_total(dl) = 17 and rd_bj_soft(dl)) loop');
-  n := replace(n, '      if p_action = ''double'' then
-', '      if p_action = ''double'' then
-        if nh = 2 then raise exception ''You can''''t double after a split.''; end if;
-');
-  if n not like '%rd_bj_soft(dl)) loop%' or n not like '%double after a split%' then raise exception 'rd_bj: trecho esperado não encontrado'; end if;
-  execute n;
+  if n not like '%rd_bj_soft(dl)) loop%' then
+    n := regexp_replace(n, 'while\s+rd_bj_total\(dl\)\s*<\s*17\s+loop', 'while rd_bj_total(dl) < 17 or (rd_bj_total(dl) = 17 and rd_bj_soft(dl)) loop');
+  end if;
+  if n not like '%rd_bj_soft(dl)) loop%' then raise exception 'rd_bj: regra do 17 macio não encontrada. Trecho atual: %', substr(src, greatest(strpos(src, 'while') - 40, 1), 240); end if;
+  if n not like '%double after a split%' then
+    n := regexp_replace(n, '(if\s+p_action\s*=\s*''double''\s+then)', '\1' || chr(10) || '        if nh = 2 then raise exception ''You can''''t double after a split.''; end if;');
+  end if;
+  if n not like '%double after a split%' then raise exception 'rd_bj: regra de dobrar não encontrada. Trecho atual: %', substr(src, greatest(strpos(src, '''double''') - 120, 1), 300); end if;
+  if n <> src then execute n; end if;
 end $mig$;
 
 -- ---------- Tabelas de pagamento (98%) e VIP ----------
