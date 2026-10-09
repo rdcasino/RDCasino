@@ -356,7 +356,7 @@
 .rw-btn.ready:hover { filter: brightness(1.08); }
 /* Janela VIP (coroa do topo) */
 #drawer-vip .drawer-body { padding: 14px; }
-.vd-card { padding: 14px; border-radius: 16px; background: radial-gradient(ellipse at 50% 0%, rgba(var(--brand-rgb), 0.25), transparent 70%), var(--surface-2); border: 1px solid var(--line); }
+.vd-card { padding: 14px; border-radius: 16px; background: radial-gradient(ellipse at 50% 0%, rgba(var(--brand-rgb), 0.1), transparent 70%), var(--surface-2); border: 1px solid var(--line); }
 .vd-banner { height: 120px; border-radius: 12px; margin-bottom: 14px; display: flex; align-items: center; justify-content: center; gap: 12px; background: radial-gradient(circle at 30% 30%, rgba(255, 200, 92, 0.25), transparent 55%), linear-gradient(135deg, #3a0d1c, #0a1322); }
 .vd-arrow { color: var(--text-3); }
 .vd-prog-head { font-size: 13.5px; font-weight: 700; margin-bottom: 8px; }
@@ -1357,7 +1357,7 @@ button.sup-card:hover { border-color: rgba(255,255,255,.18); }
 #wh-res { animation: pop 0.25s ease; }
 
 /* ---------- Tema azul em degradê ---------- */
-body { background: radial-gradient(1100px 620px at 88% -12%, rgba(34, 211, 238, 0.10), transparent 60%), radial-gradient(900px 600px at 0% 110%, rgba(31, 111, 255, 0.14), transparent 60%), var(--bg); }
+body { background: radial-gradient(1100px 620px at 88% -12%, rgba(31, 111, 255, 0.05), transparent 60%), radial-gradient(900px 600px at 0% 110%, rgba(31, 111, 255, 0.06), transparent 60%), var(--bg); }
 .main { background: transparent; }
 .sidebar { background: linear-gradient(180deg, #102040 0%, #0b172c 100%); }
 .header { background: rgba(13, 26, 48, 0.82); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }

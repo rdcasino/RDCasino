@@ -2999,7 +2999,7 @@
   }
   /* Códigos promocionais: o jogador digita e ganha o bônus na hora */
   function codeBox() {
-    return '<form class="code-box" data-code-form><span class="code-ic">' + ic("gift", 18) + '</span><div class="grow"><b>Have a code?</b><small>Enter it to claim your bonus.</small></div>' +
+    return '<form class="code-box" data-code-form><span class="code-ic">' + ic("gift", 18) + '</span><div class="grow"><b>Redeem a promo code</b><small>Drops from our socials, streams and partners.</small></div>' +
       '<div class="code-row"><input class="input" name="code" placeholder="Code" maxlength="24" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn btn-primary">Redeem</button></div></form>';
   }
   document.addEventListener("submit", function (e) {
@@ -3020,7 +3020,7 @@
       '<span class="vd-ped">' + badge(v.cur, 70) + "</span>" + (v.next ? '<span class="vd-track"><i></i><i></i><i></i>' + ic("chevronRight", 16) + '</span><span class="vd-ped next">' + badge(v.next, 50) + "</span>" : "") + "</div>" +
       '<div class="row between vd-prog-head"><span>Your VIP progress</span><strong>' + v.pct.toFixed(2) + "%</strong></div>" +
       '<div class="progress"><span style="width:' + v.pct + '%"></span></div>' +
-      '<div class="row between vd-tiers"><span>' + badge(v.cur, 18) + (v.cur ? v.cur.name : "Unranked") + "</span><span>" + (v.next ? badge(v.next, 18) + v.next.name : "Max level") + "</span></div>" +
+      '<div class="row between vd-tiers"><span>' + (v.cur ? v.cur.name : "Unranked") + '</span><span class="faint">' + (v.next ? money(Math.max(0, v.next.wager - v.w), { dec: 0 }) + " to " + v.next.name : "Max level") + "</span></div>" +
       '<a class="btn btn-primary btn-block" href="#/vip" data-close-drawer>View VIP program</a></div>' +
       '<h4 class="vd-h">' + ic("gift", 16) + "Available rewards</h4>" + rewardCards(u) + codeBox() +
       (!u ? '<button class="btn btn-secondary btn-block" style="margin-top:14px" data-open="register">Create an account to start earning</button>' : "");

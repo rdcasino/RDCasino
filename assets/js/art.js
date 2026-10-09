@@ -192,14 +192,17 @@ window.RD = window.RD || {};
   /* Selo de nível VIP: quadrado arredondado na cor da família, com a joia RD no centro */
   function tierBadge(t, size) {
     size = size || 40;
-    var f = t && RD.vipFamilies ? RD.vipFamilies[t.family] : null, c1 = f ? f.c1 : "#4a3a44", c2 = f ? f.c2 : "#241a20", g = U("tb"), h = U("th");
-    var sub = t && /\d$/.test(t.name) ? t.name.slice(-1) : "";
-    return '<svg class="tier-badge" width="' + size + '" height="' + size + '" viewBox="0 0 40 40" aria-hidden="true"><defs>' + lin(g, [[0, c1], [1, c2]], 0, 0, 1, 1) + lin(h, [[0, "#fff", 0.55], [1, "#fff", 0]]) + "</defs>" +
-      '<rect x="1" y="1" width="38" height="38" rx="11" fill="url(#' + g + ')"/><rect x="1" y="1" width="38" height="38" rx="11" fill="none" stroke="#fff" stroke-opacity=".35"/>' +
-      '<path d="M4 12 Q4 3 13 3 H27 Q36 3 36 12 V16 Q20 10 4 18Z" fill="url(#' + h + ')"/>' +
-      (f ? '<path d="M20 9 L29 16 L20 31 L11 16Z" fill="#fff" fill-opacity=".92"/><path d="M11 16 H29 M20 9 L16 16 L20 31 L24 16 Z" fill="none" stroke="' + c2 + '" stroke-opacity=".55" stroke-width="1.1" stroke-linejoin="round"/>' : '<path d="M20 11 L27 17 L20 29 L13 17Z" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="2" stroke-linejoin="round"/>') +
-      (sub ? '<circle cx="31.5" cy="31.5" r="7" fill="#0e090d" stroke="' + c1 + '" stroke-width="1.5"/><text x="31.5" y="35" text-anchor="middle" font-size="9.5" font-weight="900" fill="#fff" style="font-family:var(--font-display,Arial)">' + sub + "</text>" : "") + "</svg>";
+    var f = t && RD.vipFamilies ? RD.vipFamilies[t.family] : null, c1 = f ? f.c1 : "#5a6478", c2 = f ? f.c2 : "#262c3a", rim = U("tb"), face = U("tf"), gem = U("tg"), sh = U("th");
+    var n = t && /(\d+)$/.exec(t.name), roman = n ? ["", "I", "II", "III", "IV", "V"][+n[1]] || n[1] : "";
+    return '<svg class="tier-badge" width="' + size + '" height="' + size + '" viewBox="0 0 40 40" aria-hidden="true"><defs>' +
+      lin(rim, [[0, c1], [0.5, c2], [1, c1]], 0, 0, 1, 1) + lin(face, [[0, c2, 0.55], [1, "#0b0f1a"]], 0, 0, 0, 1) + lin(gem, [[0, "#ffffff"], [0.5, c1], [1, c2]], 0, 0, 1, 1) + lin(sh, [[0, "#fff", 0.35], [1, "#fff", 0]]) + "</defs>" +
+      '<rect x="0.5" y="0.5" width="39" height="39" rx="11" fill="url(#' + rim + ')"/><rect x="2.2" y="2.2" width="35.6" height="35.6" rx="9.4" fill="#0b0f1a"/><rect x="2.2" y="2.2" width="35.6" height="35.6" rx="9.4" fill="url(#' + face + ')"/>' +
+      '<path d="M4 11 Q4 4 11 4 H29 Q36 4 36 11 V13 Q20 8 4 15Z" fill="url(#' + sh + ')"/>' +
+      (f ? '<path d="M20 7 L29.5 14 L20 ' + (roman ? 27 : 31) + ' L10.5 14Z" fill="url(#' + gem + ')"/><path d="M10.5 14 H29.5 M20 7 L16.2 14 L20 ' + (roman ? 27 : 31) + ' L23.8 14 Z" fill="none" stroke="' + c2 + '" stroke-opacity=".6" stroke-width=".9" stroke-linejoin="round"/>'
+         : '<path d="M20 9 L28 15 L20 28 L12 15Z" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="1.8" stroke-linejoin="round"/>') +
+      (roman ? '<text x="20" y="35" text-anchor="middle" font-size="6.6" font-weight="800" letter-spacing="1" fill="' + c1 + '" style="font-family:Inter,Arial,sans-serif">' + roman + "</text>" : "") + "</svg>";
   }
+
 
   /* Tag do dono/equipe: diamante brilhante (no lugar do nível VIP) */
   function ownerBadge(size) {
