@@ -31,7 +31,7 @@
   --brand-rgb: 31, 143, 255;
   --brand-2: #22d3ee;
   --brand-deep: #0b3d91;
-  --brand-grad: linear-gradient(90deg, #1f6fff 0%, #1f8fff 45%, #22d3ee 100%);
+  --brand-grad: linear-gradient(90deg, #1a5fe6 0%, #1f75ff 55%, #2f8cff 100%);
   --brand-light: #22d3ee;
   --success: #22e08a;
   --success-soft: rgba(34, 224, 138, 0.14);
@@ -107,7 +107,7 @@ h3 { font-size: 15px; font-weight: 600; }
 }
 .btn:active { transform: translateY(1px); }
 .btn svg { width: 16px; height: 16px; }
-.btn-primary { background: var(--brand-grad); color: var(--brand-ink); box-shadow: 0 6px 18px rgba(var(--brand-rgb), 0.32); }
+.btn-primary { background: var(--brand-grad); color: var(--brand-ink); box-shadow: 0 4px 14px rgba(var(--brand-rgb), 0.22); }
 .btn-primary:hover { background: var(--brand-hover); }
 .btn-secondary { background: var(--surface-2); color: var(--text); border-color: var(--line-2); }
 .btn-secondary:hover { background: var(--surface-3); }
@@ -276,7 +276,7 @@ h3 { font-size: 15px; font-weight: 600; }
   font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0; background: var(--surface-3);
 }
 .progress { height: 6px; background: var(--surface-3); border-radius: 999px; overflow: hidden; }
-.progress > span { display: block; height: 100%; background: linear-gradient(90deg, var(--brand), var(--gold)); border-radius: inherit; }
+.progress > span { display: block; height: 100%; background: linear-gradient(90deg, #1656d6, var(--brand)); border-radius: inherit; box-shadow: 0 0 10px rgba(var(--brand-rgb), 0.45); }
 .copy-field { min-width: 0; max-width: 100%; display: flex; align-items: center; gap: 8px; background: var(--bg-2); border: 1px solid var(--line-2); border-radius: var(--r-sm); padding: 4px 4px 4px 14px; }
 .copy-field code { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: var(--text); font-family: ui-monospace, "SF Mono", Menlo, monospace; }
 .hidden { display: none !important; }
