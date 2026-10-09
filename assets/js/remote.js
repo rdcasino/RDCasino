@@ -64,7 +64,7 @@
       var prof = r[0].data; if (!prof) throw new Error("Profile not found.");
       var txs = (r[1].data || []).map(function (t) { return mapTx(t, prof.username); });
       var me = mapProfile(prof, state.user.email, txs), s = r[3].data;
-      if (s) me.seeds = { server: "", hash: s.server_hash, client: s.client_seed, nonce: +s.nonce, revealed: s.revealed || [] };
+      if (s) me.seeds = { server: "", hash: s.server_hash, nextHash: s.next_server_hash || null, client: s.client_seed, nonce: +s.nonce, revealed: s.revealed || [] };
       /* um saldo só na tela (o total); wallet guarda de qual cripto veio cada valor */
       me.wallet = prof.wallet || {}; me.coin = prof.active_coin || "USDT"; me.total = me.balance;
       me.reloadGrant = mapReload(r[5].data);
@@ -396,7 +396,7 @@
   db.rotateSeed = function (pid, client) {
     return sb.rpc("rotate_seed", { p_client: client || null }).then(function (r) {
       if (r.error) return { error: msg(r.error) };
-      var me = db.current(); if (me) me.seeds = { server: "", hash: r.data.hash, client: r.data.client, nonce: +r.data.nonce, revealed: r.data.revealed || [] };
+      var me = db.current(); if (me) me.seeds = { server: "", hash: r.data.hash, nextHash: r.data.next || null, client: r.data.client, nonce: +r.data.nonce, revealed: r.data.revealed || [] };
       return { ok: true };
     });
   };
