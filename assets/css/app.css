@@ -1636,3 +1636,10 @@ a.tx-hash:hover { color: var(--brand-2, #22d3ee); }
 .footer-social .soc.telegram:hover { background: #229ed9; box-shadow: none; }
 .footer-social .soc.x:hover { background: #000; box-shadow: inset 0 0 0 1px #333; }
 .footer-social .soc.instagram:hover { background: linear-gradient(45deg, #f09433, #dc2743, #bc1888); box-shadow: none; }
+
+/* Cartão VIP do menu lateral mais compacto */
+.sb-vip { padding: 9px 10px; gap: 9px; margin-bottom: 8px; border-radius: 12px; }
+.sb-vip strong { font-size: 12.5px; }
+.sb-vip small { font-size: 10.5px; }
+.sb-vip .progress { margin: 4px 0 3px; height: 4px; }
+.sb-vip-dot { top: 6px; right: 6px; width: 7px; height: 7px; }
