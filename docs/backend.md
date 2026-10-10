@@ -50,6 +50,7 @@
 - [x] Pump e Cross the Lake (0027) aplicados; max_profit zerado (sem limite de ganho) a pedido do dono.
 - [x] Valor mostrado = valor recebido (0028, aplicada): nível VIP, bônus diário/semanal/mensal, rakeback e comissão de afiliado recebem o valor que o site mostrou. Nível e bônus: se o servidor tiver outro valor, nada é pago e o site atualiza o card. Rakeback e comissão: paga exatamente o valor mostrado; o resto continua acumulado.
 - [x] Checagem do código promocional (0029, aplicada): o botão Redeem fica azul só quando o código existe e ainda pode ser usado. Só logado, até 60 consultas por hora por jogador.
+- [x] VIP novo (0030, aplicada): 8 famílias × 4 níveis (sem Obsidian), valores redondos em dólar. Progresso VIP (vip_xp) com peso por jogo em game_tables.vip_weights (esportes 3x, slots/live 1x, Dice/Limbo 0,75x); o total apostado real não muda. Resgate proporcional: paga o direito acumulado menos o que já foi pago (level_paid). Bônus diário em Bronze 3, semanal/mensal em Gold 2, reload em Jade 2 (mesmos valores de antes).
 - [x] Provably fair no modo real: troca de seed revela a server seed (migração 0017). Configurações do admin (lucro máximo, países, licença, prêmio do leaderboard, jogos, promoções) salvas no servidor.
 - [x] Resgates no servidor (migração 0016): rakeback, prêmios de nível, bônus diário/semanal/mensal; feed público de apostas recentes. Atenção: se mudar RD.vipTiers ou RD.config.bonuses em data.js, atualize também game_tables (vip_tiers, bonuses).
 

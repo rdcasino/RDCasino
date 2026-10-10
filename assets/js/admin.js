@@ -111,14 +111,14 @@
       var v = q.value.toLowerCase();
       var list = db.players().filter(function (p) { return (!v || (p.username + p.email + p.id).toLowerCase().indexOf(v) > -1) && (!k.value || p.kyc === k.value) && (!s.value || p.status === s.value); }).slice().reverse();
       $("#pl-body").innerHTML = list.length ? '<div class="table-wrap"><table class="table"><thead><tr><th>Jogador</th><th>País</th><th>VIP</th><th class="right">Saldo</th><th class="right">Depósitos</th><th class="right">Saques</th><th class="right">Apostado</th><th>KYC</th><th>Status</th></tr></thead><tbody>' +
-        list.map(function (p) { var t = db.tierOf(p.wagered); return '<tr class="clickable" data-player="' + p.id + '"><td><div class="row" style="gap:10px"><span class="avatar">' + initials(p.username) + '</span><div><span class="strong">' + esc(p.username) + '</span><br><small class="faint">' + esc(p.email) + "</small></div></div></td><td>" + esc(p.country) + "</td><td>" + (t ? t.name : "—") + '</td><td class="right num strong">' + fmt.usd(p.balance) + '</td><td class="right num">' + fmt.usd(p.deposits) + '</td><td class="right num">' + fmt.usd(p.withdrawals) + '</td><td class="right num">' + fmt.usd(p.wagered) + "</td><td>" + badge(p.kyc) + "</td><td>" + badge(p.status) + "</td></tr>"; }).join("") +
+        list.map(function (p) { var t = db.tierOf(p.vipXp != null ? p.vipXp : p.wagered); return '<tr class="clickable" data-player="' + p.id + '"><td><div class="row" style="gap:10px"><span class="avatar">' + initials(p.username) + '</span><div><span class="strong">' + esc(p.username) + '</span><br><small class="faint">' + esc(p.email) + "</small></div></div></td><td>" + esc(p.country) + "</td><td>" + (t ? t.name : "—") + '</td><td class="right num strong">' + fmt.usd(p.balance) + '</td><td class="right num">' + fmt.usd(p.deposits) + '</td><td class="right num">' + fmt.usd(p.withdrawals) + '</td><td class="right num">' + fmt.usd(p.wagered) + "</td><td>" + badge(p.kyc) + "</td><td>" + badge(p.status) + "</td></tr>"; }).join("") +
         "</tbody></table></div>" : empty(db.players().length ? "Nenhum jogador encontrado" : "Nenhum jogador ainda", db.players().length ? "" : "Quando alguém se cadastrar no site, aparece aqui.");
     }
     [q, k, s].forEach(function (el) { el.addEventListener("input", draw); }); draw();
   };
   function playerDrawer(id) {
     var p = db.player(id); if (!p) return;
-    var t = db.tierOf(p.wagered), house = -p.profit, ref = p.referrerId ? db.player(p.referrerId) : null;
+    var t = db.tierOf(p.vipXp != null ? p.vipXp : p.wagered), house = -p.profit, ref = p.referrerId ? db.player(p.referrerId) : null;
     openDrawer(p.username,
       '<div class="row" style="gap:12px;margin-bottom:16px"><span class="avatar" style="width:44px;height:44px;font-size:15px">' + initials(p.username) + '</span><div><strong>' + esc(p.username) + '</strong><br><small class="faint">' + esc(p.email) + " · " + p.id + "</small></div></div>" +
       '<div class="row wrap" style="gap:6px;margin-bottom:16px">' + badge(p.status) + badge(p.kyc) + '<span class="badge">' + (t ? t.name : "Sem nível") + "</span></div>" +
@@ -251,8 +251,8 @@
     var acc = 0, peak = 0;
     var rows = RD.vipTiers.map(function (t, i) {
       acc += t.reward; var cost = acc / t.wager * 100; if (cost > peak) peak = cost;
-      var nxt = RD.vipTiers[i + 1], at = ps.filter(function (p) { return p.wagered >= t.wager && (!nxt || p.wagered < nxt.wager); }).length;
-      var reached = ps.filter(function (p) { return p.wagered >= t.wager; }), claimed = reached.filter(function (p) { return p.claimedTiers.indexOf(t.name) > -1; }).length;
+      var nxt = RD.vipTiers[i + 1], xp = function (p) { return p.vipXp != null ? p.vipXp : p.wagered; }, at = ps.filter(function (p) { return xp(p) >= t.wager && (!nxt || xp(p) < nxt.wager); }).length;
+      var reached = ps.filter(function (p) { return xp(p) >= t.wager; }), claimed = reached.filter(function (p) { return p.claimedTiers.indexOf(t.name) > -1; }).length;
       return { t: t, at: at, claimed: claimed, open: reached.length - claimed, cost: cost };
     });
     var owed = rows.reduce(function (a, r) { return a + r.open * r.t.reward; }, 0), rakeOpen = ps.reduce(function (a, p) { return a + p.rakeback; }, 0);
@@ -264,7 +264,7 @@
       '<div class="card card-pad mt"><h3 style="margin-bottom:10px">Bônus recorrentes</h3><p class="faint" style="font-size:13px;margin-bottom:12px">Base = vantagem da casa gerada pelo jogador no período (valor apostado × vantagem do jogo). Cada bônus devolve uma fatia disso, então nunca custa mais do que o jogador gerou.</p><div class="table-wrap"><table class="table"><thead><tr><th>Bônus</th><th>Libera a partir de</th><th class="right">Devolve</th><th class="right">Frequência</th></tr></thead><tbody>' +
       '<tr><td class="strong">Rakeback instantâneo</td><td>Todos</td><td class="right">' + (RD.config.rakebackRate * 100) + '% da vantagem</td><td class="right">A qualquer momento</td></tr>' +
       Object.keys(RD.config.bonuses).filter(function (k) { return k !== "reload"; }).map(function (k) { var c = RD.config.bonuses[k]; return '<tr><td class="strong">' + c.label + '</td><td>' + c.minTier + '</td><td class="right">' + (c.rate * 100) + '% da vantagem' + (k === "reload" ? " dos últimos " + c.lookbackDays + " dias, em " + c.claims + " partes" : "") + '</td><td class="right">' + (k === "reload" ? "1 por dia" : c.hours === 24 ? "Diário" : c.hours === 168 ? "Semanal" : "Mensal") + "</td></tr>"; }).join("") +
-      '<tr><td class="strong">VIP Reload</td><td>Gold 1, quem você escolher</td><td class="right">Valor que você define</td><td class="right">Jogadores → VIP Reload</td></tr>' +
+      '<tr><td class="strong">VIP Reload</td><td>Jade 2, quem você escolher</td><td class="right">Valor que você define</td><td class="right">Jogadores → VIP Reload</td></tr>' +
       '</tbody></table></div><p class="faint" style="font-size:12.5px;margin-top:10px">Somando tudo (sem o reload), os bônus devolvem até ' + Math.round((RD.config.rakebackRate + ['daily', 'weekly', 'monthly'].reduce(function (a, k) { return a + RD.config.bonuses[k].rate; }, 0)) * 1000) / 10 + '% da vantagem da casa. Ajuste as taxas em <code>RD.config.bonuses</code>.</p></div>';
   };
 
@@ -525,7 +525,7 @@
     if (a === "reload") {
       var rp = db.player(id), g = rp.reloadGrant && rp.reloadGrant.used < rp.reloadGrant.claims ? rp.reloadGrant : null;
       var minT = RD.vipTiers.filter(function (t) { return t.name === RD.config.bonuses.reload.minTier; })[0];
-      if (minT && rp.wagered < minT.wager && !g) { RD.toast("VIP Reload é a partir do " + minT.name + " (" + fmt.usd(minT.wager, { dec: 0 }) + " apostados). " + rp.username + " apostou " + fmt.usd(rp.wagered, { dec: 0 }) + ".", "error"); return; }
+      if (minT && (rp.vipXp != null ? rp.vipXp : rp.wagered) < minT.wager && !g) { RD.toast("VIP Reload é a partir do " + minT.name + " (" + fmt.usd(minT.wager, { dec: 0 }) + " apostados). " + rp.username + " apostou " + fmt.usd(rp.wagered, { dec: 0 }) + ".", "error"); return; }
       openModal('<div class="modal-head"><h3>VIP Reload · ' + esc(rp.username) + '</h3><button class="btn btn-ghost btn-icon btn-sm" data-close>' + ic("x") + '</button></div><form id="rl-form"><div class="modal-body">' +
         (g ? '<div class="notice info" style="margin-bottom:14px">' + ic("bolt", 16) + "<span>Ativo agora: " + fmt.usd(g.per) + " por resgate, " + g.used + "/" + g.claims + " resgatados. Dar um novo substitui este.</span></div>" : '<p class="muted" style="margin-bottom:14px">O card "VIP Reload" aparece nas recompensas do jogador só enquanto ele tiver resgates sobrando.</p>') +
         '<div class="adm-grid-2"><div class="field"><label>Valor por resgate (USD)</label><input class="input" name="per" type="number" min="0.01" step="0.01" required placeholder="Ex.: 10"></div>' +
