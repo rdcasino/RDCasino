@@ -1661,3 +1661,5 @@ body.sb-mini .sb-promo { align-items: center; }
 .footer-social { gap: 6px; margin-top: 12px; }
 .footer-social .soc { width: 32px; height: 32px; border-radius: 9px; }
 .footer-social .soc svg { width: 15px; height: 15px; }
+
+#hdr-bal.bal-wait { color: var(--text-3); letter-spacing: 0.1em; }
