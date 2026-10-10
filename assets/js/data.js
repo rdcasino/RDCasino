@@ -40,15 +40,17 @@ RD.config = {
   maxProfit: 0, // lucro máximo por aposta nos originais (0 = sem limite; muda no admin)
   leaderboardPrizes: [15000, 9000, 6000, 4000, 3000, 2500, 2000, 1500, 1200, 1000],
   kycWithdrawLimit: 2000,
+  /* Peso de cada aposta no progresso VIP (o total apostado real não muda). Igual a game_tables.vip_weights no servidor. */
+  vipWeights: { default: 1, dice: 0.75, limbo: 0.75, sports: 3, slots: 1, live: 1 },
   rakebackRate: 0.02, // 2% da vantagem da casa volta como rakeback instantâneo
   /* Bônus recorrentes. Base de cálculo = vantagem da casa gerada pelo jogador no período
      (valor apostado × vantagem da casa de cada jogo). "rate" = fatia dessa vantagem que volta.
      minTier = nível VIP mínimo para liberar. Soma máxima (sem recarga): 5% + 5% + 7,5% + 10% = 27,5% da vantagem da casa. */
   bonuses: {
-    daily:   { label: "Daily Bonus",   rate: 0.03,  hours: 24,  minTier: "Bronze 2" },
-    weekly:  { label: "Weekly Bonus",  rate: 0.04,  hours: 168, minTier: "Silver 1" },
-    monthly: { label: "Monthly Bonus", rate: 0.05,  hours: 720, minTier: "Silver 1" },
-    reload:  { label: "VIP Reload", minTier: "Gold 1" }   // só aparece quando o admin dá (Jogadores → VIP Reload), a partir do Gold
+    daily:   { label: "Daily Bonus",   rate: 0.03,  hours: 24,  minTier: "Bronze 3" },
+    weekly:  { label: "Weekly Bonus",  rate: 0.04,  hours: 168, minTier: "Gold 2" },
+    monthly: { label: "Monthly Bonus", rate: 0.05,  hours: 720, minTier: "Gold 2" },
+    reload:  { label: "VIP Reload", minTier: "Jade 2" }   // só aparece quando o admin dá (Jogadores → VIP Reload), a partir do Jade 2
   }
 };
 
@@ -123,13 +125,13 @@ RD.promotions = [
   { id: "race", art: "scene:race", cat: "casino", featured: true, badge: "Monthly race", value: "$50,000 Leaderboard", sub: "Top 10 wagerers get paid every month.", title: "$50,000 Monthly Leaderboard",
     desc: "Every bet on RD Originals counts toward the monthly race — no opt-in. The top 10 wagerers of the calendar month (UTC) share a $50,000 prize pool: $15,000 for first place down to $1,000 for tenth. Prizes are paid to your balance after the month closes.", cta: "See the standings", route: "leaderboard", ends: "month", status: "active" },
   { id: "vip", art: "scene:vip", cat: "casino", badge: "VIP Club", value: "Over $10,000 in rewards", sub: "A cash reward at every VIP level.", title: "VIP Level-Up Rewards",
-    desc: "Climb from Bronze 1 to Amethyst 3 just by playing. Every level unlocks a one-time cash reward — from $2 at Bronze 1 to $2,500 at Amethyst 3 — paid straight to your balance with no wagering. Your level never goes down.", cta: "Open VIP Club", route: "vip", status: "active" },
+    desc: "Climb from Bronze 1 to Amethyst 4 just by playing. Every level unlocks a one-time cash reward — from $2 at Bronze 1 to $1,000 at the Ruby and Amethyst levels — paid straight to your balance with no wagering. Your level never goes down.", cta: "Open VIP Club", route: "vip", status: "active" },
   { id: "rain", art: "scene:rain", cat: "casino", badge: "Every hour", value: "Hourly Rain", sub: "Free money splits in the chat every hour.", title: "Hourly Rain",
     desc: "Every hour a rain pot drops in the chat. Click Join before the timer ends and the pot is split equally between everyone who joined. Open to players with $5,000 wagered in the last 7 days. Players can add to the pot too.", cta: "Open the chat", route: "chat", status: "active" },
   { id: "rakeback", art: "scene:rakeback", cat: "casino", badge: "Instant", value: "Instant Rakeback", sub: "Part of every bet comes back to you.", title: "Instant Rakeback",
     desc: "2% of the house edge of every bet you place comes back as rakeback. It builds up as you play and you can claim it any time in Rewards.", cta: "Claim in Rewards", route: "vip", status: "active" },
   { id: "bonuses", art: "scene:reload", cat: "casino", badge: "Daily · Weekly · Monthly", value: "Recurring Bonuses", sub: "Get paid back for playing — every day.", title: "Daily, Weekly & Monthly Bonuses",
-    desc: "Your recent play pays you back: the Daily Bonus unlocks at Bronze 2 and the Weekly and Monthly Bonuses at Silver 1. The more you play, the bigger they get. Claim them in Rewards when the timer is up.", cta: "Open Rewards", route: "vip", status: "active" },
+    desc: "Your recent play pays you back: the Daily Bonus unlocks at Bronze 3 and the Weekly and Monthly Bonuses at Gold 2. The more you play, the bigger they get. Claim them in Rewards when the timer is up.", cta: "Open Rewards", route: "vip", status: "active" },
   { id: "codes", art: "scene:codes", cat: "casino", badge: "Social drops", value: "Bonus Codes", sub: "Grab our codes before they run out.", title: "Bonus Codes",
     desc: "We drop bonus codes on our socials and in the chat. Type a code in \"Have a code?\" under Rewards to add it to your balance — first come, first served. Each code can be used once per account.", cta: "Redeem a code", route: "vip", status: "active" },
   { id: "affiliate", art: "scene:affiliate", cat: "casino", badge: "Partners", value: "Earn 15% for life", sub: "Invite friends and earn from every bet.", title: "RD Partners — 15% Revenue Share",
@@ -147,40 +149,46 @@ RD.vipFamilies = {
   sapphire: { label: "Sapphire", c1: "#7aa7ff", c2: "#1f3fae" },
   emerald: { label: "Emerald", c1: "#4ff08a", c2: "#0a7a3a" },
   ruby: { label: "Ruby", c1: "#ff7a90", c2: "#a80f2e" },
-  obsidian: { label: "Obsidian", c1: "#9a86ad", c2: "#2e2340" },
   amethyst: { label: "Amethyst", c1: "#e08aff", c2: "#7a1fb0" }
 };
 RD.vipTiers = [
   { name: "Bronze 1", wager: 1000, reward: 2, family: "bronze" },
-  { name: "Bronze 2", wager: 5000, reward: 4, family: "bronze" },
-  { name: "Bronze 3", wager: 15000, reward: 10, family: "bronze" },
-  { name: "Bronze 4", wager: 50000, reward: 35, family: "bronze" },
-  { name: "Silver 1", wager: 100000, reward: 50, family: "silver" },
-  { name: "Silver 2", wager: 150000, reward: 50, family: "silver" },
-  { name: "Silver 3", wager: 200000, reward: 50, family: "silver" },
-  { name: "Silver 4", wager: 250000, reward: 50, family: "silver" },
-  { name: "Gold 1", wager: 300000, reward: 50, family: "gold" },
-  { name: "Gold 2", wager: 350000, reward: 50, family: "gold" },
-  { name: "Gold 3", wager: 400000, reward: 50, family: "gold" },
-  { name: "Gold 4", wager: 450000, reward: 50, family: "gold" },
-  { name: "Jade 1", wager: 500000, reward: 50, family: "jade" },
-  { name: "Jade 2", wager: 600000, reward: 100, family: "jade" },
-  { name: "Jade 3", wager: 700000, reward: 100, family: "jade" },
-  { name: "Jade 4", wager: 800000, reward: 100, family: "jade" },
-  { name: "Jade 5", wager: 900000, reward: 100, family: "jade" },
-  { name: "Sapphire 1", wager: 1000000, reward: 100, family: "sapphire" },
-  { name: "Sapphire 2", wager: 1500000, reward: 500, family: "sapphire" },
-  { name: "Emerald 1", wager: 2000000, reward: 500, family: "emerald" },
-  { name: "Emerald 2", wager: 2500000, reward: 500, family: "emerald" },
-  { name: "Ruby 1", wager: 3000000, reward: 500, family: "ruby" },
-  { name: "Ruby 2", wager: 3500000, reward: 500, family: "ruby" },
-  { name: "Obsidian 1", wager: 4000000, reward: 500, family: "obsidian" },
-  { name: "Obsidian 2", wager: 4500000, reward: 500, family: "obsidian" },
-  { name: "Amethyst 1", wager: 5000000, reward: 500, family: "amethyst" },
-  { name: "Amethyst 2", wager: 7500000, reward: 2500, family: "amethyst" },
-  { name: "Amethyst 3", wager: 10000000, reward: 2500, family: "amethyst" }
+  { name: "Bronze 2", wager: 2500, reward: 2, family: "bronze" },
+  { name: "Bronze 3", wager: 5000, reward: 3, family: "bronze" },
+  { name: "Bronze 4", wager: 10000, reward: 5, family: "bronze" },
+  { name: "Silver 1", wager: 15000, reward: 5, family: "silver" },
+  { name: "Silver 2", wager: 20000, reward: 5, family: "silver" },
+  { name: "Silver 3", wager: 30000, reward: 10, family: "silver" },
+  { name: "Silver 4", wager: 50000, reward: 20, family: "silver" },
+  { name: "Gold 1", wager: 75000, reward: 25, family: "gold" },
+  { name: "Gold 2", wager: 100000, reward: 25, family: "gold" },
+  { name: "Gold 3", wager: 150000, reward: 50, family: "gold" },
+  { name: "Gold 4", wager: 200000, reward: 50, family: "gold" },
+  { name: "Jade 1", wager: 250000, reward: 50, family: "jade" },
+  { name: "Jade 2", wager: 300000, reward: 50, family: "jade" },
+  { name: "Jade 3", wager: 400000, reward: 100, family: "jade" },
+  { name: "Jade 4", wager: 500000, reward: 100, family: "jade" },
+  { name: "Sapphire 1", wager: 600000, reward: 100, family: "sapphire" },
+  { name: "Sapphire 2", wager: 750000, reward: 150, family: "sapphire" },
+  { name: "Sapphire 3", wager: 1000000, reward: 250, family: "sapphire" },
+  { name: "Sapphire 4", wager: 1250000, reward: 250, family: "sapphire" },
+  { name: "Emerald 1", wager: 1500000, reward: 250, family: "emerald" },
+  { name: "Emerald 2", wager: 2000000, reward: 500, family: "emerald" },
+  { name: "Emerald 3", wager: 2500000, reward: 500, family: "emerald" },
+  { name: "Emerald 4", wager: 3000000, reward: 500, family: "emerald" },
+  { name: "Ruby 1", wager: 3500000, reward: 500, family: "ruby" },
+  { name: "Ruby 2", wager: 4000000, reward: 500, family: "ruby" },
+  { name: "Ruby 3", wager: 5000000, reward: 1000, family: "ruby" },
+  { name: "Ruby 4", wager: 6000000, reward: 1000, family: "ruby" },
+  { name: "Amethyst 1", wager: 7000000, reward: 1000, family: "amethyst" },
+  { name: "Amethyst 2", wager: 8000000, reward: 1000, family: "amethyst" },
+  { name: "Amethyst 3", wager: 9000000, reward: 1000, family: "amethyst" },
+  { name: "Amethyst 4", wager: 10000000, reward: 1000, family: "amethyst" }
 ];
-RD.vipTiers.forEach(function (t) { t.color = RD.vipFamilies[t.family].c1; });
+RD.vipTiers.forEach(function (t, i) { t.color = RD.vipFamilies[t.family].c1; t.cum = (i ? RD.vipTiers[i - 1].cum : 0) + t.reward; }); // cum: soma dos prêmios até o nível
+RD.vipWeight = function (game) { var w = RD.config.vipWeights || {}; return w[game] != null ? w[game] : (w["default"] != null ? w["default"] : 1); };
+/* direito acumulado do VIP: soma dos prêmios dos níveis alcançados; o resgate paga a diferença para o que já foi pago */
+RD.vipEntitled = function (xp) { var e = 0; RD.vipTiers.forEach(function (t) { if (xp >= t.wager) e = t.cum; }); return e; };
 
 RD.wallet = {
   coins: [

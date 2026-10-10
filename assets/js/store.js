@@ -41,6 +41,14 @@
       d.players.forEach(function (p) { p.claimedTiers = []; });
       d.fixes.vipV2 = true;
     }
+    if (!d.fixes.vipXp) {
+      // VIP v3: progresso com peso por jogo e prêmio proporcional (paga a diferença para o que já foi pago)
+      d.players.forEach(function (p) {
+        p.vipXp = round(d.bets.filter(function (b) { return b.userId === p.id; }).reduce(function (a, b) { return a + b.amount * RD.vipWeight(b.game); }, 0));
+        p.levelPaid = round(d.tx.filter(function (t) { return t.userId === p.id && t.type === "Level reward" && t.status === "Completed"; }).reduce(function (a, t) { return a + t.amount; }, 0));
+      });
+      d.fixes.vipXp = true;
+    }
     if (!d.fixes.resetFlamengo10) {
       d.players.forEach(function (p) { if (p.username.toLowerCase() === "flamengo10") resetBetsOf(d, p, "Sistema"); });
       d.fixes.resetFlamengo10 = true;
@@ -51,7 +59,7 @@
   function resetBetsOf(d, p, who) {
     d.bets = d.bets.filter(function (b) { return b.userId !== p.id; });
     var open = p.rounds || {}; Object.keys(open).forEach(function (k) { p.balance = round(p.balance + open[k].amount); });
-    p.rounds = {}; p.wagered = 0; p.profit = 0; p.bets = 0; p.rakeback = 0;
+    p.rounds = {}; p.wagered = 0; p.vipXp = 0; p.profit = 0; p.bets = 0; p.rakeback = 0;
     d.audit.unshift({ at: nowIso(), who: who, what: "Zerou as apostas de " + p.username });
   }
   var D = migrate(read()) || empty();
@@ -112,7 +120,7 @@
   function tierIndex(name) { var i = -1; RD.vipTiers.forEach(function (t, k) { if (t.name === name) i = k; }); return i; }
   function bonusState(p) {
     if (!p) return [];
-    var cfg = RD.config.bonuses || {}, now = Date.now(), cur = tierOf(p.wagered), ci = cur ? tierIndex(cur.name) : -1, out = [];
+    var cfg = RD.config.bonuses || {}, now = Date.now(), cur = tierOf(p.vipXp || 0), ci = cur ? tierIndex(cur.name) : -1, out = [];
     p.bonus = p.bonus || {};
     ["daily", "weekly", "monthly", "reload"].forEach(function (k) {
       var c = cfg[k]; if (!c) return;
@@ -172,7 +180,7 @@
       var p = {
         id: id("u_"), username: username, email: email, pass: hash(f.pass), country: f.country, created: nowIso(),
         balance: 0, deposits: 0, withdrawals: 0, wagered: 0, profit: 0, bets: 0,
-        rakeback: 0, rakebackClaimed: 0, claimedTiers: [], bonusTotal: 0,
+        rakeback: 0, rakebackClaimed: 0, claimedTiers: [], bonusTotal: 0, vipXp: 0, levelPaid: 0,
         kyc: "Not started", kycInfo: null, kycReason: "", status: "Active", note: "",
         refCode: username.toUpperCase(), referredBy: refOwner ? ref : "", referrerId: refOwner ? refOwner.id : "",
         affShare: null, affPaid: 0, campaigns: [],
@@ -326,7 +334,7 @@
       if (!(amount > 0) || amount > p.balance + 1e-9) return { error: "Insufficient balance." };
       var payout = win ? round(amount * multiplier) : 0;
       p.balance = round(p.balance - amount + payout);
-      p.wagered = round(p.wagered + amount); p.profit = round(p.profit + payout - amount); p.bets++;
+      p.wagered = round(p.wagered + amount); p.vipXp = round((p.vipXp || 0) + amount * RD.vipWeight(game)); p.profit = round(p.profit + payout - amount); p.bets++;
       p.rakeback = p.rakeback + amount * ((g.edge || 1) / 100) * RD.config.rakebackRate;
       var b = { id: id("B-"), userId: p.id, user: p.username, game: game, amount: round(amount), multiplier: win ? multiplier : 0, payout: payout, date: nowIso(), detail: detail };
       D.bets.unshift(b); D.bets = D.bets.slice(0, 2000);
@@ -353,12 +361,15 @@
       addTx(p, "Rakeback", v, "Completed"); log(p.username, "Resgatou rakeback " + RD.fmt.usd(v)); save();
       return { amount: v };
     },
-    claimLevel: function (pid, tierName) {
-      var p = byId(pid), t = RD.vipTiers.filter(function (x) { return x.name === tierName; })[0];
-      if (!t || p.wagered < t.wager || p.claimedTiers.indexOf(tierName) > -1) return { error: "Not available." };
-      p.claimedTiers.push(tierName); p.balance = round(p.balance + t.reward); p.bonusTotal = round(p.bonusTotal + t.reward);
-      addTx(p, "Level reward", t.reward, "Completed", { note: tierName }); log(p.username, "Resgatou prêmio de nível " + tierName); save();
-      return { amount: t.reward };
+    /* VIP: paga a diferença entre o direito acumulado (prêmios dos níveis alcançados) e o que já foi pago */
+    claimLevel: function (pid) {
+      var p = byId(pid), xp = p.vipXp || 0, v = round(RD.vipEntitled(xp) - (p.levelPaid || 0));
+      if (v < 0.01) return { error: "Nothing to claim yet." };
+      var reached = RD.vipTiers.filter(function (t) { return xp >= t.wager; }), top = reached[reached.length - 1];
+      p.levelPaid = round((p.levelPaid || 0) + v); p.claimedTiers = reached.map(function (t) { return t.name; });
+      p.balance = round(p.balance + v); p.bonusTotal = round(p.bonusTotal + v);
+      addTx(p, "Level reward", v, "Completed", { note: top ? top.name : "VIP" }); log(p.username, "Resgatou prêmio VIP " + RD.fmt.usd(v)); save();
+      return { amount: v };
     },
     /* Rodadas com várias etapas (Mines, Hi-Lo, Crash, Blackjack, Tower, Chicken):
        a aposta sai do saldo no início e fica salva até ser liquidada.
@@ -387,7 +398,7 @@
       var g = RD.games.filter(function (x) { return x.id === r.game; })[0] || {};
       var payout = win ? round(r.amount * multiplier) : 0;
       p.balance = round(p.balance + payout);
-      p.wagered = round(p.wagered + r.amount); p.profit = round(p.profit + payout - r.amount); p.bets++;
+      p.wagered = round(p.wagered + r.amount); p.vipXp = round((p.vipXp || 0) + r.amount * RD.vipWeight(r.game)); p.profit = round(p.profit + payout - r.amount); p.bets++;
       p.rakeback = p.rakeback + r.amount * ((g.edge || 1) / 100) * RD.config.rakebackRate;
       var b = { id: id("B-"), userId: p.id, user: p.username, game: r.game, amount: r.amount, multiplier: win ? multiplier : 0, payout: payout, date: nowIso(), detail: detail || {} };
       b.detail.nonce = r.nonce; b.detail.client = r.client;

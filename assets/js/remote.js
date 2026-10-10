@@ -49,7 +49,7 @@
     return {
       id: p.id, username: p.username, email: email || "", country: p.country, refCode: p.ref_code, referrerId: p.referred_by, referredBy: null,
       status: p.status === "active" ? "Active" : "Suspended", kyc: KYC[p.kyc] || "Not started", kycReason: "", kycInfo: null,
-      balance: n(p.balance), held: n(p.held), wagered: n(p.wagered), profit: n(p.profit), bets: +p.bets_count || 0, rakeback: +p.rakeback || 0, rakebackClaimed: sum("Rakeback"),
+      balance: n(p.balance), held: n(p.held), wagered: n(p.wagered), vipXp: n(p.vip_xp != null ? p.vip_xp : p.wagered), levelPaid: n(p.level_paid), profit: n(p.profit), bets: +p.bets_count || 0, rakeback: +p.rakeback || 0, rakebackClaimed: sum("Rakeback"),
       claimedTiers: p.claimed_tiers || [], bonusTotal: n(sum("Bonus") + sum("Level reward")), deposits: sum("Deposit"), withdrawals: sum("Withdrawal"), firstDeposit: firstDep,
       created: p.created_at, note: p.note || "", affShare: p.aff_share != null ? +p.aff_share : null, affPaid: n(p.aff_paid), campaigns: [], rounds: {},
       seeds: { server: "", client: "", nonce: 0, revealed: [] }
@@ -81,7 +81,7 @@
       var txs = (r[1].data || []).map(function (t) { return mapTx(t, prof.username); });
       var me = mapProfile(prof, state.user.email, txs), s = r[3].data, old = db.current();
       /* chegou um resultado de aposta enquanto este perfil vinha do servidor: o saldo da aposta é mais novo, fica ele */
-      if (old && old.id === prof.id && balVer !== v0) ["balance", "held", "wagered", "profit", "bets", "rakeback"].forEach(function (k) { me[k] = old[k]; });
+      if (old && old.id === prof.id && balVer !== v0) ["balance", "held", "wagered", "vipXp", "levelPaid", "profit", "bets", "rakeback"].forEach(function (k) { me[k] = old[k]; });
       if (s) me.seeds = { server: "", hash: s.server_hash, nextHash: s.next_server_hash || null, client: s.client_seed, nonce: +s.nonce, revealed: s.revealed || [] };
       /* um saldo só na tela (o total); wallet guarda de qual cripto veio cada valor */
       me.wallet = prof.wallet || {}; me.coin = prof.active_coin || "USDT"; me.total = me.balance;
@@ -206,6 +206,7 @@
           if (+b.id > lastBetId) {
             lastBetId = +b.id; balVer++;
             me.balance = n(pr.balance); me.wagered = n(pr.wagered); me.profit = n(pr.profit); me.bets = +pr.bets; me.rakeback = +pr.rakeback;
+            if (pr.vip_xp != null) { me.vipXp = n(pr.vip_xp); me.levelPaid = n(pr.level_paid); }
             if (pr.wallet) { me.wallet = pr.wallet; me.coin = pr.coin; me.total = n(pr.total); }
             me.seeds.nonce = nonce + 1;
           }
@@ -221,7 +222,7 @@
   var rounds = {}, lastBet = {};
   /* trocar a moeda usada nas apostas (não deixa com jogo aberto) */
   db.setCoin = function (coin) { return sb.rpc("set_active_coin", { p_coin: coin }).then(function (r) { if (r.error) return { error: msg(r.error) }; applyProfile(r.data); db.emit(); return { ok: true }; }); };
-  function applyProfile(pr) { var me = db.current(); if (!me || !pr) return; balVer++; if (pr.wallet) { me.wallet = pr.wallet; me.coin = pr.coin; me.total = n(pr.total); } me.balance = n(pr.balance); me.wagered = n(pr.wagered); me.profit = n(pr.profit); me.bets = +pr.bets; me.rakeback = +pr.rakeback; me.held = n(pr.held); }
+  function applyProfile(pr) { var me = db.current(); if (!me || !pr) return; balVer++; if (pr.wallet) { me.wallet = pr.wallet; me.coin = pr.coin; me.total = n(pr.total); } me.balance = n(pr.balance); me.wagered = n(pr.wagered); me.profit = n(pr.profit); me.bets = +pr.bets; me.rakeback = +pr.rakeback; me.held = n(pr.held); if (pr.vip_xp != null) { me.vipXp = n(pr.vip_xp); me.levelPaid = n(pr.level_paid); } }
   function mapBet(b, game, r) { var me = db.current() || {}; return { id: "B-" + b.id, userId: me.id, user: me.username, game: game, amount: n(b.amount), multiplier: +b.multiplier, payout: n(b.payout), date: b.created_at, detail: Object.assign({ nonce: r ? r.nonce : undefined, client: r ? r.client : undefined }, b.detail || {}) }; }
   function syncRounds() { var me = db.current(); if (me) me.rounds = rounds; }
   db.activeRound = function (pid, game) { return rounds[game] || null; };
@@ -265,7 +266,8 @@
       return refresh().then(loadBonus).then(function () { return { amount: n(r.data) }; });
     });
   }
-  db.claimLevel = function (pid, tier) { var t = RD.vipTiers.filter(function (x) { return x.name === tier; })[0]; return claimRpc("claim_level", t ? { p_tier: tier, p_expected: t.reward } : { p_tier: tier }).then(function (r) { if (t && r.changed != null) { t.reward = r.changed; db.emit(); } return r; }); };
+  /* VIP: o servidor paga a diferença entre o direito acumulado e o que já foi pago; manda o valor que a tela mostra */
+  db.claimLevel = function () { var me = db.current(); return claimRpc("claim_level", me ? { p_expected: Math.round((RD.vipEntitled(me.vipXp || 0) - (me.levelPaid || 0)) * 100) / 100 } : {}); };
   db.claimRakeback = function () { var me = db.current(); return claimRpc("claim_rakeback", me ? { p_expected: Math.floor(me.rakeback * 100) / 100 } : {}); };
   /* Bônus diário/semanal/mensal calculados no servidor; o VIP Reload continua vindo do reload dado pelo admin */
   var baseBonus = db.bonusState;
