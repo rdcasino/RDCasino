@@ -325,20 +325,6 @@ window.RD = window.RD || {};
         chip(56, 270, 30, "#e11d48", 5) + chip(250, 274, 26, "#1d4ed8", 4) + chip(250, 230, 22, "#ffd23f", 1) +
         '<g transform="translate(150 54)"><rect x="-38" y="-20" width="76" height="40" rx="20" fill="#062a16" stroke="url(#' + g + ')" stroke-width="3"/><text x="0" y="11" text-anchor="middle" font-size="27" font-weight="900" fill="url(#' + g + ')" style="font-family:var(--font-display,Arial)">21</text></g>';
     } },
-    roulette: { a: "#5b5bf0", b: "#15124a", draw: function () {
-      var cx = 150, cy = 178, out = "", rim = U("rr"), hub = U("rh");
-      var ord = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
-      for (var i = 0; i < 37; i++) {
-        var a0 = (i / 37) * Math.PI * 2 - Math.PI / 2, a1 = ((i + 1) / 37) * Math.PI * 2 - Math.PI / 2, R = 100, r = 74;
-        var c = i === 0 ? "#16a34a" : i % 2 ? "#dc2626" : "#111827";
-        out += '<path d="M' + (cx + R * Math.cos(a0)).toFixed(1) + " " + (cy + R * Math.sin(a0)).toFixed(1) + " A" + R + " " + R + " 0 0 1 " + (cx + R * Math.cos(a1)).toFixed(1) + " " + (cy + R * Math.sin(a1)).toFixed(1) + " L" + (cx + r * Math.cos(a1)).toFixed(1) + " " + (cy + r * Math.sin(a1)).toFixed(1) + " A" + r + " " + r + " 0 0 0 " + (cx + r * Math.cos(a0)).toFixed(1) + " " + (cy + r * Math.sin(a0)).toFixed(1) + 'Z" fill="' + c + '" stroke="#e5c07b" stroke-width=".8"/>';
-      }
-      return "<defs>" + lin(rim, [[0, "#f6d58a"], [1, "#9a6a1f"]], 0, 0, 1, 1) + rad(hub, [[0, "#fff1c2"], [0.6, "#e5b13c"], [1, "#8a5a10"]], 0.4, 0.35, 0.7) + "</defs>" +
-        '<ellipse cx="150" cy="292" rx="110" ry="16" fill="#000" opacity=".3"/><circle cx="150" cy="178" r="114" fill="url(#' + rim + ')"/><circle cx="150" cy="178" r="104" fill="#3b1d0a"/>' + out +
-        '<circle cx="150" cy="178" r="74" fill="#5a2d0c"/><circle cx="150" cy="178" r="52" fill="#7a3d12"/><circle cx="150" cy="178" r="24" fill="url(#' + hub + ')"/>' +
-        '<path d="M150 136 v84 M108 178 h84" stroke="#e5b13c" stroke-width="6" stroke-linecap="round"/><circle cx="150" cy="178" r="10" fill="url(#' + hub + ')"/>' +
-        '<circle cx="214" cy="112" r="8" fill="#fff"/><circle cx="212" cy="110" r="3" fill="#fff" opacity=".9"/>';
-    } },
     wheel: { a: "#ff7a1a", b: "#4a1203", draw: function () {
       // roda com borda dourada em relevo, segmentos com brilho, lâmpadas acesas, ponteiro 3D e moedas saltando
       var cx = 150, cy = 156, R = 100, r = 50, N = 16, cols = ["#ff2e55", "#ffd23f", "#2f7bff", "#22e08a", "#a06bff", "#ff8a1a", "#14c8e6", "#ffd23f"], seg = "", bulbs = "", rim = U("wr"), gl = U("wg"), hub = U("wh"), bg = U("wb");
@@ -380,15 +366,6 @@ window.RD = window.RD || {};
         '<ellipse cx="150" cy="46" rx="24" ry="30" fill="url(#' + eg + ')"/><ellipse cx="141" cy="34" rx="7" ry="10" fill="#fff" opacity=".65"/>' +
         '<path d="M133 54 q8.5 6 17 0 t17 0" stroke="#c97800" stroke-width="2.5" fill="none" opacity=".7"/>' + spark(214, 44, 12) + spark(80, 78, 9) + spark(236, 120, 7);
     } },
-    coinflip: { a: "#ffc23a", b: "#7a4a00", draw: function () {
-      // moeda girando no ar (inclinada, com a espessura da borda), moeda de prata atrás e rastro de movimento
-      var gl = U("cfg"), side = function (k, sc) { return coinSide(k).replace(/^/, ""); };
-      return "<defs>" + rad(gl, [[0, "#fff6c8", 0.8], [1, "#fff6c8", 0]]) + "</defs>" + '<circle cx="150" cy="150" r="120" fill="url(#' + gl + ')"/>' +
-        '<g transform="translate(230 82) rotate(20) scale(.36 .3)"><ellipse cx="0" cy="16" rx="100" ry="100" fill="#5c6676"/>' + coinSide("tails") + "</g>" +
-        '<path d="M60 240 q-30 -60 10 -130 M78 250 q-22 -50 8 -112" stroke="#fff" stroke-opacity=".45" stroke-width="5" fill="none" stroke-linecap="round"/>' +
-        '<ellipse cx="150" cy="282" rx="80" ry="12" fill="#000" opacity=".28"/>' +
-        '<g transform="translate(150 168) rotate(-14) scale(.92 .78)"><ellipse cx="0" cy="18" rx="100" ry="100" fill="#7a4e06"/><ellipse cx="0" cy="11" rx="100" ry="100" fill="#a8700a"/>' + coinSide("heads") + "</g>" + spark(68, 72, 12) + spark(246, 220, 10) + spark(104, 40, 7);
-    } },
     rps: { a: "#7c5cff", b: "#1d0f4a", draw: function () {
       // pedra, papel e tesoura de verdade (objetos com volume), ligados por raios de energia, com o VS no meio
       var st = U("rs"), sh = U("rh"), pp = U("rp"), bl = U("rb"), gw = U("rg"), vs = U("rv");
@@ -412,17 +389,6 @@ window.RD = window.RD || {};
         paper + rock + scis +
         '<g transform="translate(150 178)"><circle r="27" fill="#5a2a00" opacity=".5" cy="4"/><circle r="27" fill="url(#' + vs + ')" stroke="#fff" stroke-width="3"/><text y="8" text-anchor="middle" font-size="21" font-weight="900" fill="#5a2a00" style="font-family:var(--font-display,Arial)">VS</text></g>' +
         spark(48, 70, 11) + spark(262, 262, 9) + spark(150, 52, 8);
-    } },
-    baccarat: { a: "#ff2e55", b: "#4a0716", draw: function () {
-      // Player × Banker: duas torres de fichas frente a frente e o 9 dourado (a mão perfeita) no meio
-      var g = U("bn"), gl = U("bg9");
-      var tag = function (x, txt, c) { return '<g transform="translate(' + x + ' 252)"><rect x="-40" y="-13" width="80" height="26" rx="13" fill="' + c + '"/><text x="0" y="5" text-anchor="middle" font-size="12" font-weight="900" fill="#fff" letter-spacing="1" style="font-family:Arial">' + txt + "</text></g>"; };
-      return "<defs>" + lin(g, [[0, "#fff6c9"], [0.45, "#ffd23f"], [1, "#c97a00"]]) + rad(gl, [[0, "#ffd23f", 0.55], [1, "#ffd23f", 0]]) + "</defs>" +
-        '<circle cx="150" cy="150" r="100" fill="url(#' + gl + ')"/>' +
-        chip(62, 214, 32, "#1d4ed8", 6) + chip(238, 214, 32, "#e11d48", 6) +
-        '<text x="154" y="210" text-anchor="middle" font-size="150" font-weight="900" fill="#5a0010" opacity=".45" style="font-family:var(--font-display,Arial)">9</text>' +
-        '<text x="150" y="204" text-anchor="middle" font-size="150" font-weight="900" fill="url(#' + g + ')" stroke="#7a3f00" stroke-width="3" style="font-family:var(--font-display,Arial)">9</text>' +
-        tag(62, "PLAYER", "#1d4ed8") + tag(238, "BANKER", "#e11d48") + spark(150, 46, 12) + spark(40, 90, 8) + spark(262, 96, 9);
     } },
     double: { a: "#ff2e55", b: "#2a0710", draw: function () {
       var t = function (x, y, w, fill, stroke, txt, rot, op) { return '<g transform="translate(' + x + " " + y + ") rotate(" + rot + ')" opacity="' + (op || 1) + '"><rect x="' + (-w / 2) + '" y="' + (-w * 0.62) + '" width="' + w + '" height="' + (w * 1.24) + '" rx="' + (w * 0.18) + '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="5"/>' + txt + "</g>"; };
@@ -529,6 +495,43 @@ window.RD = window.RD || {};
     COVERS.lake = { a: "#1fb6ff", b: "#0a3a7a", draw: function () {
       // sapo grande sentado na vitória-régia, ondas em volta
       return rings(150, 236) + lily(150, 238, 2.1, true) + '<g transform="translate(66 92) scale(1.4)">' + frog() + "</g>" + pill(236, 70, "1.66×", "#16c46b") + spark(54, 84, 11) + spark(262, 150, 8);
+    } };
+  })();
+  /* Coinflip (moeda de ouro no roxo), Baccarat (Player × Banker) e Roleta (roda na mesa) */
+  (function () {
+    var pill = function (x, y, txt, c) { return '<g transform="translate(' + x + " " + y + ')"><rect x="-34" y="-15" width="68" height="30" rx="15" fill="#000" opacity=".22" transform="translate(0 3)"/><rect x="-34" y="-15" width="68" height="30" rx="15" fill="' + (c || "#16c46b") + '" stroke="#fff" stroke-opacity=".5" stroke-width="2"/><text y="6" text-anchor="middle" font-size="16" font-weight="900" fill="#fff" style="font-family:var(--font-display,Arial)">' + txt + "</text></g>"; };
+    var glow = function (cx, cy, r, c) { var g = U("og"); return "<defs>" + rad(g, [[0, c, 0.75], [1, c, 0]]) + '</defs><circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="url(#' + g + ')"/>'; };
+    var arcs = '<path d="M58 120 A100 100 0 0 1 120 64" stroke="#fff" stroke-opacity=".55" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M242 236 A100 100 0 0 1 180 292" stroke="#fff" stroke-opacity=".55" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M44 150 A112 112 0 0 1 70 96" stroke="#fff" stroke-opacity=".3" stroke-width="3" fill="none" stroke-linecap="round"/>';
+    COVERS.coinflip = { a: "#7c5cff", b: "#1d0f4a", draw: function () {
+      // moeda dourada grande sobre fundo roxo (contraste), girando
+      return glow(150, 176, 130, "#ffd23f") + arcs + '<ellipse cx="150" cy="292" rx="70" ry="10" fill="#000" opacity=".3"/>' +
+        '<g transform="translate(150 176) rotate(-10) scale(.92)">' + coinSide("heads") + "</g>" + pill(240, 62, "2.00×") + spark(56, 70, 11) + spark(256, 210, 9);
+    } };
+    COVERS.baccarat = { a: "#2a3a8c", b: "#0b1240", draw: function () {
+      // Player × Banker: uma carta de cada lado com a ficha da aposta embaixo
+      return glow(150, 170, 140, "#9fb8ff") + card(98, 156, 92, -8, "8", "♣", false) + card(202, 156, 92, 8, "9", "♥", true) +
+        chip(98, 246, 26, "#1d4ed8", 4) + chip(202, 246, 26, "#e11d48", 4) +
+        '<g transform="translate(150 150)"><circle r="22" fill="#000" opacity=".3" cy="3"/><circle r="22" fill="#fff"/><text y="7" text-anchor="middle" font-size="17" font-weight="900" fill="#1b2a6b" style="font-family:var(--font-display,Arial)">VS</text></g>' + spark(150, 52, 11) + spark(262, 92, 8);
+    } };
+    var wheel = function (cx, cy, R, nums) {
+      var out = "", rim = U("wr"), hub = U("wh"), r = R * 0.74;
+      var ord = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
+      for (var i = 0; i < 37; i++) {
+        var a0 = (i / 37) * Math.PI * 2 - Math.PI / 2, a1 = ((i + 1) / 37) * Math.PI * 2 - Math.PI / 2, c = i === 0 ? "#16a34a" : i % 2 ? "#dc2626" : "#111827";
+        out += '<path d="M' + (cx + R * Math.cos(a0)).toFixed(1) + " " + (cy + R * Math.sin(a0)).toFixed(1) + " A" + R + " " + R + " 0 0 1 " + (cx + R * Math.cos(a1)).toFixed(1) + " " + (cy + R * Math.sin(a1)).toFixed(1) + " L" + (cx + r * Math.cos(a1)).toFixed(1) + " " + (cy + r * Math.sin(a1)).toFixed(1) + " A" + r + " " + r + " 0 0 0 " + (cx + r * Math.cos(a0)).toFixed(1) + " " + (cy + r * Math.sin(a0)).toFixed(1) + 'Z" fill="' + c + '" stroke="#e5b13c" stroke-width=".8"/>';
+        if (nums) { var am = (a0 + a1) / 2, rr = R * 0.87, deg = am * 180 / Math.PI + 90; out += '<text x="' + (cx + rr * Math.cos(am)).toFixed(1) + '" y="' + (cy + rr * Math.sin(am)).toFixed(1) + '" text-anchor="middle" dominant-baseline="central" font-size="' + (R * 0.085).toFixed(1) + '" font-weight="800" fill="#fff" transform="rotate(' + deg.toFixed(1) + " " + (cx + rr * Math.cos(am)).toFixed(1) + " " + (cy + rr * Math.sin(am)).toFixed(1) + ')" style="font-family:Arial">' + ord[i] + "</text>"; }
+      }
+      var spokes = ""; for (var k = 0; k < 8; k++) { var ak = k * Math.PI / 4; spokes += '<path d="M' + cx + " " + cy + " L" + (cx + R * 0.42 * Math.cos(ak)).toFixed(1) + " " + (cy + R * 0.42 * Math.sin(ak)).toFixed(1) + '" stroke="#e5b13c" stroke-width="' + (R * 0.035).toFixed(1) + '" stroke-linecap="round"/>'; }
+      return "<defs>" + lin(rim, [[0, "#f6d58a"], [1, "#9a6a1f"]], 0, 0, 1, 1) + rad(hub, [[0, "#fff1c2"], [0.6, "#e5b13c"], [1, "#8a5a10"]], 0.4, 0.35, 0.7) + "</defs>" +
+        '<circle cx="' + cx + '" cy="' + cy + '" r="' + R * 1.14 + '" fill="url(#' + rim + ')"/><circle cx="' + cx + '" cy="' + cy + '" r="' + R * 1.04 + '" fill="#3b1d0a"/>' + out +
+        '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="#5a2d0c"/><circle cx="' + cx + '" cy="' + cy + '" r="' + R * 0.56 + '" fill="#7a3d12"/>' + spokes + '<circle cx="' + cx + '" cy="' + cy + '" r="' + R * 0.2 + '" fill="url(#' + hub + ')"/>';
+    };
+    var ball = function (x, y, r) { return '<circle cx="' + x + '" cy="' + (y + 2) + '" r="' + r + '" fill="#000" opacity=".35"/><circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="#fff"/><circle cx="' + (x - r * 0.3) + '" cy="' + (y - r * 0.3) + '" r="' + r * 0.35 + '" fill="#fff" opacity=".9"/>'; };
+    COVERS.roulette = { a: "#6d4dff", b: "#160a45", draw: function () {
+      // roda deitada em perspectiva, como na mesa, com a bola e fichas
+      return glow(150, 150, 150, "#ffe27a") + '<ellipse cx="150" cy="228" rx="150" ry="30" fill="#000" opacity=".35"/>' +
+        '<g transform="translate(0 70) scale(1 .62)">' + wheel(150, 200, 120, true) + "</g>" + ball(186, 134, 9) +
+        chip(56, 262, 26, "#ffd23f", 5) + chip(246, 266, 24, "#e11d48", 3) + '<path d="M150 46 l-10 -16 h20z" fill="#fff" opacity=".9"/>' + spark(44, 70, 11) + spark(262, 76, 9);
     } };
   })();
   function cover(id) {
