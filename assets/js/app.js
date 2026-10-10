@@ -117,7 +117,7 @@
   function renderBalMenu() {
     var u = me(); if (!u) return;
     $("#bal-menu").innerHTML = '<div class="bm-one">' + BAL_IC + '<b class="num">' + inCur(shownBal(u), disp.cur) + "</b></div>" +
-      '<div class="bm-title">Display currency</div><div class="bm-cur"><select class="select" data-disp-cur>' + RD.fiats.filter(function (f) { return fxRate(f[0]); }).map(function (f) { return '<option value="' + f[0] + '"' + (f[0] === disp.cur ? " selected" : "") + ">" + f[0] + " · " + f[2] + "</option>"; }).join("") + "</select></div>";
+      '<div class="bm-title">Currency</div><div class="bm-cur"><select class="select" data-disp-cur>' + RD.fiats.filter(function (f) { return fxRate(f[0]); }).map(function (f) { return '<option value="' + f[0] + '"' + (f[0] === disp.cur ? " selected" : "") + ">" + f[0] + " · " + f[2] + "</option>"; }).join("") + "</select></div>";
   }
   document.addEventListener("click", function (e) { var so = e.target.closest("[data-soon]"); if (so) { e.preventDefault(); RD.toast("Coming soon"); } });
   document.addEventListener("click", function (e) { var b = e.target.closest("[data-txcat]"); if (!b) return; state.txCat = b.getAttribute("data-txcat"); route(true); });
@@ -509,7 +509,7 @@
     blackjack: "<p><strong>Blackjack</strong>: get closer to 21 than the dealer without going over. Blackjack pays 3 to 2, the dealer hits soft 17 and stands on hard 17, you can double on your first two cards or split a pair once (no doubling after a split), and when the dealer shows an Ace you can take insurance (half your bet, pays 2 to 1 if the dealer has Blackjack). Cards are dealt from an infinite deck. RTP shown assumes basic strategy (approximate).</p>",
     roulette: "<p><strong>Roulette</strong>: European wheel with a single zero. Place chips on numbers or outside bets — a number pays 36.26×, dozens and columns 3.02×, and red/black, even/odd and 1–18/19–36 pay 2.01× (your bet included). RTP 98% on every bet.</p>",
     tower: "<p><strong>Tower</strong>: climb 9 floors. On every floor pick a tile — find the egg and you go up, hit the skull and the round ends. Cash out whenever you want. Five difficulties, from Easy (3 eggs in 4 tiles) to Master (1 egg in 4 tiles, up to 256,901×).</p>",
-    spill: "<p><strong>Spill</strong>: fill the cup one pour at a time. Every pour raises your multiplier, but a hidden pour makes the cup spill over. Cash out any time. Low hides 1 spill in 25 pours, Medium 3, High 5 and Degen 10.</p>",
+    spill: "<p><strong>Spill</strong>: fill the cup one step at a time. Every fill raises your multiplier, but a hidden fill makes the cup spill over. Cash out any time. Easy hides 1 spill in 25 fills, Medium 3, Hard 5 and Expert 10.</p>",
     chicken: "<p><strong>Chicken</strong>: help the chicken cross the road, one lane at a time. Every lane you cross raises your multiplier, but some lanes hide a car. Cash out before you get hit. Easy hides 1 car in 20 lanes, Expert hides 10.</p>",
     coinflip: "<p><strong>Coinflip</strong>: pick Heads or Tails and flip. <b>Classic</b> is one flip at 1.96×. <b>Target</b> asks for 2 to 10 flips in a row on your side — every extra flip doubles the multiplier, up to 1,003.52×. Heads is the gold RD coin, Tails the silver one.</p>",
     rps: "<p><strong>Rock Paper Scissors</strong>: beat the house hand to climb the ladder — 1.96×, 3.92×, 7.84× and up to 1,003.52× after 10 wins. A tie gives you another throw at no cost. Cash out after any win. Scissors cut paper, rock smashes scissors, paper wraps rock.</p>",
@@ -1970,6 +1970,8 @@
 
   /* ---------- SPILL (estilo Pump: 25 enchidas de 4%; posições escondidas derramam; RTP 98%) ---------- */
   var SPILL_BAD = { low: 1, medium: 3, high: 5, degen: 10 };
+  /* nomes iguais aos outros jogos (as chaves internas continuam as do servidor) */
+  var DIFF_LBL = { low: "Easy", medium: "Medium", high: "Hard", degen: "Expert" }, DIFF_KEY = { easy: "low", medium: "medium", hard: "high", expert: "degen" };
   function spillMult(bad, k) { var sv = 1; for (var i = 0; i < bad; i++) sv *= (25 - k - i) / (25 - i); return sv > 0 ? Math.floor(0.98 / sv * 100) / 100 : 0; }
   RD.fair.spillMult = spillMult;
   function spillScene() {
@@ -2012,10 +2014,10 @@
     cfg: function () {
       var d = ogPrefs.spDiff || "low";
       return {
-        side: '<div><div class="ogx-label">Difficulty</div><div class="ogx-split sp-diff">' + ["low", "medium", "high", "degen"].map(function (k) { return '<button data-spd="' + k + '"' + (k === d ? ' class="active"' : "") + ">" + k[0].toUpperCase() + k.slice(1) + "</button>"; }).join("") + "</div></div>" +
+        side: '<div><div class="ogx-label">Difficulty</div><div class="ogx-split sp-diff">' + ["low", "medium", "high", "degen"].map(function (k) { return '<button data-spd="' + k + '"' + (k === d ? ' class="active"' : "") + ">" + DIFF_LBL[k] + "</button>"; }).join("") + "</div></div>" +
           '<div id="sp-live" class="hidden">' + profitField("Total profit") + "</div>" +
-          '<div class="sp-next"><span>Next pour</span><b id="sp-next">—</b></div>',
-        after: '<button class="btn btn-secondary btn-block hidden" id="sp-pour" style="height:46px">' + ic("droplet", 16) + "Pour</button>",
+          '<div class="sp-next"><span>Next fill</span><b id="sp-next">—</b></div>',
+        after: '<button class="btn btn-secondary btn-block hidden" id="sp-pour" style="height:46px">' + ic("droplet", 16) + "Fill</button>",
         center: '<div class="sp"><div class="sp-stage"><div class="sp-badge hidden" id="sp-badge"></div>' + spillScene() + '</div><div class="ladder no-n" id="sp-ladder"></div></div>'
       };
     },
@@ -2249,7 +2251,7 @@
     cfg: function () {
       var d = ogPrefs.pmDiff || "low";
       return {
-        side: '<div><div class="ogx-label">Difficulty</div><div class="ogx-split pm-diff">' + ["low", "medium", "high", "degen"].map(function (k) { return '<button data-pmd="' + k + '"' + (k === d ? ' class="active"' : "") + ">" + k[0].toUpperCase() + k.slice(1) + "</button>"; }).join("") + "</div></div>" +
+        side: '<div><div class="ogx-label">Difficulty</div><div class="ogx-split pm-diff">' + ["low", "medium", "high", "degen"].map(function (k) { return '<button data-pmd="' + k + '"' + (k === d ? ' class="active"' : "") + ">" + DIFF_LBL[k] + "</button>"; }).join("") + "</div></div>" +
           '<div id="pm-live" class="hidden">' + profitField("Total profit") + "</div>" +
           '<div class="pm-next"><span>Next pump</span><b id="pm-next">—</b></div>',
         after: '<button class="btn btn-secondary btn-block hidden" id="pm-pump" style="height:46px">' + ic("zap", 16) + "Pump</button>",
@@ -3326,7 +3328,7 @@
   };
   /* Formulário de verificação (página Provably fair e aba Verify da janela) */
   var VF_GAMES = '<option value="dice">Dice</option><option value="limbo">Limbo</option><option value="crash">Crash</option><option value="plinko">Plinko</option><option value="mines">Mines</option><option value="hilo">Hi-Lo</option><option value="keno">Keno</option><option value="wheel">Wheel</option><option value="roulette">Roulette</option><option value="blackjack">Blackjack</option><option value="tower">Tower</option><option value="chicken">Chicken</option><option value="coinflip">Coinflip</option><option value="rps">Rock Paper Scissors</option><option value="baccarat">Baccarat</option><option value="double">Double</option><option value="spill">Spill</option><option value="soccer">Soccer</option><option value="door">Door</option>';
-  var VF_EXTRA = { plinko: ["Rows / risk (e.g. 16 high)", "16 high"], mines: ["Number of mines", "3"], hilo: ["Cards drawn after the start card", "8"], blackjack: ["Cards to show", "8"], wheel: ["Segments / risk (e.g. 30 medium)", "30 medium"], tower: ["Difficulty", "easy"], chicken: ["Difficulty", "easy"], coinflip: ["Flips", "1"], rps: ["Throws to show", "5"], spill: ["Difficulty", "low"], soccer: ["Difficulty", "easy"], door: ["Difficulty", "easy"] };
+  var VF_EXTRA = { plinko: ["Rows / risk (e.g. 16 high)", "16 high"], mines: ["Number of mines", "3"], hilo: ["Cards drawn after the start card", "8"], blackjack: ["Cards to show", "8"], wheel: ["Segments / risk (e.g. 30 medium)", "30 medium"], tower: ["Difficulty", "easy"], chicken: ["Difficulty", "easy"], coinflip: ["Flips", "1"], rps: ["Throws to show", "5"], spill: ["Difficulty", "easy"], soccer: ["Difficulty", "easy"], door: ["Difficulty", "easy"] };
   function verifyForm(pre) {
     pre = pre || {};
     return '<div class="vf"><div class="vf-row"><div class="field"><label>Game</label><select class="select vf-game">' + VF_GAMES + '</select></div>' +
@@ -3359,7 +3361,7 @@
       "<p><strong>What if a result doesn't match?</strong><br>A valid bet always matches its seeds and nonce. If one doesn't, contact support with the bet ID.</p>" +
       "<h2>How results are made (technical)</h2><ul>" +
       "<li><strong>Dice / Limbo / Crash:</strong> <code>HMAC_SHA256(server_seed, client_seed:nonce)</code> → first 4 bytes → number between 0 and 1. Dice: <code>floor(n × 10001) / 100</code>. Limbo and Crash: <code>floor(0.98 / n × 100) / 100</code> (min 1.00×). Bets placed before 9 Oct 2026 used 0.99 (RTP 99%) in Dice, Limbo, Crash, Mines, Hi-Lo, Coinflip, Wheel, Plinko and Keno.</li>" +
-      "<li><strong>All other games:</strong> need several numbers, made with <code>HMAC_SHA256(server_seed, client_seed:nonce:cursor)</code>, 8 numbers per cursor. Plinko: each row goes right if <code>n ≥ 0.5</code>. Mines: Fisher–Yates shuffle of the 25 tiles, the first N are mines. Hi-Lo and Blackjack: card = <code>floor(n × 52)</code> (infinite deck). In Hi-Lo the first card on the table is the last card of your previous round; every card after it comes from your seeds. Keno: shuffle of 1–40, first 10 are drawn. Wheel: segment = <code>floor(n × segments)</code>. Roulette: number = <code>floor(n × 37)</code>. Tower: on each of the 9 floors, Fisher–Yates shuffle of the tiles, the first ones are eggs. Chicken: Fisher–Yates shuffle of the 20 lanes, the first ones hide a car. Spill: Fisher–Yates shuffle of the 25 pours (like Mines), the first ones spill (1, 3, 5 or 10 by difficulty); multiplier after k pours = 0.98 ÷ chance of surviving k pours. Coinflip: heads if <code>n &lt; 0.5</code>. Rock Paper Scissors: house hand = <code>floor(n × 3)</code> (rock, paper, scissors), one number per throw. Baccarat: 6 cards in order P1 B1 P2 B2, then third cards when the standard rules ask for them.</li></ul>" +
+      "<li><strong>All other games:</strong> need several numbers, made with <code>HMAC_SHA256(server_seed, client_seed:nonce:cursor)</code>, 8 numbers per cursor. Plinko: each row goes right if <code>n ≥ 0.5</code>. Mines: Fisher–Yates shuffle of the 25 tiles, the first N are mines. Hi-Lo and Blackjack: card = <code>floor(n × 52)</code> (infinite deck). In Hi-Lo the first card on the table is the last card of your previous round; every card after it comes from your seeds. Keno: shuffle of 1–40, first 10 are drawn. Wheel: segment = <code>floor(n × segments)</code>. Roulette: number = <code>floor(n × 37)</code>. Tower: on each of the 9 floors, Fisher–Yates shuffle of the tiles, the first ones are eggs. Chicken: Fisher–Yates shuffle of the 20 lanes, the first ones hide a car. Spill: Fisher–Yates shuffle of the 25 fills (like Mines), the first ones spill (1, 3, 5 or 10 by difficulty); multiplier after k pours = 0.98 ÷ chance of surviving k pours. Coinflip: heads if <code>n &lt; 0.5</code>. Rock Paper Scissors: house hand = <code>floor(n × 3)</code> (rock, paper, scissors), one number per throw. Baccarat: 6 cards in order P1 B1 P2 B2, then third cards when the standard rules ask for them.</li></ul>" +
       '<h2>Verify a bet</h2><div class="card card-pad">' + verifyForm() + '</div>' +
       '<p class="faint" style="font-size:13px;margin-top:12px">Open "Provably fair" in the bottom bar of any RD Original and rotate your seed to reveal the server seed used for your past bets.</p></div>';
   };
@@ -3706,8 +3708,8 @@
         } else if (game === "double") {
           floats(sv, cl, n, 1).then(function (fs) { var dn = dblFrom(fs[0]); show("Tile: <strong>" + (dn === 0 ? "RD (white)" : dn + " (" + dblColor(dn) + ")") + "</strong>"); });
         } else if (game === "spill") {
-          var sd = extra.toLowerCase(); if (!SPILL_BAD[sd]) { vout.innerHTML = errorBox("Use low, medium, high or degen."); return; }
-          floats(sv, cl, n, 24).then(function (fs) { show("The cup spills on pour: <strong>" + minesFrom(fs, SPILL_BAD[sd]).map(function (x) { return x + 1; }).sort(function (a, b) { return a - b; }).join(", ") + "</strong> (1–25)"); });
+          var sd = DIFF_KEY[extra.toLowerCase()] || extra.toLowerCase(); if (!SPILL_BAD[sd]) { vout.innerHTML = errorBox("Use easy, medium, hard or expert."); return; }
+          floats(sv, cl, n, 24).then(function (fs) { show("The cup spills on fill: <strong>" + minesFrom(fs, SPILL_BAD[sd]).map(function (x) { return x + 1; }).sort(function (a, b) { return a - b; }).join(", ") + "</strong> (1–25)"); });
         } else if (game === "soccer") {
           var scd = extra.toLowerCase(); if (!SOCCER[scd]) { vout.innerHTML = errorBox("Use easy, medium, hard or expert."); return; }
           floats(sv, cl, n, 4 * SOCCER[scd].kicks).then(function (fs) { var out = []; for (var k = 0; k < SOCCER[scd].kicks; k++) out.push(soccerFrom(fs, k, SOCCER[scd].block).map(function (x) { return x + 1; }).sort().join("+")); show("Corners the keeper covers, kick by kick (1–5): <strong>" + out.join(" · ") + "</strong>"); });
