@@ -355,7 +355,7 @@
   state.lb = [];
   function loadLb() {
     return sb.rpc("leaderboard_month").then(function (r) {
-      state.lb = (r.data || []).map(function (x, i) { return { userId: x.username, user: x.username, wagered: n(x.wagered), rank: i + 1, prize: RD.config.leaderboardPrizes[i] || 0 }; });
+      state.lb = (r.data || []).map(function (x, i) { return { userId: x.username, user: x.username, wagered: n(x.wagered), vipXp: x.vip_xp != null ? n(x.vip_xp) : null, rank: i + 1, prize: RD.config.leaderboardPrizes[i] || 0 }; });
     });
   }
   loadLb(); setInterval(function () { if (!document.hidden) loadLb(); }, 30000);
