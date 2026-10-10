@@ -34,7 +34,7 @@
     [{ route: "affiliate", label: "Affiliate", icon: "link" }, { route: "fairness", label: "Provably Fair", icon: "shield" }, { route: "responsible", label: "Responsible Gaming", icon: "help" }, { action: "open-support", label: "Live Support", icon: "headset" }]
   ];
   function renderSidebar() {
-    var h = '<a class="sb-promo" href="#/leaderboard" title="Monthly leaderboard">' + ic("trophy", 18) + '<span class="eyebrow">Monthly leaderboard</span><strong>' + fmt.usd(RD.config.leaderboardPrize, { dec: 0 }) + '</strong></a>';
+    var h = vipChip() + '<a class="sb-promo" href="#/leaderboard" title="Monthly leaderboard">' + ic("trophy", 18) + '<span class="eyebrow">Monthly leaderboard</span><strong>' + fmt.usd(RD.config.leaderboardPrize, { dec: 0 }) + '</strong></a>';
     NAV.forEach(function (box, bi) {
       h += '<div class="sb-cap">' + ["Games", "Rewards", "More"][bi] + '</div><div class="sb-box">' + box.map(function (n) {
         if (n.action) return '<a class="sb-link" href="#" data-action="' + n.action + '" title="' + n.label + '">' + ic(n.icon) + "<span>" + n.label + '</span><span class="badge badge-brand hidden" data-sup-badge></span></a>';
@@ -2973,6 +2973,12 @@
   }
   function vipMsg(r) { return r.changed != null ? "Your VIP reward is now " + fmt.usd(r.changed) + " — check it and claim again" : r.error || "Claimed " + fmt.usd(r.amount) + " in VIP rewards"; }
   function claimMsg(r) { return r.changed != null ? "This reward is now " + money(r.changed) + " — check it and claim again" : r.error || "Claimed " + money(r.amount); }
+  /* Rank no menu lateral: compacto, mesmo nível da janela VIP */
+  function vipChip() {
+    var u = me(); if (!u) return ""; // nível do cache no F5: não pula o menu quando o perfil chega
+    var v = vipState(u), pct = v.next ? v.pct : 100;
+    return '<a class="sb-rank" href="#/vip" title="VIP">' + badge(v.cur, 24) + '<span class="grow"><span class="row between"><b>' + (v.cur ? v.cur.name : "Unranked") + "</b><small>" + pct.toFixed(0) + '%</small></span><i class="sb-rank-bar"><i style="width:' + pct + '%"></i></i></span></a>';
+  }
   /* Cards de recompensa (iguais na janela VIP e na página VIP) */
   function untilTxt(iso) {
     var d = Math.max(0, new Date(iso).getTime() - Date.now()), h = Math.floor(d / 36e5), m = Math.floor((d % 36e5) / 6e4), sec = Math.floor((d % 6e4) / 1e3);
@@ -3021,18 +3027,20 @@
       inp.value = ""; btn.classList.add("btn-secondary"); btn.classList.remove("btn-primary"); RD.toast("Code redeemed: +" + money(r.amount)); renderHeader(); renderSidebar();
     });
   });
-  function renderVipDrawer() {
+  function renderVipDrawer(onlyDyn) {
     var u = me(), v = vipState(u), box = $("#vip-drawer-body"); if (!box) return;
     var tc = (v.cur && v.cur.color) || "#4da3ff";
-    box.innerHTML = '<div class="vd-card"><div class="vd-banner" style="--tc:' + tc + '"><span class="vd-rays"></span><span class="vd-dots"></span>' +
+    /* parte que muda (nível, progresso, bônus) separada do campo de código: atualizar não apaga o que o jogador digitou */
+    if (!onlyDyn || !$("#vd-dyn")) { box.innerHTML = '<div id="vd-dyn"></div>' + codeBox() +
+      (!u ? '<button class="btn btn-secondary btn-block" style="margin-top:14px" data-open="register">Create an account to start earning</button>' : "");
+      hydrateIcons(box); }
+    if (setHTML($("#vd-dyn"), '<div class="vd-card"><div class="vd-banner" style="--tc:' + tc + '"><span class="vd-rays"></span><span class="vd-dots"></span>' +
       '<span class="vd-ped">' + badge(v.cur, 70) + "</span>" + (v.next ? '<span class="vd-track"><i></i><i></i><i></i>' + ic("chevronRight", 16) + '</span><span class="vd-ped next">' + badge(v.next, 50) + "</span>" : "") + "</div>" +
       '<div class="row between vd-prog-head"><span>Your VIP progress</span><strong>' + v.pct.toFixed(2) + "%</strong></div>" +
       '<div class="progress"><span style="width:' + v.pct + '%"></span></div>' +
       '<div class="row between vd-tiers"><span>' + (v.cur ? v.cur.name : "Unranked") + '</span><span class="faint">' + (v.next ? v.next.name : "Max level") + "</span></div>" +
       '<a class="btn btn-primary btn-block" href="#/vip" data-close-drawer>View VIP program</a></div>' +
-      '<h4 class="vd-h">' + ic("gift", 16) + "Available rewards</h4>" + rewardCards(u) + codeBox() +
-      (!u ? '<button class="btn btn-secondary btn-block" style="margin-top:14px" data-open="register">Create an account to start earning</button>' : "");
-    hydrateIcons(box);
+      '<h4 class="vd-h">' + ic("gift", 16) + "Available rewards</h4>" + rewardCards(u))) hydrateIcons($("#vd-dyn"));
   }
   function vipDot() { var u = me(), d = $("#vip-dot"); if (!d) return; var any = u && ((u.rakeback >= 0.01) || db.bonusState(u.id).some(function (b) { return b.status === "ready"; }) || vipState(u).pending.length); d.classList.toggle("hidden", !any); }
   setInterval(function () {
@@ -3809,6 +3817,7 @@
       if (before.kyc !== after.kyc && after.kyc === "Rejected") { told = true; RD.toast("Verification rejected — please resubmit", "error"); }
       db.txOf(u.id).forEach(function (t) { if (!before[t.id] && t.type === "Deposit" && t.status === "Completed") RD.toast("Deposit credited: " + fmt.usd(t.amount)); });
     }
+    if ($("#drawer-vip").classList.contains("open")) renderVipDrawer(true); // bônus/nível chegaram com a janela VIP aberta
     if ($(".overlay.open")) return;
     /* Login terminou de carregar (ou trocou de conta) com um jogo aberto: monta o jogo de novo para retomar a rodada */
     var uid = u ? u.id : null; if (uid !== lastUid || justReady) { lastUid = uid; if (/^game\//.test(currentPath) || /^account/.test(currentPath)) return route(true); }
