@@ -35,8 +35,8 @@
   ];
   function renderSidebar() {
     var h = vipWidget() + '<a class="sb-promo" href="#/leaderboard" title="Monthly leaderboard">' + ic("trophy", 18) + '<span class="eyebrow">Monthly leaderboard</span><strong>' + fmt.usd(RD.config.leaderboardPrize, { dec: 0 }) + '</strong><small>Ends in <span data-countdown-short></span></small></a>';
-    NAV.forEach(function (box) {
-      h += '<div class="sb-box">' + box.map(function (n) {
+    NAV.forEach(function (box, bi) {
+      h += '<div class="sb-cap">' + ["Games", "Rewards", "More"][bi] + '</div><div class="sb-box">' + box.map(function (n) {
         if (n.action) return '<a class="sb-link" href="#" data-action="' + n.action + '" title="' + n.label + '">' + ic(n.icon) + "<span>" + n.label + '</span><span class="badge badge-brand hidden" data-sup-badge></span></a>';
         return '<a class="sb-link" href="#/' + n.route + '" data-route="' + n.route + '" title="' + n.label + '">' + ic(n.icon) + "<span>" + n.label + "</span>" + (n.badge ? '<span class="badge badge-brand">' + n.badge + "</span>" : "") + "</a>";
       }).join("") + "</div>";
@@ -252,41 +252,8 @@
   /* ---------- Fragments ---------- */
   function gameCard(g) {
     var tag = g.tag === "hot" ? '<span class="badge badge-danger g-tag">Hot</span>' : g.tag === "new" ? '<span class="badge badge-brand g-tag">New</span>' : "";
-    return '<a class="game" href="#/game/' + g.id + '">' + tag + rtpBadge(g) +
-      media(g, "", '<span class="gf-name">' + esc(g.name) + '</span><span class="gf-prov">' + esc(g.provider) + "</span>") +
-      '<div class="game-meta">' + gameMeta(g) + "</div></a>";
-  }
-  /* Embaixo da capa: jogadores reais nos últimos 15 min (das apostas recentes); sem ninguém, o RTP */
-  var playCache = { t: 0, map: {} };
-  function playingMap() {
-    var now = Date.now();
-    if (now - playCache.t > 5000) {
-      var m = {}, cut = now - 15 * 60e3;
-      (db.recentBets ? db.recentBets(2000) : []).forEach(function (b) { if (new Date(b.date).getTime() < cut) return; (m[b.game] = m[b.game] || {})[b.user] = 1; });
-      playCache = { t: now, map: m };
-    }
-    return playCache.map;
-  }
-  /* RTP real das apostas recentes (mínimo de 20 apostas): pago ÷ apostado. Selo verde acima do RTP do jogo, amarelo abaixo. */
-  var rtpCache = { t: 0, map: {} };
-  function recentRtp(gid) {
-    var now = Date.now();
-    if (now - rtpCache.t > 5000) {
-      var m = {};
-      (db.recentBets ? db.recentBets(2000) : []).forEach(function (b) { var x = m[b.game] = m[b.game] || { a: 0, p: 0, n: 0 }; x.a += b.amount; x.p += b.payout; x.n++; });
-      rtpCache = { t: now, map: m };
-    }
-    var r = rtpCache.map[gid]; return r && r.n >= 20 && r.a > 0 ? { v: r.p / r.a * 100, n: r.n } : null;
-  }
-  function rtpBadge(g) {
-    var r = g.cat === "originals" ? recentRtp(g.id) : null; if (!r) return "";
-    var up = r.v >= g.rtp;
-    return '<span class="g-rtpb ' + (up ? "up" : "down") + '" title="RTP on the last ' + r.n + ' bets">' + ic(up ? "trendUp" : "trendDown", 12) + r.v.toFixed(2) + "%</span>";
-  }
-  function gameMeta(g) {
-    if (!g.playable) return esc(g.provider);
-    var n = Object.keys(playingMap()[g.id] || {}).length;
-    return n ? '<span class="dot"></span>' + n + " playing" : '<span class="g-rtp">RTP ' + g.rtp + "%</span>";
+    return '<a class="game" href="#/game/' + g.id + '" title="' + esc(g.name) + '">' + tag +
+      media(g, "", '<span class="gf-name">' + esc(g.name) + '</span><span class="gf-prov">' + esc(g.provider) + "</span>") + "</a>";
   }
   function gamesOf(cat) { return RD.games.filter(function (g) { return g.enabled && (cat === "all" || g.cat === cat); }); }
   /* Fichas para escolher o valor (Roleta e Baccarat) */
@@ -3821,7 +3788,8 @@
 
   /* ---------- Atualizações vindas de outra aba (admin ou outro jogador) ---------- */
   var lastMine = null;
-  function snap() { var u = me(); if (!u) return null; var m = { bal: u.balance, kyc: u.kyc, st: u.status }; db.txOf(u.id).forEach(function (t) { m[t.id] = t.status; }); return m; }
+  /* ready: dados já vieram do servidor (no F5 o perfil sai do cache sem transações; não pode virar "bônus novo") */
+  function snap() { var u = me(); if (!u) return null; var m = { bal: u.balance, kyc: u.kyc, st: u.status, ready: !u.cached && (!RD.live || !db.live || !!db.live.ready) }; db.txOf(u.id).forEach(function (t) { m[t.id] = t.status; }); return m; }
   lastMine = snap();
   var lastUid = me() ? me().id : null;
   var wasReady = !RD.live || !db.live || db.live.ready;
@@ -3830,7 +3798,7 @@
     /* terminou de carregar depois do F5 com um jogo aberto: monta o jogo de novo para retomar a rodada */
     var justReady = !wasReady && db.live && db.live.ready; if (justReady) wasReady = true;
     renderHeader(); renderSidebar(); renderFooter(); markActive(currentPath);
-    if (u && before && after) {
+    if (u && before && after && before.ready && after.ready) {
       var told = false;
       db.txOf(u.id).forEach(function (t) {
         if (before[t.id] === "Pending" && t.status === "Completed") { told = true; RD.toast("Your withdrawal of " + fmt.usd(t.amount) + " was sent"); }
