@@ -360,6 +360,13 @@
   }
   loadLb(); setInterval(function () { if (!document.hidden) loadLb(); }, 30000);
   db.leaderboard = function () { return state.lb; };
+  /* ---------- Jogo responsável: limites, pausa e autoexclusão ---------- */
+  function rgCall(fn, args) { return sb.rpc(fn, args || {}).then(function (r) { return r.error ? { error: msg(r.error) } : r.data; }, function () { return { error: "Connection error. Try again." }; }); }
+  db.rgState = function () { return rgCall("my_rg"); };
+  db.rgSetLimit = function (kind, period, value) { return rgCall("rg_set_limit", { p_kind: kind, p_period: period, p_value: value }); };
+  db.rgBreak = function (days) { return rgCall("rg_take_break", { p_days: days }); };
+  db.adminRg = function (uid) { return rgCall("admin_rg", { p_user: uid }); };
+  db.rgExclude = function (months) { return rgCall("rg_self_exclude", { p_months: months }); };
   /* ---------- Códigos promocionais ---------- */
   /* o código existe e ainda pode ser usado? (só sim/não; o servidor limita as consultas) */
   db.codeCheck = function (pid, code) { return sb.rpc("code_check", { p_code: code }).then(function (r) { return r.error ? null : r.data; }, function () { return null; }); };
