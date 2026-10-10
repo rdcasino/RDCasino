@@ -27,7 +27,7 @@
 
   var KYC = { none: "Not started", pending: "Pending", verified: "Verified", rejected: "Rejected" };
   var TX = { deposit: "Deposit", withdrawal: "Withdrawal", adjustment: "Adjustment", bonus: "Bonus", rakeback: "Rakeback", level_reward: "Level reward", commission: "Commission", tip_in: "Tip received", tip_out: "Tip sent" };
-  var ST = { pending: "Pending", completed: "Completed", rejected: "Rejected" };
+  var ST = { pending: "Pending", completed: "Completed", rejected: "Rejected", awaiting: "Awaiting", expired: "Expired" };
   function n(v) { return Math.round((+v || 0) * 100) / 100; }
   function msg(e) {
     var m = (e && (e.message || e.error_description || e.msg)) || String(e || "Something went wrong.");
@@ -91,7 +91,7 @@
       Object.keys(rounds).forEach(function (k) { delete rounds[k]; });
       (r[7].data || []).forEach(function (x) { rounds[x.game] = { game: x.game, amount: n(x.amount), nonce: +x.nonce, client: x.client_seed, server: "", state: x.state || {}, started: x.started_at }; });
       me.rounds = rounds;
-      loadAff(); loadBonus(); if (!sup.loaded) supLoad();
+      loadAff(); loadBonus(); if (!sup.loaded) supLoad(); txWatch();
       fill(D.players, [me]); fill(D.tx, txs);
       fill(D.bets, (r[2].data || []).map(function (b) { return { id: "B-" + b.id, userId: b.user_id, user: prof.username, game: b.game, amount: n(b.amount), multiplier: +b.multiplier, payout: n(b.payout), date: b.created_at, detail: Object.assign({ nonce: +b.nonce, client: b.client_seed }, b.detail || {}) }; }));
       state.wallets = r[4].data || [];
@@ -360,6 +360,19 @@
   }
   loadLb(); setInterval(function () { if (!document.hidden) loadLb(); }, 30000);
   db.leaderboard = function () { return state.lb; };
+  /* ---------- NOWPayments: depósito automático e saque pelo admin (Edge Function "nowpayments") ---------- */
+  function npCall(body) {
+    return sb.functions.invoke("nowpayments", { body: body }).then(function (r) {
+      if (!r.error) return r.data;
+      var res = r.error.context;
+      if (res && typeof res.json === "function") return res.json().then(function (j) { return { error: (j && j.error) || "Payment service error." }; }, function () { return { error: "Payment service error." }; });
+      return { error: "Connection error. Try again." };
+    }, function () { return { error: "Connection error. Try again." }; });
+  }
+  db.npDeposit = function (coin, network, amount) { return npCall({ action: "deposit", coin: coin, network: network, amount: amount }); };
+  db.npCheck = function () { return npCall({ action: "check" }).then(function (r) { var got = r && r.result && Object.keys(r.result).some(function (k) { return r.result[k] === "credited" || r.result[k] === "partial"; }); return got ? refresh().then(function () { return r; }) : r; }); };
+  db.npOpen = function () { return sb.rpc("np_my_open").then(function (r) { return r.data || []; }, function () { return []; }); };
+  db.npPayout = function (txId, code) { return npCall({ action: "payout", tx: +String(txId).replace(/\D/g, ""), code: code }); };
   /* ---------- Jogo responsável: limites, pausa e autoexclusão ---------- */
   function rgCall(fn, args) { return sb.rpc(fn, args || {}).then(function (r) { return r.error ? { error: msg(r.error) } : r.data; }, function () { return { error: "Connection error. Try again." }; }); }
   db.rgState = function () { return rgCall("my_rg"); };
@@ -380,6 +393,14 @@
   db.saveCode = function (c) { return adminCall("admin_save_code", { p_code: c.code, p_amount: c.amount, p_max_uses: c.maxUses, p_min_wager: c.minWager, p_hours: c.hours, p_active: true }); };
   db.toggleCode = function (code, active) { return adminCall("admin_toggle_code", { p_code: code, p_active: active }); };
   /* ---------- Equipe (tag de diamante) ---------- */
+  /* Transações do jogador em tempo real (depósito confirmado pela NOWPayments, saque enviado): atualiza saldo e lista */
+  var txCh = null, txUid = null, txT = null;
+  function txWatch() {
+    if (RD.isAdminPage || !state.user || txUid === state.user.id) return;
+    if (txCh) sb.removeChannel(txCh);
+    txUid = state.user.id;
+    txCh = sb.channel("rd-tx-" + txUid).on("postgres_changes", { event: "*", schema: "public", table: "transactions", filter: "user_id=eq." + txUid }, function () { clearTimeout(txT); txT = setTimeout(refresh, 600); }).subscribe();
+  }
   /* ---------- Suporte ao vivo ---------- */
   var sup = { msgs: [], unread: 0, subs: [], loaded: false, ch: null, rt: false };
   function supMap(m) { return { id: m.id, fromStaff: m.from_staff, staff: m.staff_name, text: m.text, at: m.created_at }; }
@@ -455,6 +476,8 @@
   function applySettings(rows) {
     rows.forEach(function (x) {
       if (x.key === "max_profit") RD.config.maxProfit = +x.value || 0;
+      if (x.key === "np_enabled") RD.config.npEnabled = x.value === true;
+      if (x.key === "np_payouts") RD.config.npPayouts = x.value === true;
       if (x.key === "restricted_countries" && Array.isArray(x.value)) RD.config.restrictedCountries = x.value;
       if (x.key === "site") { site = x.value || {}; if (site.license) RD.config.license = site.license; if (site.leaderboardPrize != null) RD.config.leaderboardPrize = +site.leaderboardPrize; }
       if (x.key === "games") { var gs = x.value || {}; RD.games.forEach(function (g) { var o = gs[g.id]; if (o) { if (o.enabled != null) g.enabled = o.enabled; if (o.tag != null) g.tag = o.tag; } }); state.gamesCfg = gs; }
@@ -466,6 +489,8 @@
   db.setSettings = function (f) {
     var jobs = [];
     if (f.maxProfit != null) { RD.config.maxProfit = +f.maxProfit || 0; jobs.push(setSetting("max_profit", +f.maxProfit || 0)); }
+    if (f.npEnabled != null) { RD.config.npEnabled = !!f.npEnabled; jobs.push(setSetting("np_enabled", !!f.npEnabled)); }
+    if (f.npPayouts != null) { RD.config.npPayouts = !!f.npPayouts; jobs.push(setSetting("np_payouts", !!f.npPayouts)); }
     if (f.restricted) { RD.config.restrictedCountries = f.restricted; jobs.push(setSetting("restricted_countries", f.restricted)); }
     if (f.license || f.leaderboardPrize != null) {
       if (f.license) { site.license = f.license; RD.config.license = f.license; }
