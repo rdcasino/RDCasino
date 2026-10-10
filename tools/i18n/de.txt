@@ -1,0 +1,958 @@
+0|$50,000 Leaderboard
+1|Monatliches $50,000 Leaderboard
+2|$50,000 Leaderboard
+3|0 = unendlich
+4|Noch 1 Platz frei
+5|1 bis 12
+6|1 bis 18
+7|1 Jahr
+8|1. Persönliche Daten
+9|1. Scanne den QR-Code mit einer Authenticator-App (Google Authenticator, Authy, 1Password…).
+10|13 bis 24
+11|15 % Revenue Share auf Lebenszeit und Echtzeit-Statistiken für jeden Spieler, den du bringst.
+12|19 bis 36
+13|1. Platz:
+14|2 % des Hausvorteils jeder deiner Wetten kommen als Rakeback zurück. Es baut sich beim Spielen auf und du kannst es jederzeit unter Belohnungen abholen.
+15|2. Dokumente
+16|2. Gib den 6-stelligen Code aus der App ein.
+17|24 Stunden
+18|25 bis 36
+19|2FA ist nicht aktiviert.
+20|2FA ist aus
+21|2FA ist an
+22|30 Tage
+23|3–16 Buchstaben oder Zahlen
+24|3–16 Buchstaben, Zahlen oder _
+25|6 Monate
+26|7 Tage
+27|Eine Geldbelohnung auf jeder VIP-Stufe.
+28|Ein Teil des Hausvorteils jeder Wette geht sofort an dich zurück. Er baut sich beim Spielen auf und du kannst ihn jederzeit unter Belohnungen abholen.
+29|Ein Teil des Hausvorteils jeder Wette geht an dich zurück. Er baut sich beim Spielen auf und du kannst ihn abholen, wann du willst.
+30|Ein spezieller Reload, den unser VIP-Team ausgewählten Spielern ab Jade 2 gibt. Wenn du einen hast, erscheint er in deinen Belohnungen mit der Anzahl verbleibender Abholungen.
+31|Eine gültige Wette passt immer zu ihren Seeds und ihrer Nonce. Falls eine nicht passt, kontaktiere den Support mit der Wett-ID.
+32|AML- & KYC-Richtlinie
+33|Akzeptieren
+34|Konto
+35|Konto & Verifizierung
+36|Konto erstellt. Melde dich an, um fortzufahren.
+37|Konto nicht gefunden.
+38|Konten dürfen nicht eröffnet oder genutzt werden von Einwohnern aus:
+39|Aktiv
+40|Aktiver Client-Seed
+41|Aktiver Server-Seed (Hash)
+42|Füge einen zweiten Schritt für Anmeldung, Auszahlung und Tipps hinzu: einen 6-stelligen Code aus einer Authenticator-App auf deinem Handy. Optional, aber empfohlen.
+43|Zum Rain hinzufügen
+44|Zum Rain hinzufügen
+45|Hinzugefügt
+46|Zu Favoriten hinzugefügt
+47|Adresse
+48|Anpassung
+49|Affiliate
+50|Affiliates
+51|Alle
+52|Alle RD Originals: Dice, Limbo, Crash, Plinko, Mines, Keno, Hi-Lo, Wheel, Roulette, Blackjack, Baccarat, Coinflip, Rock Paper Scissors, Tower, Chicken, Door, Soccer, Spill und Double. Jedes Ergebnis wird auf unserem Server aus deinen Seeds gezogen und kann von dir überprüft werden. Slots und Live-Spiele anderer Studios nutzen ihre eigenen zertifizierten Zufallszahlengeneratoren.
+53|Alle Wetten
+54|Alle Codes
+55|Alle vier Ecken sichtbar, keine Spiegelung
+56|Alle anderen Spiele:
+57|Alle Aktionen
+58|Bereits abgeholt
+59|Füge immer „18+ | Spiele verantwortungsvoll“ hinzu, wo die Plattform es erlaubt.
+60|Immer aktiv
+61|Betrag
+62|Betrag (USD)
+63|Wer sich darüber registriert, ist dir auf Lebenszeit zugeordnet.
+64|Argentinien
+65|Argentinischer Peso
+66|Australien
+67|Australischer Dollar
+68|Österreich
+69|Auto
+70|Automatisch wählen
+71|Verfügbar
+72|Verfügbare Belohnungen
+73|Zum Abholen verfügbar
+74|Verfügbar:
+75|Durchschnittliche Monatseinzahlung pro Spieler
+76|Ausstehend
+77|Zurück
+78|Rückseite des Dokuments
+79|Zurück zur Lobby
+80|Guthaben
+81|Bank
+82|Partner werden
+83|Wetten
+84|Einsatz
+85|Wetten
+86|Wetten erscheinen hier in Echtzeit, sobald jemand spielt.
+87|Wetten mit diesem Paar
+88|Wetten ab
+89|Wetten, Einzahlungen, Tipps und Codes sind pausiert. Du kannst dein Guthaben weiterhin auszahlen.
+90|Blackjack zahlt 3 zu 2 · Dealer zieht bei Soft 17 · Versicherung zahlt 2 zu 1
+91|Blackjack! +
+92|Bonus
+93|Bonuscodes
+94|Bonusbedingungen
+95|Brand Bidding, incentivierter oder Spam-Traffic und jeglicher Traffic aus gesperrten Ländern. Spieler aus gesperrten Gebieten können sich nicht registrieren und bringen keine Provision.
+96|Brasilien
+97|Brasilianischer Real
+98|Britisches Pfund
+99|Kampagne
+100|Kampagne erstellt
+101|Kampagnenname
+102|Kampagnen
+103|Kann ich meinen Client-Seed ändern?
+104|Kann ich einen individuellen Deal bekommen?
+105|Kannst du nicht scannen? Gib diesen Schlüssel ein:
+106|Kanada
+107|Kanadischer Dollar
+108|Abbrechen
+109|Nach der Startkarte gezogene Karten
+110|Anzuzeigende Karten
+111|Karten:
+112|Autos auf den Spuren:
+113|Auszahlen
+114|Cashout
+115|Cashout bei
+116|Casino
+117|Challenge geschafft!
+118|Challenge:
+119|Challenges
+120|Chance
+121|Chance, dass das Seerosenblatt den Frosch trägt. Wähle ein Blatt in der nächsten Spalte zum Springen.
+122|Ändern
+123|Das Wechseln des Paars enthüllt deinen aktuellen Server-Seed, damit du jede damit gemachte Wette prüfen kannst.
+124|Verlusten hinterherjagen.
+125|Chat
+126|Schreib unserem Team
+127|Chile
+128|Chilenischer Peso
+129|Chipwert
+130|Stadt
+131|Abholen
+132|Unter Belohnungen abholen
+133|Bald abholbar
+134|Abgeholt
+135|Klassisch
+136|Leeren
+137|Klare Fotos oder PDF, bis zu 10 MB pro Datei.
+138|Klicks
+139|Client
+140|Client-Seed
+141|Steige allein durchs Spielen von Bronze 1 bis Amethyst 4 auf. Jede Stufe schaltet eine einmalige Geldbelohnung frei — von $2 bei Bronze 1 bis $1,000 auf den Ruby- und Amethyst-Stufen — direkt auf dein Guthaben, ohne Umsatzbedingungen. Deine Stufe sinkt nie.
+142|Schließen
+143|Sperre dein Konto für längere Zeit für das Glücksspiel. Kann nicht rückgängig gemacht werden.
+144|Code
+145|Code aus der E-Mail
+146|Code eingelöst: +
+147|Code gesendet — prüfe deinen Posteingang
+148|Code zum Ausschalten
+149|Menü einklappen
+150|Abholen
+151|Aufs Guthaben holen
+152|Abholverlauf
+153|Kolumbien
+154|Farbe
+155|Demnächst
+156|Provision
+157|Provision (gesamt)
+158|Die Provision wird in Echtzeit berechnet. Hol sie jederzeit auf dein Guthaben und zahle sie in Krypto aus.
+159|Provision — letzte 30 Tage
+160|Vollständig
+161|Abgeschlossen
+162|Bestätigen
+163|Bestätige, dass
+164|Verbindungsfehler. Versuche es erneut.
+165|Cookie-Richtlinie
+166|Kopiert
+167|Kopieren
+168|Ecken, die der Torwart hält, Schuss für Schuss (1–5):
+169|Kosten
+170|Die Einzahlung konnte nicht erstellt werden.
+171|Deine Limits konnten nicht geladen werden.
+172|Wohnsitzland
+173|Gecrasht
+174|Konto erstellen
+175|Ein Konto erstellen
+176|Erstelle ein Konto und verdiene mit
+177|Kampagne erstellen
+178|Wird erstellt…
+179|Nächste Spur überqueren
+180|Krypto-Casino mit nachweislich fairen Originals und schnellen Auszahlungen.
+181|Währung
+182|Aktuelle Stufe
+183|Individueller Deal
+184|Täglicher Bonus
+185|Tägliche Provision
+186|Täglich · Wöchentlich · Monatlich
+187|Tägliche, wöchentliche & monatliche Boni
+188|Tägliche, wöchentliche und monatliche Boni
+189|Datum
+190|Geburtsdatum
+191|Dealer hat Blackjack — Versicherung ausgezahlt
+192|Dealer hat kein Blackjack — Versicherung verloren
+193|Der Dealer zeigt ein Ass.
+194|Dealer gewinnt
+195|Standard
+196|Demo · Spielgeld
+197|Einzahlen
+198|Einzahlungsadresse
+199|Einzahlung gutgeschrieben
+200|Einzahlung gutgeschrieben:
+201|Einzahlungslimit
+202|Einzahlung übermittelt — wir schreiben sie nach Prüfung der Blockchain gut
+203|Zahle ein, um ihn zu aktivieren. Der Support schreibt den Bonus nach Prüfung gut.
+204|Einzahlungs-, Verlust- und Einsatzlimits für 24 Stunden, 7 Tage und 30 Tage.
+205|Einzahlungen
+206|Einzahlungen, Wetten und Auszahlungen sind deaktiviert. Kontaktiere den Support.
+207|Zieladresse
+208|Dice / Limbo / Crash:
+209|Schwierigkeit
+210|Anzeigewährung
+211|Muss ich Kryptografie verstehen?
+212|Verfallen Stufen?
+213|Dokumente
+214|Dokumente zur Prüfung gesendet
+215|Dokumente werden geprüft
+216|Bedeutet nachweislich fair bessere Gewinnchancen?
+217|Herunterladen
+218|Gezogene Zahlen:
+219|Führerschein
+220|Kommen über unsere Socials, Streams und Partner.
+221|Während einer Pause oder Selbstsperre kannst du nicht wetten oder einzahlen, aber dein Guthaben jederzeit auszahlen.
+222|Jede Datei darf höchstens 10 MB groß sein.
+223|Jede Stufe bringt eine Geldbelohnung. Hol sie auf dieser Seite ab und sie geht direkt auf dein Guthaben, ohne Umsatzbedingungen. Ein paar Stufen übersprungen? Eine Abholung zahlt alle aus.
+224|Verdiene 15 % Provision
+225|Verdiene 15 % auf Lebenszeit
+226|Verdienstrechner
+227|Leicht
+228|Felder mit Ei pro Etage (von unten nach oben, 1 = links):
+229|E-Mail
+230|E-Mail oder Benutzername
+231|Schreib uns
+232|E-Mail-Bestätigung
+233|E-Mail bestätigt
+234|Beendet
+235|Endet
+236|Endet in
+237|Gib eine gültige Wallet-Adresse ein.
+238|Gib einen Betrag ein.
+239|Code eingeben
+240|Gib den 6-stelligen Code aus deiner Authenticator-App ein.
+241|Gib den gesendeten Betrag ein.
+242|Gib den Betrag ein, den du einzahlen willst.
+243|Die Schätzung geht davon aus, dass ~35 % der Einzahlungen zu NGR werden und 60 % der Spieler monatlich bleiben. Echte Ergebnisse variieren.
+244|Geschätzte Provision
+245|Euro
+246|Gerade
+247|Jedes Ergebnis der RD Originals entsteht durch einen Prozess, den du selbst prüfen kannst, Wette für Wette. Du musst uns nie glauben, dass ein Ergebnis zufällig war — der Beweis steckt in jeder Runde.
+248|Jedes Konto hat einen Empfehlungslink und -code. Erstelle zusätzliche Codes für jeden Kanal.
+249|Jede Wette zählt für deine Stufe, von Bronze 1 bis Amethyst 4 (Sport 3×, Slots und Live-Casino 1×, Dice und Limbo 0,75×). Jede Stufe bringt eine Geldbelohnung, die du auf der VIP-Seite abholst. Deine Stufe sinkt nie.
+250|Jede Wette zählt für deine Stufe: Sport 3×, Slots und Live-Casino 1×, RD Originals 1× (Dice und Limbo 0,75×). Wenn dein Fortschritt die nächste Stufe überschreitet, steigst du automatisch auf.
+251|Jede Wette auf RD Originals zählt für das Monatsrennen — ohne Anmeldung. Die Top 10 nach Einsatz im Kalendermonat (UTC) teilen sich $50,000: $15,000 für Platz 1 bis $1,000 für Platz 10. Preise werden nach Monatsende auf dein Guthaben gezahlt.
+252|Jeder gewettete Dollar zählt für deine Stufe. Ohne Anmeldung, ohne versteckte Regeln.
+253|Jede Stunde
+254|Jede Stunde wird ein Topf unter allen geteilt, die vor Ablauf des Timers im Chat auf Beitreten klicken. Zum Mitmachen brauchst du $5,000 Einsatz in den letzten 7 Tagen. Spieler können auch in den Topf einzahlen.
+255|Jede Stunde fällt ein Rain-Topf im Chat. Klicke vor Ablauf des Timers auf Beitreten und der Topf wird gleichmäßig unter allen Teilnehmern geteilt. Offen für Spieler mit $5,000 Einsatz in den letzten 7 Tagen. Spieler können auch in den Topf einzahlen.
+256|Jeder Spieler, den du wirbst
+257|Jeder Wurf landet zwischen 0.00 und 100.00.
+258|Genau wie auf deinem Dokument.
+259|Experte
+260|Abgelaufen
+261|CSV exportieren
+262|Zusätzliche Kampagnencodes kommen bald. Nutze vorerst deinen Hauptlink.
+263|Fairness
+264|Favorit
+265|Füllen
+266|Fülle alle persönlichen Daten aus.
+267|Fülle beide Seeds aus.
+268|Finnland
+269|Ersteinzahlungen
+270|Vorname
+271|Würfe
+272|Würfe in Folge
+273|Würfe:
+274|Etage
+275|Fußball, Basketball, Tennis, E-Sports und mehr — mit Live-Quoten. Bis dahin spiel RD Originals.
+276|Frankreich
+277|Jede Stunde wird im Chat Gratisgeld verteilt.
+278|Vorderseite des Dokuments
+279|Vollbild
+280|Ausgeschöpft
+281|TOR!
+282|Glücksspiel sollte Unterhaltung sein, nie ein Weg, Geld zu verdienen oder Problemen zu entfliehen.
+283|Spiel
+284|Game Shows
+285|Spiele
+286|Edelsteine
+287|Deutschland
+288|Hilfe holen
+289|Lass dich fürs Spielen bezahlen — jeden Tag.
+290|Hol dir deinen Link
+291|Schnapp dir unsere Codes, bevor sie weg sind.
+292|Schwer
+293|Kopf
+294|Hilfe
+295|Hi! 👋 Wie können wir dir heute helfen? Unser Team antwortet rund um die Uhr.
+296|Glücksspiel vor nahestehenden Menschen verheimlichen.
+297|Hoch
+298|High Roller
+299|Höher
+300|Höher oder gleich
+301|Karte
+302|Triff den Zielmultiplikator mit mindestens dem Mindesteinsatz und der Preis landet sofort auf deinem Guthaben. Wer zuerst kommt — ein Preis pro Spieler und Challenge.
+303|Halte das Dokument neben dein Gesicht
+304|Start
+305|Beliebt
+306|Tastenkürzel
+307|Tastenkürzel aus
+308|Tastenkürzel an: Leertaste wetten · S halbieren · D verdoppeln
+309|Stündlicher Rain
+310|Haus
+311|Hände des Hauses:
+312|Wie werden Belohnungen ausgezahlt?
+313|Wie können wir helfen?
+314|Wie steige ich auf?
+315|Wie löse ich einen Code ein?
+316|Wie funktionieren Einzahlungen?
+317|Wie funktioniert das VIP-Programm?
+318|Wie jede Wette fair wird
+319|Wie wird die Provision berechnet?
+320|So wird gerechnet
+321|So funktioniert's
+322|Wie lange dauern Auszahlungen?
+323|Wie Ergebnisse entstehen (technisch)
+324|Ich bin mindestens 18 Jahre alt und akzeptiere die
+325|Identitätsprüfung
+326|Die Identitätsprüfung (KYC) schützt Konten und ist für Auszahlungen über $2,000 erforderlich. Reiche sie unter Konto → Verifizierung ein; die Prüfung dauert meist unter 24 Stunden.
+327|Erhöhen um
+328|Indien
+329|Indische Rupie
+330|Instagram-Story
+331|Sofort
+332|Sofort-Rakeback
+333|Unzureichendes Guthaben.
+334|Versicherung?
+335|Versichert
+336|Ungültiger Code. Prüfe deine Authenticator-App und versuche es erneut.
+337|Ungültiger oder bereits genutzter Einladungscode.
+338|Ungültiger oder abgelaufener Code.
+339|Einladungscode
+340|Lade Freunde ein und verdiene an jeder Wette.
+341|Irland
+342|Israel
+343|Italien
+344|Japan
+345|Japanischer Yen
+346|Beitreten
+347|Komm zu RDCasino — nachweislich faire Originals und schnelle Krypto-Auszahlungen. Nutze den Code
+348|Jetzt beitreten
+349|Beigetreten
+350|LIVE-GEWINNE
+351|Sprache
+352|Nachname
+353|Leaderboard
+354|Mehr erfahren
+355|Rechtliches
+356|Stufe
+357|Stufenbelohnung
+358|Aufgestiegen! Du hast erreicht:
+359|Lizenz
+360|Lizenzinformationen werden hier veröffentlicht.
+361|Gesamt
+362|Lebenslanger Revenue Share, in Krypto ausgezahlt.
+363|Limits & Pausen
+364|Limits gibt es für Echtgeldkonten.
+365|Limits müssen mindestens $1 betragen.
+366|Limits gespeichert
+367|Link
+368|Link-Klicks
+369|Live-Casino
+370|Live-Support
+371|Live-Statistiken
+372|Live-Support
+373|Dein Konto wird geladen…
+374|Dein Guthaben wird geladen…
+375|Deine Limits werden geladen…
+376|Wird geladen…
+377|Lobby
+378|Gesperrt
+379|Verlieren
+380|Verlustlimit
+381|Niederlagen
+382|Niedrig
+383|Niedriger
+384|Niedriger oder gleich
+385|Ein Limit zu senken gilt sofort; Erhöhen oder Entfernen wirkt erst nach 24 Stunden.
+386|Manuell
+387|Meister
+388|Max.
+389|Höchste Stufe
+390|Max. Nettoverlust
+391|Der maximale Gewinn pro Wette beträgt
+392|Max. Gesamteinsatz
+393|Maximal einzahlbar
+394|Mittel
+395|Mitglied seit
+396|Memo / Tag (erforderlich)
+397|Menü
+398|Nachrichten
+399|Mexikanischer Peso
+400|Mexiko
+401|Min. $1
+402|Min. 8 Zeichen
+403|Mindesteinsatz
+404|Minen auf Feldern:
+405|Der Mindesteinsatz beträgt $0.01.
+406|Mindesteinzahlung:
+407|Mindesteinzahlung: $
+408|Minimum ist $1.
+409|Das Mindest-Trinkgeld beträgt $1.
+410|Modus
+411|Monatlicher Bonus
+412|Monatliches Leaderboard
+413|Monatsrennen
+414|Monate
+415|Mehr
+416|Ähnliche Spiele
+417|Multiplikator
+418|Musik
+419|Meine Wetten
+420|NGR (gesamt)
+421|NGR wird über alle deine Spieler auf Lebenszeit gezählt. Gewinnt ein Spieler, sinkt dein Gesamtwert, bis anderes Spiel ihn wieder anhebt. Du schuldest nie etwas.
+422|Personalausweis
+423|Nötig für Ausweise und Führerscheine
+424|Netto-Spielumsatz (gesamt)
+425|Niederlande
+426|Netzwerk
+427|Neu
+428|Neuseeland
+429|Neue Kampagne
+430|Neue Challenges kommen regelmäßig. Schau bald wieder vorbei.
+431|Neuer Client-Seed
+432|Neue Einzahlung
+433|Neue einzahlende Spieler / Monat
+434|Neu hier?
+435|Nächste Füllung
+436|Nächste Stufe
+437|Nächstes Pumpen
+438|Nächster Server-Seed (Hash)
+439|Nächste:
+440|Keine Artikel gefunden. Schick uns lieber eine Nachricht.
+441|Eine Weile keine Wetten oder Einzahlungen. Kann nicht vorzeitig beendet werden.
+442|Noch keine Wetten
+443|Gerade keine Challenges
+444|Noch keine Daten.
+445|Keine Spiele gefunden.
+446|Keine Treffer
+447|Noch keine Nachrichten
+448|Noch keine Empfehlungen
+449|Noch keine geworbenen Spieler
+450|Nein danke
+451|Noch keine Gewinner
+452|Heute noch keine Gewinne. Der erste erscheint hier.
+453|Für dein Konto gelten keine Auszahlungslimits.
+454|Nein. Es beweist, dass Ergebnisse zufällig und unverändert sind. Der RTP jedes Spiels steht auf seiner Seite.
+455|Nein. Der Prüfer unten rechnet für dich: Füge die Seeds und die Nonce ein und vergleiche das Ergebnis mit deinem.
+456|Nein. Deine Stufe basiert auf deinem Gesamteinsatz und sinkt nie.
+457|Nonce
+458|Norwegen
+459|Nicht verfügbar in
+460|Noch nicht verfügbar.
+461|Nicht begonnen
+462|Nicht bestätigt
+463|Noch nichts abgeholt
+464|Hier ist noch nichts
+465|Nichts zu ändern
+466|Anzahl der Wetten
+467|Anzahl der Minen
+468|Zahl:
+469|Ungerade
+470|Aus
+471|An
+472|In Pause bis
+473|Zurückgehalten:
+474|Bei Verlust
+475|Bei Gewinn
+476|Ein Code pro Kanal zeigt dir, was konvertiert.
+477|Spiel nur mit Geld, dessen Verlust du dir leisten kannst. Wenn du eine Pause willst oder dein Konto schließen möchtest, schreib uns hier und wir helfen sofort.
+478|Ontario (Kanada)
+479|Offen
+480|Belohnungen öffnen
+481|VIP-Club öffnen
+482|Öffne Wallet → Einzahlen, wähle Coin und Netzwerk und sende an die angezeigte Adresse. Sende nur diesen Coin in diesem Netzwerk. Unser Team bestätigt es auf der Blockchain und schreibt dein Guthaben gut — schreib uns hier mit der Transaktions-ID (TxID), falls es länger dauert. Die Mindesteinzahlung beträgt $10.
+483|Dashboard öffnen
+484|Freier Platz
+485|Öffne den VIP-Club (Kronen-Symbol) und gib den Code unter Belohnungen bei „Hast du einen Code?“ ein. Jeder Code kann einmal pro Konto genutzt werden.
+486|Chat öffnen
+487|Optionen
+488|Orange 80%
+489|Andere
+490|Andere Dokumente
+491|Über $10,000 an Belohnungen
+492|Übersicht
+493|Seite nicht gefunden
+494|Ein Teil jeder Wette kommt zu dir zurück.
+495|Partner-Dashboard
+496|Partner
+497|Reisepass
+498|Passwort
+499|Das Passwort muss mindestens 8 Zeichen haben.
+500|Füge den Transaktions-Hash (TxID) ein.
+501|Pfad:
+502|Zahlung mit abweichendem Betrag erhalten — unser Team prüft sie
+503|Fehler beim Zahlungsdienst.
+504|Auszahlung
+505|Ausstehend
+506|Ausstehende Auszahlungen
+507|Dauerhaft
+508|Persönliche Daten
+509|Peru
+510|Philippinischer Peso
+511|Zufälliges Feld wählen
+512|Pink 59%
+513|Setze zuerst Chips auf Spieler, Bank oder Unentschieden.
+514|Setze zuerst Chips auf den Tisch.
+515|Platzhalter. Dieses Dokument muss vor dem Start von einem Anwalt der Lizenzgerichtsbarkeit verfasst werden.
+516|Spielen
+517|Dice spielen
+518|Jetzt Dice spielen
+519|RD Originals spielen
+520|Spielen. Aufsteigen. Kassieren.
+521|Spieler
+522|Spieler:
+523|Spieler
+524|Spieler können diesen Code bei der Registrierung eingeben, statt den Link zu nutzen.
+525|Spieler, die sich mit deinem Link oder Code registrieren, sind dir auf Lebenszeit zugeordnet.
+526|Ich spiele Dice auf RDCasino. Registriere dich mit meinem Code
+527|Spiele auf
+528|Geplatzt!
+529|Portugal
+530|Postleitzahl
+531|Vorherige Runde abgerechnet: gecrasht bei
+532|Frühere Seeds
+533|Datenschutzerklärung
+534|Preis
+535|Preispool
+536|In Bearbeitung
+537|Profil nicht gefunden.
+538|Gewinn
+539|Gewinn beim Cashout
+540|Gewinn bei Treffer
+541|Programmdetails
+542|Aktionen
+543|Adressnachweis
+544|Provably Fair
+545|Provably fair
+546|Anbieter
+547|Push
+548|Fragen
+549|RD (weiß)
+550|RD Partners — 15 % Revenue Share
+551|RDCasino - Krypto-Casino
+552|RDCasino. Alle Rechte vorbehalten.
+553|Rain
+554|Rain endet…
+555|Rakeback
+556|Zufällige Tür
+557|Zufälliger Schuss
+558|Rang
+559|Sortiert nach Gesamteinsatz in diesem Kalendermonat (UTC). Top
+560|Erreiche
+561|Fertige Texte
+562|Echtgeldspiel kommt bald
+563|Letzte Wetten
+564|Letzte Nachricht
+565|Letzte Spiele
+566|Benutzername des Empfängers
+567|Wiederkehrende Boni
+568|Einlösen
+569|Code einlösen
+570|Promo-Code einlösen
+571|Freunde werben. Lebenslang verdienen.
+572|Empfehlungscode
+573|Geworbene Spieler
+574|Registrieren
+575|Abgelehnt
+576|Abgelehnt — erneut einreichen
+577|Verbleibend
+578|Aus Favoriten entfernt
+579|Beantrage sie unter Wallet → Auszahlen mit deiner Adresse und dem Betrag. Der Betrag wird sofort reserviert und unser Team sendet ihn, meist innerhalb weniger Stunden. Auszahlungen über $2,000 erfordern zuerst eine Identitätsprüfung.
+580|Auszahlung beantragen
+581|Erforderlich für Auszahlungen über
+582|Erneut senden
+583|Zurücksetzen
+584|Verantwortungsvolles Spielen
+585|Verantwortungsvolles Spielen
+586|Gesperrte Gebiete
+587|Ergebnis
+588|Ergebnis:
+589|Prüfung
+590|Von unserem Team geprüft. Über
+591|Belohnung
+592|Belohnungen
+593|Risiko
+594|Über würfeln
+595|Wurfziel
+596|Unter würfeln
+597|Seed-Paar wechseln
+598|Reihen
+599|Reihen / Risiko (z. B. 16 high)
+600|GESPEICHERT
+601|Gleich
+602|Speichern
+603|Sag hallo zur Community.
+604|Sag etwas Nettes…
+605|Nach ID, Hash oder Notiz suchen
+606|Hilfe durchsuchen
+607|Spieler suchen
+608|Finde dein Spiel
+609|Sicherheit
+610|Rangliste ansehen
+611|Die Rangliste ansehen
+612|Seed-Paar gewechselt — vorheriger Server-Seed enthüllt
+613|Seeds
+614|Segment
+615|Segmente
+616|Segmente / Risiko (z. B. 30 medium)
+617|Wähle 1 bis 10 Zahlen
+618|Wähle mindestens 1 Zahl.
+619|Auswählen…
+620|Selbstgesperrt
+621|Selbstsperre
+622|Selbstsperre für 6 Monate, 1 Jahr oder dauerhaft.
+623|Selbstsperre ist aktiv
+624|Selfie mit deinem Dokument
+625|Senden
+626|Code senden
+627|Sende genau
+628|Sende nur
+629|Trinkgeld senden
+630|Schreib uns eine Nachricht
+631|Wird gesendet…
+632|Gesendet
+633|Server-Seed
+634|Server-Seed (enthüllt)
+635|Server-Seed-Hash:
+636|Wähle zuerst einen Chipwert.
+637|Teilen
+638|Teile deinen Link und verdiene mit.
+639|Teile deinen Empfehlungslink und verdiene 15 % des Netto-Spielumsatzes jedes Spielers, den du bringst, auf Lebenszeit. Verfolge alles in Echtzeit und hol dir deine Provision jederzeit aufs Guthaben.
+640|Im Chat zeigen
+641|Anmelden
+642|Melde dich zuerst an.
+643|Zum Spielen anmelden
+644|Melde dich an, um deine Wetten zu sehen
+645|Melde dich an, um uns zu schreiben. Wir antworten rund um die Uhr.
+646|Melde dich an, um Einzahlungs-, Verlust- und Einsatzlimits festzulegen, eine Pause zu machen oder dich selbst zu sperren.
+647|Melde dich mit deiner E-Mail an.
+648|Abmelden
+649|Registrierungen
+650|Abgemeldet
+651|Karte überspringen
+652|Slots
+653|Social Drops
+654|Social-Post
+655|Etwas ist schiefgelaufen.
+656|Bald
+657|Ton
+658|Spanien
+659|Mehr ausgeben, als du dir leisten kannst zu verlieren.
+660|Übergelaufen!
+661|Platsch!
+662|Splitten
+663|Topf wird verteilt
+664|Sport
+665|Sportwetten
+666|Sport-Aktionen kommen bald
+667|Freie Plätze
+668|Stehen
+669|Standard
+670|Autobet starten
+671|Jetzt verdienen
+672|Brauchst du noch Hilfe?
+673|Autobet stoppen
+674|Stopp bei Verlust
+675|Stopp bei Gewinn
+676|Straße und Hausnummer
+677|Zur Prüfung senden
+678|Support
+679|Gesperrt
+680|Über / unter wechseln
+681|TX-
+682|Zahl
+683|Pause machen
+684|Mach eine Pause von 24 Stunden, 7 Tagen oder 30 Tagen.
+685|Zum Bestätigen erneut tippen
+686|Ziel
+687|Zielmultiplikator
+688|AGB
+689|Nutzungsbedingungen
+690|Testmodus: bestätigte Einzahlung simulieren
+691|Der Betrag wird von deinem Guthaben abgezogen und unter allen im Rain geteilt.
+692|Der Becher läuft über bei Füllung:
+693|Das Ergebnis jedes Spiels stammt aus einem Zufallsprozess, den weder RDCasino noch sonst jemand nach deiner Wette ändern kann. Du kannst mit einfacher Mathematik bestätigen, dass jedes Ergebnis zufällig, unvorhersehbar und unverändert war. Provably fair garantiert Zufall, keine besseren Chancen: Jedes Spiel behält den auf seiner Seite angegebenen RTP (98 % bei den meisten RD Originals), der Hausvorteil wirkt einfach ohne Eingriff.
+694|Die gesuchte Seite existiert nicht.
+695|Kinomodus
+696|Sie starten zusammen mit dem Sportwettenbereich.
+697|Sie geben einen Teil des Hausvorteils aus deinem jüngsten Spiel zurück: täglich alle 24 h ab Bronze 3; wöchentlich jeden Donnerstag um 12:00 (BRT) und monatlich am 1. um 12:00 (BRT) ab Gold 2. Hol sie unter Belohnungen ab, wenn sie bereit sind.
+698|Sie geben einen Teil des Hausvorteils aus deinem jüngsten Spiel zurück: täglich alle 24 h ab Bronze 3; wöchentlich jeden Donnerstag um 12:00 (BRT) und monatlich am 1. um 12:00 (BRT) ab Gold 2. Je mehr du spielst, desto größer der Bonus.
+699|Spiele von Drittanbietern gehen online, sobald der Spieleaggregator integriert ist.
+700|Dieses RD Original ist in Entwicklung. Probiere solange Dice, Mines oder Chicken.
+701|Diese E-Mail ist bereits registriert.
+702|Diese Belohnung beträgt jetzt
+703|Diese Belohnung wurde aktualisiert.
+704|Diese Transaktion wurde bereits eingereicht.
+705|Dieser Benutzername ist bereits vergeben.
+706|In jedes Ergebnis fließen drei Werte ein:
+707|Anzuzeigende Würfe
+708|Unentschieden
+709|Unentschieden ·
+710|Feld:
+711|Zeit
+712|Trinkgeld
+713|Trinkgeld erhalten
+714|Trinkgeld gesendet
+715|Trinkgeld gesendet an
+716|Trinkgelder
+717|Zu diesem
+718|Zu viele E-Mails gesendet. Warte kurz und versuche es erneut.
+719|Tools
+720|Die Top 10 nach Einsatz werden jeden Monat bezahlt.
+721|Die Top-Spieler nach Einsatz werden jeden Monat bezahlt.
+722|Gesamteinsatz
+723|Gesamtgewinn
+724|Gesamteinsatz
+725|Transaktionen
+726|Transaktionen dieser Art erscheinen hier.
+727|Falltüren pro Etage, von unten nach oben (1 = links):
+728|Versuche es gleich noch einmal.
+729|Versuche eine andere ID oder einen anderen Hash.
+730|Turbo
+731|Türkei
+732|Türkische Lira
+733|2FA ausschalten
+734|Einschalten
+735|2FA einschalten
+736|Zwei-Faktor-Authentifizierung
+737|Schreib eine Nachricht.
+738|Gib den Benutzernamen ein.
+739|US-Dollar
+740|In Prüfung
+741|Rückgängig
+742|Vereinigte Arabische Emirate
+743|Vereinigtes Königreich
+744|Vereinigte Staaten
+745|Ohne Rang
+746|Bis alle Plätze vergeben sind
+747|Hochladen
+748|Hochladen:
+749|Wird hochgeladen…
+750|Nutze 10–50 Segmente und low, medium oder high.
+751|Nutze 8 bis 16 Reihen und low, medium oder high.
+752|Nutze easy, medium, hard oder expert.
+753|Nutze easy, medium, hard, expert oder master.
+754|Benutzername
+755|Benutzername: 3–16 Buchstaben, Zahlen oder _.
+756|Nebenkostenabrechnung oder Kontoauszug der letzten 3 Monate
+757|VIP-Club
+758|VIP-Aufstiegsbelohnungen
+759|VIP-Reload
+760|VIP-Belohnung
+761|VIP-Belohnungen
+762|Verifizierung
+763|Verifizierung abgelehnt — bitte erneut einreichen
+764|Verifiziert
+765|Prüfen
+766|Eine Wette prüfen
+767|Jede Wette prüfen
+768|Jetzt verifizieren
+769|VIP-Programm ansehen
+770|Alle ansehen
+771|Einsatz
+772|Einsatzlimit
+773|Benötigter Einsatz
+774|Einsatz-Belohnungen
+775|Setze, um freizuschalten
+776|Gesetzt
+777|Warte, bis die Kugeln landen.
+778|Warte auf deine Zahlung von
+779|Wallet
+780|Wallet wird geladen
+781|Warnzeichen
+782|Wir veröffentlichen Bonuscodes auf unseren Socials und im Chat. Gib einen Code unter Belohnungen bei „Hast du einen Code?“ ein, um ihn deinem Guthaben hinzuzufügen — wer zuerst kommt. Jeder Code kann einmal pro Konto genutzt werden.
+783|Wir antworten meist innerhalb weniger Minuten
+784|Wöchentlicher Bonus
+785|Willkommen zurück,
+786|Willkommensbonus
+787|Willkommen,
+788|Was, wenn ein Spieler gewinnt?
+789|Was, wenn ein Ergebnis nicht passt?
+790|Was bedeutet provably fair?
+791|Was ist Rakeback?
+792|Was ist der Rain?
+793|Was provably fair bedeutet
+794|Welcher Traffic ist nicht erlaubt?
+795|Wann werde ich bezahlt?
+796|Wenn sich jemand mit deinem Link oder Code registriert, erscheint er hier.
+797|Welche Spiele sind provably fair?
+798|Weiß 96%
+799|Warum sehe ich meinen aktuellen Server-Seed nicht?
+800|Warum meine Identität prüfen?
+801|Gewinn
+802|Gewinnchance
+803|Siege
+804|Auszahlen
+805|Auszahlung
+806|Auszahlung von
+807|Auszahlungen
+808|Auszahlungen und Trinkgelder brauchen einen Code aus deiner Authenticator-App. Du wirst ihn auch bei der Anmeldung angeben.
+809|Gewonnen von
+810|Schreib eine Nachricht…
+811|E-Mail oder Passwort falsch.
+812|Ja, jederzeit unter Fairness. Die Änderung gilt ab deiner nächsten Wette.
+813|Ja. Streamer und Communities mit nachweisbarem Traffic können einen individuellen Revenue Share bekommen. Kontaktiere uns.
+814|Du
+815|Du kannst bis zu 10 Zahlen wählen.
+816|Nach einem Split kannst du nicht verdoppeln.
+817|Du hast diese Challenge geschafft:
+818|Du verdienst 15 % des Netto-Spielumsatzes (NGR) jedes geworbenen Spielers: was er setzt, minus was er gewinnt, minus erhaltene Boni und Rakeback.
+819|Du hast verdient:
+820|Du bekommst eine einmalige Adresse für
+821|Du bist dem Rain beigetreten!
+822|Du hast die höchste Stufe erreicht. Unser Team meldet sich wegen individueller Belohnungen.
+823|Du hast einen Bonus erhalten:
+824|Du gewinnst +
+825|Du bist verifiziert
+826|Dein
+827|Deine VIP-Stufe
+828|Dein VIP-Fortschritt
+829|Deine VIP-Belohnung beträgt jetzt
+830|Dein Konto ist gesperrt.
+831|Deine Wetten auf
+832|Deine Wetten erscheinen hier.
+833|Deine Pause hat begonnen
+834|Deine Provision wächst, während sie spielen. Hol sie jederzeit aufs Guthaben.
+835|Deine Einzahlungsadresse ist abgelaufen
+836|Deine Einzahlungen erscheinen hier, sobald sie ankommen.
+837|Deine Dokumente werden privat gespeichert und nur von unserem Prüfteam gesehen.
+838|Deine Dokumente wurden abgelehnt
+839|Deine Identität ist verifiziert
+840|Deine letzten Würfe erscheinen hier
+841|Deine Limits
+842|Deine persönliche Einzahlungsadresse für
+843|Dein jüngstes Spiel zahlt sich aus: Der tägliche Bonus wird bei Bronze 3 frei, der wöchentliche und monatliche bei Gold 2. Je mehr du spielst, desto größer werden sie. Hol sie unter Belohnungen ab, wenn der Timer abgelaufen ist.
+844|Dein Empfehlungslink
+845|Dein Anteil
+846|Deine Auszahlung von
+847|deinem Guthaben hinzugefügt
+848|Adresse (
+849|Adresse abgelaufen — starte eine neue Einzahlung
+850|und schalte frei:
+851|verlangt 2 bis 10 Würfe in Folge auf deiner Seite — jeder weitere Wurf verdoppelt den Multiplikator, bis zu 1,003.52×. Kopf ist die goldene RD-Münze, Zahl die silberne.
+852|Provision aufs Guthaben
+853|deinem Guthaben gutgeschrieben
+854|z. B. YouTube-Kanal
+855|läuft ab in
+856|Ersteinzahlungen diesen Monat bis
+857|pro Spieler
+858|kassieren.
+859|wird zu
+860|wenn der Dealer Blackjack hat
+861|an VIP-Belohnungen
+862|in den letzten
+863|in den letzten 7 Tagen zum Mitmachen
+864|kommt bald
+865|ist lizenziert und reguliert durch
+866|kommt bald
+867|ist ein Wurf zu 1.96×.
+868|ist das klassische Krypto-Casinospiel. Stell deine Gewinnchance zwischen 0.01 % und 97 % ein und würfle über oder unter das Ziel. Je niedriger die Chance, desto höher der Multiplikator — bis zu 9,800×.
+869|ist bestätigt.
+870|dir gehört. Optional — es hilft uns, dein Konto wiederherzustellen und dich zu Auszahlungen zu erreichen.
+871|fehlen noch bis
+872|brauchen mehrere Zahlen, erzeugt mit
+873|— andere Coins oder Netzwerke können verloren gehen.
+874|im Netzwerk
+875|oder mehr auf
+876|oder mehr — gewinne
+877|zahlt 0.95:1
+878|zahlt 1:1
+879|zahlt 8:1
+880|erfordert eine Identitätsprüfung.
+881|Revenue Share
+882|zur Prüfung gesendet
+883|erscheinen hier in Echtzeit.
+884|erscheinen hier.
+885|Plätze frei
+886|diesen Monat
+887|in die Zwischenablage
+888|zum Rain
+889|unter Lizenz-Nr.
+890|wurde abgelehnt und erstattet
+891|wurde gesendet
+892|mit einem Einsatz von
+893|· Bank:
+894|· ausgezahlt bei
+895|· kontaktiere den Support
+896|· zahlt
+897|— ein Zähler, der mit jeder Wette um eins steigt, damit jedes Ergebnis einzigartig ist.
+898|— ein Zufallswert von RDCasino. Vor deiner Wette siehst du nur seinen SHA-256-Hash, der ihn festlegt: Wir können ihn nicht austauschen, ohne dass sich der Hash ändert.
+899|— ein Wert auf deiner Seite. Du kannst ihn jederzeit ändern, also hängt das Ergebnis auch von etwas ab, das wir nicht kontrollieren.
+900|— prüfe sie und hol sie erneut ab
+901|— hol deine Belohnung auf der VIP-Seite ab
+902|→ erste 4 Bytes → Zahl zwischen 0 und 1. Dice:
+903|→ Feld
+904|! Zahle ein, um loszuspielen.
+905|(1–25, von links nach rechts, von oben nach unten)
+906|(min. 1.00×). Vor dem 9. Okt. 2026 platzierte Wetten nutzten 0.99 (RTP 99 %) bei Dice, Limbo, Crash, Mines, Hi-Lo, Coinflip, Wheel, Plinko und Keno.
+907|(oder das Schild unter jedem Spiel), um den Hash deines aktuellen Server-Seeds zu sehen, deinen Client-Seed zu ändern oder deine Seeds zu wechseln. Füge danach den enthüllten Server-Seed, deinen Client-Seed und die Nonce der Wette in den Prüfer unten auf dieser Seite ein — er rekonstruiert das Ergebnis in Sekunden direkt in deinem Browser.
+908|(Stein, Papier, Schere), eine Zahl pro Wurf. Baccarat: 6 Karten in der Reihenfolge P1 B1 P2 B2, dann dritte Karten, wenn die Standardregeln es verlangen.
+909|) und den genauen Betrag. Dein Guthaben wird nach den Netzwerkbestätigungen automatisch gutgeschrieben.
+910|) erscheint hier, sobald der Krypto-Zahlungsanbieter verbunden ist.
+911|, 8 Zahlen pro Cursor. Plinko: Jede Reihe geht nach rechts, wenn
+912|, in einer einzigen Transaktion. Ein abweichender Betrag kann eine manuelle Prüfung erfordern.
+913|. Schreibt dein Guthaben sofort gut, wie es der Zahlungsanbieter nach Bestätigung der Blockchain tun würde.
+914|. Limbo und Crash:
+915|. Bitte sende sie erneut.
+916|. Die Prüfung dauert meist unter 24 Stunden. Wir aktualisieren diese Seite, wenn sie fertig ist.
+917|: europäisches Rad mit einer einzigen Null. Setze Chips auf Zahlen oder Außenwetten — eine Zahl zahlt 36.26×, Dutzende und Kolonnen 3.02×, Rot/Schwarz, Gerade/Ungerade und 1–18/19–36 zahlen 2.01× (Einsatz inklusive). RTP 98 % auf jede Wette.
+918|: Ein 5×5-Raster versteckt Edelsteine und Minen. Wähle die Anzahl der Minen (1–24) und decke Felder auf. Jeder Edelstein erhöht deinen Multiplikator — zahl jederzeit aus, aber triffst du eine Mine, ist die Runde verloren.
+919|: Schlag die Hand des Hauses, um die Leiter hochzuklettern — 1.96×, 3.92×, 7.84× und bis zu 1,003.52× nach 10 Siegen. Ein Unentschieden gibt dir einen Gratis-Wurf. Zahl nach jedem Sieg aus. Schere schneidet Papier, Stein zerschlägt Schere, Papier umhüllt Stein.
+920|: Setze auf Spieler, Bank oder Unentschieden. Die Hand, die näher an 9 ist, gewinnt. Spieler zahlt 1:1, Bank 0.95:1 und Unentschieden 8:1 (bei Unentschieden werden Spieler- und Bankwetten zurückgegeben). Standardregeln für die dritte Karte, unendliches Deck. Hausvorteil: 1.24 % auf Spieler, 1.06 % auf Bank, 14.4 % auf Unentschieden.
+921|: Wähle eine Ecke und schieß. Der Torwart deckt je nach Schwierigkeit 1 bis 4 der 5 Ecken ab. Jedes Tor multipliziert deinen Gewinn — zahl jederzeit aus oder schieß weiter für bis zu 15,000×.
+922|: Steig 9 Etagen hoch. Wähle auf jeder Etage ein Feld — finde das Ei und du steigst auf, triffst du den Totenkopf, endet die Runde. Zahl aus, wann du willst. Fünf Schwierigkeiten, von Leicht (3 Eier in 4 Feldern) bis Meister (1 Ei in 4 Feldern, bis zu 256,901×).
+923|: Lass die Kugel fallen und sieh zu, wie sie an den Stiften abprallt. Wo sie landet, bestimmt deinen Multiplikator. Wähle 8 bis 16 Reihen und niedriges, mittleres oder hohes Risiko — 16 Reihen bei hohem Risiko zahlen bis zu 1,000× an den Rändern.
+924|: Füll den Becher Schritt für Schritt. Jede Füllung erhöht deinen Multiplikator, aber eine versteckte Füllung lässt ihn überlaufen. Zahl jederzeit aus. Leicht versteckt 1 Überlauf in 25 Füllungen, Mittel 3, Schwer 5 und Experte 10.
+925|: Komm näher an 21 als der Dealer, ohne dich zu überkaufen. Blackjack zahlt 3 zu 2, der Dealer zieht bei Soft 17 und steht bei Hard 17, du kannst auf deine ersten zwei Karten verdoppeln oder ein Paar einmal splitten (kein Verdoppeln nach dem Split), und zeigt der Dealer ein Ass, kannst du eine Versicherung nehmen (halber Einsatz, zahlt 2 zu 1, wenn der Dealer Blackjack hat). Gespielt wird mit einem unendlichen Deck. Der angezeigte RTP setzt die Grundstrategie voraus (ungefähr).
+926|: Rate, ob die nächste Karte höher oder niedriger als die aktuelle ist. Jeder Treffer multipliziert deinen Gewinn. Überspring Karten, die dir nicht gefallen, und zahl aus, wann du willst. Die letzte Karte bleibt für deine nächste Runde liegen, egal ob Sieg oder Niederlage. Asse sind niedrig, Könige hoch.
+927|: Hilf dem Huhn über die Straße, eine Spur nach der anderen. Jede überquerte Spur erhöht deinen Multiplikator, aber auf manchen Spuren lauert ein Auto. Zahl aus, bevor du erwischt wirst. Leicht versteckt 1 Auto auf 20 Spuren, Experte 10.
+928|: Wähle 1 bis 10 Zahlen aus 40. Wir ziehen 10. Je mehr deiner Zahlen gezogen werden, desto höher der Multiplikator — bis zu 1,140×. Wähle Risiko Klassisch, Niedrig, Mittel oder Hoch; die Auszahlungstabelle passt sich beim Wählen an.
+929|: Wähle Kopf oder Zahl und wirf.
+930|: Wähle eine Farbe und dreh. 15 Felder: 7 rote und 7 schwarze zahlen 2.1×, das weiße RD-Feld zahlt 14.7×. RTP 98 %.
+931|: Wähle auf jeder der 10 Etagen eine Tür. Hinter den meisten liegt eine Münze, hinter der Falltür verlierst du. Jede Etage erhöht deinen Multiplikator — zahl aus, wann du willst.
+932|: Leg einen Zielmultiplikator fest und wette. Erreicht das Ergebnis dein Ziel, gewinnst du deinen Einsatz mal dem Ziel. Ziele reichen von 1.01× bis 1,000,000×.
+933|: Dreh das Rad und gewinne den Multiplikator, auf dem es stoppt. Wähle 10 bis 50 Segmente und niedriges, mittleres oder hohes Risiko — hohes Risiko hat ein einziges großes Segment mit bis zu 49×.
+934|: Der Multiplikator startet bei 1.00× und steigt, bis er crasht. Zahl vor dem Crash aus, um deinen Einsatz mal dem Multiplikator zu gewinnen. Setz einen automatischen Cashout, um ein Ziel zu sichern.
+935|? Trinkgelder können nicht rückgängig gemacht werden.
+936|oder mehr
+937|(unendliches Deck). Bei Hi-Lo ist die erste Karte auf dem Tisch die letzte Karte deiner vorherigen Runde; jede Karte danach stammt aus deinen Seeds. Keno: Mischung von 1–40, die ersten 10 werden gezogen. Wheel: Segment =
+938|. Mines: Fisher–Yates-Mischung der 25 Felder, die ersten N sind Minen. Hi-Lo und Blackjack: Karte =
+939|. Rock Paper Scissors: Hand des Hauses =
+940|. Roulette: Zahl =
+941|. Tower: Auf jeder der 9 Etagen Fisher–Yates-Mischung der Felder, die ersten sind Eier. Chicken: Fisher–Yates-Mischung der 20 Spuren, auf den ersten wartet ein Auto. Spill: Fisher–Yates-Mischung der 25 Füllungen (wie bei Mines), die ersten laufen über (1, 3, 5 oder 10 je nach Schwierigkeit); Multiplikator nach k Füllungen = 0.98 ÷ Chance, k Füllungen zu überstehen. Coinflip: Kopf, wenn
+942|Nur gewechselte Seeds können geprüft werden — der aktive Server-Seed bleibt geheim, bis du das Paar wechselst.
+943|Öffne „Provably fair“ in der unteren Leiste eines RD Originals und wechsle deinen Seed, um den für deine bisherigen Wetten genutzten Server-Seed zu enthüllen.
+944|Ihn anzuzeigen würde es jedem erlauben, die nächsten Ergebnisse vorherzusagen. Du siehst jetzt seinen Hash und den Seed selbst, sobald du wechselst.
+945|Die drei werden mit HMAC-SHA256 kombiniert und die Ausgabe bestimmt das Ergebnis. Da der Server-Seed festgelegt ist, bevor dein Client-Seed genutzt wird, kann niemand — auch wir nicht — ein Ergebnis vorhersagen oder ändern. Wenn du deine Seeds wechselst, wird der alte Server-Seed enthüllt, damit du jede damit gemachte Wette prüfen kannst.
+946|(optional)
+947|Papier
+948|Stein
+949|Schere
+950|Standardstufe
+951|und
+952|Tage
+953|Stunden
+954|Min.
+955|Sek.
+956|Benutzername
+957|Öffne

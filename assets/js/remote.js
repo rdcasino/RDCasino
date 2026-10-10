@@ -51,7 +51,7 @@
       status: p.status === "active" ? "Active" : "Suspended", kyc: KYC[p.kyc] || "Not started", kycReason: "", kycInfo: null,
       balance: n(p.balance), held: n(p.held), wagered: n(p.wagered), vipXp: n(p.vip_xp != null ? p.vip_xp : p.wagered), levelPaid: n(p.level_paid), profit: n(p.profit), bets: +p.bets_count || 0, rakeback: +p.rakeback || 0, rakebackClaimed: sum("Rakeback"),
       claimedTiers: p.claimed_tiers || [], bonusTotal: n(sum("Bonus") + sum("Level reward")), deposits: sum("Deposit"), withdrawals: sum("Withdrawal"), firstDeposit: firstDep,
-      created: p.created_at, note: p.note || "", affShare: p.aff_share != null ? +p.aff_share : null, affPaid: n(p.aff_paid), campaigns: [], rounds: {},
+      created: p.created_at, note: p.note || "", emailVerified: !!p.email_verified_at, affShare: p.aff_share != null ? +p.aff_share : null, affPaid: n(p.aff_paid), campaigns: [], rounds: {},
       seeds: { server: "", client: "", nonce: 0, revealed: [] }
     };
   }
@@ -146,7 +146,7 @@
       state.user = tk.user; fill(D.players, [me]);
     } catch (e) {}
   })();
-  db.ready = sb.auth.getSession().then(function (r) { keepTok(r.data.session); return onSession(r.data.session); });
+  db.ready = sb.auth.getSession().then(function (r) { keepTok(r.data.session); return onSession(r.data.session).then(function (x) { return r.data.session ? mfaNeeded().then(function (need) { db.mfaPending = need; return x; }) : x; }); });
   sb.auth.onAuthStateChange(function (ev, session) { keepTok(session); if (ev === "SIGNED_OUT") onSession(null); if (ev === "TOKEN_REFRESHED") state.user = session.user; });
   db.current = function () { return state.user && D.players[0] && D.players[0].id === state.user.id ? D.players[0] : (state.user ? D.players.filter(function (p) { return p.id === state.user.id; })[0] || null : null); };
   db.logout = function () { dropCache(); state.user = null; fill(D.players, []); fill(D.tx, []); fill(D.bets, []); return sb.auth.signOut(); };
@@ -155,7 +155,64 @@
     if (email.indexOf("@") < 0) return Promise.resolve({ error: "Sign in with your email." });
     return sb.auth.signInWithPassword({ email: email, password: pass }).then(function (r) {
       if (r.error) return { error: msg(r.error) };
-      return onSession(r.data.session).then(function () { return db.current() ? { player: db.current() } : { error: "Account not found." }; });
+      var sess = r.data.session;
+      return mfaNeeded().then(function (need) {
+        db.mfaPending = need;
+        return onSession(sess).then(function () { return db.current() ? { player: db.current(), mfa: need } : { error: "Account not found." }; });
+      });
+    });
+  };
+  /* ---------- Segurança da conta (opcional): 2FA por app autenticador e e-mail verificado (migração 0036) ---------- */
+  function mfaNeeded() {
+    return sb.auth.mfa.getAuthenticatorAssuranceLevel().then(function (r) { var d = r.data || {}; return d.nextLevel === "aal2" && d.currentLevel !== "aal2"; }, function () { return false; });
+  }
+  function totpOn() { return sb.auth.mfa.listFactors().then(function (r) { return ((r.data && r.data.totp) || []).filter(function (f) { return f.status === "verified"; })[0] || null; }); }
+  db.mfa = {
+    status: function () { return totpOn().then(function (f) { return { on: !!f, id: f ? f.id : null }; }, function () { return { on: false }; }); },
+    /* começa a ativação: QR + chave para o app (Google Authenticator, Authy...) */
+    enroll: function () {
+      return sb.auth.mfa.listFactors().then(function (r) {
+        var stale = ((r.data && r.data.all) || []).filter(function (f) { return f.factor_type === "totp" && f.status !== "verified"; });
+        return Promise.all(stale.map(function (f) { return sb.auth.mfa.unenroll({ factorId: f.id }); }));
+      }).then(function () { return sb.auth.mfa.enroll({ factorType: "totp", friendlyName: "RDCasino " + Date.now() }); })
+        .then(function (r) { return r.error ? { error: msg(r.error) } : { id: r.data.id, qr: r.data.totp.qr_code, secret: r.data.totp.secret }; });
+    },
+    verify: function (factorId, code) {
+      var go = factorId ? Promise.resolve(factorId) : totpOn().then(function (f) { return f && f.id; });
+      return go.then(function (id) {
+        if (!id) return { error: "2FA is not enabled." };
+        var cv = function () { return sb.auth.mfa.challengeAndVerify({ factorId: id, code: String(code || "").replace(/\s/g, "") }); };
+        return cv().then(function (r) { return r.error && /IP address/i.test(r.error.message || "") ? cv() : r; }).then(function (r) {
+          if (r.error) return { error: /invalid/i.test(r.error.message || "") ? "Invalid code. Check your authenticator app and try again." : msg(r.error) };
+          db.mfaPending = false; return { ok: true };
+        });
+      });
+    },
+    disable: function (code) {
+      return totpOn().then(function (f) {
+        if (!f) return { ok: true };
+        return db.mfa.verify(f.id, code).then(function (v) { return v.error ? v : sb.auth.mfa.unenroll({ factorId: f.id }).then(function (r) { return r.error ? { error: msg(r.error) } : { ok: true }; }); });
+      });
+    },
+    needed: mfaNeeded
+  };
+  db.emailCode = function () {
+    var u = state.user; if (!u || !u.email) return Promise.resolve({ error: "Sign in first." });
+    return sb.auth.signInWithOtp({ email: u.email, options: { shouldCreateUser: false } }).then(function (r) {
+      if (!r.error) return { ok: true };
+      return { error: /rate limit|too many|seconds/i.test(r.error.message || "") ? "Too many emails sent. Wait a little and try again." : msg(r.error) };
+    });
+  };
+  db.emailVerify = function (code) {
+    var u = state.user; if (!u || !u.email) return Promise.resolve({ error: "Sign in first." });
+    return sb.auth.verifyOtp({ email: u.email, token: String(code || "").replace(/\s/g, ""), type: "email" }).then(function (r) {
+      if (r.error) return { error: /expired|invalid/i.test(r.error.message || "") ? "Invalid or expired code." : msg(r.error) };
+      keepTok(r.data.session);
+      return sb.rpc("mark_email_verified").then(function (m) {
+        if (m.error || (m.data && m.data.error)) return { error: m.error ? msg(m.error) : m.data.error };
+        var me = db.current(); if (me) me.emailVerified = true;
+        return mfaNeeded().then(function (need) { db.mfaPending = need; db.emit(); return { ok: true, mfa: need }; });
+      });
     });
   };
   db.register = function (f) {
@@ -191,6 +248,9 @@
   db.deposit = function () { return { error: "Use the deposit form." }; };
 
   /* ---------- Jogos de um clique: o servidor sorteia, calcula e grava (play_bet) ---------- */
+  /* aposta que pode ter completado um desafio: busca a transação do prêmio sem depender do tempo real */
+  var chT = null;
+  function chSoon(bet) { if (RD.chHit && RD.chHit(bet)) { clearTimeout(chT); chT = setTimeout(refresh, 500); } }
   var lastBetId = -1; // ordem das respostas: id da aposta no servidor (o nonce volta a 0 quando o jogador troca a seed)
   db.playBet = function (game, amount, params) {
     return fastRpc("play_bet", { p_game: game, p_amount: amount, p_params: params || {} }).then(function (r) {
@@ -211,7 +271,7 @@
             me.seeds.nonce = nonce + 1;
           }
           D.bets.unshift(bet); if (D.bets.length > 500) D.bets.length = 500;
-          bonusSoon(); db.emit(); return bet;
+          bonusSoon(); chSoon(bet); db.emit(); return bet;
         }
       };
     }, function (e) { return { error: msg(e) }; });
@@ -234,7 +294,7 @@
   function roundResult(game, x) {
     var r = rounds[game];
     applyProfile(x.profile);
-    if (x.bet) { var b = mapBet(x.bet, game, r); x.bet = b; lastBet[game] = b; D.bets.unshift(b); if (D.bets.length > 500) D.bets.length = 500; delete rounds[game]; bonusSoon(); }
+    if (x.bet) { var b = mapBet(x.bet, game, r); x.bet = b; lastBet[game] = b; D.bets.unshift(b); if (D.bets.length > 500) D.bets.length = 500; delete rounds[game]; bonusSoon(); chSoon(b); }
     else if (r && x.state) r.state = x.state;
     if (r && x.amount != null) r.amount = n(x.amount);
     syncRounds(); db.emit(); return x;
@@ -394,6 +454,10 @@
   };
   db.adminCodes = function () { return sb.from("promo_codes").select("*").order("created_at", { ascending: false }).then(function (r) { return r.data || []; }); };
   db.saveCode = function (c) { return adminCall("admin_save_code", { p_code: c.code, p_amount: c.amount, p_max_uses: c.maxUses, p_min_wager: c.minWager, p_hours: c.hours, p_active: true }); };
+  db.challenges = function () { return sb.rpc("public_challenges").then(function (r) { return r.error ? [] : r.data || []; }, function () { return []; }); };
+  db.adminChallenges = function () { return sb.rpc("admin_challenges").then(function (r) { return r.error ? [] : r.data || []; }); };
+  db.saveChallenge = function (c) { return adminCall("admin_save_challenge", { p: c }); };
+  db.toggleChallenge = function (id, active) { return adminCall("admin_toggle_challenge", { p_id: id, p_active: active }); };
   db.toggleCode = function (code, active) { return adminCall("admin_toggle_code", { p_code: code, p_active: active }); };
   /* ---------- Equipe (tag de diamante) ---------- */
   /* Transações do jogador em tempo real (depósito confirmado pela NOWPayments, saque enviado): atualiza saldo e lista */

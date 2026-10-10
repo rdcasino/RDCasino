@@ -1,6 +1,6 @@
 # RDCasino
 
-Front-end do cassino cripto (mercado internacional) e do painel administrativo. Hoje é **protótipo navegável**: todos os dados são de demonstração e não há backend.
+Front-end do cassino cripto (mercado internacional) e do painel administrativo. O modo real usa o Supabase como servidor (banco, login e funções); veja `docs/backend.md`. O modo demonstração (`?live=0`) guarda tudo só no navegador.
 
 ## Como rodar
 
@@ -36,6 +36,12 @@ O sistema começa **zerado**: nenhum jogador, aposta ou transação inventada. T
 Para recomeçar do zero: Admin → Configurações → "Apagar tudo e recomeçar".
 
 **Limite importante:** os dados ficam guardados só no navegador de quem está usando. Um jogador no celular dele e você no seu computador não se enxergam. Para isso funcionar entre pessoas diferentes (e com dinheiro real), é preciso o servidor com banco de dados. As funções de `assets/js/store.js` são exatamente as que esse servidor vai ter.
+
+## Desafios, segurança da conta e idiomas
+
+- **Desafios** (Admin → Desafios, página `#/challenges`): "acerte X× no jogo Y com aposta mínima Z". O servidor confere cada aposta ganha e paga o prêmio na hora (migração 0035); cada jogador ganha cada desafio uma vez. Slots de provedores só entram quando tiverem aposta real (hoje são demo).
+- **2FA e e-mail verificado** (Conta → Security), opcionais (migração 0036). Com 2FA ligado, saque e gorjeta exigem o código no servidor. O código de verificação de e-mail só chega aos jogadores com um SMTP próprio configurado no Supabase (Auth → SMTP); o e-mail padrão do Supabase só entrega para a equipe do projeto e tem limite baixo por hora.
+- **Idiomas**: o site é escrito em inglês e traduzido na tela por `assets/js/i18n.js` (es, pt, de, fr, tr, ja). Textos em `tools/i18n/`: `en.json` é a lista em inglês (só acrescente no fim, os números não podem mudar), `<idioma>.txt` tem uma linha `número|tradução` por texto e `extra.json` guarda meses e frases com números/nomes. Texto novo sem tradução aparece em inglês. Rode `npm run bundle` em `tools/` depois de mudar.
 
 ## Identidade visual: Rubi Real
 

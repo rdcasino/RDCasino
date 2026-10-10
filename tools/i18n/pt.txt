@@ -1,0 +1,958 @@
+0|Leaderboard de $50,000
+1|Leaderboard mensal de $50,000
+2|Leaderboard de $50,000
+3|0 = infinito
+4|Resta 1 vaga
+5|1 a 12
+6|1 a 18
+7|1 ano
+8|1. Dados pessoais
+9|1. Escaneie o QR code com um app autenticador (Google Authenticator, Authy, 1Password…).
+10|13 a 24
+11|15% de revenue share vitalício e estatísticas em tempo real de cada jogador que você trouxer.
+12|19 a 36
+13|1º lugar:
+14|2% da vantagem da casa de cada aposta sua volta como rakeback. Ele acumula enquanto você joga e pode ser resgatado quando quiser em Recompensas.
+15|2. Documentos
+16|2. Digite o código de 6 dígitos do app.
+17|24 horas
+18|25 a 36
+19|O 2FA não está ativado.
+20|2FA desativado
+21|2FA ativado
+22|30 dias
+23|3–16 letras ou números
+24|3–16 letras, números ou _
+25|6 meses
+26|7 dias
+27|Uma recompensa em dinheiro em cada nível VIP.
+28|Uma parte da vantagem da casa de cada aposta volta para você na hora. Ela acumula enquanto você joga e pode ser resgatada quando quiser em Recompensas.
+29|Uma parte da vantagem da casa de cada aposta volta para você. Ela acumula enquanto você joga e pode ser resgatada quando quiser.
+30|Uma recarga especial que nosso time VIP dá a jogadores selecionados a partir do Jade 2. Quando você tiver uma, ela aparece nas suas recompensas com quantos resgates faltam.
+31|Uma aposta válida sempre bate com as seeds e o nonce dela. Se alguma não bater, fale com o suporte informando o ID da aposta.
+32|Política de AML e KYC
+33|Aceitar
+34|Conta
+35|Conta e verificação
+36|Conta criada. Entre para continuar.
+37|Conta não encontrada.
+38|Não podem abrir nem usar contas os residentes de:
+39|Ativo
+40|Client seed ativa
+41|Server seed ativa (hash)
+42|Adicione uma segunda etapa para entrar, sacar e enviar gorjetas: um código de 6 dígitos de um app autenticador no seu celular. Opcional, mas recomendado.
+43|Adicionar à chuva
+44|Adicionar à chuva
+45|Adicionado
+46|Adicionado aos favoritos
+47|Endereço
+48|Ajuste
+49|Afiliados
+50|Afiliados
+51|Todos
+52|Todos os RD Originals: Dice, Limbo, Crash, Plinko, Mines, Keno, Hi-Lo, Wheel, Roulette, Blackjack, Baccarat, Coinflip, Rock Paper Scissors, Tower, Chicken, Door, Soccer, Spill e Double. Cada resultado é sorteado no nosso servidor a partir das suas seeds e pode ser conferido por você. Slots e jogos ao vivo de outros estúdios usam seus próprios geradores de números aleatórios certificados.
+53|Todas as apostas
+54|Todos os códigos
+55|Os quatro cantos visíveis, sem reflexo
+56|Todos os outros jogos:
+57|Todas as promoções
+58|Já coletado
+59|Sempre inclua “18+ | Jogue com responsabilidade” onde a plataforma permitir.
+60|Sempre ativa
+61|Valor
+62|Valor (USD)
+63|Quem se cadastrar por ele fica vinculado a você para sempre.
+64|Argentina
+65|Peso argentino
+66|Austrália
+67|Dólar australiano
+68|Áustria
+69|Auto
+70|Escolha automática
+71|Disponível
+72|Recompensas disponíveis
+73|Disponível para coletar
+74|Disponível:
+75|Depósito mensal médio por jogador
+76|Aguardando
+77|Voltar
+78|Verso do documento
+79|Voltar ao lobby
+80|Saldo
+81|Banca
+82|Seja parceiro
+83|Apostar
+84|Valor da aposta
+85|Apostas
+86|As apostas aparecem aqui em tempo real assim que alguém joga.
+87|Apostas feitas com este par
+88|Apostas de
+89|Apostas, depósitos, gorjetas e códigos estão pausados. Você ainda pode sacar seu saldo.
+90|Blackjack paga 3 para 2 · O dealer compra no 17 macio · O seguro paga 2 para 1
+91|Blackjack! +
+92|Bônus
+93|Códigos de bônus
+94|Termos de bônus
+95|Lances na marca, tráfego incentivado ou spam e qualquer tráfego de países restritos. Jogadores de territórios restritos não conseguem se cadastrar e não geram comissão.
+96|Brasil
+97|Real brasileiro
+98|Libra esterlina
+99|Campanha
+100|Campanha criada
+101|Nome da campanha
+102|Campanhas
+103|Posso trocar minha client seed?
+104|Posso ter um acordo personalizado?
+105|Não consegue escanear? Digite esta chave:
+106|Canadá
+107|Dólar canadense
+108|Cancelar
+109|Cartas tiradas depois da carta inicial
+110|Cartas a mostrar
+111|Cartas:
+112|Carros nas faixas:
+113|Sacar
+114|Saque
+115|Sacar em
+116|Cassino
+117|Desafio concluído!
+118|Desafio:
+119|Desafios
+120|Chance
+121|Chance de a vitória-régia segurar o sapo. Escolha uma vitória-régia na próxima coluna para pular.
+122|Trocar
+123|Trocar o par revela sua server seed atual, assim você confere cada aposta feita com ela.
+124|Correr atrás do prejuízo.
+125|Chat
+126|Fale com nosso time
+127|Chile
+128|Peso chileno
+129|Valor da ficha
+130|Cidade
+131|Resgatar
+132|Resgate em Recompensas
+133|Em breve
+134|Resgatado
+135|Clássico
+136|Limpar
+137|Fotos nítidas ou PDF, até 10 MB cada.
+138|Cliques
+139|Cliente
+140|Client seed
+141|Suba do Bronze 1 ao Amethyst 4 só jogando. Cada nível libera uma recompensa única em dinheiro — de $2 no Bronze 1 até $1,000 nos níveis Ruby e Amethyst — paga direto no seu saldo, sem rollover. Seu nível nunca cai.
+142|Fechar
+143|Feche sua conta para jogos por um longo período. Não pode ser desfeito.
+144|Código
+145|Código do e-mail
+146|Código resgatado: +
+147|Código enviado — confira sua caixa de entrada
+148|Código para desativar
+149|Recolher menu
+150|Coletar
+151|Coletar para o saldo
+152|Histórico de coletas
+153|Colômbia
+154|Cor
+155|Em breve
+156|Comissão
+157|Comissão (total)
+158|A comissão é calculada em tempo real. Colete para o seu saldo quando quiser e saque em cripto.
+159|Comissão — últimos 30 dias
+160|Completo
+161|Concluído
+162|Confirmar
+163|Confirme que
+164|Erro de conexão. Tente de novo.
+165|Política de cookies
+166|Copiado
+167|Copiar
+168|Cantos que o goleiro cobre, chute a chute (1–5):
+169|Custos
+170|Não foi possível criar o depósito.
+171|Não foi possível carregar seus limites.
+172|País de residência
+173|Explodiu
+174|Criar conta
+175|Criar uma conta
+176|Crie uma conta para começar a ganhar
+177|Criar campanha
+178|Criando…
+179|Atravessar a próxima faixa
+180|Cassino cripto com originals comprovadamente justos e saques rápidos.
+181|Moeda
+182|Nível atual
+183|Acordo personalizado
+184|Bônus diário
+185|Comissão diária
+186|Diário · Semanal · Mensal
+187|Bônus diários, semanais e mensais
+188|Bônus diários, semanais e mensais
+189|Data
+190|Data de nascimento
+191|Blackjack do dealer — seguro pago
+192|O dealer não tem Blackjack — seguro perdido
+193|O dealer mostra um Ás.
+194|O dealer ganha
+195|Padrão
+196|Demo · modo diversão
+197|Depositar
+198|Endereço de depósito
+199|Depósito creditado
+200|Depósito creditado:
+201|Limite de depósito
+202|Depósito enviado — vamos creditar depois de conferir na blockchain
+203|Deposite para ativar. O suporte credita o bônus após a análise.
+204|Limites de depósito, perda e aposta para 24 horas, 7 dias e 30 dias.
+205|Depósitos
+206|Depósitos, apostas e saques estão desativados. Fale com o suporte.
+207|Endereço de destino
+208|Dice / Limbo / Crash:
+209|Dificuldade
+210|Moeda de exibição
+211|Preciso entender criptografia?
+212|Os níveis expiram?
+213|Documentos
+214|Documentos enviados para análise
+215|Documentos em análise
+216|Provably fair significa chances melhores?
+217|Baixar
+218|Números sorteados:
+219|Carteira de motorista
+220|Saem nas nossas redes, lives e parceiros.
+221|Durante uma pausa ou autoexclusão você não pode apostar nem depositar, mas sempre pode sacar seu saldo.
+222|Cada arquivo deve ter até 10 MB.
+223|Cada nível adiciona uma recompensa em dinheiro. Resgate nesta página e ela vai direto para o seu saldo, sem rollover. Pulou alguns níveis? Um resgate paga todos.
+224|Ganhe 15% de comissão
+225|Ganhe 15% para sempre
+226|Calculadora de ganhos
+227|Fácil
+228|Casas com ovo por andar (de baixo para cima, 1 = esquerda):
+229|E-mail
+230|E-mail ou usuário
+231|Envie um e-mail
+232|Verificação de e-mail
+233|E-mail verificado
+234|Encerrado
+235|Termina
+236|Termina em
+237|Digite um endereço de carteira válido.
+238|Digite um valor.
+239|Digitar código
+240|Digite o código de 6 dígitos do seu app autenticador.
+241|Digite o valor que você enviou.
+242|Digite o valor que quer depositar.
+243|A estimativa considera que ~35% dos depósitos viram NGR e retenção mensal de 60% dos jogadores. Resultados reais variam.
+244|Comissão estimada
+245|Euro
+246|Par
+247|Cada resultado dos RD Originals é gerado por um processo que você mesmo pode conferir, aposta por aposta. Você nunca precisa confiar na nossa palavra de que um resultado foi aleatório — a prova está em cada rodada.
+248|Toda conta tem um link e um código de indicação. Crie códigos extras para cada canal.
+249|Cada aposta conta para o seu nível, do Bronze 1 ao Amethyst 4 (esportes 3×, slots e cassino ao vivo 1×, Dice e Limbo 0,75×). Cada nível adiciona uma recompensa em dinheiro que você resgata na página VIP. Seu nível nunca cai.
+250|Cada aposta conta para o seu nível: esportes 3×, slots e cassino ao vivo 1×, RD Originals 1× (Dice e Limbo 0,75×). Quando seu progresso passa do próximo nível, você sobe automaticamente.
+251|Cada aposta nos RD Originals conta para a corrida mensal — sem inscrição. Os 10 que mais apostam no mês (UTC) dividem um prêmio de $50,000: $15,000 para o primeiro lugar até $1,000 para o décimo. Os prêmios caem no seu saldo depois que o mês fecha.
+252|Cada dólar apostado conta para o seu nível. Sem inscrição, sem regras escondidas.
+253|A cada hora
+254|A cada hora um prêmio é dividido entre todos que clicam em Entrar no chat antes de o tempo acabar. Para entrar você precisa de $5,000 apostados nos últimos 7 dias. Os jogadores também podem adicionar ao prêmio.
+255|A cada hora cai uma chuva no chat. Clique em Entrar antes de o tempo acabar e o prêmio é dividido igualmente entre todos que entraram. Aberta para jogadores com $5,000 apostados nos últimos 7 dias. Os jogadores também podem adicionar ao prêmio.
+256|Cada jogador que você indicar
+257|Toda rolagem cai entre 0.00 e 100.00.
+258|Exatamente como está no seu documento.
+259|Expert
+260|Expirado
+261|Exportar CSV
+262|Códigos extras de campanha chegam em breve. Por enquanto use seu link principal.
+263|Justiça
+264|Favorito
+265|Encher
+266|Preencha todos os dados pessoais.
+267|Preencha as duas seeds.
+268|Finlândia
+269|Primeiros depósitos
+270|Nome
+271|Lançamentos
+272|Lançamentos seguidos
+273|Lançamentos:
+274|Andar
+275|Futebol, basquete, tênis, esports e mais — com odds ao vivo. Até lá, jogue os RD Originals.
+276|França
+277|Dinheiro grátis dividido no chat a cada hora.
+278|Frente do documento
+279|Tela cheia
+280|Esgotado
+281|GOL!
+282|Jogar deve ser diversão, nunca uma forma de ganhar dinheiro ou fugir de problemas.
+283|Jogo
+284|Game Shows
+285|Jogos
+286|Gemas
+287|Alemanha
+288|Buscar ajuda
+289|Receba de volta por jogar — todo dia.
+290|Pegue seu link
+291|Pegue nossos códigos antes que acabem.
+292|Difícil
+293|Cara
+294|Ajuda
+295|Oi! 👋 Como podemos ajudar hoje? Nosso time responde 24/7.
+296|Esconder o jogo das pessoas próximas.
+297|Alto
+298|High rollers
+299|Maior
+300|Maior ou igual
+301|Pedir
+302|Acerte o multiplicador-alvo com pelo menos a aposta mínima e o prêmio cai no seu saldo na hora. Quem chegar primeiro leva — um prêmio por jogador em cada desafio.
+303|Segure o documento ao lado do rosto
+304|Início
+305|Em alta
+306|Atalhos
+307|Atalhos desativados
+308|Atalhos ativados: Espaço aposta · S metade · D dobro
+309|Chuva de hora em hora
+310|Casa
+311|Mãos da casa:
+312|Como as recompensas são pagas?
+313|Como podemos ajudar?
+314|Como subo de nível?
+315|Como resgato um código?
+316|Como funcionam os depósitos?
+317|Como funciona o programa VIP?
+318|Como cada aposta é justa
+319|Como a comissão é calculada?
+320|Como é calculada
+321|Como funciona
+322|Quanto tempo demoram os saques?
+323|Como os resultados são gerados (técnico)
+324|Tenho pelo menos 18 anos e aceito os
+325|Verificação de identidade
+326|A verificação de identidade (KYC) protege as contas e é obrigatória para saques acima de $2,000. Envie em Conta → Verificação; a análise costuma levar menos de 24 horas.
+327|Aumentar em
+328|Índia
+329|Rupia indiana
+330|Story do Instagram
+331|Na hora
+332|Rakeback instantâneo
+333|Saldo insuficiente.
+334|Seguro?
+335|Segurado
+336|Código inválido. Confira seu app autenticador e tente de novo.
+337|Código de convite inválido ou já usado.
+338|Código inválido ou expirado.
+339|Código de convite
+340|Convide amigos e ganhe com cada aposta.
+341|Irlanda
+342|Israel
+343|Itália
+344|Japão
+345|Iene japonês
+346|Entrar
+347|Venha comigo para o RDCasino — originals comprovadamente justos e saques cripto rápidos. Use o código
+348|Entre agora
+349|Você entrou
+350|GANHOS AO VIVO
+351|Idioma
+352|Sobrenome
+353|Leaderboard
+354|Saiba mais
+355|Jurídico
+356|Nível
+357|Recompensa de nível
+358|Subiu de nível! Você chegou ao
+359|Licença
+360|As informações de licença serão publicadas aqui.
+361|Total
+362|Revenue share vitalício, pago em cripto.
+363|Limites e pausas
+364|Os limites estão disponíveis em contas reais.
+365|Os limites devem ser de pelo menos $1.
+366|Limites salvos
+367|Link
+368|Cliques no link
+369|Cassino ao vivo
+370|Suporte ao vivo
+371|Estatísticas ao vivo
+372|Suporte ao vivo
+373|Carregando sua conta…
+374|Carregando seu saldo…
+375|Carregando seus limites…
+376|Carregando…
+377|Lobby
+378|Bloqueado
+379|Perder
+380|Limite de perda
+381|Derrotas
+382|Baixo
+383|Menor
+384|Menor ou igual
+385|Baixar um limite vale na hora; aumentar ou remover vale depois de 24 horas.
+386|Manual
+387|Master
+388|Máx.
+389|Nível máximo
+390|Perda líquida máxima
+391|O lucro máximo por aposta é
+392|Total máximo apostado
+393|Máximo que você pode depositar
+394|Médio
+395|Membro desde
+396|Memo / tag (obrigatório)
+397|Menu
+398|Mensagens
+399|Peso mexicano
+400|México
+401|Mín. $1
+402|Mín. 8 caracteres
+403|Aposta mín.
+404|Minas nas casas:
+405|A aposta mínima é $0.01.
+406|Depósito mínimo:
+407|Depósito mínimo: $
+408|O mínimo é $1.
+409|A gorjeta mínima é $1.
+410|Modalidade
+411|Bônus mensal
+412|Leaderboard mensal
+413|Corrida mensal
+414|Meses
+415|Mais
+416|Mais como este
+417|Multiplicador
+418|Música
+419|Minhas apostas
+420|NGR (total)
+421|O NGR soma todos os seus jogadores para sempre. Quando um jogador ganha, seu total diminui até outras apostas recuperarem. Você nunca fica devendo nada.
+422|RG / documento nacional
+423|Necessário para RG e carteira de motorista
+424|Receita líquida de jogo (total)
+425|Holanda
+426|Rede
+427|Novo
+428|Nova Zelândia
+429|Nova campanha
+430|Novos desafios saem com frequência. Volte em breve.
+431|Nova client seed
+432|Novo depósito
+433|Novos jogadores com depósito / mês
+434|É novo por aqui?
+435|Próximo enchimento
+436|Próximo nível
+437|Próxima bombeada
+438|Próxima server seed (hash)
+439|Próximo:
+440|Nenhum artigo encontrado. Mande uma mensagem pra gente.
+441|Sem apostas nem depósitos por um tempo. Não dá para encerrar antes.
+442|Nenhuma aposta ainda
+443|Nenhum desafio no momento
+444|Ainda sem dados.
+445|Nenhum jogo encontrado.
+446|Nenhum resultado
+447|Nenhuma mensagem ainda
+448|Nenhuma indicação ainda
+449|Nenhum jogador indicado ainda
+450|Não, obrigado
+451|Nenhum ganhador ainda
+452|Nenhum ganho hoje ainda. O primeiro aparece aqui.
+453|Sua conta não tem limite de saque.
+454|Não. Ele prova que os resultados são aleatórios e intactos. O RTP de cada jogo aparece na página dele.
+455|Não. O verificador abaixo faz a conta: cole as seeds e o nonce e compare o resultado com o que você recebeu.
+456|Não. Seu nível é baseado no total apostado e nunca cai.
+457|Nonce
+458|Noruega
+459|Indisponível em
+460|Ainda não disponível.
+461|Não iniciado
+462|Não verificado
+463|Nada coletado ainda
+464|Nada aqui ainda
+465|Nada para mudar
+466|Número de apostas
+467|Número de minas
+468|Número:
+469|Ímpar
+470|Desativado
+471|Ativado
+472|Em pausa até
+473|Retido:
+474|Ao perder
+475|Ao ganhar
+476|Um código por canal mostra o que converte.
+477|Jogue só com dinheiro que você pode perder. Se quiser dar uma pausa ou fechar sua conta, mande uma mensagem aqui e ajudamos na hora.
+478|Ontário (Canadá)
+479|Aberto
+480|Abrir Recompensas
+481|Abrir o VIP Club
+482|Abra Carteira → Depositar, escolha a moeda e a rede e envie para o endereço mostrado. Envie só essa moeda nessa rede. Nosso time confirma na blockchain e credita seu saldo — mande aqui o ID da transação (TxID) se demorar mais que o esperado. O depósito mínimo é $10.
+483|Abrir painel
+484|Vaga aberta
+485|Abra o VIP Club (ícone de coroa) e digite o código em "Tem um código?" em Recompensas. Cada código pode ser usado uma vez por conta.
+486|Abrir o chat
+487|Opções
+488|Laranja 80%
+489|Outro
+490|Outros documentos
+491|Mais de $10,000 em recompensas
+492|Visão geral
+493|Página não encontrada
+494|Parte de cada aposta volta para você.
+495|Painel do parceiro
+496|Parceiros
+497|Passaporte
+498|Senha
+499|A senha precisa ter pelo menos 8 caracteres.
+500|Cole o hash da transação (TxID).
+501|Caminho:
+502|Pagamento recebido com valor diferente — nosso time vai analisar
+503|Erro no serviço de pagamento.
+504|Pagamento
+505|Pendente
+506|Saques pendentes
+507|Permanente
+508|Dados pessoais
+509|Peru
+510|Peso filipino
+511|Escolher casa aleatória
+512|Rosa 59%
+513|Coloque fichas em Jogador, Banca ou Empate primeiro.
+514|Coloque fichas na mesa primeiro.
+515|Texto provisório. Este documento precisa ser redigido por um advogado da jurisdição da licença antes do lançamento.
+516|Jogar
+517|Jogar Dice
+518|Jogar Dice agora
+519|Jogar RD Originals
+520|Jogue. Suba de nível. Receba.
+521|Jogador
+522|Jogador:
+523|Jogadores
+524|Os jogadores podem digitar este código no cadastro em vez de usar o link.
+525|Jogadores que se cadastram com seu link ou código ficam vinculados a você para sempre.
+526|Jogando Dice no RDCasino. Cadastre-se com meu código
+527|Jogadas no
+528|Estourou!
+529|Portugal
+530|CEP / código postal
+531|Rodada anterior encerrada: explodiu em
+532|Seeds anteriores
+533|Política de privacidade
+534|Prêmio
+535|Prêmio total
+536|Processando
+537|Perfil não encontrado.
+538|Lucro
+539|Lucro ao sacar
+540|Lucro se ganhar
+541|Detalhes do programa
+542|Promoções
+543|Comprovante de endereço
+544|Provably Fair
+545|Provably fair
+546|Provedores
+547|Empate
+548|Perguntas
+549|RD (branco)
+550|RD Partners — 15% de revenue share
+551|RDCasino - Cassino cripto
+552|RDCasino. Todos os direitos reservados.
+553|Chuva
+554|Chuva terminando…
+555|Rakeback
+556|Porta aleatória
+557|Chute aleatório
+558|Posição
+559|Classificado pelo total apostado neste mês (UTC). Top
+560|Alcance
+561|Textos prontos
+562|Jogo com dinheiro real em breve
+563|Apostas recentes
+564|Mensagem recente
+565|Jogadas recentes
+566|Usuário que vai receber
+567|Bônus recorrentes
+568|Resgatar
+569|Resgatar um código
+570|Resgatar um código promocional
+571|Indique amigos. Ganhe para sempre.
+572|Código de indicação
+573|Jogadores indicados
+574|Cadastrar
+575|Rejeitado
+576|Rejeitado — envie de novo
+577|Restante
+578|Removido dos favoritos
+579|Peça em Carteira → Sacar com seu endereço e o valor. O valor fica reservado na hora e nosso time envia, normalmente em poucas horas. Saques acima de $2,000 precisam de verificação de identidade antes.
+580|Pedir saque
+581|Obrigatório para saques acima de
+582|Reenviar
+583|Redefinir
+584|Jogo responsável
+585|Jogo responsável
+586|Territórios restritos
+587|Resultado
+588|Resultado:
+589|Análise
+590|Analisado pelo nosso time. Acima de
+591|Recompensa
+592|Recompensas
+593|Risco
+594|Rolar acima
+595|Alvo da rolagem
+596|Rolar abaixo
+597|Trocar par de seeds
+598|Linhas
+599|Linhas / risco (ex.: 16 high)
+600|SALVO
+601|Igual
+602|Salvar
+603|Diga oi para a comunidade.
+604|Diga algo legal…
+605|Buscar por ID, hash ou nota
+606|Buscar ajuda
+607|Buscar jogador
+608|Busque seu jogo
+609|Segurança
+610|Ver classificação
+611|Ver a classificação
+612|Par de seeds trocado — server seed anterior revelada
+613|Seeds
+614|Segmento
+615|Segmentos
+616|Segmentos / risco (ex.: 30 medium)
+617|Escolha de 1 a 10 números
+618|Escolha pelo menos 1 número.
+619|Selecione…
+620|Autoexcluído
+621|Autoexclusão
+622|Autoexclusão por 6 meses, 1 ano ou permanente.
+623|A autoexclusão está ativa
+624|Selfie com seu documento
+625|Enviar
+626|Enviar código
+627|Envie exatamente
+628|Envie só
+629|Enviar gorjeta
+630|Mande uma mensagem
+631|Enviando…
+632|Enviado
+633|Server seed
+634|Server seed (revelada)
+635|Hash da server seed:
+636|Escolha o valor da ficha primeiro.
+637|Compartilhe
+638|Compartilhe seu link para começar a ganhar.
+639|Compartilhe seu link de indicação e ganhe 15% da receita líquida de jogo de cada jogador que você trouxer, para sempre. Acompanhe tudo em tempo real e colete sua comissão para o saldo quando quiser.
+640|Mostrar no chat
+641|Entrar
+642|Entre primeiro.
+643|Entre para jogar
+644|Entre para ver suas apostas
+645|Entre para mandar uma mensagem. Respondemos 24/7.
+646|Entre para definir limites de depósito, perda e aposta, dar uma pausa ou se autoexcluir.
+647|Entre com seu e-mail.
+648|Sair
+649|Cadastros
+650|Você saiu
+651|Pular carta
+652|Slots
+653|Drops nas redes
+654|Post nas redes
+655|Algo deu errado.
+656|Em breve
+657|Som
+658|Espanha
+659|Gastar mais do que você pode perder.
+660|Derramou!
+661|Tchibum!
+662|Dividir
+663|Dividindo o prêmio
+664|Esportes
+665|Apostas esportivas
+666|Promoções de esportes estão chegando
+667|Vagas restantes
+668|Parar
+669|Padrão
+670|Iniciar aposta automática
+671|Comece a ganhar
+672|Ainda precisa de ajuda?
+673|Parar aposta automática
+674|Parar ao perder
+675|Parar ao lucrar
+676|Rua e número
+677|Enviar para análise
+678|Suporte
+679|Suspenso
+680|Inverter acima / abaixo
+681|TX-
+682|Coroa
+683|Dar uma pausa
+684|Dê uma pausa de 24 horas, 7 dias ou 30 dias.
+685|Toque de novo para confirmar
+686|Alvo
+687|Multiplicador-alvo
+688|Termos
+689|Termos de serviço
+690|Modo teste: simular um depósito confirmado
+691|O valor sai do seu saldo e é dividido entre todos na chuva.
+692|O copo derrama no enchimento:
+693|O resultado de cada jogo vem de um processo aleatório que nem o RDCasino nem ninguém consegue mudar depois que você aposta. Você pode confirmar com uma conta simples que cada resultado foi aleatório, imprevisível e intacto. Provably fair garante aleatoriedade, não chances melhores: cada jogo mantém o RTP mostrado na página dele (98% na maioria dos RD Originals), e a vantagem da casa simplesmente funciona sem interferência.
+694|A página que você procura não existe.
+695|Modo cinema
+696|Elas chegam junto com as apostas esportivas.
+697|Eles devolvem parte da vantagem da casa das suas jogadas recentes: o diário a cada 24h a partir do Bronze 3; o semanal toda quinta às 12:00 (BRT) e o mensal no dia 1 às 12:00 (BRT) a partir do Gold 2. Resgate em Recompensas quando estiverem prontos.
+698|Eles devolvem parte da vantagem da casa das suas jogadas recentes: o diário a cada 24h a partir do Bronze 3; o semanal toda quinta às 12:00 (BRT) e o mensal no dia 1 às 12:00 (BRT) a partir do Gold 2. Quanto mais você joga, maior o bônus.
+699|Jogos de terceiros entram no ar quando o agregador de jogos for integrado.
+700|Este RD Original está em desenvolvimento. Enquanto isso, jogue Dice, Mines ou Chicken.
+701|Este e-mail já está cadastrado.
+702|Esta recompensa agora é
+703|Esta recompensa foi atualizada.
+704|Esta transação já foi enviada.
+705|Este nome de usuário já está em uso.
+706|Três valores entram em cada resultado:
+707|Lançamentos a mostrar
+708|Empate
+709|Empate ·
+710|Casa:
+711|Hora
+712|Gorjeta
+713|Gorjeta recebida
+714|Gorjeta enviada
+715|Gorjeta enviada para
+716|Gorjetas
+717|Para esta
+718|Muitos e-mails enviados. Espere um pouco e tente de novo.
+719|Ferramentas
+720|Os 10 que mais apostam recebem todo mês.
+721|Quem mais aposta recebe todo mês.
+722|Aposta total
+723|Lucro total
+724|Total apostado
+725|Transações
+726|Transações deste tipo aparecem aqui.
+727|Portas-armadilha por andar, de baixo para cima (1 = esquerda):
+728|Tente de novo em instantes.
+729|Tente outro ID ou hash.
+730|Turbo
+731|Turquia
+732|Lira turca
+733|Desativar 2FA
+734|Ativar
+735|Ativar 2FA
+736|Autenticação em dois fatores
+737|Digite uma mensagem.
+738|Digite o nome de usuário.
+739|Dólar americano
+740|Em análise
+741|Desfazer
+742|Emirados Árabes Unidos
+743|Reino Unido
+744|Estados Unidos
+745|Sem nível
+746|Até acabarem as vagas
+747|Enviar arquivo
+748|Enviar:
+749|Enviando…
+750|Use 10–50 segmentos e low, medium ou high.
+751|Use de 8 a 16 linhas e low, medium ou high.
+752|Use easy, medium, hard ou expert.
+753|Use easy, medium, hard, expert ou master.
+754|Usuário
+755|Usuário: 3–16 letras, números ou _.
+756|Conta de consumo ou extrato bancário dos últimos 3 meses
+757|VIP Club
+758|Recompensas de nível VIP
+759|Recarga VIP
+760|Recompensa VIP
+761|Recompensas VIP
+762|Verificação
+763|Verificação rejeitada — envie de novo
+764|Verificado
+765|Verificar
+766|Verificar uma aposta
+767|Verifique qualquer aposta
+768|Verificar agora
+769|Ver programa VIP
+770|Ver tudo
+771|Apostar
+772|Limite de aposta
+773|Aposta necessária
+774|Recompensas por apostar
+775|Aposte para liberar
+776|Apostado
+777|Espere as bolas caírem.
+778|Aguardando seu pagamento de
+779|Carteira
+780|Carregando carteira
+781|Sinais de alerta
+782|Soltamos códigos de bônus nas nossas redes e no chat. Digite um código em "Tem um código?" em Recompensas para adicionar ao seu saldo — quem chegar primeiro leva. Cada código pode ser usado uma vez por conta.
+783|Costumamos responder em poucos minutos
+784|Bônus semanal
+785|Bem-vindo de volta,
+786|Bônus de boas-vindas
+787|Bem-vindo,
+788|E se um jogador ganhar?
+789|E se um resultado não bater?
+790|O que é provably fair?
+791|O que é rakeback?
+792|O que é a Chuva?
+793|O que provably fair significa
+794|Que tráfego não é permitido?
+795|Quando eu recebo?
+796|Quando alguém se cadastra com seu link ou código, aparece aqui.
+797|Quais jogos são provably fair?
+798|Branco 96%
+799|Por que não consigo ver minha server seed atual?
+800|Por que verificar minha identidade?
+801|Ganhar
+802|Chance de ganhar
+803|Vitórias
+804|Sacar
+805|Saque
+806|Saque de
+807|Saques
+808|Saques e gorjetas precisam de um código do seu app autenticador. Ele também será pedido quando você entrar.
+809|Ganho por
+810|Escreva uma mensagem…
+811|E-mail ou senha incorretos.
+812|Sim, quando quiser em Justiça. A troca vale a partir da próxima aposta.
+813|Sim. Streamers e comunidades com tráfego comprovado podem ter um revenue share personalizado. Fale com a gente.
+814|Você
+815|Você pode escolher até 10 números.
+816|Não dá para dobrar depois de dividir.
+817|Você concluiu este desafio:
+818|Você ganha 15% da Receita Líquida de Jogo (NGR) de cada jogador que indicar: o que ele aposta menos o que ganha, menos os bônus e o rakeback que recebe.
+819|Você ganhou
+820|Você recebe um endereço único de
+821|Você entrou na chuva!
+822|Você chegou ao nível mais alto. Nosso time vai falar com você sobre recompensas sob medida.
+823|Você recebeu um bônus de
+824|Você ganha +
+825|Você está verificado
+826|Seu
+827|Seu nível VIP
+828|Seu progresso VIP
+829|Sua recompensa VIP agora é
+830|Sua conta está suspensa.
+831|Suas apostas no
+832|Suas apostas aparecem aqui.
+833|Sua pausa começou
+834|Sua comissão cresce enquanto eles jogam. Colete para o seu saldo quando quiser.
+835|Seu endereço de depósito expirou
+836|Seus depósitos aparecem aqui assim que chegam.
+837|Seus documentos ficam guardados em sigilo e só nosso time de verificação vê.
+838|Seus documentos foram rejeitados
+839|Sua identidade está verificada
+840|Suas últimas rolagens aparecem aqui
+841|Seus limites
+842|Seu endereço de depósito pessoal de
+843|Suas jogadas recentes devolvem dinheiro: o Bônus diário libera no Bronze 3 e os Bônus semanal e mensal no Gold 2. Quanto mais você joga, maiores eles ficam. Resgate em Recompensas quando o contador zerar.
+844|Seu link de indicação
+845|Sua parte
+846|Seu saque de
+847|adicionado ao seu saldo
+848|endereço (
+849|endereço expirado — inicie um novo depósito
+850|e libere
+851|pede de 2 a 10 lançamentos seguidos no seu lado — cada lançamento extra dobra o multiplicador, até 1,003.52×. Cara é a moeda RD dourada, coroa a prateada.
+852|comissão para o saldo
+853|creditado no seu saldo
+854|ex.: canal do YouTube
+855|expira em
+856|primeiros depósitos este mês para chegar a
+857|por jogador
+858|receba.
+859|passa para
+860|se o dealer tiver Blackjack
+861|em recompensas VIP
+862|nos últimos
+863|nos últimos 7 dias para entrar
+864|chega em breve
+865|é licenciado e regulado por
+866|está chegando
+867|é um lançamento a 1.96×.
+868|é o clássico jogo de cassino cripto. Escolha sua chance de ganhar de 0.01% a 97% e role acima ou abaixo do alvo. Quanto menor a chance, maior o multiplicador — até 9,800×.
+869|está verificado.
+870|é seu. Opcional — ajuda a recuperar sua conta e a falar com você sobre saques.
+871|faltam para chegar ao
+872|precisam de vários números, gerados com
+873|— outras moedas ou redes podem ser perdidas.
+874|na rede
+875|ou mais no
+876|ou mais — ganhe
+877|paga 0.95:1
+878|paga 1:1
+879|paga 8:1
+880|exige verificação de identidade.
+881|revenue share
+882|enviado para análise
+883|aparecem aqui em tempo real.
+884|aparecem aqui.
+885|vagas restantes
+886|este mês
+887|para a área de transferência
+888|para a chuva
+889|sob a licença nº
+890|foi rejeitado e devolvido
+891|foi enviado
+892|com uma aposta de
+893|· Banca:
+894|· sacou em
+895|· fale com o suporte
+896|· paga
+897|— um contador que sobe um a cada aposta, então cada resultado é único.
+898|— um valor aleatório criado pelo RDCasino. Antes de apostar você só vê o hash SHA-256 dele, que o deixa travado: não conseguimos trocá-lo sem o hash mudar.
+899|— um valor do seu lado. Você pode trocá-lo quando quiser, então o resultado também depende de algo que não controlamos.
+900|— confira e resgate de novo
+901|— resgate sua recompensa na página VIP
+902|→ primeiros 4 bytes → número entre 0 e 1. Dice:
+903|→ casa
+904|! Faça um depósito para começar a jogar.
+905|(1–25, da esquerda para a direita, de cima para baixo)
+906|(mín. 1.00×). Apostas feitas antes de 9 out 2026 usavam 0.99 (RTP 99%) em Dice, Limbo, Crash, Mines, Hi-Lo, Coinflip, Wheel, Plinko e Keno.
+907|(ou o botão de escudo embaixo de qualquer jogo) para ver o hash da sua server seed atual, trocar sua client seed ou girar suas seeds. Depois de girar, cole a server seed revelada, sua client seed e o nonce da aposta no verificador no fim desta página — ele reconstrói o resultado em segundos, no seu navegador.
+908|(pedra, papel, tesoura), um número por lançamento. Baccarat: 6 cartas na ordem P1 B1 P2 B2, depois terceiras cartas quando as regras padrão pedem.
+909|) e o valor exato a enviar. Seu saldo é creditado automaticamente após as confirmações da rede.
+910|) aparece aqui quando o processador de pagamentos cripto for conectado.
+911|, 8 números por cursor. Plinko: cada linha vai para a direita se
+912|, em uma única transação. Um valor diferente pode precisar de análise manual.
+913|. Credita seu saldo na hora, como o processador faria após a confirmação na blockchain.
+914|. Limbo e Crash:
+915|. Envie de novo, por favor.
+916|. A análise costuma levar menos de 24 horas. Vamos atualizar esta página quando terminar.
+917|: roleta europeia com um único zero. Coloque fichas nos números ou em apostas externas — um número paga 36.26×, dúzias e colunas 3.02×, e vermelho/preto, par/ímpar e 1–18/19–36 pagam 2.01× (sua aposta incluída). RTP de 98% em toda aposta.
+918|: uma grade 5×5 esconde gemas e minas. Escolha quantas minas (1–24) e revele as casas. Cada gema aumenta seu multiplicador — saque quando quiser, mas se acertar uma mina a rodada é perdida.
+919|: vença a mão da casa para subir a escada — 1.96×, 3.92×, 7.84× e até 1,003.52× após 10 vitórias. Um empate te dá outro lançamento sem custo. Saque depois de qualquer vitória. Tesoura corta papel, pedra quebra tesoura, papel embrulha pedra.
+920|: aposte em Jogador, Banca ou Empate. Ganha a mão mais perto de 9. Jogador paga 1:1, Banca paga 0.95:1 e Empate paga 8:1 (no empate, as apostas em Jogador e Banca são devolvidas). Regras padrão da terceira carta, baralho infinito. Vantagem da casa: 1.24% no Jogador, 1.06% na Banca, 14.4% no Empate.
+921|: escolha um canto e chute. O goleiro cobre de 1 a 4 dos 5 cantos conforme a dificuldade. Cada gol multiplica seu ganho — saque quando quiser ou continue chutando até 15,000×.
+922|: suba 9 andares. Em cada andar escolha uma casa — ache o ovo e você sobe, acerte a caveira e a rodada acaba. Saque quando quiser. Cinco dificuldades, do Fácil (3 ovos em 4 casas) ao Master (1 ovo em 4 casas, até 256,901×).
+923|: solte a bola e veja ela quicar pelos pinos. Onde ela cair define seu multiplicador. Escolha de 8 a 16 linhas e risco baixo, médio ou alto — 16 linhas no risco alto pagam até 1,000× nas pontas.
+924|: encha o copo um passo de cada vez. Cada enchimento aumenta seu multiplicador, mas um enchimento escondido faz o copo derramar. Saque quando quiser. Fácil esconde 1 derrame em 25 enchimentos, Médio 3, Difícil 5 e Expert 10.
+925|: chegue mais perto de 21 que o dealer sem estourar. Blackjack paga 3 para 2, o dealer compra no 17 macio e para no 17 duro, você pode dobrar nas duas primeiras cartas ou dividir um par uma vez (sem dobrar depois de dividir), e quando o dealer mostra um Ás você pode fazer seguro (metade da sua aposta, paga 2 para 1 se o dealer tiver Blackjack). As cartas saem de um baralho infinito. O RTP mostrado considera a estratégia básica (aproximado).
+926|: adivinhe se a próxima carta é maior ou menor que a atual. Cada acerto multiplica seu ganho. Pule as cartas que não quiser e saque quando quiser. A última carta fica na mesa para a próxima rodada, ganhando ou perdendo. Ases são baixos, reis são altos.
+927|: ajude a galinha a atravessar a rua, uma faixa por vez. Cada faixa atravessada aumenta seu multiplicador, mas algumas escondem um carro. Saque antes de ser atropelado. O Fácil esconde 1 carro em 20 faixas, o Expert esconde 10.
+928|: escolha de 1 a 10 números entre 40. Sorteamos 10. Quanto mais números seus saírem, maior o multiplicador — até 1,140×. Escolha risco Clássico, Baixo, Médio ou Alto; a tabela de pagamentos muda conforme você escolhe.
+929|: escolha Cara ou Coroa e lance.
+930|: escolha uma cor e gire. 15 casas: as 7 vermelhas e 7 pretas pagam 2.1×, a casa branca RD paga 14.7×. RTP de 98%.
+931|: escolha uma porta em cada um dos 10 andares. Atrás da maioria há uma moeda; atrás da porta-armadilha, você perde. Cada andar aumenta seu multiplicador — saque quando quiser.
+932|: defina um multiplicador-alvo e aposte. Se o resultado chegar ao alvo, você ganha a aposta vezes o alvo. Os alvos vão de 1.01× a 1,000,000×.
+933|: gire a roda e ganhe o multiplicador onde ela parar. Escolha de 10 a 50 segmentos e risco baixo, médio ou alto — o risco alto tem um único segmento grande que vale até 49×.
+934|: o multiplicador começa em 1.00× e sobe até explodir. Saque antes da explosão para ganhar a aposta vezes o multiplicador. Defina um saque automático para garantir um alvo.
+935|? Gorjetas não podem ser desfeitas.
+936|ou mais
+937|(baralho infinito). No Hi-Lo a primeira carta da mesa é a última da sua rodada anterior; toda carta depois dela vem das suas seeds. Keno: embaralhamento de 1–40, os 10 primeiros são sorteados. Wheel: segmento =
+938|. Mines: embaralhamento Fisher–Yates das 25 casas, as N primeiras são minas. Hi-Lo e Blackjack: carta =
+939|. Rock Paper Scissors: mão da casa =
+940|. Roulette: número =
+941|. Tower: em cada um dos 9 andares, embaralhamento Fisher–Yates das casas, as primeiras são ovos. Chicken: embaralhamento Fisher–Yates das 20 faixas, as primeiras escondem um carro. Spill: embaralhamento Fisher–Yates dos 25 enchimentos (como no Mines), os primeiros derramam (1, 3, 5 ou 10 conforme a dificuldade); multiplicador após k enchimentos = 0.98 ÷ chance de sobreviver a k enchimentos. Coinflip: cara se
+942|Só dá para conferir seeds que já foram trocadas — a server seed ativa fica em segredo até você trocar o par.
+943|Abra "Provably fair" na barra de baixo de qualquer RD Original e troque sua seed para revelar a server seed usada nas suas apostas anteriores.
+944|Mostrar permitiria a qualquer um prever os próximos resultados. Você vê o hash agora e a seed assim que trocar.
+945|Os três são combinados com HMAC-SHA256 e a saída define o resultado. Como a server seed fica travada antes da sua client seed ser usada, ninguém — nem nós — consegue prever ou alterar um resultado. Quando você troca suas seeds, a server seed antiga é revelada para você conferir cada aposta feita com ela.
+946|(opcional)
+947|Papel
+948|Pedra
+949|Tesoura
+950|Nível padrão
+951|e
+952|dias
+953|horas
+954|min
+955|seg
+956|usuário
+957|Vá em

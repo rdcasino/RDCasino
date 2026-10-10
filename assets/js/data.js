@@ -125,7 +125,7 @@ RD.games = [
 RD.games.forEach(function (g) { g.img = "assets/img/games/" + g.id + ".jpg"; g.enabled = true; });
 /* Pragmatic Play: foto oficial (CDN deles) e modo demo (jogo grátis embutido; dinheiro real chega com o agregador) */
 RD.ppImg = "https://common-static.ppgames.net/game_pic/square/200/";
-RD.ppDemo = function (sym) { return "https://demogamesfree.pragmaticplay.net/gs2c/openGame.do?gameSymbol=" + encodeURIComponent(sym) + "&lang=en&cur=USD&jurisdiction=99&lobbyUrl=" + encodeURIComponent(location.origin); };
+RD.ppDemo = function (sym) { return "https://demogamesfree.pragmaticplay.net/gs2c/openGame.do?gameSymbol=" + encodeURIComponent(sym) + "&lang=" + ({ es: "es", pt: "pt", de: "de", fr: "fr", tr: "tr", ja: "ja" }[RD.lang] || "en") + "&cur=USD&jurisdiction=99&lobbyUrl=" + encodeURIComponent(location.origin); };
 /* Logo mais largo que o card: versão vertical montada a partir da foto oficial, hospedada no site (nome inteiro, sem corte) */
 RD.ppLocal = ["sugar-rush", "big-bass", "sweet-bonanza-classic"];
 RD.games.forEach(function (g) { if (g.pp) { g.img = RD.ppLocal.indexOf(g.id) > -1 ? "assets/img/games/" + g.id + ".jpg" : RD.ppImg + g.pp + ".png"; g.demo = true; } });

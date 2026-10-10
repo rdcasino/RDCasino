@@ -1,0 +1,958 @@
+0|$50,000 Liderlik Tablosu
+1|$50,000 Aylık Liderlik Tablosu
+2|$50,000 Liderlik Tablosu
+3|0 = sınırsız
+4|1 yer kaldı
+5|1 - 12
+6|1 - 18
+7|1 yıl
+8|1. Kişisel bilgiler
+9|1. QR kodu bir doğrulama uygulamasıyla tara (Google Authenticator, Authy, 1Password…).
+10|13 - 24
+11|Getirdiğin her oyuncu için ömür boyu %15 gelir payı ve anlık istatistikler.
+12|19 - 36
+13|1. sıra:
+14|Yaptığın her bahsin kasa avantajının %2'si rakeback olarak geri döner. Oynadıkça birikir ve Ödüller'den istediğin zaman alabilirsin.
+15|2. Belgeler
+16|2. Uygulamadaki 6 haneli kodu gir.
+17|24 saat
+18|25 - 36
+19|2FA açık değil.
+20|2FA kapalı
+21|2FA açık
+22|30 gün
+23|3–16 harf veya rakam
+24|3–16 harf, rakam veya _
+25|6 ay
+26|7 gün
+27|Her VIP seviyesinde nakit ödül.
+28|Her bahsin kasa avantajından bir pay anında sana geri döner. Oynadıkça birikir ve Ödüller'den istediğin zaman alabilirsin.
+29|Her bahsin kasa avantajından bir pay sana geri döner. Oynadıkça birikir ve istediğin zaman alabilirsin.
+30|VIP ekibimizin Jade 2 ve üzeri seçili oyunculara verdiği özel bir yükleme. Sende varsa, kalan kullanım sayısıyla birlikte ödüllerinde görünür.
+31|Geçerli bir bahis her zaman kendi seed'leri ve nonce'u ile eşleşir. Eşleşmeyen olursa bahis ID'siyle destekle iletişime geç.
+32|AML ve KYC Politikası
+33|Kabul et
+34|Hesap
+35|Hesap ve doğrulama
+36|Hesap oluşturuldu. Devam etmek için giriş yap.
+37|Hesap bulunamadı.
+38|Şu ülkelerde yaşayanlar hesap açamaz veya kullanamaz:
+39|Aktif
+40|Aktif client seed
+41|Aktif server seed (hash)
+42|Giriş, çekim ve bahşiş için ikinci bir adım ekle: telefonundaki doğrulama uygulamasından 6 haneli bir kod. İsteğe bağlı ama önerilir.
+43|Yağmura ekle
+44|Yağmura ekle
+45|Eklendi
+46|Favorilere eklendi
+47|Adres
+48|Düzeltme
+49|Ortaklık
+50|Ortaklar
+51|Tümü
+52|Tüm RD Originals: Dice, Limbo, Crash, Plinko, Mines, Keno, Hi-Lo, Wheel, Roulette, Blackjack, Baccarat, Coinflip, Rock Paper Scissors, Tower, Chicken, Door, Soccer, Spill ve Double. Her sonuç sunucumuzda senin seed'lerinden çekilir ve sen kontrol edebilirsin. Diğer stüdyoların slot ve canlı oyunları kendi sertifikalı rastgele sayı üreteçlerini kullanır.
+53|Tüm bahisler
+54|Tüm kodlar
+55|Dört köşe görünür, parlama yok
+56|Diğer tüm oyunlar:
+57|Tüm promosyonlar
+58|Zaten alındı
+59|Platform izin veriyorsa her zaman “18+ | Sorumlu oyna” ekle.
+60|Her zaman açık
+61|Tutar
+62|Tutar (USD)
+63|Bu bağlantıyla kayıt olan herkes ömür boyu sana bağlanır.
+64|Arjantin
+65|Arjantin Pesosu
+66|Avustralya
+67|Avustralya Doları
+68|Avusturya
+69|Otomatik
+70|Otomatik seç
+71|Kullanılabilir
+72|Mevcut ödüller
+73|Alınabilir
+74|Kullanılabilir:
+75|Oyuncu başına ortalama aylık yatırım
+76|Bekleniyor
+77|Geri
+78|Belgenin arka yüzü
+79|Lobiye dön
+80|Bakiye
+81|Banker
+82|Ortak ol
+83|Bahis yap
+84|Bahis tutarı
+85|Bahisler
+86|Biri oynar oynamaz bahisler burada anlık görünür.
+87|Bu çiftle yapılan bahisler
+88|Şu tutardaki bahisler:
+89|Bahis, yatırım, bahşiş ve kodlar duraklatıldı. Bakiyeni yine de çekebilirsin.
+90|Blackjack 3'e 2 öder · Krupiye soft 17'de kart çeker · Sigorta 2'ye 1 öder
+91|Blackjack! +
+92|Bonus
+93|Bonus kodları
+94|Bonus Şartları
+95|Marka teklifi, teşvikli veya spam trafik ve kısıtlı ülkelerden gelen her trafik. Kısıtlı bölgelerdeki oyuncular kayıt olamaz ve komisyon getirmez.
+96|Brezilya
+97|Brezilya Reali
+98|İngiliz Sterlini
+99|Kampanya
+100|Kampanya oluşturuldu
+101|Kampanya adı
+102|Kampanyalar
+103|Client seed'imi değiştirebilir miyim?
+104|Özel anlaşma alabilir miyim?
+105|Tarayamıyor musun? Bu anahtarı gir:
+106|Kanada
+107|Kanada Doları
+108|İptal
+109|Başlangıç kartından sonra çekilen kartlar
+110|Gösterilecek kartlar
+111|Kartlar:
+112|Şeritlerdeki arabalar:
+113|Çek
+114|Çekim
+115|Şu katta çek:
+116|Casino
+117|Görev tamamlandı!
+118|Görev:
+119|Görevler
+120|Şans
+121|Nilüferin kurbağayı taşıma şansı. Zıplamak için sonraki sütundan bir nilüfer seç.
+122|Değiştir
+123|Çifti değiştirmek mevcut server seed'ini açığa çıkarır, böylece onunla yaptığın her bahsi doğrulayabilirsin.
+124|Kayıpların peşinden koşmak.
+125|Sohbet
+126|Ekibimizle konuş
+127|Şili
+128|Şili Pesosu
+129|Fiş değeri
+130|Şehir
+131|Al
+132|Ödüller'den al
+133|Yakında alınabilir
+134|Alındı
+135|Klasik
+136|Temizle
+137|Net fotoğraf veya PDF, her biri en fazla 10 MB.
+138|Tıklamalar
+139|Client
+140|Client seed
+141|Sadece oynayarak Bronze 1'den Amethyst 4'e yüksel. Her seviye tek seferlik nakit ödülün kilidini açar — Bronze 1'de $2'dan Ruby ve Amethyst seviyelerinde $1,000'a kadar — çevrim şartı olmadan doğrudan bakiyene. Seviyen asla düşmez.
+142|Kapat
+143|Hesabını uzun bir süre kumara kapat. Geri alınamaz.
+144|Kod
+145|E-postadaki kod
+146|Kod kullanıldı: +
+147|Kod gönderildi — gelen kutunu kontrol et
+148|Kapatmak için kod
+149|Menüyü daralt
+150|Al
+151|Bakiyeye al
+152|Alım geçmişi
+153|Kolombiya
+154|Renk
+155|Yakında
+156|Komisyon
+157|Komisyon (toplam)
+158|Komisyon anlık hesaplanır. İstediğin zaman bakiyene al ve kripto olarak çek.
+159|Komisyon — son 30 gün
+160|Tamamlandı
+161|Tamamlandı
+162|Onayla
+163|Şunu onayla:
+164|Bağlantı hatası. Tekrar dene.
+165|Çerez Politikası
+166|Kopyalandı
+167|Kopyala
+168|Kalecinin kapattığı köşeler, şut şut (1–5):
+169|Maliyetler
+170|Yatırım oluşturulamadı.
+171|Limitlerin yüklenemedi.
+172|İkamet ülkesi
+173|Patladı
+174|Hesap oluştur
+175|Hesap oluştur
+176|Kazanmaya başlamak için hesap oluştur
+177|Kampanya oluştur
+178|Oluşturuluyor…
+179|Sonraki şeridi geç
+180|Kanıtlanabilir adil originals ve hızlı çekimlerle kripto casino.
+181|Para birimi
+182|Mevcut seviye
+183|Özel anlaşma
+184|Günlük Bonus
+185|Günlük komisyon
+186|Günlük · Haftalık · Aylık
+187|Günlük, Haftalık ve Aylık Bonuslar
+188|Günlük, haftalık ve aylık bonuslar
+189|Tarih
+190|Doğum tarihi
+191|Krupiyede Blackjack — sigorta ödendi
+192|Krupiyede Blackjack yok — sigorta kaybedildi
+193|Krupiye As gösteriyor.
+194|Krupiye kazandı
+195|Varsayılan
+196|Demo · eğlence modu
+197|Yatır
+198|Yatırım adresi
+199|Yatırım hesaba geçti
+200|Yatırım hesaba geçti:
+201|Yatırım limiti
+202|Yatırım gönderildi — blokzinciri kontrol ettikten sonra hesabına geçeceğiz
+203|Etkinleştirmek için yatırım yap. Destek, incelemeden sonra bonusu hesabına geçer.
+204|24 saat, 7 gün ve 30 gün için yatırım, kayıp ve bahis limitleri.
+205|Yatırımlar
+206|Yatırım, bahis ve çekimler kapalı. Destekle iletişime geç.
+207|Hedef adres
+208|Dice / Limbo / Crash:
+209|Zorluk
+210|Gösterim para birimi
+211|Kriptografiyi anlamam gerekiyor mu?
+212|Seviyelerin süresi dolar mı?
+213|Belgeler
+214|Belgeler incelemeye gönderildi
+215|Belgeler inceleniyor
+216|Kanıtlanabilir adil, daha iyi şans demek mi?
+217|İndir
+218|Çekilen sayılar:
+219|Ehliyet
+220|Sosyal medyamızda, yayınlarda ve ortaklarımızda paylaşılır.
+221|Mola veya kendini dışlama süresince bahis yapamaz ve yatıramazsın, ama bakiyeni her zaman çekebilirsin.
+222|Her dosya en fazla 10 MB olmalı.
+223|Her seviye bir nakit ödül ekler. Bu sayfadan al, çevrim şartı olmadan doğrudan bakiyene geçsin. Birkaç seviye mi atladın? Tek alım hepsini öder.
+224|%15 komisyon kazan
+225|Ömür boyu %15 kazan
+226|Kazanç hesaplayıcı
+227|Kolay
+228|Kat başına yumurtalı kareler (aşağıdan yukarı, 1 = sol):
+229|E-posta
+230|E-posta veya kullanıcı adı
+231|Bize e-posta gönder
+232|E-posta doğrulama
+233|E-posta doğrulandı
+234|Bitti
+235|Bitiş
+236|Bitişe kalan
+237|Geçerli bir cüzdan adresi gir.
+238|Bir tutar gir.
+239|Kodu gir
+240|Doğrulama uygulamandaki 6 haneli kodu gir.
+241|Gönderdiğin tutarı gir.
+242|Yatırmak istediğin tutarı gir.
+243|Tahmin, yatırımların ~%35'inin NGR'ye dönüştüğünü ve aylık %60 oyuncu tutma oranını varsayar. Gerçek sonuçlar değişir.
+244|Tahmini komisyon
+245|Euro
+246|Çift
+247|Her RD Originals sonucu, bahis bahis kendin kontrol edebileceğin bir süreçle üretilir. Bir sonucun rastgele olduğuna dair sözümüze güvenmek zorunda değilsin — kanıt her turda orada.
+248|Her hesabın bir referans bağlantısı ve kodu var. Her kanal için ekstra kod oluştur.
+249|Her bahis seviyene sayılır, Bronze 1'den Amethyst 4'e (spor 3×, slot ve canlı casino 1×, Dice ve Limbo 0,75×). Her seviye, VIP sayfasından alacağın bir nakit ödül ekler. Seviyen asla düşmez.
+250|Her bahis seviyene sayılır: spor 3×, slot ve canlı casino 1×, RD Originals 1× (Dice ve Limbo 0,75×). İlerlemen sonraki seviyeyi geçtiğinde otomatik yükselirsin.
+251|RD Originals'taki her bahis aylık yarışa sayılır — kayıt gerekmez. Takvim ayının (UTC) en çok bahis yapan ilk 10 oyuncusu $50,000'lık ödül havuzunu paylaşır: birinciye $15,000'dan onuncuya $1,000'a kadar. Ödüller ay kapandıktan sonra bakiyene ödenir.
+252|Bahis yaptığın her dolar seviyene sayılır. Kayıt yok, gizli kural yok.
+253|Her saat
+254|Her saat, süre bitmeden sohbette Katıl'a tıklayan herkes arasında bir havuz paylaştırılır. Katılmak için son 7 günde $5,000 bahis gerekir. Oyuncular da havuza ekleyebilir.
+255|Her saat sohbete bir yağmur havuzu düşer. Süre bitmeden Katıl'a tıkla, havuz katılan herkes arasında eşit paylaştırılsın. Son 7 günde $5,000 bahis yapan oyunculara açık. Oyuncular da havuza ekleyebilir.
+256|Getirdiğin her oyuncu
+257|Her atış 0.00 ile 100.00 arasına düşer.
+258|Belgende yazdığı gibi.
+259|Uzman
+260|Süresi doldu
+261|CSV dışa aktar
+262|Ekstra kampanya kodları yakında. Şimdilik ana bağlantını kullan.
+263|Adillik
+264|Favori
+265|Doldur
+266|Tüm kişisel bilgileri doldur.
+267|İki seed'i de doldur.
+268|Finlandiya
+269|İlk yatırımlar
+270|Ad
+271|Atışlar
+272|Art arda atış
+273|Atışlar:
+274|Kat
+275|Futbol, basketbol, tenis, e-spor ve daha fazlası — canlı oranlarla. O zamana kadar RD Originals oyna.
+276|Fransa
+277|Her saat sohbette bedava para paylaşılır.
+278|Belgenin ön yüzü
+279|Tam ekran
+280|Tükendi
+281|GOL!
+282|Kumar eğlence olmalı, asla para kazanma ya da sorunlardan kaçma yolu değil.
+283|Oyun
+284|Oyun Şovları
+285|Oyunlar
+286|Taşlar
+287|Almanya
+288|Yardım al
+289|Oynadığın için her gün geri kazan.
+290|Bağlantını al
+291|Kodlarımızı bitmeden kap.
+292|Zor
+293|Yazı
+294|Yardım
+295|Merhaba! 👋 Bugün nasıl yardımcı olabiliriz? Ekibimiz 7/24 yanıt verir.
+296|Kumarı yakınlarından saklamak.
+297|Yüksek
+298|Yüksek bahisçiler
+299|Yüksek
+300|Yüksek veya eşit
+301|Kart çek
+302|Hedef çarpanı en az minimum bahisle yakala, ödül anında bakiyene geçsin. İlk gelen alır — her görevde oyuncu başına bir ödül.
+303|Belgeyi yüzünün yanında tut
+304|Ana sayfa
+305|Popüler
+306|Kısayollar
+307|Kısayollar kapalı
+308|Kısayollar açık: Boşluk bahis · S yarım · D iki kat
+309|Saatlik Yağmur
+310|Kasa
+311|Kasa elleri:
+312|Ödüller nasıl ödenir?
+313|Nasıl yardımcı olabiliriz?
+314|Nasıl seviye atlarım?
+315|Kodu nasıl kullanırım?
+316|Yatırımlar nasıl çalışır?
+317|VIP programı nasıl çalışır?
+318|Her bahis nasıl adil yapılır
+319|Komisyon nasıl hesaplanır?
+320|Nasıl hesaplanır
+321|Nasıl çalışır
+322|Çekimler ne kadar sürer?
+323|Sonuçlar nasıl üretilir (teknik)
+324|En az 18 yaşındayım ve şunları kabul ediyorum:
+325|Kimlik doğrulama
+326|Kimlik doğrulama (KYC) hesapları korur ve $2,000 üzeri çekimler için zorunludur. Hesap → Doğrulama'dan gönder; inceleme genellikle 24 saatten kısa sürer.
+327|Şu kadar artır:
+328|Hindistan
+329|Hindistan Rupisi
+330|Instagram hikâyesi
+331|Anında
+332|Anında Rakeback
+333|Yetersiz bakiye.
+334|Sigorta?
+335|Sigortalı
+336|Geçersiz kod. Doğrulama uygulamanı kontrol edip tekrar dene.
+337|Geçersiz veya kullanılmış davet kodu.
+338|Geçersiz veya süresi dolmuş kod.
+339|Davet kodu
+340|Arkadaşlarını davet et, her bahisten kazan.
+341|İrlanda
+342|İsrail
+343|İtalya
+344|Japonya
+345|Japon Yeni
+346|Katıl
+347|RDCasino'da bana katıl — kanıtlanabilir adil originals ve hızlı kripto çekimleri. Şu kodu kullan:
+348|Hemen katıl
+349|Katıldın
+350|CANLI KAZANÇLAR
+351|Dil
+352|Soyad
+353|Liderlik tablosu
+354|Daha fazla bilgi
+355|Yasal
+356|Seviye
+357|Seviye ödülü
+358|Seviye atladın! Ulaştığın seviye:
+359|Lisans
+360|Lisans bilgileri burada yayınlanacak.
+361|Toplam
+362|Ömür boyu gelir payı, kripto olarak ödenir.
+363|Limitler ve molalar
+364|Limitler gerçek hesaplarda kullanılabilir.
+365|Limitler en az $1 olmalı.
+366|Limitler kaydedildi
+367|Bağlantı
+368|Bağlantı tıklamaları
+369|Canlı Casino
+370|Canlı Destek
+371|Canlı istatistikler
+372|Canlı destek
+373|Hesabın yükleniyor…
+374|Bakiyen yükleniyor…
+375|Limitlerin yükleniyor…
+376|Yükleniyor…
+377|Lobi
+378|Kilitli
+379|Kaybet
+380|Kayıp limiti
+381|Kayıplar
+382|Düşük
+383|Düşük
+384|Düşük veya eşit
+385|Limiti düşürmek hemen geçerli olur; yükseltmek veya kaldırmak 24 saat sonra geçerli olur.
+386|Manuel
+387|Usta
+388|Maks.
+389|Maksimum seviye
+390|Maks. net kayıp
+391|Bahis başına maksimum kâr:
+392|Maks. toplam bahis
+393|Yatırabileceğin en fazla tutar
+394|Orta
+395|Üyelik tarihi:
+396|Memo / etiket (zorunlu)
+397|Menü
+398|Mesajlar
+399|Meksika Pesosu
+400|Meksika
+401|Min. $1
+402|Min. 8 karakter
+403|Min. bahis
+404|Mayınların olduğu kareler:
+405|Minimum bahis $0.01.
+406|Minimum yatırım:
+407|Minimum yatırım: $
+408|Minimum $1.
+409|Minimum bahşiş $1.
+410|Mod
+411|Aylık Bonus
+412|Aylık liderlik tablosu
+413|Aylık yarış
+414|Ay
+415|Daha fazla
+416|Benzer oyunlar
+417|Çarpan
+418|Müzik
+419|Bahislerim
+420|NGR (toplam)
+421|NGR, tüm oyuncuların için ömür boyu toplanır. Bir oyuncu kazandığında toplamın, diğer oyunlar geri getirene kadar düşer. Asla borçlanmazsın.
+422|Kimlik kartı
+423|Kimlik kartı ve ehliyet için gerekli
+424|Net oyun geliri (toplam)
+425|Hollanda
+426|Ağ
+427|Yeni
+428|Yeni Zelanda
+429|Yeni kampanya
+430|Yeni görevler sık sık eklenir. Yakında tekrar bak.
+431|Yeni client seed
+432|Yeni yatırım
+433|Yeni yatırım yapan oyuncu / ay
+434|Yeni misin?
+435|Sonraki doldurma
+436|Sonraki seviye
+437|Sonraki pompa
+438|Sonraki server seed (hash)
+439|Sonraki:
+440|Makale bulunamadı. Bunun yerine bize mesaj gönder.
+441|Bir süre bahis veya yatırım yok. Erken bitirilemez.
+442|Henüz bahis yok
+443|Şu an görev yok
+444|Henüz veri yok.
+445|Oyun bulunamadı.
+446|Sonuç yok
+447|Henüz mesaj yok
+448|Henüz referans yok
+449|Henüz getirilen oyuncu yok
+450|Hayır, teşekkürler
+451|Henüz kazanan yok
+452|Bugün henüz kazanç yok. İlki burada görünecek.
+453|Hesabına çekim limiti uygulanmaz.
+454|Hayır. Sonuçların rastgele ve dokunulmamış olduğunu kanıtlar. Her oyunun RTP'si kendi sayfasında gösterilir.
+455|Hayır. Aşağıdaki doğrulayıcı hesabı yapar: seed'leri ve nonce'u yapıştır, sonucu kendi sonucunla karşılaştır.
+456|Hayır. Seviyen toplam bahsine göre belirlenir ve asla düşmez.
+457|Nonce
+458|Norveç
+459|Kullanılamadığı yerler
+460|Henüz kullanılamıyor.
+461|Başlanmadı
+462|Doğrulanmadı
+463|Henüz alınan yok
+464|Burada henüz bir şey yok
+465|Değiştirilecek bir şey yok
+466|Bahis sayısı
+467|Mayın sayısı
+468|Sayı:
+469|Tek
+470|Kapalı
+471|Açık
+472|Şu tarihe kadar molada:
+473|Bekletilen:
+474|Kayıpta
+475|Kazançta
+476|Kanal başına bir kod neyin dönüşüm sağladığını gösterir.
+477|Sadece kaybetmeyi göze alabileceğin parayla oyna. Mola vermek veya hesabını kapatmak istersen buradan yaz, hemen yardımcı olalım.
+478|Ontario (Kanada)
+479|Açık
+480|Ödülleri aç
+481|VIP Kulübü aç
+482|Cüzdan → Yatır'ı aç, coin ve ağı seç ve gösterilen adrese gönder. Sadece o coin'i o ağda gönder. Ekibimiz blokzincirde onaylar ve bakiyene geçer — beklenenden uzun sürerse işlem ID'si (TxID) ile buradan yaz. Minimum yatırım $10.
+483|Paneli aç
+484|Boş yer
+485|VIP Kulübü'nü (taç simgesi) aç ve kodu Ödüller altındaki "Kodun var mı?" alanına yaz. Her kod hesap başına bir kez kullanılabilir.
+486|Sohbeti aç
+487|Seçenekler
+488|Turuncu %80
+489|Diğer
+490|Diğer belgeler
+491|$10,000'dan fazla ödül
+492|Genel bakış
+493|Sayfa bulunamadı
+494|Her bahsin bir kısmı sana geri döner.
+495|Ortak paneli
+496|Ortaklar
+497|Pasaport
+498|Şifre
+499|Şifre en az 8 karakter olmalı.
+500|İşlem hash'ini (TxID) yapıştır.
+501|Yol:
+502|Farklı tutarda ödeme alındı — ekibimiz inceleyecek
+503|Ödeme servisi hatası.
+504|Ödeme
+505|Bekliyor
+506|Bekleyen çekimler
+507|Kalıcı
+508|Kişisel bilgiler
+509|Peru
+510|Filipin Pesosu
+511|Rastgele kare seç
+512|Pembe %59
+513|Önce Oyuncu, Banker veya Beraberlik'e fiş koy.
+514|Önce masaya fiş koy.
+515|Taslak metin. Bu belge lansmandan önce lisans yargı bölgesindeki bir avukat tarafından hazırlanmalı.
+516|Oyna
+517|Dice oyna
+518|Şimdi Dice oyna
+519|RD Originals oyna
+520|Oyna. Seviye atla. Kazan.
+521|Oyuncu
+522|Oyuncu:
+523|Oyuncular
+524|Oyuncular bağlantı yerine kayıt sırasında bu kodu yazabilir.
+525|Bağlantın veya kodunla kayıt olan oyuncular ömür boyu sana bağlanır.
+526|RDCasino'da Dice oynuyorum. Kodumla kayıt ol
+527|Şu oyundaki oyunlar:
+528|Patladı!
+529|Portekiz
+530|Posta kodu
+531|Önceki tur kapandı: patlama noktası
+532|Önceki seed'ler
+533|Gizlilik Politikası
+534|Ödül
+535|Ödül havuzu
+536|İşleniyor
+537|Profil bulunamadı.
+538|Kâr
+539|Çekimde kâr
+540|Kazanırsan kâr
+541|Program ayrıntıları
+542|Promosyonlar
+543|Adres belgesi
+544|Provably Fair
+545|Provably fair
+546|Sağlayıcılar
+547|Berabere
+548|Sorular
+549|RD (beyaz)
+550|RD Partners — %15 Gelir Payı
+551|RDCasino - Kripto Casino
+552|RDCasino. Tüm hakları saklıdır.
+553|Yağmur
+554|Yağmur bitiyor…
+555|Rakeback
+556|Rastgele kapı
+557|Rastgele şut
+558|Sıra
+559|Bu takvim ayındaki (UTC) toplam bahse göre sıralanır. İlk
+560|Ulaş:
+561|Kullanıma hazır metinler
+562|Gerçek parayla oyun yakında
+563|Son bahisler
+564|Son mesaj
+565|Son oyunlar
+566|Alıcının kullanıcı adı
+567|Tekrarlayan Bonuslar
+568|Kullan
+569|Kod kullan
+570|Promosyon kodu kullan
+571|Arkadaşlarını getir. Ömür boyu kazan.
+572|Referans kodu
+573|Getirilen oyuncular
+574|Kayıt ol
+575|Reddedildi
+576|Reddedildi — tekrar gönder
+577|Kalan
+578|Favorilerden çıkarıldı
+579|Cüzdan → Çek'ten adresin ve tutarla talep et. Tutar hemen ayrılır ve ekibimiz genellikle birkaç saat içinde gönderir. $2,000 üzeri çekimler önce kimlik doğrulaması gerektirir.
+580|Çekim talep et
+581|Şu tutarın üzerindeki çekimler için zorunlu:
+582|Tekrar gönder
+583|Sıfırla
+584|Sorumlu Oyun
+585|Sorumlu oyun
+586|Kısıtlı bölgeler
+587|Sonuç
+588|Sonuç:
+589|İnceleme
+590|Ekibimiz tarafından incelenir. Şu tutarın üzeri:
+591|Ödül
+592|Ödüller
+593|Risk
+594|Üstüne at
+595|Atış hedefi
+596|Altına at
+597|Seed çiftini değiştir
+598|Sıralar
+599|Sıra / risk (örn. 16 high)
+600|KAYDEDİLDİ
+601|Aynı
+602|Kaydet
+603|Topluluğa merhaba de.
+604|Güzel bir şey söyle…
+605|ID, hash veya nota göre ara
+606|Yardımda ara
+607|Oyuncu ara
+608|Oyununu ara
+609|Güvenlik
+610|Sıralamayı gör
+611|Sıralamayı gör
+612|Seed çifti değişti — önceki server seed açıklandı
+613|Seed'ler
+614|Dilim
+615|Dilimler
+616|Dilim / risk (örn. 30 medium)
+617|1 ile 10 sayı seç
+618|En az 1 sayı seç.
+619|Seç…
+620|Kendini dışladı
+621|Kendini dışlama
+622|6 ay, 1 yıl veya kalıcı olarak kendini dışlama.
+623|Kendini dışlama aktif
+624|Belgenle selfie
+625|Gönder
+626|Kod gönder
+627|Tam olarak şunu gönder:
+628|Sadece şunu gönder:
+629|Bahşiş gönder
+630|Bize mesaj gönder
+631|Gönderiliyor…
+632|Gönderildi
+633|Server seed
+634|Server seed (açıklanan)
+635|Server seed hash'i:
+636|Önce fiş değeri seç.
+637|Paylaş
+638|Kazanmaya başlamak için bağlantını paylaş.
+639|Referans bağlantını paylaş ve getirdiğin her oyuncunun net oyun gelirinin %15'ini ömür boyu kazan. Her şeyi anlık takip et ve komisyonunu istediğin zaman bakiyene al.
+640|Sohbette göster
+641|Giriş yap
+642|Önce giriş yap.
+643|Oynamak için giriş yap
+644|Bahislerini görmek için giriş yap
+645|Bize mesaj göndermek için giriş yap. 7/24 yanıt veriyoruz.
+646|Yatırım, kayıp ve bahis limitleri koymak, mola vermek veya kendini dışlamak için giriş yap.
+647|E-postanla giriş yap.
+648|Çıkış yap
+649|Kayıtlar
+650|Çıkış yapıldı
+651|Kartı geç
+652|Slotlar
+653|Sosyal medya kodları
+654|Sosyal medya gönderisi
+655|Bir şeyler ters gitti.
+656|Yakında
+657|Ses
+658|İspanya
+659|Kaybetmeyi göze alabileceğinden fazlasını harcamak.
+660|Taştı!
+661|Şıp!
+662|Böl
+663|Havuz paylaştırılıyor
+664|Spor
+665|Spor bahisleri
+666|Spor promosyonları geliyor
+667|Kalan yer
+668|Dur
+669|Standart
+670|Otomatik bahsi başlat
+671|Kazanmaya başla
+672|Hâlâ yardıma mı ihtiyacın var?
+673|Otomatik bahsi durdur
+674|Kayıpta dur
+675|Kârda dur
+676|Sokak ve numara
+677|İncelemeye gönder
+678|Destek
+679|Askıya alındı
+680|Üst / alt değiştir
+681|TX-
+682|Tura
+683|Mola ver
+684|24 saat, 7 gün veya 30 gün mola ver.
+685|Onaylamak için tekrar dokun
+686|Hedef
+687|Hedef çarpan
+688|Şartlar
+689|Hizmet Şartları
+690|Test modu: onaylanmış yatırımı simüle et
+691|Tutar bakiyenden düşer ve yağmurdaki herkes arasında paylaştırılır.
+692|Bardak şu doldurmada taşar:
+693|Her oyunun sonucu, bahsini yaptıktan sonra ne RDCasino'nun ne de başkasının değiştirebileceği rastgele bir süreçten gelir. Her sonucun rastgele, öngörülemez ve dokunulmamış olduğunu basit matematikle doğrulayabilirsin. Provably fair rastgeleliği garanti eder, daha iyi şansı değil: her oyun sayfasında gösterilen RTP'yi korur (çoğu RD Originals'ta %98), kasa avantajı müdahale olmadan işler.
+694|Aradığın sayfa yok.
+695|Sinema modu
+696|Spor bahisleriyle birlikte gelecek.
+697|Son oyunlarındaki kasa avantajının bir kısmını geri verirler: günlük her 24 saatte Bronze 3'ten itibaren; haftalık her perşembe 12:00'de (BRT) ve aylık ayın 1'inde 12:00'de (BRT) Gold 2'den itibaren. Hazır olduklarında Ödüller'den al.
+698|Son oyunlarındaki kasa avantajının bir kısmını geri verirler: günlük her 24 saatte Bronze 3'ten itibaren; haftalık her perşembe 12:00'de (BRT) ve aylık ayın 1'inde 12:00'de (BRT) Gold 2'den itibaren. Ne kadar çok oynarsan bonus o kadar büyük olur.
+699|Üçüncü taraf oyunlar, oyun toplayıcı entegre edildiğinde açılacak.
+700|Bu RD Original geliştiriliyor. Bu arada Dice, Mines veya Chicken dene.
+701|Bu e-posta zaten kayıtlı.
+702|Bu ödül şimdi:
+703|Bu ödül güncellendi.
+704|Bu işlem zaten gönderildi.
+705|Bu kullanıcı adı zaten alınmış.
+706|Her sonuca üç değer girer:
+707|Gösterilecek atışlar
+708|Beraberlik
+709|Beraberlik ·
+710|Kare:
+711|Zaman
+712|Bahşiş
+713|Bahşiş alındı
+714|Bahşiş gönderildi
+715|Bahşiş gönderildi:
+716|Bahşişler
+717|Buna
+718|Çok fazla e-posta gönderildi. Biraz bekleyip tekrar dene.
+719|Araçlar
+720|En çok bahis yapan 10 kişi her ay ödül alır.
+721|En çok bahis yapanlar her ay ödül alır.
+722|Toplam bahis
+723|Toplam kâr
+724|Toplam bahis
+725|İşlemler
+726|Bu türdeki işlemler burada görünür.
+727|Kat başına tuzak kapılar, aşağıdan yukarı (1 = sol):
+728|Biraz sonra tekrar dene.
+729|Başka bir ID veya hash dene.
+730|Turbo
+731|Türkiye
+732|Türk Lirası
+733|2FA'yı kapat
+734|Aç
+735|2FA'yı aç
+736|İki adımlı doğrulama
+737|Bir mesaj yaz.
+738|Kullanıcı adını yaz.
+739|ABD Doları
+740|İnceleniyor
+741|Geri al
+742|Birleşik Arap Emirlikleri
+743|Birleşik Krallık
+744|Amerika Birleşik Devletleri
+745|Seviyesiz
+746|Tüm yerler dolana kadar
+747|Yükle
+748|Yükle:
+749|Yükleniyor…
+750|10–50 dilim ve low, medium veya high kullan.
+751|8 ile 16 sıra ve low, medium veya high kullan.
+752|easy, medium, hard veya expert kullan.
+753|easy, medium, hard, expert veya master kullan.
+754|Kullanıcı adı
+755|Kullanıcı adı: 3–16 harf, rakam veya _.
+756|Son 3 aya ait fatura veya banka hesap özeti
+757|VIP Kulübü
+758|VIP Seviye Ödülleri
+759|VIP Yükleme
+760|VIP ödülü
+761|VIP ödülleri
+762|Doğrulama
+763|Doğrulama reddedildi — lütfen tekrar gönder
+764|Doğrulandı
+765|Doğrula
+766|Bir bahsi doğrula
+767|Herhangi bir bahsi doğrula
+768|Şimdi doğrula
+769|VIP programını gör
+770|Tümünü gör
+771|Bahis
+772|Bahis limiti
+773|Gereken bahis
+774|Bahis ödülleri
+775|Kilidi açmak için bahis yap
+776|Yatırılan bahis
+777|Topların düşmesini bekle.
+778|Ödemen bekleniyor:
+779|Cüzdan
+780|Cüzdan yükleniyor
+781|Uyarı işaretleri
+782|Bonus kodlarını sosyal medyamızda ve sohbette paylaşıyoruz. Bakiyene eklemek için kodu Ödüller altındaki "Kodun var mı?" alanına yaz — ilk gelen alır. Her kod hesap başına bir kez kullanılabilir.
+783|Genellikle birkaç dakika içinde yanıt veririz
+784|Haftalık Bonus
+785|Tekrar hoş geldin,
+786|Hoş geldin bonusu
+787|Hoş geldin,
+788|Bir oyuncu kazanırsa ne olur?
+789|Bir sonuç eşleşmezse ne olur?
+790|Provably fair nedir?
+791|Rakeback nedir?
+792|Yağmur nedir?
+793|Provably fair ne demek
+794|Hangi trafiğe izin verilmez?
+795|Ne zaman ödeme alırım?
+796|Biri bağlantın veya kodunla kayıt olduğunda burada görünür.
+797|Hangi oyunlar provably fair?
+798|Beyaz %96
+799|Mevcut server seed'imi neden göremiyorum?
+800|Kimliğimi neden doğrulamalıyım?
+801|Kazan
+802|Kazanma şansı
+803|Kazançlar
+804|Çek
+805|Çekim
+806|Çekim:
+807|Çekimler
+808|Çekim ve bahşişler için doğrulama uygulamandan kod gerekir. Giriş yaparken de istenecek.
+809|Kazanan:
+810|Bir mesaj yaz…
+811|E-posta veya şifre yanlış.
+812|Evet, istediğin zaman Adillik bölümünden. Değişiklik sonraki bahsinden itibaren geçerli olur.
+813|Evet. Kanıtlanmış trafiği olan yayıncılar ve topluluklar özel gelir payı alabilir. Bize ulaş.
+814|Sen
+815|En fazla 10 sayı seçebilirsin.
+816|Böldükten sonra ikiye katlayamazsın.
+817|Bu görevi tamamladın:
+818|Getirdiğin her oyuncunun Net Oyun Gelirinin (NGR) %15'ini kazanırsın: yatırdığı bahisten kazandığını, aldığı bonusları ve rakeback'i çıkararak.
+819|Kazandığın:
+820|Tek seferlik bir adres alırsın:
+821|Yağmura katıldın!
+822|En yüksek seviyeye ulaştın. Ekibimiz sana özel ödüller için ulaşacak.
+823|Bonus aldın:
+824|Kazanç +
+825|Doğrulandın
+826|Senin
+827|VIP seviyen
+828|VIP ilerlemen
+829|VIP ödülün şimdi:
+830|Hesabın askıya alındı.
+831|Şu oyundaki bahislerin:
+832|Bahislerin burada görünür.
+833|Molan başladı
+834|Onlar oynadıkça komisyonun büyür. İstediğin zaman bakiyene al.
+835|Yatırım adresinin süresi doldu
+836|Yatırımların gelir gelmez burada görünür.
+837|Belgelerin gizli saklanır ve sadece doğrulama ekibimiz görür.
+838|Belgelerin reddedildi
+839|Kimliğin doğrulandı
+840|Son atışların burada görünür
+841|Limitlerin
+842|Kişisel yatırım adresin:
+843|Son oyunların sana geri öder: Günlük Bonus Bronze 3'te, Haftalık ve Aylık Bonuslar Gold 2'de açılır. Ne kadar çok oynarsan o kadar büyürler. Sayaç bittiğinde Ödüller'den al.
+844|Referans bağlantın
+845|Senin payın
+846|Çekimin:
+847|bakiyene eklendi
+848|adres (
+849|adresin süresi doldu — yeni bir yatırım başlat
+850|ve kilidini aç:
+851|senin tarafında art arda 2 ile 10 atış ister — her ekstra atış çarpanı ikiye katlar, 1,003.52×'e kadar. Yazı altın RD parası, tura gümüş olan.
+852|bakiyeye komisyon
+853|bakiyene geçti
+854|örn. YouTube kanalı
+855|kalan süre:
+856|bu ay şuna ulaşmak için ilk yatırımlar:
+857|oyuncu başına
+858|kazan.
+859|şuna geçer:
+860|krupiyede Blackjack varsa
+861|VIP ödülü
+862|son
+863|katılmak için son 7 günde
+864|yakında geliyor
+865|lisanslı ve şu kurum tarafından denetleniyor:
+866|yolda
+867|1.96×'te tek atıştır.
+868|klasik kripto casino oyunudur. Kazanma şansını %0.01 ile %97 arasında ayarla ve hedefin üstüne veya altına at. Şans ne kadar düşükse çarpan o kadar yüksek — 9,800×'e kadar.
+869|doğrulandı.
+870|senin olduğunu. İsteğe bağlı — hesabını kurtarmamıza ve çekimlerle ilgili sana ulaşmamıza yardımcı olur.
+871|daha gerekiyor:
+872|birkaç sayı gerektirir, şununla üretilir:
+873|ağı. Diğer coin'ler veya ağlar kaybolabilir.
+874|—
+875|veya daha fazlası:
+876|veya daha fazla — kazanç
+877|0.95:1 öder
+878|1:1 öder
+879|8:1 öder
+880|kimlik doğrulaması gerektirir.
+881|gelir payı
+882|incelemeye gönderildi
+883|burada anlık görünür.
+884|burada görünür.
+885|yer kaldı
+886|bu ay
+887|panoya
+888|yağmura
+889|lisans no.
+890|reddedildi ve iade edildi
+891|gönderildi
+892|şu bahis tutarıyla:
+893|· Banker:
+894|· çekildi:
+895|· destekle iletişime geç
+896|· öder
+897|— her bahiste bir artan sayaç, böylece her sonuç benzersizdir.
+898|— RDCasino'nun oluşturduğu rastgele bir değer. Bahisten önce sadece SHA-256 hash'ini görürsün; bu onu sabitler: hash değişmeden onu değiştiremeyiz.
+899|— senin tarafındaki değer. İstediğin zaman değiştirebilirsin, böylece sonuç bizim kontrol etmediğimiz bir şeye de bağlıdır.
+900|— kontrol et ve tekrar al
+901|— ödülünü VIP sayfasından al
+902|→ ilk 4 bayt → 0 ile 1 arasında sayı. Dice:
+903|→ kare
+904|! Oynamaya başlamak için yatırım yap.
+905|(1–25, soldan sağa, yukarıdan aşağı)
+906|(min. 1.00×). 9 Eki 2026'dan önce yapılan bahisler Dice, Limbo, Crash, Mines, Hi-Lo, Coinflip, Wheel, Plinko ve Keno'da 0.99 (RTP %99) kullanıyordu.
+907|(veya herhangi bir oyunun altındaki kalkan düğmesi) ile mevcut server seed'inin hash'ini görebilir, client seed'ini değiştirebilir veya seed'lerini yenileyebilirsin. Yeniledikten sonra açıklanan server seed'i, client seed'ini ve bahsin nonce'unu bu sayfanın altındaki doğrulayıcıya yapıştır — sonucu saniyeler içinde, tarayıcında yeniden oluşturur.
+908|(taş, kâğıt, makas), atış başına bir sayı. Baccarat: P1 B1 P2 B2 sırasıyla 6 kart, standart kurallar gerektirdiğinde üçüncü kartlar.
+909|) ve gönderilecek tam tutar. Bakiyen ağ onaylarından sonra otomatik olarak geçer.
+910|) kripto ödeme işlemcisi bağlandığında burada görünecek.
+911|, imleç başına 8 sayı. Plinko: her sıra şu durumda sağa gider:
+912|, tek işlemde. Farklı bir tutar manuel inceleme gerektirebilir.
+913|. Bakiyeni anında geçer, işlemcinin blokzincir onayından sonra yapacağı gibi.
+914|. Limbo ve Crash:
+915|. Lütfen tekrar gönder.
+916|. İnceleme genellikle 24 saatten kısa sürer. Bittiğinde bu sayfayı güncelleyeceğiz.
+917|: tek sıfırlı Avrupa ruleti. Sayılara veya dış bahislere fiş koy — bir sayı 36.26×, düzineler ve sütunlar 3.02×, kırmızı/siyah, tek/çift ve 1–18/19–36 2.01× öder (bahsin dahil). Her bahiste RTP %98.
+918|: 5×5 bir ızgara taşlar ve mayınlar saklar. Kaç mayın olacağını seç (1–24), sonra kareleri aç. Her taş çarpanını yükseltir — istediğin zaman çek, ama mayına basarsan tur kaybedilir.
+919|: merdiveni tırmanmak için kasanın elini yen — 1.96×, 3.92×, 7.84× ve 10 galibiyetten sonra 1,003.52×'e kadar. Beraberlik sana ücretsiz bir atış daha verir. Her galibiyetten sonra çekebilirsin. Makas kâğıdı keser, taş makası kırar, kâğıt taşı sarar.
+920|: Oyuncu, Banker veya Beraberlik'e bahis yap. 9'a en yakın el kazanır. Oyuncu 1:1, Banker 0.95:1 ve Beraberlik 8:1 öder (beraberlikte Oyuncu ve Banker bahisleri iade edilir). Standart üçüncü kart kuralları, sonsuz deste. Kasa avantajı: Oyuncu'da %1.24, Banker'de %1.06, Beraberlik'te %14.4.
+921|: bir köşe seç ve şut çek. Kaleci zorluğa göre 5 köşenin 1 ila 4'ünü kapatır. Her gol kazancını katlar — istediğin zaman çek ya da 15,000×'e kadar şut çekmeye devam et.
+922|: 9 kat tırman. Her katta bir kare seç — yumurtayı bul ve yüksel, kafatasına denk gelirsen tur biter. İstediğin zaman çek. Kolay'dan (4 karede 3 yumurta) Usta'ya (4 karede 1 yumurta, 256,901×'e kadar) beş zorluk.
+923|: topu bırak ve çivilerden sekmesini izle. Düştüğü yer çarpanını belirler. 8 ile 16 sıra ve düşük, orta veya yüksek risk seç — yüksek riskte 16 sıra kenarlarda 1,000×'e kadar öder.
+924|: bardağı adım adım doldur. Her doldurma çarpanını yükseltir, ama gizli bir doldurma bardağı taşırır. İstediğin zaman çek. Kolay 25 doldurmada 1 taşma saklar, Orta 3, Zor 5 ve Uzman 10.
+925|: 21'i geçmeden krupiyeden daha çok yaklaş. Blackjack 3'e 2 öder, krupiye soft 17'de kart çeker ve hard 17'de durur, ilk iki kartında ikiye katlayabilir veya bir çifti bir kez bölebilirsin (böldükten sonra ikiye katlama yok), krupiye As gösterdiğinde sigorta alabilirsin (bahsinin yarısı, krupiyede Blackjack varsa 2'ye 1 öder). Kartlar sonsuz desteden dağıtılır. Gösterilen RTP temel stratejiyi varsayar (yaklaşık).
+926|: sonraki kartın mevcut karttan yüksek mi düşük mü olacağını tahmin et. Her doğru tahmin kazancını katlar. Beğenmediğin kartları geç ve istediğin zaman çek. Son kart, kazansan da kaybetsen de sonraki turun için masada kalır. Aslar düşük, papazlar yüksektir.
+927|: tavuğun yolu şerit şerit geçmesine yardım et. Geçtiğin her şerit çarpanını yükseltir, ama bazı şeritlerde araba saklı. Çarpılmadan önce çek. Kolay 20 şeritte 1 araba saklar, Uzman 10.
+928|: 40 sayıdan 1 ile 10 arası seç. 10 sayı çekiyoruz. Sayılarından ne kadar çok çıkarsa çarpan o kadar büyük — 1,140×'e kadar. Klasik, Düşük, Orta veya Yüksek risk seç; ödeme tablosu seçtikçe güncellenir.
+929|: Yazı veya Tura seç ve at.
+930|: bir renk seç ve çevir. 15 kare: 7 kırmızı ve 7 siyah 2.1×, beyaz RD karesi 14.7× öder. RTP %98.
+931|: 10 katın her birinde bir kapı seç. Çoğu kapının arkasında bir para var, tuzak kapının arkasında kaybedersin. Her kat çarpanını yükseltir — istediğin zaman çek.
+932|: bir hedef çarpan belirle ve bahis yap. Sonuç hedefine ulaşırsa bahsinin hedef katı kadar kazanırsın. Hedefler 1.01×'ten 1,000,000×'e kadar.
+933|: çarkı çevir ve durduğu çarpanı kazan. 10 ile 50 dilim ve düşük, orta veya yüksek risk seç — yüksek riskte 49×'e kadar değerli tek büyük dilim var.
+934|: çarpan 1.00×'ten başlar ve patlayana kadar yükselir. Bahsinin çarpan katı kadar kazanmak için patlamadan önce çek. Bir hedefi kilitlemek için otomatik çekim ayarla.
+935|? Bahşişler geri alınamaz.
+936|veya daha fazla
+937|(sonsuz deste). Hi-Lo'da masadaki ilk kart önceki turunun son kartıdır; ondan sonraki her kart senin seed'lerinden gelir. Keno: 1–40 karıştırılır, ilk 10'u çekilir. Wheel: dilim =
+938|. Mines: 25 karenin Fisher–Yates karıştırması, ilk N tanesi mayındır. Hi-Lo ve Blackjack: kart =
+939|. Rock Paper Scissors: kasa eli =
+940|. Roulette: sayı =
+941|. Tower: 9 katın her birinde karelerin Fisher–Yates karıştırması, ilkleri yumurtadır. Chicken: 20 şeridin Fisher–Yates karıştırması, ilklerinde araba saklıdır. Spill: 25 doldurmanın Fisher–Yates karıştırması (Mines gibi), ilkleri taşar (zorluğa göre 1, 3, 5 veya 10); k doldurmadan sonra çarpan = 0.98 ÷ k doldurmadan sağ çıkma şansı. Coinflip: şu durumda yazı:
+942|Sadece yenilenmiş seed'ler doğrulanabilir — aktif server seed, çifti değiştirene kadar gizli kalır.
+943|Herhangi bir RD Original'ın alt çubuğundaki "Provably fair"i aç ve geçmiş bahislerinde kullanılan server seed'i görmek için seed'ini yenile.
+944|Onu göstermek herkesin sonraki sonuçları tahmin etmesine izin verirdi. Şimdi hash'ini, yenilediğin anda da seed'in kendisini görürsün.
+945|Üçü HMAC-SHA256 ile birleştirilir ve çıktı sonucu belirler. Server seed, client seed'in kullanılmadan önce sabitlendiği için kimse — biz dahil — bir sonucu tahmin edemez veya değiştiremez. Seed'lerini yenilediğinde eski server seed açıklanır, böylece onunla yaptığın her bahsi doğrulayabilirsin.
+946|(isteğe bağlı)
+947|Kâğıt
+948|Taş
+949|Makas
+950|Standart seviye
+951|ve
+952|gün
+953|saat
+954|dk
+955|sn
+956|kullanıcı adı
+957|Şuraya git:

@@ -30,7 +30,7 @@
   /* ---------- Sidebar ---------- */
   var NAV = [
     [{ route: "", label: "Lobby", icon: "home" }, { route: "casino/originals", label: "RD Originals", icon: "star" }, { route: "casino/slots", label: "Slots", icon: "cherry" }, { route: "casino/live", label: "Live Casino", icon: "play" }, { route: "casino/gameshows", label: "Game Shows", icon: "tv" }],
-    [{ route: "promotions", label: "Promotions", icon: "gift" }, { route: "vip", label: "VIP Club", icon: "crown" }, { route: "leaderboard", label: "Leaderboard", icon: "trophy" }],
+    [{ route: "promotions", label: "Promotions", icon: "gift" }, { route: "vip", label: "VIP Club", icon: "crown" }, { route: "challenges", label: "Challenges", icon: "target" }, { route: "leaderboard", label: "Leaderboard", icon: "trophy" }],
     [{ route: "affiliate", label: "Affiliate", icon: "link" }, { route: "fairness", label: "Provably Fair", icon: "shield" }, { route: "responsible", label: "Responsible Gaming", icon: "help" }, { action: "open-support", label: "Live Support", icon: "headset" }]
   ];
   function renderSidebar() {
@@ -112,7 +112,6 @@
     el.textContent = inCur(v, disp.cur); el.classList.toggle("bal-wait", !!u.cached); // durante o boot: mesmo tamanho, valor coberto (não mostra saldo antigo)
     if (tag) tag.remove(); // só o saldo na moeda escolhida, sem o ícone ao lado
     if (!$("#bal-menu").classList.contains("hidden")) renderBalMenu();
-    rankRing(u);
   }
   /* um saldo só (como na Shuffle), mostrado na moeda que o jogador escolher */
   function renderBalMenu() {
@@ -154,7 +153,7 @@
       '<button data-open="wallet">' + ic("wallet", 16) + "Wallet</button>" +
       '<a href="#/account">' + ic("user", 16) + "Account & verification</a>" +
       '<a href="#/account/bets">' + ic("chart", 16) + "My bets</a>" +
-      '<a href="#/vip">' + ic("crown", 16) + "VIP Club</a>" +
+      '<button data-drawer="vip">' + ic("crown", 16) + "VIP rewards</button>" +
       '<a href="#/affiliate">' + ic("link", 16) + "Affiliate</a>" +
       '<a href="#/responsible">' + ic("shield", 16) + "Limits & breaks</a>" +
       '<button class="danger" data-action="logout">' + ic("logout", 16) + "Sign out</button>");
@@ -164,6 +163,7 @@
   function openModal(id) { closeAll(); var m = $("#modal-" + id); if (m) { m.classList.add("open"); document.body.style.overflow = "hidden"; } }
   function openGeneric(html) { $("#modal-generic-box").innerHTML = html; openModal("generic"); }
   function closeAll() {
+    if (mfaForced && $("#mfa-ask")) { mfaForced = false; Promise.resolve(db.logout()).then(function () { renderHeader(); renderSidebar(); location.hash = "#/"; route(); RD.toast("Signed out"); }); }
     $$(".overlay.open").forEach(function (m) { m.classList.remove("open"); });
     $$(".drawer.open").forEach(function (d) { d.classList.remove("open"); });
     $("#user-menu").classList.add("hidden");
@@ -180,7 +180,7 @@
   function needLogin() { if (me()) return false; openAuth("register"); return true; }
   function fillCountries() {
     var list = ["Argentina", "Austria", "Brazil", "Canada", "Chile", "Colombia", "Finland", "Germany", "India", "Ireland", "Japan", "Mexico", "New Zealand", "Norway", "Peru", "Portugal", "Turkey", "United Arab Emirates", "United Kingdom", "United States", "Other"];
-    $("#reg-country").innerHTML = '<option value="">Select…</option>' + list.map(function (c) { return "<option>" + c + "</option>"; }).join("");
+    $("#reg-country").innerHTML = '<option value="">Select…</option>' + list.map(function (c) { return '<option value="' + c + '">' + c + "</option>"; }).join("");
   }
 
   /* ---------- Wallet ---------- */
@@ -408,7 +408,7 @@
       '<p class="muted" style="max-width:420px">' + (g.provider === "RD Originals" ? "This RD Original is in development. Try Dice, Mines or Chicken in the meantime." : "Third-party games go live once the game aggregator is integrated.") + '</p><a class="btn btn-primary" href="#/game/dice">Play Dice now</a></div></div>' +
       '<div class="section">' + sectionHead("More like this", "", "#/casino/" + g.cat) + '<div class="game-row">' + gamesOf(g.cat).filter(function (x) { return x.id !== g.id; }).map(gameCard).join("") + "</div></div></div>";
   };
-  pages.game.after = function (id) { var g = gameOf(id); if (g && g.playable) bindOriginal(g); };
+  pages.game.after = function (id) { var g = gameOf(id); if (g && g.playable) { bindOriginal(g); chBanner(g.id); } };
 
   /* ==========================================================================
      RD Originals — moldura compartilhada (padrão Shuffle/Rainbet) + 6 jogos.
@@ -538,7 +538,7 @@
       '<button class="icon-btn" data-ogx="sound" title="Sound">' + ic(RD.sfx.muted() ? "volumeX" : "volume", 18) + "</button>" +
       '<div class="ogx-brand">RDCASINO</div><button class="ogx-fair" data-action="seeds">' + ic("shield", 15) + "Provably fair</button></div>";
     return '<div class="container' + (ogPrefs.theatre ? " wide" : "") + '">' +
-      '<div class="row" style="margin-bottom:14px;gap:8px"><a class="icon-btn" href="#/casino/originals" aria-label="Back">' + ic("chevronLeft") + '</a><h2 style="font-size:22px">' + esc(g.name) + '</h2><span class="badge">RD Originals</span></div>' +
+      '<div class="row" style="margin-bottom:14px;gap:8px"><a class="icon-btn" href="#/casino/originals" aria-label="Back">' + ic("chevronLeft") + '</a><h2 style="font-size:22px">' + esc(g.name) + '</h2><span class="badge">RD Originals</span></div><div id="og-ch"></div>' +
       '<div class="ogx' + (ogPrefs.theatre ? " theatre" : "") + '" id="ogx"><div class="ogx-main">' + side + stage + "</div>" + bar + "</div>" +
       '<div class="card og-info"><div class="card-head"><div class="pill-tabs" id="og-tabs"><button data-ogtab="mine">My bets</button><button data-ogtab="recent">Recent bets</button><button data-ogtab="high">High rollers</button></div></div><div id="og-tab-body"></div></div></div>';
   }
@@ -3009,7 +3009,7 @@
         '<div class="pr-info"><h1>' + esc(p.title) + "</h1>" + promoMeta(p) + "<p>" + esc(p.desc) + '</p><div class="row wrap" style="gap:8px;margin-top:18px"><button class="btn btn-primary" data-promo="' + p.id + '">' + esc(p.cta || "Learn more") + '</button><a class="btn btn-secondary" href="#/legal/bonus">Terms</a></div></div></div></div>';
     }
     var shown = list.filter(function (p) { return promoCat === "all" || (p.cat || "casino") === promoCat; }), feat = shown.filter(function (p) { return p.featured; })[0] || shown[0], rest = shown.filter(function (p) { return p !== feat; });
-    var tabs = '<div class="pr-tabs">' + [["all", "grid", "All"], ["casino", "cherry", "Casino"], ["sports", "ball", "Sports"]].map(function (t) { return '<button class="' + (promoCat === t[0] ? "active" : "") + '" data-prcat="' + t[0] + '">' + ic(t[1], 16) + t[2] + "</button>"; }).join("") + "</div>";
+    var tabs = '<div class="pr-tabs">' + [["all", "grid", "All"], ["casino", "cherry", "Casino"], ["sports", "ball", "Sports"]].map(function (t) { return '<button class="' + (promoCat === t[0] ? "active" : "") + '" data-prcat="' + t[0] + '">' + ic(t[1], 16) + t[2] + "</button>"; }).join("") + '<a href="#/challenges">' + ic("target", 16) + "Challenges</a></div>";
     return '<div class="container"><div class="page-head"><h1>Promotions</h1></div>' + tabs +
       (!feat ? '<div class="card empty" style="padding:56px 20px">' + ic("ball", 34) + '<h3 style="margin-top:12px">Sports promotions are coming</h3><p>They launch together with the sportsbook.</p></div>' :
         '<a class="pr-feature" href="#/promotions/' + feat.id + '">' + promoArt(feat, true) + '<div class="pr-info"><h2>' + esc(feat.title) + "</h2>" + promoMeta(feat) + "<p>" + esc(feat.desc) + "</p></div></a>" +
@@ -3018,6 +3018,63 @@
   pages.promotions.after = function () {
     $$("[data-prcat]").forEach(function (b) { b.addEventListener("click", function () { promoCat = b.getAttribute("data-prcat"); route(true); }); });
   };
+
+  /* ---------- Challenges (desafios) ----------
+     "Acerte X× no jogo Y com aposta mínima Z": o servidor confere cada aposta ganha e paga na hora (migração 0035). */
+  var CH = { list: null, at: 0 };
+  function chLoad(force) {
+    if (!db.challenges) return Promise.resolve([]);
+    if (!force && CH.list && Date.now() - CH.at < 30000) return Promise.resolve(CH.list);
+    return Promise.resolve(db.challenges()).then(function (l) { CH.list = l || []; CH.at = Date.now(); return CH.list; }, function () { return CH.list || []; });
+  }
+  RD.chHit = function (b) { return !!b && b.payout > 0 && (CH.list || []).some(function (c) { return c.open && !c.mine && c.game === b.game && b.multiplier >= +c.min_mult && b.amount >= +c.min_bet; }); };
+  function chLeft(c) { var n = Math.max(0, c.max_winners - c.winners); return n === 1 ? "1 spot left" : n + " spots left"; }
+  function chMult(m) { return (+m).toLocaleString("en-US", { maximumFractionDigits: 2 }) + "×"; }
+  function chName(c) { var g = gameOf(c.game); return c.title || "Hit " + chMult(c.min_mult) + " on " + (g ? g.name : c.game); }
+  function chEnds(c) {
+    if (!c.ends_at) return "Until all spots are claimed";
+    var d = new Date(c.ends_at) - Date.now(); if (d <= 0) return "Ended";
+    var h = Math.floor(d / 36e5), m = Math.floor((d % 36e5) / 6e4);
+    return "Ends in " + (h >= 48 ? Math.floor(h / 24) + "d " + (h % 24) + "h" : h + "h " + m + "m");
+  }
+  function chStatus(c) {
+    if (c.mine) return '<span class="badge badge-success">' + ic("check", 12) + "Completed</span>";
+    if (c.open) return '<span class="badge badge-brand">Open</span>';
+    return '<span class="badge">' + (c.winners >= c.max_winners ? "Fully claimed" : "Ended") + "</span>";
+  }
+  function chCard(c) {
+    var g = gameOf(c.game) || { id: c.game, name: c.game, provider: "" }, left = Math.max(0, c.max_winners - c.winners), pct = Math.min(100, (c.winners / c.max_winners) * 100);
+    var names = (c.list || []).map(function (w) { return esc(w.user); }), shownNames = names.slice(0, 3).join(", ") + (names.length > 3 ? " +" + (names.length - 3) : "");
+    return '<div class="ch-card' + (c.open ? "" : " closed") + (c.mine ? " done" : "") + '">' +
+      '<a class="ch-art" href="#/game/' + esc(g.id) + '">' + media(g, "", "") + "</a>" +
+      '<div class="ch-body"><div class="ch-top">' + chStatus(c) + '<span class="faint">' + ic("clock", 13) + chEnds(c) + "</span></div>" +
+      "<h3>" + esc(chName(c)) + "</h3>" +
+      '<div class="ch-stats"><div><small>Prize</small><b class="num">' + money(+c.prize) + '</b></div><div><small>Min. bet</small><b class="num">' + money(+c.min_bet) + '</b></div><div><small>Spots left</small><b class="num">' + left + " / " + c.max_winners + "</b></div></div>" +
+      '<div class="ch-bar"><i style="width:' + pct.toFixed(1) + '%"></i></div>' +
+      '<div class="ch-foot"><span class="faint ch-who">' + (names.length ? ic("trophy", 13) + "<span>Won by " + shownNames + "</span>" : "<span>No winners yet</span>") + "</span>" +
+      (c.open && !c.mine ? '<a class="btn btn-primary btn-sm" href="#/game/' + esc(g.id) + '">Play</a>' : "") + "</div></div></div>";
+  }
+  function chGrid(list) {
+    if (!list) return '<div class="card card-pad faint">Loading…</div>';
+    if (!list.length) return '<div class="card empty" style="padding:56px 20px">' + ic("target", 34) + '<h3 style="margin-top:12px">No challenges right now</h3><p>New challenges drop regularly. Check back soon.</p></div>';
+    return '<div class="ch-grid">' + list.map(chCard).join("") + "</div>";
+  }
+  pages.challenges = function () {
+    return '<div class="container"><div class="page-head"><h1>Challenges</h1><p class="muted">Hit the target multiplier with at least the minimum bet and the prize lands in your balance instantly. First come, first served — one prize per player per challenge.</p></div>' +
+      '<div id="ch-list">' + chGrid(CH.list) + "</div></div>";
+  };
+  pages.challenges.after = function () { chLoad(true).then(function (l) { var box = $("#ch-list"); if (box) setHTML(box, chGrid(l)); }); };
+  /* Faixa do desafio dentro do jogo */
+  function chBanner(gid) {
+    var box = $("#og-ch"); if (!box) return;
+    chLoad().then(function (l) {
+      var c = (l || []).filter(function (x) { return x.game === gid && (x.open || x.mine); }).sort(function (a, b) { return (a.mine ? 1 : 0) - (b.mine ? 1 : 0); })[0], el = $("#og-ch"); if (!el) return;
+      if (!c) return setHTML(el, "");
+      setHTML(el, '<a class="og-ch' + (c.mine ? " done" : "") + '" href="#/challenges">' + ic(c.mine ? "check" : "target", 16) + "<span>" +
+        (c.mine ? "You completed this challenge: " + esc(chName(c)) : "<b>Challenge:</b> " + esc(chName(c)) + " with a bet of " + money(+c.min_bet) + " or more — win " + money(+c.prize)) +
+        '</span><small class="faint">' + (c.mine ? "" : chLeft(c)) + "</small></a>");
+    });
+  }
 
 
   /* ---------- VIP ---------- */
@@ -3033,15 +3090,6 @@
   function vipMsg(r) { return r.changed != null ? "Your VIP reward is now " + fmt.usd(r.changed) + " — check it and claim again" : r.error || "Claimed " + fmt.usd(r.amount) + " in VIP rewards"; }
   function claimMsg(r) { return r.changed != null ? "This reward is now " + money(r.changed) + " — check it and claim again" : r.error || "Claimed " + money(r.amount); }
   /* Rank no topo, ao lado do saldo: ícone do nível dentro de um anel de progresso (abre a janela VIP) */
-  function rankRing(u) {
-    var box = $("#hdr-rank-ring"); if (!box || !u) return;
-    var v = vipState(u), pct = v.next ? v.pct : 100, k = (v.cur ? v.cur.name : "-") + "|" + pct.toFixed(1);
-    if (box._k === k) return; box._k = k;
-    var r = 17, C = 2 * Math.PI * r, col = v.cur ? v.cur.color : "#5a6478";
-    box.parentNode.title = (v.cur ? v.cur.name : "Unranked") + (v.next ? " · " + pct.toFixed(0) + "% to " + v.next.name : "");
-    setHTML(box, '<svg class="hdr-rank-arc" width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="' + r + '" fill="none" stroke="rgba(255,255,255,.09)" stroke-width="2.6"/>' +
-      '<circle cx="20" cy="20" r="' + r + '" fill="none" stroke="' + col + '" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="' + (C * pct / 100).toFixed(2) + " " + C.toFixed(2) + '" transform="rotate(-90 20 20)"/></svg>' + badge(v.cur, 24));
-  }
   /* Cards de recompensa (iguais na janela VIP e na página VIP) */
   function untilTxt(iso) {
     var d = Math.max(0, new Date(iso).getTime() - Date.now()), h = Math.floor(d / 36e5), m = Math.floor((d % 36e5) / 6e4), sec = Math.floor((d % 6e4) / 1e3);
@@ -3323,14 +3371,89 @@
     var pendingWd = txs.filter(function (t) { return t.type === "Withdrawal" && t.status === "Pending"; }).reduce(function (a, t) { return a + t.amount; }, 0);
     var head = '<div class="page-head"><h1>' + esc(u.username) + '</h1><p>Member since ' + u.created.slice(0, 10) + "</p></div>" +
       '<div class="card balance-card"><div><div class="kpi-label">Balance</div><div class="kpi-value num">' + (u.cached ? '<span class="skel">' + fmt.usd(u.balance) + "</span>" : fmt.usd(u.balance)) + '</div></div><div><div class="kpi-label">Pending withdrawals</div><div class="kpi-value num">' + (u.cached ? '<span class="skel">$0.00</span>' : fmt.usd(pendingWd)) + "</div>" + (u.held > 0 ? '<small class="held-note">' + ic("lock", 12) + "On hold: " + fmt.usd(u.held) + " · contact support</small>" : "") + '</div><div><div class="kpi-label">Verification</div><div style="margin-top:6px"><span class="badge ' + k[1] + '">' + k[0] + '</span></div></div><div class="row bc-actions" style="gap:8px"><button class="btn btn-primary" data-open="wallet">Deposit</button><button class="btn btn-secondary" data-action="open-withdraw">Withdraw</button></div></div>' +
-      '<div class="pill-tabs" style="margin:20px 0">' + [["overview", "Transactions"], ["bets", "Bets"], ["verification", "Verification"]].map(function (t) { return '<a class="' + (t[0] === tab ? "active" : "") + '" href="#/account/' + t[0] + '">' + t[1] + "</a>"; }).join("") + "</div>";
+      '<div class="pill-tabs" style="margin:20px 0">' + [["overview", "Transactions"], ["bets", "Bets"], ["verification", "Verification"]].concat(RD.live && db.mfa ? [["security", "Security"]] : []).map(function (t) { return '<a class="' + (t[0] === tab ? "active" : "") + '" href="#/account/' + t[0] + '">' + t[1] + "</a>"; }).join("") + "</div>";
     var body;
     if (u.cached) body = '<div class="card empty acc-wait"></div>';
     else if (tab === "bets") body = '<div class="card">' + betsTable(db.betsOf(u.id).slice(0, 50), "Your bets show up here.") + "</div>";
     else if (tab === "verification") body = kycView(u, k);
+    else if (tab === "security" && RD.live && db.mfa) body = secView(u);
     else body = txView(u, txs);
     return '<div class="container">' + head + body + "</div>";
   };
+
+  /* ---------- Segurança (opcional): 2FA e e-mail verificado ---------- */
+  var SEC = { mfa: null, enroll: null, emailSent: false };
+  function secView(u) {
+    var m = SEC.mfa, en = SEC.enroll;
+    var mfaBody = !m ? '<p class="faint">Loading…</p>' :
+      en ? '<div class="sec-enroll"><div class="sec-qr"><img src="' + esc(en.qr) + '" alt="QR code" width="168" height="168"></div><div class="grow"><p class="muted">1. Scan the QR code with an authenticator app (Google Authenticator, Authy, 1Password…).</p><p class="faint" style="font-size:12.5px;margin:8px 0">Can\'t scan? Enter this key: <span class="mono sec-key">' + esc(en.secret) + '</span> <button class="btn btn-ghost btn-sm" data-copy="' + esc(en.secret) + '">' + ic("copy", 13) + "</button></p>" +
+        '<p class="muted">2. Enter the 6-digit code from the app.</p><form id="mfa-on" class="row" style="gap:8px;margin-top:10px"><input class="input" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" required style="width:130px;flex:0 0 auto"><button class="btn btn-primary" type="submit">Turn on</button><button class="btn btn-ghost" type="button" data-sec="cancel">Cancel</button></form><div id="mfa-msg"></div></div></div>' :
+      m.on ? '<p class="muted">Withdrawals and tips need a code from your authenticator app. You\'ll also be asked for it when you sign in.</p><form id="mfa-off" class="row" style="gap:8px;margin-top:12px"><input class="input" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="Code to turn off" required style="max-width:180px"><button class="btn btn-secondary" type="submit">Turn off 2FA</button></form><div id="mfa-msg"></div>' :
+      '<p class="muted">Add a second step to sign in, withdraw and tip: a 6-digit code from an authenticator app on your phone. Optional, but recommended.</p><button class="btn btn-primary" style="margin-top:12px" data-sec="enroll">Turn on 2FA</button><div id="mfa-msg"></div>';
+    var mailBody = u.emailVerified ? '<p class="muted">' + esc(u.email) + " is verified.</p>" :
+      '<p class="muted">Confirm that ' + esc(u.email) + ' is yours. Optional — it helps us recover your account and reach you about withdrawals.</p>' +
+      (SEC.emailSent ? '<form id="mail-code" class="row" style="gap:8px;margin-top:12px"><input class="input" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="Code from the email" required style="max-width:200px"><button class="btn btn-primary" type="submit">Verify</button><button class="btn btn-ghost" type="button" data-sec="mail">Resend</button></form>' :
+        '<button class="btn btn-primary" style="margin-top:12px" data-sec="mail">Send code</button>') + '<div id="mail-msg"></div>';
+    return '<div class="sec-grid"><div class="card card-pad"><div class="row between"><h3>' + ic("lock", 18) + ' Two-factor authentication</h3>' + (m ? '<span class="badge ' + (m.on ? "badge-success" : "") + '">' + (m.on ? "On" : "Off") + "</span>" : "") + "</div>" + mfaBody + "</div>" +
+      '<div class="card card-pad"><div class="row between"><h3>' + ic("send", 18) + ' Email verification</h3><span class="badge ' + (u.emailVerified ? "badge-success" : "") + '">' + (u.emailVerified ? "Verified" : "Not verified") + "</span></div>" + mailBody + "</div></div>";
+  }
+  function secRefresh() { if (/^account\/security/.test(currentPath)) route(true); }
+  function secLoad() { return db.mfa.status().then(function (st) { SEC.mfa = st; secRefresh(); }); }
+  function secBind() {
+    if (!SEC.mfa) secLoad();
+    var on = $("#mfa-on"), off = $("#mfa-off"), mc = $("#mail-code");
+    if (on) on.addEventListener("submit", function (e) {
+      e.preventDefault(); busyForm(on, true);
+      db.mfa.verify(SEC.enroll.id, on.code.value).then(function (r) {
+        busyForm(on, false);
+        if (r.error) { $("#mfa-msg").innerHTML = errorBox(r.error); return; }
+        SEC.enroll = null; RD.toast("2FA is on"); secLoad();
+      });
+    });
+    if (off) off.addEventListener("submit", function (e) {
+      e.preventDefault(); busyForm(off, true);
+      db.mfa.disable(off.code.value).then(function (r) {
+        busyForm(off, false);
+        if (r.error) { $("#mfa-msg").innerHTML = errorBox(r.error); return; }
+        RD.toast("2FA is off"); secLoad();
+      });
+    });
+    if (mc) mc.addEventListener("submit", function (e) {
+      e.preventDefault(); busyForm(mc, true);
+      db.emailVerify(mc.code.value).then(function (r) {
+        busyForm(mc, false);
+        if (r.error) { $("#mail-msg").innerHTML = errorBox(r.error); return; }
+        SEC.emailSent = false; RD.toast("Email verified"); secRefresh();
+        if (r.mfa) askMfa(true);
+      });
+    });
+  }
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-sec]"); if (!b) return; e.preventDefault();
+    var k = b.getAttribute("data-sec");
+    if (k === "cancel") { SEC.enroll = null; return secRefresh(); }
+    if (k === "enroll") { b.disabled = true; return db.mfa.enroll().then(function (r) { b.disabled = false; if (r.error) { $("#mfa-msg").innerHTML = errorBox(r.error); return; } SEC.enroll = r; secRefresh(); }); }
+    if (k === "mail") { b.disabled = true; return db.emailCode().then(function (r) { b.disabled = false; if (r.error) { $("#mail-msg").innerHTML = errorBox(r.error); return; } SEC.emailSent = true; RD.toast("Code sent — check your inbox"); secRefresh(); }); }
+  });
+  /* Pede o código do app autenticador. forced = logo após entrar: fechar a janela sai da conta. */
+  var mfaForced = false;
+  function askMfa(forced) {
+    if (!db.mfa) return;
+    mfaForced = false;
+    openGeneric('<div class="modal-head"><h3>' + ic("lock", 18) + " Two-factor authentication</h3>" + (forced ? "" : '<button class="btn btn-ghost btn-icon btn-sm" data-close>' + ic("x") + "</button>") + '</div><form id="mfa-ask"><div class="modal-body"><p class="muted" style="margin-bottom:14px">Enter the 6-digit code from your authenticator app.</p><div id="mfa-ask-msg"></div><div class="field"><input class="input" name="code" inputmode="numeric" style="font-size:20px;letter-spacing:6px;text-align:center" autocomplete="one-time-code" maxlength="6" placeholder="123456" required autofocus></div></div>' +
+      '<div class="modal-foot">' + (forced ? '<button type="button" class="btn btn-ghost" data-close>Sign out</button>' : '<button type="button" class="btn btn-ghost" data-close>Cancel</button>') + '<button class="btn btn-primary" type="submit">Confirm</button></div></form>');
+    mfaForced = !!forced;
+    var f = $("#mfa-ask"); setTimeout(function () { if (f.code) f.code.focus(); }, 50);
+    f.addEventListener("submit", function (e) {
+      e.preventDefault(); busyForm(f, true);
+      db.mfa.verify(null, f.code.value).then(function (r) {
+        busyForm(f, false);
+        if (r.error) { $("#mfa-ask-msg").innerHTML = errorBox(r.error); f.code.select(); return; }
+        mfaForced = false; closeAll(); RD.toast("Verified"); renderHeader(); route(true);
+      });
+    });
+  }
+  function mfaHint(err) { return /2FA code/i.test(err || "") ? ' <a href="#" class="link-sm" data-action="mfa-code">Enter code</a>' : ""; }
   /* ---------- Verificação de identidade (KYC) ---------- */
   var KYC_FILES = {
     front: ["Front of document", "All four corners visible, no glare"],
@@ -3357,7 +3480,8 @@
       '<button class="btn btn-primary btn-lg btn-block" style="margin-top:18px">Submit for review</button>' +
       '<p class="kyc-safe">' + ic("lock", 14) + "Your documents are stored privately and only seen by our verification team.</p></form></div>";
   }
-  pages.account.after = function () {
+  pages.account.after = function (tab) {
+    if (tab === "security" && RD.live && db.mfa) secBind();
     var f = $("#kyc-form"); if (!f) return;
     var docType = "passport";
     $$("[data-kdoc]").forEach(function (b) { b.addEventListener("click", function () { docType = b.getAttribute("data-kdoc"); $$("[data-kdoc]").forEach(function (x) { x.classList.toggle("active", x === b); }); $('[data-kfile="back"]').classList.toggle("hidden", docType === "passport"); }); });
@@ -3415,7 +3539,7 @@
       "<li><strong>Client seed</strong> — a value on your side. You can change it any time, so the result also depends on something we don't control.</li>" +
       "<li><strong>Nonce</strong> — a counter that goes up by one with every bet, so each result is unique.</li></ul>" +
       "<p>The three are combined with HMAC-SHA256 and the output decides the result. Because the server seed is committed before your client seed is used, nobody — including us — can predict or alter a result. When you rotate your seeds, the old server seed is revealed so you can check every bet you made with it.</p>" +
-      '<h2>Verify any bet</h2><p>Open <button type="button" class="link-sm" data-action="seeds" style="background:none;border:0;padding:0;cursor:pointer;font:inherit">Fairness</button> (or the shield button under any game) to see the hash of your current server seed, change your client seed or rotate your seeds. After rotating, paste the revealed server seed, your client seed and the nonce of the bet into the checker at the bottom of this page — it rebuilds the result in seconds, right in your browser.</p>' +
+      '<h2>Verify any bet</h2><p>Go to <button type="button" class="link-sm" data-action="seeds" style="background:none;border:0;padding:0;cursor:pointer;font:inherit">Fairness</button> (or the shield button under any game) to see the hash of your current server seed, change your client seed or rotate your seeds. After rotating, paste the revealed server seed, your client seed and the nonce of the bet into the checker at the bottom of this page — it rebuilds the result in seconds, right in your browser.</p>' +
       "<h2>Which games are provably fair?</h2><p>All RD Originals: Dice, Limbo, Crash, Plinko, Mines, Keno, Hi-Lo, Wheel, Roulette, Blackjack, Baccarat, Coinflip, Rock Paper Scissors, Tower, Chicken, Door, Soccer, Spill and Double. Every result is drawn on our server from your seeds and can be checked by you. Slots and live games from other studios use their own certified random number generators.</p>" +
       "<h2>FAQ</h2>" +
       "<p><strong>Does provably fair mean better odds?</strong><br>No. It proves results are random and untouched. The RTP of each game is shown on its page.</p>" +
@@ -3487,7 +3611,7 @@
   var LEGAL = { terms: "Terms of Service", privacy: "Privacy Policy", aml: "AML & KYC Policy", bonus: "Bonus Terms", cookies: "Cookie Policy" };
   pages.legal = function (doc) {
     return '<div class="container prose"><h1>' + (LEGAL[doc] || "Legal") + '</h1><div class="notice" style="margin:16px 0">' + ic("alert", 16) + "<span>Placeholder. This document must be drafted by a lawyer for the licensing jurisdiction before launch.</span></div>" +
-      "<h2>Restricted territories</h2><p>Accounts may not be opened or used by residents of: " + RD.config.restrictedCountries.join(", ") + ".</p>" +
+      "<h2>Restricted territories</h2><p>Accounts may not be opened or used by residents of: " + RD.config.restrictedCountries.map(function (c) { return "<span>" + esc(c) + "</span>"; }).join(", ") + ".</p>" +
       "<h2>Other documents</h2><ul>" + Object.keys(LEGAL).map(function (k) { return '<li><a class="link-sm" href="#/legal/' + k + '">' + LEGAL[k] + "</a></li>"; }).join("") + "</ul></div>";
   };
   pages.notfound = function () {
@@ -3512,9 +3636,9 @@
       ? esc(L.company) + " is licensed and regulated by " + esc(L.authority) + " under license no. " + esc(L.number) + ". " + esc(L.address)
       : "Licensing information will be published here.";
     setHTML($("#footer"), '<div class="footer-in"><div class="footer-cols">' +
-      '<div class="footer-about"><span class="brand-name">RD<span>Casino</span></span><p>Crypto casino with provably fair originals and fast withdrawals.</p><div class="footer-badges"><span class="badge">18+</span><span class="badge">' + ic("shield", 12) + 'Provably fair</span><span class="badge">' + ic("lock", 12) + "SSL</span></div>" + socialLinks() + "</div>" +
+      '<div class="footer-about"><span class="brand-name" translate="no">RD<span>Casino</span></span><p>Crypto casino with provably fair originals and fast withdrawals.</p><div class="footer-badges"><span class="badge">18+</span><span class="badge">' + ic("shield", 12) + 'Provably fair</span><span class="badge">' + ic("lock", 12) + "SSL</span></div>" + socialLinks() + "</div>" +
       '<div><h4>Casino</h4><a href="#/casino/originals">RD Originals</a><a href="#/casino/slots">Slots</a><a href="#/casino/live">Live Casino</a><a href="#/casino/gameshows">Game Shows</a></div>' +
-      '<div><h4>Rewards</h4><a href="#/promotions">Promotions</a><a href="#/vip">VIP Club</a><a href="#/leaderboard">Leaderboard</a><a href="#/affiliate">Affiliate</a></div>' +
+      '<div><h4>Rewards</h4><a href="#/promotions">Promotions</a><a href="#/challenges">Challenges</a><a href="#/vip">VIP Club</a><a href="#/leaderboard">Leaderboard</a><a href="#/affiliate">Affiliate</a></div>' +
       '<div><h4>Support</h4><a href="#" data-drawer="chat">Chat</a><a href="mailto:' + RD.config.supportEmail + '">Email us</a><a href="#/fairness">Provably fair</a><a href="#/responsible">Responsible gaming</a></div>' +
       '<div><h4>Legal</h4><a href="#/legal/terms">Terms of Service</a><a href="#/legal/privacy">Privacy Policy</a><a href="#/legal/aml">AML & KYC</a><a href="#/legal/bonus">Bonus Terms</a></div></div>' +
       '<div class="footer-legal"><div class="fl-row"><span class="fl-lbl">' + ic("shield", 13) + "License</span><span>" + licenseLine + '</span></div>' +
@@ -3627,8 +3751,8 @@
   function supThread(msgs) {
     var intro = '<div class="sup-msg staff"><span class="sup-av">RD</span><div><b>RD Support</b><p>Hi! 👋 How can we help you today? Our team replies 24/7.</p></div></div>';
     return intro + msgs.map(function (m) {
-      return m.fromStaff ? '<div class="sup-msg staff"><span class="sup-av">RD</span><div><b>' + esc(m.staff || "RD Support") + "</b><p>" + esc(m.text) + "</p><time>" + supTime(m.at) + "</time></div></div>"
-        : '<div class="sup-msg me' + (m.pending ? " pending" : "") + '"><div><p>' + esc(m.text) + "</p><time>" + (m.pending ? "Sending…" : supTime(m.at)) + "</time></div></div>";
+      return m.fromStaff ? '<div class="sup-msg staff"><span class="sup-av">RD</span><div><b>' + esc(m.staff || "RD Support") + '</b><p translate="no">' + esc(m.text) + "</p><time>" + supTime(m.at) + "</time></div></div>"
+        : '<div class="sup-msg me' + (m.pending ? " pending" : "") + '"><div><p translate="no">' + esc(m.text) + "</p><time>" + (m.pending ? "Sending…" : supTime(m.at)) + "</time></div></div>";
     }).join("");
   }
   function supClick(e) {
@@ -3772,7 +3896,7 @@
         if (RD.live) {
           if (!(amt > 0)) { $("#wd-msg").innerHTML = errorBox("Enter an amount."); return; }
           return db.requestWithdrawal(u.id, amt, { coin: state.coin, network: state.net }, addr).then(function (r) {
-            if (r.error) { $("#wd-msg").innerHTML = errorBox(r.error); return; }
+            if (r.error) { $("#wd-msg").innerHTML = errorBox(r.error, mfaHint(r.error)); return; }
             closeAll(); renderHeader(); RD.toast("Withdrawal of " + fmt.usd(amt) + " sent for review"); route(true);
           });
         }
@@ -3788,11 +3912,12 @@
         t.disabled = true;
         Promise.resolve(db.tip(u.id, to, ta, $("#tip-pub").checked)).then(function (tp) {
           t.disabled = false;
-          if (tp.error) { $("#tip-msg").innerHTML = errorBox(tp.error); return; }
+          if (tp.error) { $("#tip-msg").innerHTML = errorBox(tp.error, mfaHint(tp.error)); return; }
           state.tipTo = ""; closeAll(); renderHeader(); if ($("#drawer-chat") && $("#drawer-chat").classList.contains("open")) renderChat(); RD.toast("Tip sent to " + to);
         });
         return;
       }
+      case "mfa-code": { e.preventDefault(); askMfa(false); return; }
       case "open-support": { e.preventDefault(); document.body.classList.remove("sb-open"); supToggle(true, "home"); return; }
       case "tip-max": { $("#tip-amt").value = Math.floor(u.balance * 100) / 100; return; }
       case "tip-set": { $("#tip-amt").value = t.getAttribute("data-v"); return; }
@@ -3859,7 +3984,8 @@
     Promise.resolve(db.login(f.user.value.trim(), f.pass.value)).then(function (r) {
       busyForm(f, false);
       if (r.error) { $("#login-error").innerHTML = errorBox(r.error); return; }
-      $("#login-error").innerHTML = ""; f.reset(); closeAll(); renderHeader(); renderSidebar(); RD.toast("Welcome back, " + r.player.username); route(true);
+      $("#login-error").innerHTML = ""; f.reset(); closeAll(); renderHeader(); renderSidebar(); route(true);
+      if (r.mfa) askMfa(true); else RD.toast("Welcome back, " + r.player.username);
     });
   });
   $("#form-register").addEventListener("submit", function (e) {
@@ -3939,7 +4065,11 @@
         if (before[t.id] === "Pending" && t.status === "Completed") { told = true; RD.toast(t.type === "Deposit" ? "Deposit credited: " + fmt.usd(t.amount) : "Your withdrawal of " + fmt.usd(t.amount) + " was sent"); }
         if (before[t.id] === "Awaiting" && t.status !== "Awaiting") { told = true; RD.toast(t.status === "Completed" ? "Deposit credited: " + fmt.usd(t.amount) : t.status === "Pending" ? "Payment received with a different amount — our team will review it" : t.status === "Expired" ? "Your deposit address expired" : "Deposit " + t.status.toLowerCase(), t.status === "Completed" || t.status === "Pending" ? "" : "error"); }
         if (before[t.id] === "Pending" && t.status === "Rejected") { told = true; RD.toast("Withdrawal of " + fmt.usd(t.amount) + " was rejected and refunded", "error"); }
-        if (!before[t.id] && t.type === "Bonus") { told = true; RD.toast("You received a bonus of " + fmt.usd(t.amount)); }
+        if (!before[t.id] && t.type === "Bonus") {
+          told = true;
+          if (/^Challenge/.test(t.note || "")) { RD.toast("Challenge completed! " + fmt.usd(t.amount) + " added to your balance"); CH.at = 0; if (/^game\//.test(currentPath)) chBanner(currentPath.split("/")[1]); else if (currentPath === "challenges") pages.challenges.after(); }
+          else RD.toast("You received a bonus of " + fmt.usd(t.amount));
+        }
       });
       if (before.kyc !== after.kyc && after.kyc === "Verified") { told = true; RD.toast("Your identity is verified"); }
       if (before.kyc !== after.kyc && after.kyc === "Rejected") { told = true; RD.toast("Verification rejected — please resubmit", "error"); }
@@ -3954,17 +4084,18 @@
     route(true);
   });
 
-  /* Idioma: menu próprio (por enquanto só inglês; os outros entram com a tradução) */
-  var LANGS = [["en", "English"], ["es", "Español"], ["pt", "Português"], ["de", "Deutsch"], ["fr", "Français"], ["tr", "Türkçe"], ["ja", "日本語"]];
+  /* Idioma: o site é escrito em inglês e traduzido na tela (assets/js/i18n.js). Trocar recarrega a página. */
   function renderLang() {
-    $("#lang-menu").innerHTML = LANGS.map(function (l) { return '<button data-lang="' + l[0] + '"' + (l[0] === "en" ? ' class="active"' : "") + "><span>" + l[1] + "</span>" + (l[0] === "en" ? ic("check", 15) : '<small>Soon</small>') + "</button>"; }).join("");
+    var cur = RD.lang || "en", L = RD.LANGS || [["en", "English"]];
+    $("#lang-menu").innerHTML = L.map(function (l) { return '<button data-lang="' + l[0] + '" translate="no"' + (l[0] === cur ? ' class="active"' : "") + "><span>" + l[1] + "</span>" + (l[0] === cur ? ic("check", 15) : "") + "</button>"; }).join("");
+    var nm = L.filter(function (l) { return l[0] === cur; })[0]; $("#lang-name").textContent = nm ? nm[1] : "English"; $("#lang-name").setAttribute("translate", "no");
   }
   renderLang();
   $("#lang-btn").addEventListener("click", function (e) { e.stopPropagation(); $("#lang-menu").classList.toggle("hidden"); });
   $("#lang-menu").addEventListener("click", function (e) {
     var b = e.target.closest("[data-lang]"); if (!b) return;
     $("#lang-menu").classList.add("hidden");
-    if (b.getAttribute("data-lang") !== "en") RD.toast(b.textContent.replace("Soon", "") + " is coming soon");
+    if (b.getAttribute("data-lang") !== (RD.lang || "en") && RD.setLang) RD.setLang(b.getAttribute("data-lang"));
   });
   document.addEventListener("click", function (e) { if (!e.target.closest(".sb-lang-wrap")) $("#lang-menu").classList.add("hidden"); });
 
@@ -3987,6 +4118,7 @@
   renderSidebar(); renderHeader(); renderFooter(); fillCountries();
   window.addEventListener("hashchange", function () { route(); });
   route();
+  if (RD.live && db.mfa) Promise.resolve(db.ready).then(function () { if (db.mfaPending && me()) askMfa(true); });
   document.documentElement.classList.remove("boot"); // primeira tela já montada: mostra tudo de uma vez
   setInterval(countdown, 1000);
 })();

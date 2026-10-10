@@ -303,3 +303,5 @@ h3 { font-size: 15px; font-weight: 600; }
 .notice.info { background: var(--info-soft); border-color: rgba(79, 134, 247, 0.25); color: #9dbcff; }
 .notice code { font-size: 12px; }
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; word-break: break-all; }
+/* tradução: esconde a tela por um instante até o dicionário do idioma chegar (assets/js/i18n.js) */
+html.i18n-wait body { opacity: 0; }

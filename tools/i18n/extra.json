@@ -1,0 +1,494 @@
+{
+ "es": {
+  "months": [
+   "ene",
+   "feb",
+   "mar",
+   "abr",
+   "may",
+   "jun",
+   "jul",
+   "ago",
+   "sept",
+   "oct",
+   "nov",
+   "dic"
+  ],
+  "pats": [
+   [
+    "Hit ([\\d.,]+×) on (.+?) with a bet of ",
+    "Consigue $1 en $2 con una apuesta de "
+   ],
+   [
+    "Hit ([\\d.,]+×) on (.+)$",
+    "Consigue $1 en $2"
+   ],
+   [
+    "^Ends in (.+)$",
+    "Termina en $1"
+   ],
+   [
+    "^Ends (.+)$",
+    "Termina $1"
+   ],
+   [
+    "^Floor (\\d+) / (\\d+) · next (.+)$",
+    "Piso $1 / $2 · siguiente $3"
+   ],
+   [
+    "^1 flip$",
+    "1 lanzamiento"
+   ],
+   [
+    "^(\\d+) flips$",
+    "$1 lanzamientos"
+   ],
+   [
+    "^Hi (.+) 👋$",
+    "Hola $1 👋"
+   ],
+   [
+    "^Reach (.+)$",
+    "Alcanza $1"
+   ],
+   [
+    "^Claimed (.+) in VIP rewards$",
+    "Reclamaste $1 en recompensas VIP"
+   ],
+   [
+    "^Claimed (\\$[\\d.,]+)$",
+    "Reclamado: $1"
+   ],
+   [
+    "^Added (.+) to the rain$",
+    "Sumaste $1 a la lluvia"
+   ],
+   [
+    "^Welcome, (.+)! Make a deposit to start playing\\.$",
+    "¡Bienvenido, $1! Haz un depósito para empezar a jugar."
+   ],
+   [
+    "^Paste your (.+) address$",
+    "Pega tu dirección de $1"
+   ],
+   [
+    "^Tile (\\d+)$",
+    "Casilla $1"
+   ],
+   [
+    "^at (.+) · ~(.+) / month$",
+    "al $1 · ~$2 / mes"
+   ]
+  ]
+ },
+ "pt": {
+  "months": [
+   "jan",
+   "fev",
+   "mar",
+   "abr",
+   "mai",
+   "jun",
+   "jul",
+   "ago",
+   "set",
+   "out",
+   "nov",
+   "dez"
+  ],
+  "pats": [
+   [
+    "Hit ([\\d.,]+×) on (.+?) with a bet of ",
+    "Acerte $1 no $2 com uma aposta de "
+   ],
+   [
+    "Hit ([\\d.,]+×) on (.+)$",
+    "Acerte $1 no $2"
+   ],
+   [
+    "^Ends in (.+)$",
+    "Termina em $1"
+   ],
+   [
+    "^Ends (.+)$",
+    "Termina $1"
+   ],
+   [
+    "^Floor (\\d+) / (\\d+) · next (.+)$",
+    "Andar $1 / $2 · próximo $3"
+   ],
+   [
+    "^1 flip$",
+    "1 lançamento"
+   ],
+   [
+    "^(\\d+) flips$",
+    "$1 lançamentos"
+   ],
+   [
+    "^Hi (.+) 👋$",
+    "Oi $1 👋"
+   ],
+   [
+    "^Reach (.+)$",
+    "Alcance $1"
+   ],
+   [
+    "^Claimed (.+) in VIP rewards$",
+    "Você resgatou $1 em recompensas VIP"
+   ],
+   [
+    "^Claimed (\\$[\\d.,]+)$",
+    "Resgatado: $1"
+   ],
+   [
+    "^Added (.+) to the rain$",
+    "Você adicionou $1 à chuva"
+   ],
+   [
+    "^Welcome, (.+)! Make a deposit to start playing\\.$",
+    "Bem-vindo, $1! Faça um depósito para começar a jogar."
+   ],
+   [
+    "^Paste your (.+) address$",
+    "Cole seu endereço de $1"
+   ],
+   [
+    "^Tile (\\d+)$",
+    "Casa $1"
+   ],
+   [
+    "^at (.+) · ~(.+) / month$",
+    "com $1 · ~$2 / mês"
+   ]
+  ]
+ },
+ "de": {
+  "months": [
+   "Jan.",
+   "Feb.",
+   "März",
+   "Apr.",
+   "Mai",
+   "Juni",
+   "Juli",
+   "Aug.",
+   "Sept.",
+   "Okt.",
+   "Nov.",
+   "Dez."
+  ],
+  "pats": [
+   [
+    "Hit ([\\d.,]+×) on (.+?) with a bet of ",
+    "Erreiche $1 bei $2 mit einem Einsatz von "
+   ],
+   [
+    "Hit ([\\d.,]+×) on (.+)$",
+    "Erreiche $1 bei $2"
+   ],
+   [
+    "^Ends in (.+)$",
+    "Endet in $1"
+   ],
+   [
+    "^Ends (.+)$",
+    "Endet $1"
+   ],
+   [
+    "^Floor (\\d+) / (\\d+) · next (.+)$",
+    "Etage $1 / $2 · nächste $3"
+   ],
+   [
+    "^1 flip$",
+    "1 Wurf"
+   ],
+   [
+    "^(\\d+) flips$",
+    "$1 Würfe"
+   ],
+   [
+    "^Hi (.+) 👋$",
+    "Hallo $1 👋"
+   ],
+   [
+    "^Reach (.+)$",
+    "Erreiche $1"
+   ],
+   [
+    "^Claimed (.+) in VIP rewards$",
+    "$1 an VIP-Belohnungen eingelöst"
+   ],
+   [
+    "^Claimed (\\$[\\d.,]+)$",
+    "Eingelöst: $1"
+   ],
+   [
+    "^Added (.+) to the rain$",
+    "$1 zum Rain hinzugefügt"
+   ],
+   [
+    "^Welcome, (.+)! Make a deposit to start playing\\.$",
+    "Willkommen, $1! Zahle ein, um loszuspielen."
+   ],
+   [
+    "^Paste your (.+) address$",
+    "Deine $1-Adresse einfügen"
+   ],
+   [
+    "^Tile (\\d+)$",
+    "Feld $1"
+   ],
+   [
+    "^at (.+) · ~(.+) / month$",
+    "bei $1 · ~$2 / Monat"
+   ]
+  ]
+ },
+ "fr": {
+  "months": [
+   "janv.",
+   "févr.",
+   "mars",
+   "avr.",
+   "mai",
+   "juin",
+   "juil.",
+   "août",
+   "sept.",
+   "oct.",
+   "nov.",
+   "déc."
+  ],
+  "pats": [
+   [
+    "Hit ([\\d.,]+×) on (.+?) with a bet of ",
+    "Atteins $1 sur $2 avec une mise de "
+   ],
+   [
+    "Hit ([\\d.,]+×) on (.+)$",
+    "Atteins $1 sur $2"
+   ],
+   [
+    "^Ends in (.+)$",
+    "Se termine dans $1"
+   ],
+   [
+    "^Ends (.+)$",
+    "Se termine $1"
+   ],
+   [
+    "^Floor (\\d+) / (\\d+) · next (.+)$",
+    "Étage $1 / $2 · suivant $3"
+   ],
+   [
+    "^1 flip$",
+    "1 lancer"
+   ],
+   [
+    "^(\\d+) flips$",
+    "$1 lancers"
+   ],
+   [
+    "^Hi (.+) 👋$",
+    "Salut $1 👋"
+   ],
+   [
+    "^Reach (.+)$",
+    "Atteins $1"
+   ],
+   [
+    "^Claimed (.+) in VIP rewards$",
+    "Tu as récupéré $1 en récompenses VIP"
+   ],
+   [
+    "^Claimed (\\$[\\d.,]+)$",
+    "Récupéré : $1"
+   ],
+   [
+    "^Added (.+) to the rain$",
+    "Tu as ajouté $1 à la pluie"
+   ],
+   [
+    "^Welcome, (.+)! Make a deposit to start playing\\.$",
+    "Bienvenue, $1 ! Fais un dépôt pour commencer à jouer."
+   ],
+   [
+    "^Paste your (.+) address$",
+    "Colle ton adresse $1"
+   ],
+   [
+    "^Tile (\\d+)$",
+    "Case $1"
+   ],
+   [
+    "^at (.+) · ~(.+) / month$",
+    "à $1 · ~$2 / mois"
+   ]
+  ]
+ },
+ "tr": {
+  "months": [
+   "Oca",
+   "Şub",
+   "Mar",
+   "Nis",
+   "May",
+   "Haz",
+   "Tem",
+   "Ağu",
+   "Eyl",
+   "Eki",
+   "Kas",
+   "Ara"
+  ],
+  "pats": [
+   [
+    "Hit ([\\d.,]+×) on (.+?) with a bet of ",
+    "$2 oyununda $1 yakala · bahis tutarı "
+   ],
+   [
+    "Hit ([\\d.,]+×) on (.+)$",
+    "$2 oyununda $1 yakala"
+   ],
+   [
+    "^Ends in (.+)$",
+    "$1 içinde bitiyor"
+   ],
+   [
+    "^Ends (.+)$",
+    "Bitiş: $1"
+   ],
+   [
+    "^Floor (\\d+) / (\\d+) · next (.+)$",
+    "Kat $1 / $2 · sonraki $3"
+   ],
+   [
+    "^1 flip$",
+    "1 atış"
+   ],
+   [
+    "^(\\d+) flips$",
+    "$1 atış"
+   ],
+   [
+    "^Hi (.+) 👋$",
+    "Merhaba $1 👋"
+   ],
+   [
+    "^Reach (.+)$",
+    "$1 seviyesine ulaş"
+   ],
+   [
+    "^Claimed (.+) in VIP rewards$",
+    "$1 VIP ödülü alındı"
+   ],
+   [
+    "^Claimed (\\$[\\d.,]+)$",
+    "Alındı: $1"
+   ],
+   [
+    "^Added (.+) to the rain$",
+    "Yağmura $1 eklendi"
+   ],
+   [
+    "^Welcome, (.+)! Make a deposit to start playing\\.$",
+    "Hoş geldin, $1! Oynamaya başlamak için para yatır."
+   ],
+   [
+    "^Paste your (.+) address$",
+    "$1 adresini yapıştır"
+   ],
+   [
+    "^Tile (\\d+)$",
+    "Kare $1"
+   ],
+   [
+    "^at (.+) · ~(.+) / month$",
+    "$1 ile · ~$2 / ay"
+   ]
+  ]
+ },
+ "ja": {
+  "months": [
+   "1月",
+   "2月",
+   "3月",
+   "4月",
+   "5月",
+   "6月",
+   "7月",
+   "8月",
+   "9月",
+   "10月",
+   "11月",
+   "12月"
+  ],
+  "pats": [
+   [
+    "Hit ([\\d.,]+×) on (.+?) with a bet of ",
+    "$2で$1を達成 · ベット額 "
+   ],
+   [
+    "Hit ([\\d.,]+×) on (.+)$",
+    "$2で$1を達成"
+   ],
+   [
+    "^Ends in (.+)$",
+    "残り $1"
+   ],
+   [
+    "^Ends (.+)$",
+    "終了 $1"
+   ],
+   [
+    "^Floor (\\d+) / (\\d+) · next (.+)$",
+    "フロア $1 / $2 · 次 $3"
+   ],
+   [
+    "^1 flip$",
+    "1回"
+   ],
+   [
+    "^(\\d+) flips$",
+    "$1回"
+   ],
+   [
+    "^Hi (.+) 👋$",
+    "こんにちは $1 さん 👋"
+   ],
+   [
+    "^Reach (.+)$",
+    "$1 に到達"
+   ],
+   [
+    "^Claimed (.+) in VIP rewards$",
+    "VIP報酬 $1 を受け取りました"
+   ],
+   [
+    "^Claimed (\\$[\\d.,]+)$",
+    "受け取り済み: $1"
+   ],
+   [
+    "^Added (.+) to the rain$",
+    "レインに $1 を追加しました"
+   ],
+   [
+    "^Welcome, (.+)! Make a deposit to start playing\\.$",
+    "ようこそ、$1さん！入金してプレイを始めましょう。"
+   ],
+   [
+    "^Paste your (.+) address$",
+    "$1 のアドレスを貼り付け"
+   ],
+   [
+    "^Tile (\\d+)$",
+    "マス $1"
+   ],
+   [
+    "^at (.+) · ~(.+) / month$",
+    "$1 · 約 $2 / 月"
+   ]
+  ]
+ }
+}

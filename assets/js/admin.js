@@ -58,6 +58,7 @@
       RD.live ? { id: "invites", label: "Convites", icon: "gift" } : null,
       RD.live ? { id: "rain", label: "Chuva (Rain)", icon: "coins" } : null,
       { id: "codes", label: "Códigos", icon: "gift" },
+      { id: "challenges", label: "Desafios", icon: "target" },
       { id: "vip", label: "VIP & Recompensas", icon: "crown" },
       { group: "Sistema" },
       { id: "settings", label: "Configurações", icon: "settings" },
@@ -431,6 +432,54 @@
     });
   };
 
+  /* Desafios: "acerte X× no jogo Y com aposta mínima Z". O servidor confere cada aposta ganha e paga na hora. */
+  function chGameName(id) { var g = RD.games.filter(function (x) { return x.id === id; })[0]; return g ? g.name : id; }
+  P.challenges = function () {
+    var orig = RD.games.filter(function (g) { return g.playable; }), slots = RD.games.filter(function (g) { return g.cat === "slots"; });
+    var opts = '<optgroup label="RD Originals">' + orig.map(function (g) { return '<option value="' + g.id + '">' + esc(g.name) + "</option>"; }).join("") + "</optgroup>" +
+      (slots.length ? '<optgroup label="Slots (modo demo: ainda sem aposta real)">' + slots.map(function (g) { return '<option value="' + g.id + '" disabled>' + esc(g.name) + "</option>"; }).join("") + "</optgroup>" : "");
+    return head("Desafios", "O jogador que acertar o multiplicador com a aposta mínima recebe o prêmio na hora, direto no saldo. Cada jogador ganha cada desafio uma vez; acabou a vaga, encerra sozinho.") +
+      '<div class="card card-pad"><form id="ch-form" class="row wrap" style="gap:12px;align-items:flex-end">' +
+      '<div class="field" style="margin:0;width:180px"><label>Jogo</label><select class="select" name="game">' + opts + "</select></div>" +
+      '<div class="field" style="margin:0;width:140px"><label>Multiplicador mínimo (×)</label><input class="input" type="number" name="mult" min="1.01" step="0.01" required value="100"></div>' +
+      '<div class="field" style="margin:0;width:140px"><label>Aposta mínima (USD)</label><input class="input" type="number" name="bet" min="0" step="0.01" value="1"></div>' +
+      '<div class="field" style="margin:0;width:130px"><label>Prêmio (USD)</label><input class="input" type="number" name="prize" min="0.01" step="0.01" required value="25"></div>' +
+      '<div class="field" style="margin:0;width:120px"><label>Ganhadores</label><input class="input" type="number" name="max" min="1" step="1" required value="5"></div>' +
+      '<div class="field" style="margin:0;width:160px"><label>Dura (horas, 0 = até esgotar)</label><input class="input" type="number" name="hrs" min="0" step="1" value="72"></div>' +
+      '<div class="field" style="margin:0;flex:1;min-width:200px"><label>Título (opcional; em branco o site monta "Hit 100× on Limbo" e traduz sozinho)</label><input class="input" name="title" maxlength="80" placeholder="Deixe em branco para traduzir automaticamente"></div>' +
+      '<button class="btn btn-primary">Criar desafio</button></form><p class="faint" id="ch-cost" style="font-size:12.5px;margin-top:10px;line-height:1.6"></p></div>' +
+      '<div class="card mt" id="ch-admin"><div class="card-pad faint">Carregando…</div></div>';
+  };
+  P.challenges.after = function () {
+    var f = $("#ch-form");
+    var cost = function () {
+      var m = +f.mult.value || 0, b = +f.bet.value || 0, pz = +f.prize.value || 0, n = +f.max.value || 0;
+      if (!(m > 1) || !pz || !n) { $("#ch-cost").textContent = ""; return; }
+      var bets = m / 0.98, wag = bets * b, edge = wag * 0.02;
+      $("#ch-cost").innerHTML = "Custo máximo: <b>" + fmt.usd(pz * n) + "</b> (" + n + " × " + fmt.usd(pz) + "). " +
+        "Com RTP de 98%, a chance de uma aposta dar " + m + "× ou mais é no máximo " + (98 / m).toFixed(m >= 100 ? 3 : 2) + "%: cada ganhador faz em média <b>pelo menos " + Math.round(bets).toLocaleString("pt-BR") + " apostas</b>" +
+        (b ? ", ou " + fmt.usd(wag) + " apostados com a aposta mínima, o que rende cerca de " + fmt.usd(edge) + " de vantagem da casa contra " + fmt.usd(pz) + " de prêmio." : ". Sem aposta mínima, o jogador pode tentar com centavos.");
+    };
+    ["mult", "bet", "prize", "max"].forEach(function (k) { f[k].addEventListener("input", cost); }); cost();
+    f.addEventListener("submit", function (e) {
+      e.preventDefault();
+      after(db.saveChallenge({ game: f.game.value, title: f.title.value.trim(), min_mult: +f.mult.value, min_bet: +f.bet.value || 0, prize: +f.prize.value, max_winners: +f.max.value, hours: +f.hrs.value || 0 }), "Desafio criado");
+    });
+    Promise.resolve(db.adminChallenges ? db.adminChallenges() : []).then(function (list) {
+      var box = $("#ch-admin"); if (!box) return;
+      var now = Date.now();
+      box.innerHTML = list.length ? '<div class="table-wrap"><table class="table"><thead><tr><th>Jogo</th><th>Desafio</th><th class="right">Prêmio</th><th class="right">Aposta mín.</th><th class="right">Ganhadores</th><th class="right">Pago</th><th>Termina</th><th>Status</th><th></th></tr></thead><tbody>' +
+        list.map(function (c) {
+          var ended = c.ends_at && new Date(c.ends_at).getTime() < now, full = c.winners >= c.max_winners;
+          var names = (c.list || []).map(function (w) { return esc(w.user) + " (" + (+w.mult).toFixed(2) + "×)"; }).join(", ");
+          return "<tr><td>" + esc(chGameName(c.game)) + "</td><td>" + (c.title ? esc(c.title) : (+c.min_mult) + "× em " + esc(chGameName(c.game))) + (names ? '<br><small class="faint">' + names + "</small>" : "") + '</td><td class="right num strong">' + fmt.usd(+c.prize) + '</td><td class="right num">' + fmt.usd(+c.min_bet) + '</td><td class="right">' + c.winners + " / " + c.max_winners + '</td><td class="right num">' + fmt.usd(c.winners * c.prize) + '</td><td class="faint">' + (c.ends_at ? fmt.date(c.ends_at) : "Até esgotar") + "</td><td>" +
+            (!c.active ? '<span class="badge">Desligado</span>' : full ? '<span class="badge">Esgotado</span>' : ended ? '<span class="badge">Encerrado</span>' : '<span class="badge badge-success">Ativo</span>') +
+            '</td><td class="right">' + (full || ended ? "" : '<button class="btn btn-secondary btn-sm" data-act="ch-toggle" data-id="' + c.id + '" data-on="' + (c.active ? 0 : 1) + '">' + (c.active ? "Desligar" : "Ligar") + "</button>") + "</td></tr>";
+        }).join("") + "</tbody></table></div>" : empty("Nenhum desafio ainda", "Crie o primeiro acima.");
+      hydrate(box);
+    });
+  };
+
   P.settings = function () {
     var L = RD.config.license;
     return head("Configurações", "O que você muda aqui aparece no site na hora") +
@@ -546,6 +595,7 @@
       return;
     }
     if (a === "code-toggle") return after(db.toggleCode(id, t.getAttribute("data-on") === "1"), "Código atualizado");
+    if (a === "ch-toggle") return after(db.toggleChallenge(+id, t.getAttribute("data-on") === "1"), "Desafio atualizado");
     if (a === "credit-dep") {
       var dp = db.player(id), ws = RD.live && db.wallets ? db.wallets() : [];
       var opts = ws.length ? ws.map(function (w, i) { return '<option value="' + i + '">' + esc(w.coin + " · " + w.network) + "</option>"; }).join("") : '<option value="">USDT</option>';

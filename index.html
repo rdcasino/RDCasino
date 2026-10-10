@@ -13,7 +13,7 @@
 <link rel="preload" href="assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/unbounded-latin.woff2" as="font" type="font/woff2" crossorigin>
 <!-- bundle:css -->
-<link rel="stylesheet" href="assets/dist/site.3429444010.css">
+<link rel="stylesheet" href="assets/dist/site.70aa26151c.css">
 <!-- /bundle:css -->
 </head>
 <body>
@@ -22,7 +22,7 @@
 <aside class="sidebar" id="sidebar">
   <div class="sb-head">
     <button class="sb-toggle" id="sb-toggle" aria-label="Collapse menu" title="Menu"><span></span><span></span><span></span></button>
-    <a class="brand" href="#/"><span class="brand-name">RD<span>Casino</span></span></a>
+    <a class="brand" href="#/"><span class="brand-name" translate="no">RD<span>Casino</span></span></a>
   </div>
   <div class="sb-switch">
     <a href="#/" class="active" data-switch="casino">Casino</a>
@@ -43,12 +43,11 @@
   <header class="header">
     <div class="hdr-left">
       <button class="icon-btn hdr-burger" id="burger" aria-label="Menu"><span data-ic="menu"></span></button>
-      <a class="brand brand-mobile" href="#/"><span class="brand-name">RD<span>Casino</span></span></a>
+      <a class="brand brand-mobile" href="#/"><span class="brand-name" translate="no">RD<span>Casino</span></span></a>
     </div>
 
     <div class="hdr-center hidden" id="hdr-wallet">
       <div class="menu bal-menu hidden" id="bal-menu"></div>
-      <button class="hdr-rank" id="hdr-rank" data-drawer="vip" aria-label="VIP"><span id="hdr-rank-ring"></span><i class="hdr-dot hidden" id="vip-dot"></i></button>
       <div class="hdr-wallet">
         <button class="hdr-balance" id="bal-btn" aria-haspopup="true" aria-label="Display currency"><span class="num" id="hdr-bal">$0.00</span><span class="bal-tag" id="hdr-coin"></span><span class="bal-chev" data-ic="chevronDown"></span></button>
         <button class="btn btn-primary" data-open="wallet"><span data-ic="wallet"></span><span>Wallet</span></button>
@@ -63,7 +62,7 @@
     <div class="hdr-right hidden" id="hdr-user">
       <button class="icon-btn hide-sm" data-drawer="chat" aria-label="Chat"><span data-ic="chat"></span></button>
       <div class="menu-wrap">
-        <button class="icon-btn" id="user-btn" aria-label="Account"><span data-ic="user"></span></button>
+        <button class="icon-btn" id="user-btn" aria-label="Account" style="position:relative"><span data-ic="user"></span><i class="hdr-dot hidden" id="vip-dot"></i></button>
         <div class="menu hidden" id="user-menu"></div>
       </div>
     </div>
@@ -149,7 +148,7 @@
     <button class="icon-btn" data-close-drawer aria-label="Close"><span data-ic="x"></span></button>
   </div>
   <div id="rain-box"></div>
-  <div class="drawer-body chat-list" id="chat-list"></div>
+  <div class="drawer-body chat-list" id="chat-list" translate="no"></div>
   <form class="chat-form" id="chat-form">
     <input class="input" placeholder="Say something nice…" maxlength="200">
     <button class="btn btn-primary btn-icon" aria-label="Send"><span data-ic="send"></span></button>
@@ -157,7 +156,7 @@
 </aside>
 
 <!-- bundle:js -->
-<script src="assets/dist/site.b5f6f80439.js"></script>
+<script src="assets/dist/site.642ecddc0c.js"></script>
 <!-- /bundle:js -->
 </body>
 </html>

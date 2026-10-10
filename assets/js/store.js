@@ -87,6 +87,22 @@
     D.tx.unshift(t);
     return t;
   }
+  /* Challenges (desafios): mesma regra do servidor (0035) — a aposta ganha confere os desafios abertos do jogo */
+  function chOpen(c) { var now = Date.now(); return c.active && c.winners < c.max_winners && new Date(c.starts_at).getTime() <= now && (!c.ends_at || new Date(c.ends_at).getTime() > now); }
+  function chCheck(p, b) {
+    if (!(b.payout > 0) || !(b.multiplier > 1)) return;
+    (D.challenges || []).slice().reverse().forEach(function (c) {
+      if (c.game !== b.game || !chOpen(c) || b.multiplier < c.min_mult || b.amount < c.min_bet) return;
+      if (c.list.some(function (w) { return w.uid === p.id; })) return;
+      c.list.push({ uid: p.id, user: p.username, mult: b.multiplier, amount: b.amount, at: nowIso() }); c.winners++;
+      p.balance = round(p.balance + c.prize);
+      addTx(p, "Bonus", c.prize, "Completed", { note: "Challenge: " + (c.title || c.min_mult + "x on " + c.game) });
+    });
+  }
+  function chView(c, pid) {
+    return { id: c.id, game: c.game, title: c.title, min_mult: c.min_mult, min_bet: c.min_bet, prize: c.prize, max_winners: c.max_winners, winners: c.winners, active: c.active, starts_at: c.starts_at, ends_at: c.ends_at, created_at: c.starts_at,
+      open: chOpen(c), mine: c.list.some(function (w) { return w.uid === pid; }), list: c.list.map(function (w) { return { user: w.user, mult: w.mult, amount: w.amount, at: w.at }; }) };
+  }
   function tierOf(wagered) {
     var cur = null;
     RD.vipTiers.forEach(function (t) { if (wagered >= t.wager) cur = t; });
@@ -298,6 +314,16 @@
       ex.amount = round(c.amount); ex.maxUses = +c.maxUses || 0; ex.minWager = +c.minWager || 0; ex.expires = c.hours > 0 ? new Date(Date.now() + c.hours * 3600e3).toISOString() : null; ex.active = true;
       if (D.codes.indexOf(ex) < 0) D.codes.unshift(ex); log("admin", "Código " + k + " salvo"); save(); return { ok: true };
     },
+    challenges: function () { var u = db.current(); return (D.challenges || []).filter(function (c) { return chOpen(c) || c.winners > 0; }).map(function (c) { return chView(c, u && u.id); }); },
+    adminChallenges: function () { return (D.challenges || []).map(function (c) { return chView(c, null); }); },
+    saveChallenge: function (c) {
+      if (!(c.min_mult > 1)) return { error: "Multiplicador precisa ser maior que 1×." }; if (!(c.prize > 0)) return { error: "Prêmio inválido." }; if (!(c.max_winners > 0)) return { error: "Número de ganhadores inválido." };
+      D.challenges = D.challenges || []; D.seq++;
+      D.challenges.unshift({ id: D.seq, game: c.game, title: String(c.title || "").slice(0, 80), min_mult: round(c.min_mult), min_bet: round(c.min_bet || 0), prize: round(c.prize), max_winners: c.max_winners | 0, winners: 0, active: true,
+        starts_at: nowIso(), ends_at: c.hours > 0 ? new Date(Date.now() + c.hours * 3600e3).toISOString() : null, list: [] });
+      log("admin", "Desafio criado: " + c.min_mult + "x em " + c.game); save(); return { ok: true };
+    },
+    toggleChallenge: function (cid, active) { var c = (D.challenges || []).filter(function (x) { return x.id === cid; })[0]; if (c) { c.active = active; save(); } return { ok: true }; },
     toggleCode: function (code, active) { var c = (D.codes || []).filter(function (x) { return x.code === code; })[0]; if (c) { c.active = active; save(); } return { ok: true }; },
     /* Admin credita um depósito que viu chegar na corretora */
     creditDeposit: function (pid, amount, coin, net, txHash) {
@@ -338,7 +364,7 @@
       p.rakeback = p.rakeback + amount * ((g.edge || 1) / 100) * RD.config.rakebackRate;
       var b = { id: id("B-"), userId: p.id, user: p.username, game: game, amount: round(amount), multiplier: win ? multiplier : 0, payout: payout, date: nowIso(), detail: detail };
       D.bets.unshift(b); D.bets = D.bets.slice(0, 2000);
-      save();
+      chCheck(p, b); save();
       return b;
     },
     /* ---------- Bônus recorrentes (diário, semanal, mensal, recarga VIP) ---------- */
@@ -403,7 +429,7 @@
       var b = { id: id("B-"), userId: p.id, user: p.username, game: r.game, amount: r.amount, multiplier: win ? multiplier : 0, payout: payout, date: nowIso(), detail: detail || {} };
       b.detail.nonce = r.nonce; b.detail.client = r.client;
       D.bets.unshift(b); D.bets = D.bets.slice(0, 2000);
-      delete p.rounds[game]; save();
+      chCheck(p, b); delete p.rounds[game]; save();
       return b;
     },
     betsOf: function (pid) { return D.bets.filter(function (b) { return b.userId === pid; }); },
