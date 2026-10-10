@@ -1,0 +1,5 @@
+# Arquivos internos: ficam no repositório, mas não vão para o site publicado
+supabase/
+docs/
+tools/
+*.md

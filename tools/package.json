@@ -1,0 +1,7 @@
+{
+  "name": "rdcasino-tools",
+  "private": true,
+  "description": "Empacota o site (JS e CSS compactados). Rode: cd tools && npm install && npm run bundle",
+  "scripts": { "bundle": "node bundle.mjs" },
+  "devDependencies": { "esbuild": "0.24.0" }
+}
