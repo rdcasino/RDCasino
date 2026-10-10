@@ -155,6 +155,7 @@
       '<a href="#/account/bets">' + ic("chart", 16) + "My bets</a>" +
       '<a href="#/vip">' + ic("crown", 16) + "VIP Club</a>" +
       '<a href="#/affiliate">' + ic("link", 16) + "Affiliate</a>" +
+      '<a href="#/responsible">' + ic("shield", 16) + "Limits & breaks</a>" +
       '<button class="danger" data-action="logout">' + ic("logout", 16) + "Sign out</button>");
   }
 
@@ -3366,9 +3367,57 @@
   pages.fairness.after = function () { bindVerify($(".vf")); };
   pages.responsible = function () {
     return '<div class="container prose"><h1>Responsible gaming</h1><p class="muted" style="margin-top:8px">Gambling should be entertainment, never a way to make money or escape problems.</p>' +
-      "<h2>Tools</h2><ul><li>Deposit, loss and wager limits.</li><li>Session reminders.</li><li>Cool-off from 24 hours to 6 weeks.</li><li>Self-exclusion from 6 months to permanent.</li></ul>" +
+      '<div id="rg-box" class="rg-box">' + (me() ? '<div class="card empty" style="padding:28px 20px"><p class="faint">Loading your limits…</p></div>' : '<div class="card rg-guest"><b>Your limits</b><p class="muted">Sign in to set deposit, loss and wager limits, take a break or self-exclude.</p><button class="btn btn-primary" data-open="login">Sign in</button></div>') + "</div>" +
+      "<h2>Tools</h2><ul><li>Deposit, loss and wager limits for 24 hours, 7 days and 30 days.</li><li>Lowering a limit works right away; raising or removing it takes effect after 24 hours.</li><li>Take a break for 24 hours, 7 days or 30 days.</li><li>Self-exclusion for 6 months, 1 year or permanently.</li><li>During a break or self-exclusion you cannot bet or deposit, but you can always withdraw your balance.</li></ul>" +
       "<h2>Warning signs</h2><ul><li>Spending more than you can afford to lose.</li><li>Chasing losses.</li><li>Hiding gambling from people close to you.</li></ul>" +
       '<h2>Get help</h2><p><a class="link-sm" href="https://www.begambleaware.org" target="_blank" rel="noopener">BeGambleAware</a> · <a class="link-sm" href="https://www.gamblersanonymous.org" target="_blank" rel="noopener">Gamblers Anonymous</a> · <a class="link-sm" href="https://www.gamblingtherapy.org" target="_blank" rel="noopener">Gambling Therapy</a></p></div>';
+  };
+  /* Limites e pausas do jogador (o servidor aplica em cada aposta e depósito) */
+  var RG_KINDS = [["deposit", "Deposit limit", "Max you can deposit"], ["loss", "Loss limit", "Max net loss"], ["wager", "Wager limit", "Max total bets"]], RG_PER = [["day", "24 hours"], ["week", "7 days"], ["month", "30 days"]];
+  function rgDate(iso) { var d = new Date(iso); return d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) + ", " + d.toTimeString().slice(0, 5); }
+  function rgView(st) {
+    var lock = st.excluded_until ? "Self-excluded " + (st.excluded_until === "infinity" ? "permanently" : "until " + rgDate(st.excluded_until)) : st.break_until ? "On a break until " + rgDate(st.break_until) : "";
+    var h = lock ? '<div class="notice rg-lock">' + ic("lock", 16) + "<span><b>" + lock + ".</b> Betting, deposits, tips and codes are paused. You can still withdraw your balance.</span></div>" : "";
+    h += '<div class="rg-grid">' + RG_KINDS.map(function (k) {
+      return '<form class="card rg-card" data-rg-form="' + k[0] + '"><div class="rg-head"><b>' + k[1] + '</b><small>' + k[2] + ' (USD)</small></div>' + RG_PER.map(function (p) {
+        var cur = st.limits[k[0]] && st.limits[k[0]][p[0]] != null ? +st.limits[k[0]][p[0]] : null, used = st.used[k[0]] ? +st.used[k[0]][p[0]] : 0, pen = st.pending[k[0] + "." + p[0]];
+        return '<label class="rg-row"><span>' + p[1] + '</span><input class="input" name="' + p[0] + '" inputmode="decimal" placeholder="No limit" value="' + (cur != null ? cur : "") + '" data-was="' + (cur != null ? cur : "") + '">' +
+          '<small class="faint">' + (cur != null ? fmt.usd(Math.min(used, cur)) + " of " + fmt.usd(cur) + " used" : fmt.usd(used) + " in the last " + p[1]) + (pen ? ' · <span class="rg-pen">' + (pen.value == null ? "removed" : "goes to " + fmt.usd(+pen.value)) + " on " + rgDate(pen.at) + "</span>" : "") + "</small></label>";
+      }).join("") + '<button class="btn btn-secondary btn-block" type="submit">Save</button></form>';
+    }).join("") + "</div>";
+    h += '<div class="rg-grid rg-grid-2"><div class="card rg-card"><div class="rg-head"><b>Take a break</b><small>No bets or deposits for a while. Cannot be undone early.</small></div><div class="rg-btns">' +
+      [[1, "24 hours"], [7, "7 days"], [30, "30 days"]].map(function (b) { return '<button class="btn btn-secondary" data-rg-break="' + b[0] + '">' + b[1] + "</button>"; }).join("") + "</div></div>" +
+      '<div class="card rg-card"><div class="rg-head"><b>Self-exclusion</b><small>Close your account to gambling for a long period. Cannot be undone.</small></div><div class="rg-btns">' +
+      [[6, "6 months"], [12, "1 year"], [0, "Permanent"]].map(function (b) { return '<button class="btn btn-secondary" data-rg-excl="' + b[0] + '">' + b[1] + "</button>"; }).join("") + "</div></div></div>";
+    return h;
+  }
+  function rgLoad() {
+    var box = $("#rg-box"); if (!box || !me()) return;
+    if (!db.rgState) { box.innerHTML = '<div class="card empty" style="padding:28px 20px"><p class="faint">Limits are available on real accounts.</p></div>'; return; }
+    Promise.resolve(db.rgState()).then(function (st) { var b = $("#rg-box"); if (!b) return; if (!st || st.error) { b.innerHTML = errorBox((st && st.error) || "Could not load your limits."); return; } b.innerHTML = rgView(st); hydrateIcons(b); });
+  }
+  pages.responsible.after = function () {
+    rgLoad();
+    var box = $("#rg-box"); if (!box) return;
+    box.addEventListener("submit", function (e) {
+      var f = e.target.closest("[data-rg-form]"); if (!f) return; e.preventDefault();
+      var kind = f.getAttribute("data-rg-form"), btn = f.querySelector("button[type=submit]"), jobs = [];
+      RG_PER.forEach(function (p) {
+        var el = f.elements[p[0]], raw = el.value.replace(/[$,\s]/g, ""), v = raw === "" ? null : +raw, was = el.getAttribute("data-was");
+        if ((was === "" ? null : +was) === v) return; // só envia o que mudou (não cancela um aumento que já está esperando 24h)
+        if (raw !== "" && !(v >= 1)) jobs.push(Promise.resolve({ error: "Limits must be at least $1." })); else jobs.push(db.rgSetLimit(kind, p[0], v));
+      });
+      if (!jobs.length) return RD.toast("Nothing to change");
+      btn.disabled = true;
+      Promise.all(jobs).then(function (rs) { var err = rs.filter(function (r) { return r && r.error; })[0]; RD.toast(err ? err.error : "Limits saved", err ? "error" : ""); rgLoad(); });
+    });
+    box.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-rg-break],[data-rg-excl]"); if (!b) return; e.preventDefault();
+      if (!b.classList.contains("rg-confirm")) { $$(".rg-confirm", box).forEach(function (x) { x.classList.remove("rg-confirm"); x.textContent = x._t; }); b._t = b.textContent; b.classList.add("rg-confirm"); b.textContent = "Tap again to confirm"; return; }
+      b.disabled = true;
+      var job = b.hasAttribute("data-rg-break") ? db.rgBreak(+b.getAttribute("data-rg-break")) : db.rgExclude(+b.getAttribute("data-rg-excl"));
+      Promise.resolve(job).then(function (r) { RD.toast(r && r.error ? r.error : b.hasAttribute("data-rg-break") ? "Your break has started" : "Self-exclusion is active", r && r.error ? "error" : ""); rgLoad(); });
+    });
   };
   var LEGAL = { terms: "Terms of Service", privacy: "Privacy Policy", aml: "AML & KYC Policy", bonus: "Bonus Terms", cookies: "Cookie Policy" };
   pages.legal = function (doc) {
