@@ -360,7 +360,6 @@
       '<div class="section"><div class="input-search" style="margin-bottom:16px">' + ic("search") + '<input class="input" id="home-search" type="search" placeholder="Search your game" style="height:46px;background:var(--bg-2);border-color:transparent"></div>' + catTabs("all") + '<div id="search-results"></div></div>' +
       '<div id="home-rows">' +
       '<div class="section">' + sectionHead("RD Originals", "star", "#/casino/originals") + '<div class="game-row">' + gamesOf("originals").map(gameCard).join("") + "</div></div>" +
-      '<div class="section">' + sectionHead("New releases", "flame", "#/casino/originals") + '<div class="game-row">' + RD.games.filter(function (g) { return g.enabled && g.playable && g.tag === "new"; }).reverse().map(gameCard).join("") + "</div></div>" +
       '<div class="section">' + sectionHead("Slots", "cherry", "#/casino/slots") + '<div class="game-row">' + gamesOf("slots").map(gameCard).join("") + "</div></div>" +
       '<div class="section">' + sectionHead("Live Casino", "play", "#/casino/live") + '<div class="game-row">' + gamesOf("live").concat(gamesOf("gameshows")).map(gameCard).join("") + "</div></div>" +
       '<div class="section">' + sectionHead("Providers", "grid") + '<div class="prov-row">' + providerTiles() + "</div></div></div>" +
