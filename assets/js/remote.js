@@ -379,6 +379,9 @@
   db.rgSetLimit = function (kind, period, value) { return rgCall("rg_set_limit", { p_kind: kind, p_period: period, p_value: value }); };
   db.rgBreak = function (days) { return rgCall("rg_take_break", { p_days: days }); };
   db.adminRg = function (uid) { return rgCall("admin_rg", { p_user: uid }); };
+  /* antifraude: alertas para o admin revisar (o servidor nunca bloqueia ninguém sozinho) */
+  db.adminRisk = function (uid, all) { return rgCall("admin_risk", { p_user: uid || null, p_all: !!all }); };
+  db.adminRiskReview = function (uid, key) { return rgCall("admin_risk_review", { p_user: uid, p_key: key }); };
   db.rgExclude = function (months) { return rgCall("rg_self_exclude", { p_months: months }); };
   /* ---------- Códigos promocionais ---------- */
   /* o código existe e ainda pode ser usado? (só sim/não; o servidor limita as consultas) */

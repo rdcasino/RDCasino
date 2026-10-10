@@ -19,6 +19,25 @@
   /* ---------- Navegação ---------- */
   function pendingWd() { return db.transactions().filter(function (t) { return (t.type === "Withdrawal" || t.type === "Deposit") && t.status === "Pending"; }); }
   function after(p, okMsg, playerId, kind) { Promise.resolve(p).then(function (r) { if (r && r.error) return RD.toast(r.error, "error"); RD.toast(okMsg, kind); refreshAfter(playerId); }, function () {}); }
+  /* ---------- Antifraude: alertas do servidor (só sinalizam; você decide) ---------- */
+  var risk = { list: [], map: {} };
+  var RISK_PT = { same_device: "Mesmo aparelho de outras contas", shared_ip: "Mesmo IP de outras contas", shared_address: "Endereço de saque usado por outra conta", self_referral: "Possível autoindicação", low_wager: "Quer sacar tendo jogado pouco", bonus_heavy: "Bônus maiores que os depósitos", rain_multi: "Várias contas na mesma rain", tip_funnel: "Recebe gorjeta de muitas contas", kyc_duplicate: "Mesma identidade em outra conta", new_account: "Conta nova sacando", big_win: "Ganho fora da curva", code_bruteforce: "Tentando adivinhar códigos", many_withdrawals: "Muitos pedidos de saque" };
+  function sevBadge(n) { return '<span class="badge ' + (n >= 3 ? "badge-danger" : n === 2 ? "badge-warn" : "") + '">' + (n >= 3 ? "Alta" : n === 2 ? "Média" : "Baixa") + "</span>"; }
+  function riskChip(uid) { var r = risk.map[uid]; return r ? ' <a href="#/kyc" class="badge ' + (r.top >= 3 ? "badge-danger" : "badge-warn") + '" title="' + esc(r.flags.map(function (f) { return RISK_PT[f.rule] || f.title; }).join(" · ")) + '">' + ic("alert", 12) + " " + r.flags.length + (r.flags.length === 1 ? " alerta" : " alertas") + "</a>" : ""; }
+  function riskList(list, withReview) {
+    return list.map(function (u) {
+      return '<div class="risk-item"><div class="row between" style="gap:10px"><a href="#" class="link strong" data-player="' + u.user_id + '">' + esc(u.username) + "</a>" + sevBadge(u.top) + "</div>" +
+        u.flags.map(function (f) { return '<div class="risk-flag' + (f.reviewed ? " reviewed" : "") + '">' + sevBadge(f.sev) + '<div class="grow"><b>' + esc(RISK_PT[f.rule] || f.title) + "</b><small>" + esc(f.detail) + "</small></div>" + (withReview && !f.reviewed ? '<button class="btn btn-ghost btn-sm" data-act="risk-ok" data-id="' + u.user_id + '" data-key="' + esc(f.key) + '">Revisado</button>' : f.reviewed ? '<small class="faint">revisado</small>' : "") + "</div>"; }).join("") + "</div>";
+    }).join("");
+  }
+  function loadRisk() {
+    if (!RD.live || !db.adminRisk) return Promise.resolve();
+    return Promise.resolve(db.adminRisk()).then(function (list) {
+      if (!Array.isArray(list)) return;
+      risk.list = list; risk.map = {}; list.forEach(function (u) { risk.map[u.user_id] = u; });
+      if (current === "kyc" || current === "transactions" || current === "dashboard") route(); else renderNav(current);
+    });
+  }
   function pendingKyc() { return db.players().filter(function (p) { return p.kyc === "Pending"; }); }
   function NAV() {
     return [
@@ -28,7 +47,7 @@
       { id: "players", label: "Jogadores", icon: "users", count: db.players().length },
       { id: "transactions", label: "Transações", icon: "coins", badge: pendingWd().length },
       { id: "support", label: "Suporte", icon: "chat", badge: supUnreadTotal },
-      { id: "kyc", label: "KYC & Risco", icon: "id", badge: pendingKyc().length },
+      { id: "kyc", label: "KYC & Risco", icon: "id", badge: pendingKyc().length + risk.list.length },
       { id: "bets", label: "Apostas", icon: "bars" },
       { group: "Produto" },
       { id: "games", label: "Jogos", icon: "grid" },
@@ -69,7 +88,7 @@
     return '<div class="table-wrap"><table class="table"><thead><tr><th>ID</th><th>Jogador</th><th>Tipo</th><th class="right">Valor</th><th>Status</th><th>Data</th>' + (actions ? "<th></th>" : "") + "</tr></thead><tbody>" +
       list.map(function (t) {
         var act = actions ? (t.status === "Pending" && (t.type === "Withdrawal" || t.type === "Deposit") ? '<td class="right"><div class="row" style="gap:6px;justify-content:flex-end">' + (RD.config.npPayouts && t.type === "Withdrawal" && !/NOWPayments/.test(t.note || "") ? '<button class="btn btn-secondary btn-sm" data-act="np-send" data-id="' + t.id + '">Enviar via NOWPayments</button>' : "") + '<button class="btn btn-primary btn-sm" data-act="approve" data-id="' + t.id + '">Aprovar</button><button class="btn btn-danger btn-sm" data-act="reject" data-id="' + t.id + '">Rejeitar</button></div></td>' : "<td></td>") : "";
-        return '<tr><td class="strong">' + t.id + '</td><td><a href="#" data-player="' + t.userId + '" class="link">' + esc(t.user) + "</a></td><td>" + txType(t) + (t.coin ? ' <small class="faint">' + t.coin + "</small>" : "") + (t.net ? ' <small class="faint">' + esc(t.net) + "</small>" : "") + (t.address ? '<br><small class="faint" title="' + esc(t.address) + '">Para: <span class="mono">' + esc(t.address) + "</span></small>" : "") + (t.txHash ? '<br><small class="faint">TxID: <span class="mono">' + esc(t.txHash) + "</span></small>" : "") + (t.note ? '<br><small class="faint">' + esc(t.note) + "</small>" : "") + '</td><td class="right num strong">' + fmt.usd(t.amount) + "</td><td>" + badge(t.status) + '</td><td class="faint">' + fmt.date(t.date) + "</td>" + act + "</tr>";
+        return '<tr><td class="strong">' + t.id + '</td><td><a href="#" data-player="' + t.userId + '" class="link">' + esc(t.user) + "</a>" + (t.type === "Withdrawal" && t.status === "Pending" ? riskChip(t.userId) : "") + "</td><td>" + txType(t) + (t.coin ? ' <small class="faint">' + t.coin + "</small>" : "") + (t.net ? ' <small class="faint">' + esc(t.net) + "</small>" : "") + (t.address ? '<br><small class="faint" title="' + esc(t.address) + '">Para: <span class="mono">' + esc(t.address) + "</span></small>" : "") + (t.txHash ? '<br><small class="faint">TxID: <span class="mono">' + esc(t.txHash) + "</span></small>" : "") + (t.note ? '<br><small class="faint">' + esc(t.note) + "</small>" : "") + '</td><td class="right num strong">' + fmt.usd(t.amount) + "</td><td>" + badge(t.status) + '</td><td class="faint">' + fmt.date(t.date) + "</td>" + act + "</tr>";
       }).join("") + "</tbody></table></div>";
   }
   function betsTable(list) {
@@ -119,12 +138,13 @@
   function playerDrawer(id) {
     var p = db.player(id); if (!p) return;
     /* jogo responsável: pausa, autoexclusão e limites que o próprio jogador definiu */
+    if (db.adminRisk) setTimeout(function () { db.adminRisk(id, true).then(function (l) { var el = $("#pl-risk"); if (!el || !Array.isArray(l) || !l.length) return; el.innerHTML = '<div class="risk-list" style="margin-bottom:16px"><h4 style="margin-bottom:8px">Alertas antifraude</h4>' + riskList(l, true) + "</div>"; hydrate(el); }); }, 0);
     if (db.adminRg) setTimeout(function () { db.adminRg(id).then(function (g) { var el = $("#pl-rg"); if (!el || !g || g.error) return; var L = g.limits || {}, n = 0; ["deposit", "loss", "wager"].forEach(function (k) { if (L[k]) n += Object.keys(L[k]).length; });
       el.outerHTML = (g.excluded_until ? '<span class="badge badge-danger">Autoexcluído ' + (g.excluded_until === "infinity" ? "permanente" : "até " + String(g.excluded_until).slice(0, 10)) + "</span>" : "") + (g.break_until ? '<span class="badge badge-warn">Pausa até ' + String(g.break_until).slice(0, 16).replace("T", " ") + "</span>" : "") + (n ? '<span class="badge">' + n + (n === 1 ? " limite ativo" : " limites ativos") + "</span>" : ""); }); }, 0);
     var t = db.tierOf(p.vipXp != null ? p.vipXp : p.wagered), house = -p.profit, ref = p.referrerId ? db.player(p.referrerId) : null;
     openDrawer(p.username,
       '<div class="row" style="gap:12px;margin-bottom:16px"><span class="avatar" style="width:44px;height:44px;font-size:15px">' + initials(p.username) + '</span><div><strong>' + esc(p.username) + '</strong><br><small class="faint">' + esc(p.email) + " · " + p.id + "</small></div></div>" +
-      '<div class="row wrap" style="gap:6px;margin-bottom:16px">' + badge(p.status) + badge(p.kyc) + '<span class="badge">' + (t ? t.name : "Sem nível") + '</span><span id="pl-rg"></span></div>' +
+      '<div class="row wrap" style="gap:6px;margin-bottom:16px">' + badge(p.status) + badge(p.kyc) + '<span class="badge">' + (t ? t.name : "Sem nível") + '</span><span id="pl-rg"></span></div><div id="pl-risk"></div>' +
       '<div class="detail-grid"><div><small>Saldo</small><strong class="num">' + fmt.usd(p.balance) + '</strong></div><div><small>Resultado da casa</small><strong class="num ' + (house >= 0 ? "pos" : "neg") + '">' + fmt.usd(house) + '</strong></div><div><small>Depósitos</small><strong class="num">' + fmt.usd(p.deposits) + '</strong></div><div><small>Saques</small><strong class="num">' + fmt.usd(p.withdrawals) + '</strong></div><div><small>Apostado</small><strong class="num">' + fmt.usd(p.wagered) + " (" + p.bets + ' apostas)</strong></div><div><small>Bônus recebidos</small><strong class="num">' + fmt.usd(p.bonusTotal) + '</strong></div><div><small>País</small><strong>' + esc(p.country) + '</strong></div><div><small>Cadastro</small><strong>' + fmt.date(p.created) + '</strong></div><div><small>Indicado por</small><strong>' + (ref ? esc(ref.username) + " (" + esc(p.referredBy) + ")" : "—") + '</strong></div><div><small>Código de afiliado</small><strong>' + p.refCode + "</strong></div></div>" +
       (p.kycInfo ? '<h3 style="margin:20px 0 10px">KYC enviado</h3><div class="detail-grid"><div><small>Nome</small><strong>' + esc(p.kycInfo.name) + '</strong></div><div><small>Nascimento</small><strong>' + esc(p.kycInfo.dob) + '</strong></div><div><small>Documento</small><strong>' + esc(p.kycInfo.doc) + '</strong></div><div><small>Enviado</small><strong>' + esc(p.kycInfo.sent) + "</strong></div>" +
         (p.kycInfo.address ? '<div style="grid-column:1/-1"><small>Endereço</small><strong>' + esc(p.kycInfo.address + ", " + p.kycInfo.city + (p.kycInfo.postal ? " " + p.kycInfo.postal : "") + " — " + p.kycInfo.country) + "</strong></div>" : "") + "</div>" +
@@ -172,6 +192,8 @@
     var big = all.filter(function (p) { return p.deposits >= 1000 && p.kyc !== "Verified"; });
     return head("KYC & Risco", "Verificação de identidade dos jogadores") +
       '<div class="kpi-grid">' + kpi("Pendentes", pend.length) + kpi("Verificados", all.filter(function (p) { return p.kyc === "Verified"; }).length) + kpi("Rejeitados", all.filter(function (p) { return p.kyc === "Rejected"; }).length) + kpi("Sem KYC com +$1.000 depositados", big.length) + "</div>" +
+      '<div class="card mt"><div class="card-head"><h3>' + ic("shield", 16) + ' Alertas antifraude</h3><small class="faint">O sistema só sinaliza. Ninguém é bloqueado automaticamente; se quiser segurar, rejeite e retenha o saque.</small></div>' +
+        (risk.list.length ? '<div class="risk-list">' + riskList(risk.list, true) + "</div>" : empty("Nenhum alerta aberto", "Multicontas, autoindicação, abuso de bônus e saques suspeitos aparecem aqui.")) + "</div>" +
       '<div class="adm-grid-2 mt"><div class="card"><div class="card-head"><h3>Fila de verificação</h3></div>' +
         (pend.length ? pend.map(function (p) { return '<div class="queue-item"><span class="avatar">' + initials(p.username) + '</span><div class="grow"><strong>' + esc(p.username) + "</strong><small>" + esc(p.kycInfo ? p.kycInfo.name + " · " + p.kycInfo.doc : "") + '</small></div><button class="btn btn-secondary btn-sm" data-player="' + p.id + '">Ver</button><button class="btn btn-primary btn-sm" data-act="kyc-ok" data-id="' + p.id + '">Aprovar</button><button class="btn btn-danger btn-sm" data-act="kyc-no" data-id="' + p.id + '">Rejeitar</button></div>'; }).join("") : empty("Nenhuma verificação pendente", "")) + "</div>" +
       '<div class="card"><div class="card-head"><h3>Atenção</h3></div>' + (big.length ? big.map(function (p) { return '<div class="queue-item"><div class="grow"><strong>' + esc(p.username) + "</strong><small>Depositou " + fmt.usd(p.deposits) + " sem KYC aprovado</small></div><button class=\"btn btn-secondary btn-sm\" data-player=\"" + p.id + '">Ver</button></div>'; }).join("") : empty("Nenhum alerta", "")) + "</div></div>" +
@@ -474,10 +496,12 @@
 
     var a = t.getAttribute("data-act"), id = t.getAttribute("data-id");
     if (a === "approve") {
-      var ta = db.transactions().filter(function (x) { return x.id === id; })[0] || {};
+      var ta = db.transactions().filter(function (x) { return x.id === id; })[0] || {}, rk = ta.type === "Withdrawal" && risk.map[ta.userId];
+      if (rk && !confirm("Atenção: este jogador tem " + rk.flags.length + " alerta(s) antifraude:\n\n" + rk.flags.map(function (f) { return "• " + (RISK_PT[f.rule] || f.title) + " — " + f.detail; }).join("\n") + "\n\nContinuar mesmo assim?")) return;
       if (RD.live && !confirm(ta.type === "Deposit" ? "Confirmou na Kraken que " + fmt.usd(ta.amount) + " em " + (ta.coin || "") + " chegou (TxID " + (ta.txHash || "") + ")? O saldo será creditado." : "Já enviou " + fmt.usd(ta.amount) + " em " + (ta.coin || "") + " para " + (ta.address || "") + "? Marcar como pago.")) return;
       return after(db.decideWithdrawal(id, true), ta.type === "Deposit" ? "Depósito aprovado e creditado" : "Saque aprovado");
     }
+    if (a === "risk-ok") { var rkey = t.getAttribute("data-key"); t.disabled = true; return Promise.resolve(db.adminRiskReview(id, rkey)).then(function (r) { if (r && r.error) return RD.toast(r.error, "error"); RD.toast("Alerta marcado como revisado"); loadRisk(); }); }
     if (a === "np-send") {
       var tn = db.transactions().filter(function (x) { return x.id === id; })[0] || {};
       openModal('<div class="modal-head"><h3>Enviar saque ' + id + ' pela NOWPayments</h3><button class="btn btn-ghost btn-icon btn-sm" data-close>' + ic("x") + '</button></div><form id="np-form"><div class="modal-body"><p class="muted" style="margin-bottom:12px">' + fmt.usd(tn.amount) + " em " + esc(tn.coin || "") + " (" + esc(tn.net || "") + ') para <span class="mono">' + esc(tn.address || "") + '</span>. O valor em cripto é calculado na cotação da NOWPayments na hora do envio.</p><div class="field"><label>Código 2FA da NOWPayments (6 dígitos)</label><input class="input" name="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" required></div></div><div class="modal-foot"><button type="button" class="btn btn-ghost" data-close>Cancelar</button><button class="btn btn-primary">Enviar</button></div></form>');
@@ -598,6 +622,7 @@
     $("#adm-login").classList.add("hidden"); $("#adm").classList.remove("hidden");
     $("#adm-email").textContent = RD.live ? ((db.live.user || {}).email || "Admin") : ((db.data().admin || {}).email || "Admin");
     window.addEventListener("hashchange", route); route();
+    loadRisk(); setInterval(function () { if (!document.hidden) loadRisk(); }, 120000); // alertas antifraude a cada 2 min
   }
   $("#adm-login-form").addEventListener("submit", function (e) {
     e.preventDefault(); var f = e.target; $("#adm-login-error").innerHTML = "";
