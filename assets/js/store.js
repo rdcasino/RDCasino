@@ -411,7 +411,7 @@
     leaderboard: function (month) {
       month = month || monthKey(); var m = {};
       D.bets.forEach(function (b) { if (monthKey(b.date) === month) m[b.userId] = (m[b.userId] || 0) + b.amount; });
-      return Object.keys(m).map(function (k) { return { userId: k, user: (byId(k) || {}).username, wagered: round(m[k]) }; })
+      return Object.keys(m).map(function (k) { var u = byId(k) || {}; return { userId: k, user: u.username, wagered: round(m[k]), vipXp: u.vipXp != null ? u.vipXp : u.wagered }; })
         .sort(function (a, b) { return b.wagered - a.wagered; })
         .map(function (r, i) { r.rank = i + 1; r.prize = RD.config.leaderboardPrizes[i] || 0; return r; });
     },

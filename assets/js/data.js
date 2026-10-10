@@ -124,9 +124,11 @@ RD.games = [
 ];
 RD.games.forEach(function (g) { g.img = "assets/img/games/" + g.id + ".jpg"; g.enabled = true; });
 /* Pragmatic Play: foto oficial (CDN deles) e modo demo (jogo grátis embutido; dinheiro real chega com o agregador) */
-RD.ppImg = "https://common-static.ppgames.net/game_pic/rec/325/";
+RD.ppImg = "https://common-static.ppgames.net/game_pic/square/200/";
 RD.ppDemo = function (sym) { return "https://demogamesfree.pragmaticplay.net/gs2c/openGame.do?gameSymbol=" + encodeURIComponent(sym) + "&lang=en&cur=USD&jurisdiction=99&lobbyUrl=" + encodeURIComponent(location.origin); };
-RD.games.forEach(function (g) { if (g.pp) { g.img = RD.ppImg + g.pp + ".png"; g.demo = true; } });
+/* Logo mais largo que o card: versão vertical montada a partir da foto oficial, hospedada no site (nome inteiro, sem corte) */
+RD.ppLocal = ["sugar-rush", "big-bass", "sweet-bonanza-classic"];
+RD.games.forEach(function (g) { if (g.pp) { g.img = RD.ppLocal.indexOf(g.id) > -1 ? "assets/img/games/" + g.id + ".jpg" : RD.ppImg + g.pp + ".png"; g.demo = true; } });
 
 /* Promoções (todas reais e funcionando no site). value = título grande na arte; title = nome do card.
    cat: casino | sports. route/cta = para onde o botão leva. featured = destaque no topo. */
@@ -248,7 +250,7 @@ RD.esc = function (s) {
 
 /* Fotos enviadas para assets/img: liste o caminho aqui ao subir uma (ex.: "assets/img/games/chicken.jpg").
    Sem estar na lista, o site usa a ilustração própria e não faz pedido nenhum ao servidor (evita dezenas de 404 por página). */
-RD.imgFiles = ["wanted", "mental-2", "book-dead", "lightning-roulette", "lightning-blackjack", "golden-wealth-baccarat", "immersive-roulette", "crazy-time", "monopoly", "dream-catcher", "funky-time"].map(function (id) { return "assets/img/games/" + id + ".jpg"; }); // fotos oficiais dos provedores, hospedadas no site
+RD.imgFiles = ["sugar-rush", "big-bass", "sweet-bonanza-classic", "wanted", "mental-2", "book-dead", "lightning-roulette", "lightning-blackjack", "golden-wealth-baccarat", "immersive-roulette", "crazy-time", "monopoly", "dream-catcher", "funky-time"].map(function (id) { return "assets/img/games/" + id + ".jpg"; }); // fotos oficiais dos provedores, hospedadas no site
 RD.hasImg = function (src) { return !!src && (/^(https?|data|blob):/.test(src) || RD.imgFiles.indexOf(src) > -1); };
 
 RD.media = function (o, cls, label) {

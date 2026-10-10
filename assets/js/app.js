@@ -3132,6 +3132,9 @@
     return '<div class="container">' + hero + cards + table + faq + "</div>";
   };
 
+  /* Rank VIP de quem está no leaderboard (o servidor manda o vip_xp de cada um) */
+  function lbTier(p) { var u = me(), xp = p.vipXp != null ? p.vipXp : u && (p.userId === u.id || p.user === u.username) ? vipXp(u) : 0; return db.tierOf(xp || 0); }
+  function lbTierName(p) { var t = lbTier(p); return t ? t.name : "Unranked"; }
   pages.leaderboard = function () {
     var L = db.leaderboard(), u = me(), mine = u ? L.filter(function (r) { return r.userId === u.id || r.user === u.username; })[0] : null;
     var prizes = RD.config.leaderboardPrizes, rows = []; for (var ri = 0; ri < Math.max(prizes.length, Math.min(L.length, 50)); ri++) rows.push(L[ri] || null);
@@ -3141,14 +3144,14 @@
         '<div class="countdown"><div><strong data-cd="d">00</strong><small>days</small></div><div><strong data-cd="h">00</strong><small>hours</small></div><div><strong data-cd="m">00</strong><small>min</small></div><div><strong data-cd="s">00</strong><small>sec</small></div></div></div>' +
         '<div class="card podium">' + top.map(function (p, i) {
           var h = [80, 110, 60][i];
-          return '<div class="podium-col">' + (p ? '<div class="avatar" style="background:' + colors[i] + ';color:#111">' + initials(p.user) + '</div><div style="font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis">' + esc(p.user) + '</div><div class="faint" style="font-size:12px">' + fmt.usd(p.prize, { dec: 0 }) + "</div>" : '<div class="faint" style="font-size:12px">Open spot</div><div class="gold" style="font-size:12px;font-weight:700">' + fmt.usd(RD.config.leaderboardPrizes[[1, 0, 2][i]] || 0, { dec: 0 }) + "</div>") +
+          return '<div class="podium-col">' + (p ? '<span class="lb-pbadge">' + badge(lbTier(p), 40) + '</span><div class="lb-pname">' + esc(p.user) + '</div><div class="lb-tier">' + lbTierName(p) + '</div><div class="gold" style="font-size:12px;font-weight:700">' + fmt.usd(p.prize, { dec: 0 }) + "</div>" : '<div class="faint" style="font-size:12px">Open spot</div><div class="gold" style="font-size:12px;font-weight:700">' + fmt.usd(RD.config.leaderboardPrizes[[1, 0, 2][i]] || 0, { dec: 0 }) + "</div>") +
             '<div class="step" style="height:' + h + "px;background:" + colors[i] + "22;color:" + colors[i] + '">' + [2, 1, 3][i] + "</div></div>";
         }).join("") + "</div></div>" +
       '<div class="section"><div class="card"><div class="table-wrap"><table class="table lb-table"><thead><tr><th>Rank</th><th>Player</th><th class="right">Wagered</th><th class="right">Prize</th></tr></thead><tbody>' +
         rows.map(function (p, i) {
           var isMe = p && mine && p.userId === mine.userId;
           return "<tr" + (isMe ? ' style="background:var(--brand-soft)"' : "") + '><td><span class="rank-pill">' + (i + 1) + "</span></td>" +
-            (p ? '<td class="strong"><span class="row" style="gap:8px">' + uBadge(p.user, db.player(p.userId) ? vipXp(db.player(p.userId)) : 0, 22) + esc(p.user) + '</span></td><td class="right num">' + fmt.usd(p.wagered) + "</td>"
+            (p ? '<td class="strong"><span class="lb-player">' + badge(lbTier(p), 26) + '<span class="lb-who"><b>' + esc(p.user) + '</b><small>' + lbTierName(p) + '</small></span></span></td><td class="right num">' + fmt.usd(p.wagered) + "</td>"
               : '<td class="faint">Open spot</td><td class="right faint">—</td>') +
             '<td class="right num strong' + (prizes[i] ? " gold" : " faint") + '">' + (prizes[i] ? fmt.usd(prizes[i], { dec: 0 }) : "—") + "</td></tr>";
         }).join("") + "</tbody></table></div></div></div></div>";

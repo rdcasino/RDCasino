@@ -1783,3 +1783,10 @@ body.sb-mini .sb-rank > .grow { display: none; }
 .pp-bar small { font-size: 12px; color: var(--text-3); }
 .pp-note { font-size: 12.5px; }
 @media (max-width: 640px) { .pp-note { display: none; } .pp-frame { aspect-ratio: 4 / 3; } }
+/* Leaderboard: rank VIP de cada jogador */
+.lb-player { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.lb-who { display: flex; flex-direction: column; min-width: 0; line-height: 1.2; }
+.lb-who b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb-who small, .lb-tier { font-size: 11px; color: var(--text-3); font-weight: 600; }
+.lb-pbadge { display: grid; place-items: center; margin-bottom: 2px; }
+.lb-pname { font-weight: 600; font-size: 13px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
