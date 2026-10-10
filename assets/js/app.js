@@ -312,15 +312,13 @@
       '<div class="section"><div class="section-head"><div class="pill-tabs"><button data-btab="all">All bets</button><button data-btab="high">High rollers</button><button data-btab="mine">My bets</button></div></div><div class="card bets-card" id="feed"></div></div>' +
       "</div>";
   };
-  /* Provedores: marca em texto, quantidade de jogos e o RTP real só onde existe dado (RD Originals) */
+  /* Provedores: só a marca (sem contagem de jogos nem RTP) */
   function providerTiles() {
     var by = {}; RD.games.forEach(function (g) { if (g.enabled) (by[g.provider] = by[g.provider] || []).push(g); });
     var order = Object.keys(by).sort(function (a, b) { return a === "RD Originals" ? -1 : b === "RD Originals" ? 1 : by[b].length - by[a].length; });
     return order.map(function (pv) {
-      var rt = null;
-      if (pv === "RD Originals") { var a = 0, p = 0, n = 0; (db.recentBets ? db.recentBets(2000) : []).forEach(function (b) { var g = gameOf(b.game); if (g && g.provider === pv) { a += b.amount; p += b.payout; n++; } }); if (n >= 20 && a > 0) rt = { v: p / a * 100, n: n }; }
       var mark = pv === "RD Originals" ? '<span class="prov-mark rd">RD<b>ORIGINALS</b></span>' : '<span class="prov-mark">' + esc(pv) + "</span>";
-      return '<button class="prov" data-prov="' + esc(pv) + '">' + (rt ? '<span class="g-rtpb ' + (rt.v >= 98 ? "up" : "down") + '" title="RTP on the last ' + rt.n + ' bets">' + rt.v.toFixed(2) + "%</span>" : "") + mark + "<small>" + by[pv].length + (by[pv].length === 1 ? " game" : " games") + "</small></button>";
+      return '<button class="prov" data-prov="' + esc(pv) + '">' + mark + "</button>";
     }).join("");
   }
   pages.home.after = function () {
