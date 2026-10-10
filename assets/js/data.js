@@ -114,9 +114,9 @@ RD.games = [
   { id: "sugar-rush-classic", pp: "vs20sugarrush", name: "Sugar Rush", provider: "Pragmatic Play", cat: "slots", rtp: 96.5, c1: "#e11d48", c2: "#4c0519" },
   { id: "starlight-classic", pp: "vs20starlight", name: "Starlight Princess", provider: "Pragmatic Play", cat: "slots", rtp: 96.5, c1: "#7c3aed", c2: "#2e1065" },
   { id: "lightning-roulette", name: "Lightning Roulette", provider: "Evolution", cat: "live", rtp: 97.3, tag: "hot", c1: "#a16207", c2: "#3f2a04" },
-  { id: "blackjack-vip", name: "Blackjack VIP", provider: "Evolution", cat: "live", rtp: 99.28, c1: "#166534", c2: "#052e16" },
-  { id: "baccarat", name: "Speed Baccarat", provider: "Evolution", cat: "live", rtp: 98.94, c1: "#9f1239", c2: "#4c0519" },
-  { id: "euro-roulette", name: "European Roulette", provider: "Evolution", cat: "live", rtp: 97.3, c1: "#991b1b", c2: "#450a0a" },
+  { id: "lightning-blackjack", name: "Lightning Blackjack", provider: "Evolution", cat: "live", rtp: 99.56, c1: "#166534", c2: "#052e16" },
+  { id: "golden-wealth-baccarat", name: "Golden Wealth Baccarat", provider: "Evolution", cat: "live", rtp: 98.76, c1: "#9f1239", c2: "#4c0519" },
+  { id: "immersive-roulette", name: "Immersive Roulette", provider: "Evolution", cat: "live", rtp: 97.3, c1: "#991b1b", c2: "#450a0a" },
   { id: "crazy-time", name: "Crazy Time", provider: "Evolution", cat: "gameshows", rtp: 96.08, tag: "hot", c1: "#be185d", c2: "#500724" },
   { id: "monopoly", name: "Monopoly Live", provider: "Evolution", cat: "gameshows", rtp: 96.23, c1: "#15803d", c2: "#052e16" },
   { id: "dream-catcher", name: "Dream Catcher", provider: "Evolution", cat: "gameshows", rtp: 96.58, c1: "#6d28d9", c2: "#2e1065" },
@@ -248,7 +248,7 @@ RD.esc = function (s) {
 
 /* Fotos enviadas para assets/img: liste o caminho aqui ao subir uma (ex.: "assets/img/games/chicken.jpg").
    Sem estar na lista, o site usa a ilustração própria e não faz pedido nenhum ao servidor (evita dezenas de 404 por página). */
-RD.imgFiles = [];
+RD.imgFiles = ["wanted", "mental-2", "book-dead", "lightning-roulette", "lightning-blackjack", "golden-wealth-baccarat", "immersive-roulette", "crazy-time", "monopoly", "dream-catcher", "funky-time"].map(function (id) { return "assets/img/games/" + id + ".jpg"; }); // fotos oficiais dos provedores, hospedadas no site
 RD.hasImg = function (src) { return !!src && (/^(https?|data|blob):/.test(src) || RD.imgFiles.indexOf(src) > -1); };
 
 RD.media = function (o, cls, label) {
