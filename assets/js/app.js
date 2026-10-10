@@ -34,7 +34,7 @@
     [{ route: "affiliate", label: "Affiliate", icon: "link" }, { route: "fairness", label: "Provably Fair", icon: "shield" }, { route: "responsible", label: "Responsible Gaming", icon: "help" }, { action: "open-support", label: "Live Support", icon: "headset" }]
   ];
   function renderSidebar() {
-    var h = vipChip() + '<a class="sb-promo" href="#/leaderboard" title="Monthly leaderboard">' + ic("trophy", 18) + '<span class="eyebrow">Monthly leaderboard</span><strong>' + fmt.usd(RD.config.leaderboardPrize, { dec: 0 }) + '</strong></a>';
+    var h = '<a class="sb-promo" href="#/leaderboard" title="Monthly leaderboard">' + ic("trophy", 18) + '<span class="eyebrow">Monthly leaderboard</span><strong>' + fmt.usd(RD.config.leaderboardPrize, { dec: 0 }) + '</strong></a>';
     NAV.forEach(function (box, bi) {
       h += '<div class="sb-cap">' + ["Games", "Rewards", "More"][bi] + '</div><div class="sb-box">' + box.map(function (n) {
         if (n.action) return '<a class="sb-link" href="#" data-action="' + n.action + '" title="' + n.label + '">' + ic(n.icon) + "<span>" + n.label + '</span><span class="badge badge-brand hidden" data-sup-badge></span></a>';
@@ -112,6 +112,7 @@
     el.textContent = inCur(v, disp.cur); el.classList.toggle("bal-wait", !!u.cached); // durante o boot: mesmo tamanho, valor coberto (não mostra saldo antigo)
     if (tag) tag.remove(); // só o saldo na moeda escolhida, sem o ícone ao lado
     if (!$("#bal-menu").classList.contains("hidden")) renderBalMenu();
+    rankRing(u);
   }
   /* um saldo só (como na Shuffle), mostrado na moeda que o jogador escolher */
   function renderBalMenu() {
@@ -3031,11 +3032,15 @@
   }
   function vipMsg(r) { return r.changed != null ? "Your VIP reward is now " + fmt.usd(r.changed) + " — check it and claim again" : r.error || "Claimed " + fmt.usd(r.amount) + " in VIP rewards"; }
   function claimMsg(r) { return r.changed != null ? "This reward is now " + money(r.changed) + " — check it and claim again" : r.error || "Claimed " + money(r.amount); }
-  /* Rank no menu lateral: compacto, mesmo nível da janela VIP */
-  function vipChip() {
-    var u = me(); if (!u) return ""; // nível do cache no F5: não pula o menu quando o perfil chega
-    var v = vipState(u), pct = v.next ? v.pct : 100;
-    return '<a class="sb-rank" href="#/vip" title="VIP">' + badge(v.cur, 24) + '<span class="grow"><span class="row between"><b>' + (v.cur ? v.cur.name : "Unranked") + "</b><small>" + pct.toFixed(0) + '%</small></span><i class="sb-rank-bar"><i style="width:' + pct + '%"></i></i></span></a>';
+  /* Rank no topo, ao lado do saldo: ícone do nível dentro de um anel de progresso (abre a janela VIP) */
+  function rankRing(u) {
+    var box = $("#hdr-rank-ring"); if (!box || !u) return;
+    var v = vipState(u), pct = v.next ? v.pct : 100, k = (v.cur ? v.cur.name : "-") + "|" + pct.toFixed(1);
+    if (box._k === k) return; box._k = k;
+    var r = 17, C = 2 * Math.PI * r, col = v.cur ? v.cur.color : "#5a6478";
+    box.parentNode.title = (v.cur ? v.cur.name : "Unranked") + (v.next ? " · " + pct.toFixed(0) + "% to " + v.next.name : "");
+    setHTML(box, '<svg class="hdr-rank-arc" width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="' + r + '" fill="none" stroke="rgba(255,255,255,.09)" stroke-width="2.6"/>' +
+      '<circle cx="20" cy="20" r="' + r + '" fill="none" stroke="' + col + '" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="' + (C * pct / 100).toFixed(2) + " " + C.toFixed(2) + '" transform="rotate(-90 20 20)"/></svg>' + badge(v.cur, 24));
   }
   /* Cards de recompensa (iguais na janela VIP e na página VIP) */
   function untilTxt(iso) {
