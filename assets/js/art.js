@@ -544,9 +544,51 @@ window.RD = window.RD || {};
     } }
   };
 
+  /* OPCOES_TEMP */
+  (function () {
+    var pill = function (x, y, txt, c) { return '<g transform="translate(' + x + " " + y + ')"><rect x="-34" y="-15" width="68" height="30" rx="15" fill="#000" opacity=".22" transform="translate(0 3)"/><rect x="-34" y="-15" width="68" height="30" rx="15" fill="' + (c || "#16c46b") + '" stroke="#fff" stroke-opacity=".5" stroke-width="2"/><text y="6" text-anchor="middle" font-size="16" font-weight="900" fill="#fff" style="font-family:var(--font-display,Arial)">' + txt + "</text></g>"; };
+    var lily = function (x, y, s, flower) { return '<g transform="translate(' + x + " " + y + ") scale(" + s + ')"><ellipse cy="8" rx="52" ry="18" fill="#04305a" opacity=".5"/><path d="M0 0 L46 -6 A50 18 0 1 1 30 -14 Z" fill="#43c44e"/><path d="M0 0 L46 -6 A50 18 0 1 1 30 -14 Z" fill="none" stroke="#2a9a38" stroke-width="2.5"/><path d="M0 0 L-30 -8 M0 0 L-34 6 M0 0 L-6 16 M0 0 L22 12" stroke="#2a9a38" stroke-width="2" stroke-linecap="round"/><ellipse cx="-14" cy="-8" rx="18" ry="5" fill="#fff" opacity=".18"/>' + (flower ? '<g transform="translate(-26 -9)"><circle r="9" fill="#ffb3f0"/><circle r="4" fill="#ffe27a"/></g>' : "") + "</g>"; };
+    var rings = function (x, y) { return '<ellipse cx="' + x + '" cy="' + y + '" rx="118" ry="30" fill="none" stroke="#fff" stroke-opacity=".22" stroke-width="2.5"/><ellipse cx="' + x + '" cy="' + y + '" rx="150" ry="40" fill="none" stroke="#fff" stroke-opacity=".12" stroke-width="2"/>'; };
+    COVERS.chickenA = { a: "#ffc23a", b: "#8a3300", draw: function () {
+      // só a galinha, grande e centralizada, com o multiplicador (estilo Spill/Keno)
+      return '<ellipse cx="150" cy="250" rx="78" ry="12" fill="#000" opacity=".22"/>' + '<g transform="translate(42 44) scale(1.8)">' + chick() + "</g>" + pill(236, 70, "2.46×") + spark(56, 86, 12) + spark(250, 200, 9) + spark(84, 214, 7);
+    } };
+    COVERS.chickenB = { a: "#ffb020", b: "#7a2600", draw: function () {
+      // atravessando a rua: faixa de pedestre, farol do carro vindo pela esquerda
+      var g = U("hb"), out = '<rect x="0" y="168" width="300" height="96" fill="#2a2233"/><path d="M0 172 H300 M0 260 H300" stroke="#ffd23f" stroke-width="5"/>';
+      for (var i = 0; i < 6; i++) out += '<rect x="' + (96 + i * 20) + '" y="180" width="11" height="72" rx="2" fill="#fff" opacity=".85"/>';
+      return "<defs>" + lin(g, [[0, "#fff6c8", 0.75], [1, "#fff6c8", 0]], 0, 0, 1, 0) + "</defs>" + out + '<path d="M0 186 L120 200 L120 240 L0 254 Z" fill="url(#' + g + ')"/><circle cx="-4" cy="220" r="22" fill="#fff6c8"/>' +
+        '<g transform="translate(82 54) scale(1.6)">' + chick() + "</g>" + pill(64, 70, "1.51×") + spark(262, 70, 11) + spark(40, 136, 8);
+    } };
+    COVERS.chickenC = { a: "#ffc23a", b: "#8a3300", draw: function () {
+      // galinha em cima do bueiro dourado aceso, moedas saltando
+      var gw = U("hg");
+      return "<defs>" + rad(gw, [[0, "#fff1a8", 0.85], [1, "#ffd23f", 0]]) + "</defs>" + '<ellipse cx="150" cy="236" rx="120" ry="60" fill="url(#' + gw + ')"/>' +
+        '<ellipse cx="150" cy="244" rx="86" ry="24" fill="#b46f00"/><ellipse cx="150" cy="238" rx="86" ry="24" fill="#ffd23f" stroke="#c98a00" stroke-width="4"/><path d="M84 238 H216 M98 228 H202 M98 248 H202" stroke="#c98a00" stroke-width="3" opacity=".7"/>' +
+        '<g transform="translate(60 42) scale(1.5)">' + chick() + "</g>" + coinFront(60, 150, 16) + coinFront(244, 132, 20) + coinFront(232, 206, 13) + spark(250, 70, 11) + spark(56, 90, 8);
+    } };
+    COVERS.lakeA = { a: "#1fb6ff", b: "#0a3a7a", draw: function () {
+      // sapo grande sentado na vitória-régia, ondas em volta
+      return rings(150, 236) + lily(150, 238, 2.1, true) + '<g transform="translate(66 92) scale(1.4)">' + frog() + "</g>" + pill(236, 70, "1.66×", "#16c46b") + spark(54, 84, 11) + spark(262, 150, 8);
+    } };
+    COVERS.lakeB = { a: "#22c0ff", b: "#0a3a7a", draw: function () {
+      // sapo no meio do pulo, de uma folha para a outra
+      return rings(150, 250) + lily(84, 252, 1.1) + lily(226, 214, 1.0, true) +
+        '<path d="M86 226 Q 140 70 222 186" stroke="#fff" stroke-opacity=".7" stroke-width="4" stroke-dasharray="3 11" stroke-linecap="round" fill="none"/>' +
+        '<g transform="translate(150 118) rotate(14) scale(1.35) translate(-60 -64)">' + frog() + "</g>" + pill(240, 120, "2.40×", "#16c46b") + spark(48, 80, 11) + spark(264, 54, 9);
+    } };
+    COVERS.lakeC = { a: "#1b4fd6", b: "#06143f", draw: function () {
+      // noite no lago: sapo na folha, lua refletida e vaga-lumes
+      var m = U("lm"), out = "";
+      [[52, 96], [248, 120], [214, 60], [84, 160], [262, 196]].forEach(function (f) { out += '<circle cx="' + f[0] + '" cy="' + f[1] + '" r="7" fill="#fff59a" opacity=".25"/><circle cx="' + f[0] + '" cy="' + f[1] + '" r="2.6" fill="#fff59a"/>'; });
+      return "<defs>" + rad(m, [[0, "#fff6c8", 0.9], [1, "#fff6c8", 0]]) + "</defs>" + '<circle cx="150" cy="96" r="70" fill="url(#' + m + ')"/><circle cx="150" cy="96" r="30" fill="#fff6d6"/>' +
+        '<path d="M110 270 h80 M122 280 h56" stroke="#fff6c8" stroke-opacity=".35" stroke-width="4" stroke-linecap="round"/>' + rings(150, 240) + lily(150, 242, 2.0) + out +
+        '<g transform="translate(72 100) scale(1.3)">' + frog() + "</g>";
+    } };
+  })();
   function cover(id) {
     var c = COVERS[id]; if (!c) return "";
-    var bg = U("bg"), gl = U("gw"), fd = U("fd"), name = { dice: "DICE", limbo: "LIMBO", crash: "CRASH", mines: "MINES", plinko: "PLINKO", hilo: "HI-LO", blackjack: "BLACKJACK", roulette: "ROULETTE", wheel: "WHEEL", keno: "KENO", tower: "TOWER", chicken: "CHICKEN", coinflip: "COINFLIP", rps: "ROCK PAPER SCISSORS", spill: "SPILL", lake: "CROSS THE LAKE", pump: "PUMP", baccarat: "BACCARAT", double: "DOUBLE", soccer: "SOCCER", door: "DOOR" }[id];
+    var bg = U("bg"), gl = U("gw"), fd = U("fd"), name = { dice: "DICE", limbo: "LIMBO", crash: "CRASH", mines: "MINES", plinko: "PLINKO", hilo: "HI-LO", blackjack: "BLACKJACK", roulette: "ROULETTE", wheel: "WHEEL", keno: "KENO", tower: "TOWER", chicken: "CHICKEN", coinflip: "COINFLIP", rps: "ROCK PAPER SCISSORS", spill: "SPILL", lake: "CROSS THE LAKE", pump: "PUMP", baccarat: "BACCARAT", double: "DOUBLE", soccer: "SOCCER", door: "DOOR" }[id] || (id.indexOf("chicken") === 0 ? "CHICKEN" : "CROSS THE LAKE");
     return '<svg class="art" viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + name + '"><defs>' +
       lin(bg, [[0, c.a], [1, c.b]]) + rad(gl, [[0, "#ffffff", 0.35], [1, "#ffffff", 0]]) + lin(fd, [[0, "#000", 0], [1, "#000", 0.55]]) + "</defs>" +
       '<rect width="300" height="400" fill="url(#' + bg + ')"/>' +
