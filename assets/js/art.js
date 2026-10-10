@@ -380,20 +380,6 @@ window.RD = window.RD || {};
         '<ellipse cx="150" cy="46" rx="24" ry="30" fill="url(#' + eg + ')"/><ellipse cx="141" cy="34" rx="7" ry="10" fill="#fff" opacity=".65"/>' +
         '<path d="M133 54 q8.5 6 17 0 t17 0" stroke="#c97800" stroke-width="2.5" fill="none" opacity=".7"/>' + spark(214, 44, 12) + spark(80, 78, 9) + spark(236, 120, 7);
     } },
-    chicken: { a: "#ffc23a", b: "#8a3300", draw: function () {
-      // estrada em perspectiva até o horizonte, farol do carro vindo, bueiros dourados com multiplicador e a galinha na frente
-      var road = U("cr"), beam = U("cb"), out = "";
-      out += "<defs>" + lin(road, [[0, "#1d1824"], [1, "#3a3046"]]) + lin(beam, [[0, "#fff6c8", 0.7], [1, "#fff6c8", 0]]) + "</defs>";
-      out += '<path d="M118 0 H182 L300 300 H0 Z" fill="url(#' + road + ')"/>';
-      out += '<path d="M118 0 L0 300" stroke="#ffd23f" stroke-width="5"/><path d="M182 0 L300 300" stroke="#ffd23f" stroke-width="5"/>';
-      [[0.35, 4], [0.62, 6], [0.88, 8]].forEach(function (l) { out += '<path d="M' + (118 + 64 * l[0]) + " 0 L" + (300 * l[0]) + ' 300" stroke="#fff" stroke-opacity=".55" stroke-width="' + l[1] * 0.6 + '" stroke-dasharray="' + (l[1] * 3) + " " + (l[1] * 3) + '"/>'; });
-      // carro ao longe com o facho de luz vindo
-      out += '<path d="M138 46 L82 230 H218 L162 46 Z" fill="url(#' + beam + ')"/>' +
-        '<g transform="translate(150 40)"><rect x="-20" y="-16" width="40" height="30" rx="7" fill="#ff2e55"/><rect x="-15" y="-11" width="30" height="10" rx="3" fill="#2a1a24"/><circle cx="-12" cy="9" r="4.5" fill="#fff6c8"/><circle cx="12" cy="9" r="4.5" fill="#fff6c8"/><circle cx="-12" cy="9" r="10" fill="#fff6c8" opacity=".35"/><circle cx="12" cy="9" r="10" fill="#fff6c8" opacity=".35"/></g>';
-      var mh = function (x, y, s, m, on) { return '<g transform="translate(' + x + " " + y + ") scale(" + s + ')"><ellipse cy="4" rx="34" ry="13" fill="#000" opacity=".4"/><ellipse rx="34" ry="13" fill="' + (on ? "#ffd23f" : "#4a4458") + '" stroke="' + (on ? "#b46f00" : "#2e2838") + '" stroke-width="3"/><text y="5" text-anchor="middle" font-size="13" font-weight="900" fill="' + (on ? "#5a3400" : "#cfc8dc") + '" style="font-family:Arial Black,Arial">' + m + "</text></g>"; };
-      out += mh(112, 120, 0.5, "", false) + mh(188, 120, 0.5, "", false) + mh(84, 196, 0.82, "1.51×", false) + mh(216, 196, 0.82, "2.46×", false) + mh(150, 268, 1.3, "1.09×", true);
-      return out + '<g transform="translate(66 128) scale(1.42)">' + chick() + "</g>" + spark(270, 40, 10, "#fff") + spark(30, 64, 8, "#fff");
-    } },
     coinflip: { a: "#ffc23a", b: "#7a4a00", draw: function () {
       // moeda girando no ar (inclinada, com a espessura da borda), moeda de prata atrás e rastro de movimento
       var gl = U("cfg"), side = function (k, sc) { return coinSide(k).replace(/^/, ""); };
@@ -458,22 +444,6 @@ window.RD = window.RD || {};
         '<path d="M150 292 Q 214 210 222 112" stroke="#fff" stroke-opacity=".45" stroke-width="5" stroke-dasharray="2 12" stroke-linecap="round" fill="none"/>' +
         '<ellipse cx="150" cy="294" rx="16" ry="5" fill="#fff" opacity=".35"/>' + keeper + ball +
         '<path d="M236 78 l14 -10 M240 92 l16 -2 M232 66 l6 -14" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".7"/>' + spark(40, 240, 10) + spark(266, 244, 12);
-    } },
-    lake: { a: "#1fb6ff", b: "#0a3a7a", draw: function () {
-      // sapo no meio do pulo entre duas vitórias-régias, rastro do salto, água com reflexos e juncos
-      var wv = U("lw"), gw = U("lg"), out = "";
-      var pad = function (x, y, s, m, flower) { return '<g transform="translate(' + x + " " + y + ") scale(" + s + ')"><ellipse cy="7" rx="50" ry="18" fill="#063a6a" opacity=".55"/><path d="M0 0 L46 -6 A50 18 0 1 1 30 -14 Z" fill="#3fbf4a"/><path d="M0 0 L46 -6 A50 18 0 1 1 30 -14 Z" fill="none" stroke="#2a9a38" stroke-width="2.5"/><path d="M0 0 L-30 -8 M0 0 L-34 6 M0 0 L-6 16 M0 0 L22 12" stroke="#2a9a38" stroke-width="2" stroke-linecap="round"/>' +
-        (flower ? '<g transform="translate(-24 -10)"><circle r="9" fill="#ffb3f0"/><circle r="4" fill="#ffe27a"/></g>' : "") +
-        (m ? '<g transform="translate(6 -22)"><rect x="-26" y="-12" width="52" height="24" rx="12" fill="#0b2a52" opacity=".85"/><text y="5" text-anchor="middle" font-size="14" font-weight="900" fill="#ffe27a" style="font-family:Arial Black,Arial">' + m + "</text></g>" : "") + "</g>"; };
-      for (var i = 0; i < 7; i++) out += '<path d="M' + (20 + i * 40) + " " + (60 + (i % 3) * 70) + " q14 -6 28 0" + '" stroke="#fff" stroke-opacity=".28" stroke-width="2.5" fill="none" stroke-linecap="round"/>';
-      var reed = function (x, h, k) { return '<path d="M' + x + " 300 Q" + (x + k) + " " + (300 - h / 2) + " " + (x + k * 1.6) + " " + (300 - h) + '" stroke="#1f7a3a" stroke-width="5" fill="none" stroke-linecap="round"/>'; };
-      return "<defs>" + lin(wv, [[0, "#ffffff", 0], [1, "#ffffff", 0.18]]) + rad(gw, [[0, "#9fe8ff", 0.5], [1, "#9fe8ff", 0]]) + "</defs>" + out +
-        '<circle cx="150" cy="170" r="130" fill="url(#' + gw + ')"/>' +
-        pad(214, 92, 0.62, "2.40×", false) + pad(232, 166, 0.82, "1.66×", true) + pad(112, 250, 1.45, "", false) +
-        '<path d="M150 184 Q 190 120 226 148 M228 140 Q 236 104 218 84" stroke="#fff" stroke-opacity=".7" stroke-width="3" stroke-dasharray="3 9" stroke-linecap="round" fill="none"/>' +
-        '<ellipse cx="112" cy="252" rx="62" ry="12" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="2"/>' +
-        '<g transform="translate(36 112) scale(1.4)">' + frog() + "</g>" +
-        '<circle cx="196" cy="128" r="3" fill="#dff7ff"/><circle cx="208" cy="118" r="2" fill="#dff7ff"/>' + spark(40, 70, 10, "#fff") + spark(272, 40, 8, "#fff");
     } },
     pump: { a: "#33d14a", b: "#0b3d1a", draw: function () {
       // um balão grande e brilhante enchendo pela bomba, com balões menores desfocados atrás
@@ -544,6 +514,23 @@ window.RD = window.RD || {};
     } }
   };
 
+  /* Chicken (faixa de pedestre) e Cross the Lake (sapo na folha): um elemento grande no centro, como Spill/Keno */
+  (function () {
+    var pill = function (x, y, txt, c) { return '<g transform="translate(' + x + " " + y + ')"><rect x="-34" y="-15" width="68" height="30" rx="15" fill="#000" opacity=".22" transform="translate(0 3)"/><rect x="-34" y="-15" width="68" height="30" rx="15" fill="' + (c || "#16c46b") + '" stroke="#fff" stroke-opacity=".5" stroke-width="2"/><text y="6" text-anchor="middle" font-size="16" font-weight="900" fill="#fff" style="font-family:var(--font-display,Arial)">' + txt + "</text></g>"; };
+    var lily = function (x, y, s, flower) { return '<g transform="translate(' + x + " " + y + ") scale(" + s + ')"><ellipse cy="8" rx="52" ry="18" fill="#04305a" opacity=".5"/><path d="M0 0 L46 -6 A50 18 0 1 1 30 -14 Z" fill="#43c44e"/><path d="M0 0 L46 -6 A50 18 0 1 1 30 -14 Z" fill="none" stroke="#2a9a38" stroke-width="2.5"/><path d="M0 0 L-30 -8 M0 0 L-34 6 M0 0 L-6 16 M0 0 L22 12" stroke="#2a9a38" stroke-width="2" stroke-linecap="round"/><ellipse cx="-14" cy="-8" rx="18" ry="5" fill="#fff" opacity=".18"/>' + (flower ? '<g transform="translate(-26 -9)"><circle r="9" fill="#ffb3f0"/><circle r="4" fill="#ffe27a"/></g>' : "") + "</g>"; };
+    var rings = function (x, y) { return '<ellipse cx="' + x + '" cy="' + y + '" rx="118" ry="30" fill="none" stroke="#fff" stroke-opacity=".22" stroke-width="2.5"/><ellipse cx="' + x + '" cy="' + y + '" rx="150" ry="40" fill="none" stroke="#fff" stroke-opacity=".12" stroke-width="2"/>'; };
+    COVERS.chicken = { a: "#ffb020", b: "#7a2600", draw: function () {
+      // atravessando a rua: faixa de pedestre, farol do carro vindo pela esquerda
+      var g = U("hb"), out = '<rect x="0" y="168" width="300" height="96" fill="#2a2233"/><path d="M0 172 H300 M0 260 H300" stroke="#ffd23f" stroke-width="5"/>';
+      for (var i = 0; i < 6; i++) out += '<rect x="' + (96 + i * 20) + '" y="180" width="11" height="72" rx="2" fill="#fff" opacity=".85"/>';
+      return "<defs>" + lin(g, [[0, "#fff6c8", 0.75], [1, "#fff6c8", 0]], 0, 0, 1, 0) + "</defs>" + out + '<path d="M0 186 L120 200 L120 240 L0 254 Z" fill="url(#' + g + ')"/><circle cx="-4" cy="220" r="22" fill="#fff6c8"/>' +
+        '<g transform="translate(82 54) scale(1.6)">' + chick() + "</g>" + pill(64, 70, "1.51×") + spark(262, 70, 11) + spark(40, 136, 8);
+    } };
+    COVERS.lake = { a: "#1fb6ff", b: "#0a3a7a", draw: function () {
+      // sapo grande sentado na vitória-régia, ondas em volta
+      return rings(150, 236) + lily(150, 238, 2.1, true) + '<g transform="translate(66 92) scale(1.4)">' + frog() + "</g>" + pill(236, 70, "1.66×", "#16c46b") + spark(54, 84, 11) + spark(262, 150, 8);
+    } };
+  })();
   function cover(id) {
     var c = COVERS[id]; if (!c) return "";
     var bg = U("bg"), gl = U("gw"), fd = U("fd"), name = { dice: "DICE", limbo: "LIMBO", crash: "CRASH", mines: "MINES", plinko: "PLINKO", hilo: "HI-LO", blackjack: "BLACKJACK", roulette: "ROULETTE", wheel: "WHEEL", keno: "KENO", tower: "TOWER", chicken: "CHICKEN", coinflip: "COINFLIP", rps: "ROCK PAPER SCISSORS", spill: "SPILL", lake: "CROSS THE LAKE", pump: "PUMP", baccarat: "BACCARAT", double: "DOUBLE", soccer: "SOCCER", door: "DOOR" }[id];
