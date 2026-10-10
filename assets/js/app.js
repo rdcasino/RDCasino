@@ -34,7 +34,7 @@
     [{ route: "affiliate", label: "Affiliate", icon: "link" }, { route: "fairness", label: "Provably Fair", icon: "shield" }, { route: "responsible", label: "Responsible Gaming", icon: "help" }, { action: "open-support", label: "Live Support", icon: "headset" }]
   ];
   function renderSidebar() {
-    var h = vipWidget() + '<a class="sb-promo" href="#/leaderboard" title="Monthly leaderboard">' + ic("trophy", 18) + '<span class="eyebrow">Monthly leaderboard</span><strong>' + fmt.usd(RD.config.leaderboardPrize, { dec: 0 }) + '</strong><small>Ends in <span data-countdown-short></span></small></a>';
+    var h = vipWidget() + '<a class="sb-promo" href="#/leaderboard" title="Monthly leaderboard">' + ic("trophy", 18) + '<span class="eyebrow">Monthly leaderboard</span><strong>' + fmt.usd(RD.config.leaderboardPrize, { dec: 0 }) + '</strong></a>';
     NAV.forEach(function (box, bi) {
       h += '<div class="sb-cap">' + ["Games", "Rewards", "More"][bi] + '</div><div class="sb-box">' + box.map(function (n) {
         if (n.action) return '<a class="sb-link" href="#" data-action="' + n.action + '" title="' + n.label + '">' + ic(n.icon) + "<span>" + n.label + '</span><span class="badge badge-brand hidden" data-sup-badge></span></a>';
@@ -115,7 +115,7 @@
   function paintBal(u) {
     var v = shownBal(u), el = $("#hdr-bal"), tag = $("#hdr-coin");
     if (!fxRate(disp.cur)) disp.cur = "USD";
-    el.textContent = u.cached ? "···" : inCur(v, disp.cur); el.classList.toggle("bal-wait", !!u.cached);
+    el.textContent = inCur(v, disp.cur); el.classList.toggle("bal-wait", !!u.cached); // durante o boot: mesmo tamanho, valor coberto (não mostra saldo antigo)
     if (tag) tag.remove(); // só o saldo na moeda escolhida, sem o ícone ao lado
     if (!$("#bal-menu").classList.contains("hidden")) renderBalMenu();
   }
@@ -549,7 +549,7 @@
       setAmt: function (v) { amt.value = amtIn(Math.max(0, v)); ctx.refresh(); },
       msg: function (t, extra) { if (!$("#og-msg")) return; $("#og-msg").innerHTML = t ? errorBox(t, extra) : ""; },
       btn: function () { return $("#og-bet"); },
-      refresh: function () { var u = me(); if (!$("#og-bal")) return; $("#og-bal").textContent = u ? "Balance " + money(shownBal(u)) : ""; if (api.refresh) api.refresh(); },
+      refresh: function () { var u = me(); if (!$("#og-bal")) return; $("#og-bal").innerHTML = u ? "Balance " + (u.cached ? '<span class="skel">' + money(shownBal(u)) + "</span>" : money(shownBal(u))) : ""; if (api.refresh) api.refresh(); },
       setProfit: function (mult, label) { var p = $("#og-profit"); if (!p) return; p.value = amtIn(ctx.amount() * (mult - 1)); $("#og-mult-lbl").textContent = (label || mult.toFixed(2)) + "×"; },
       validate: function (a, maxMult) {
         var u = me(); ctx.msg("");
@@ -3260,10 +3260,10 @@
     var k = KYC_LABEL[u.kyc] || [u.kyc, ""], txs = db.txOf(u.id);
     var pendingWd = txs.filter(function (t) { return t.type === "Withdrawal" && t.status === "Pending"; }).reduce(function (a, t) { return a + t.amount; }, 0);
     var head = '<div class="page-head"><h1>' + esc(u.username) + '</h1><p>Member since ' + u.created.slice(0, 10) + "</p></div>" +
-      '<div class="card balance-card"><div><div class="kpi-label">Balance</div><div class="kpi-value num">' + (u.cached ? "···" : fmt.usd(u.balance)) + '</div></div><div><div class="kpi-label">Pending withdrawals</div><div class="kpi-value num">' + (u.cached ? "···" : fmt.usd(pendingWd)) + "</div>" + (u.held > 0 ? '<small class="held-note">' + ic("lock", 12) + "On hold: " + fmt.usd(u.held) + " · contact support</small>" : "") + '</div><div><div class="kpi-label">Verification</div><div style="margin-top:6px"><span class="badge ' + k[1] + '">' + k[0] + '</span></div></div><div class="row bc-actions" style="gap:8px"><button class="btn btn-primary" data-open="wallet">Deposit</button><button class="btn btn-secondary" data-action="open-withdraw">Withdraw</button></div></div>' +
+      '<div class="card balance-card"><div><div class="kpi-label">Balance</div><div class="kpi-value num">' + (u.cached ? '<span class="skel">' + fmt.usd(u.balance) + "</span>" : fmt.usd(u.balance)) + '</div></div><div><div class="kpi-label">Pending withdrawals</div><div class="kpi-value num">' + (u.cached ? '<span class="skel">$0.00</span>' : fmt.usd(pendingWd)) + "</div>" + (u.held > 0 ? '<small class="held-note">' + ic("lock", 12) + "On hold: " + fmt.usd(u.held) + " · contact support</small>" : "") + '</div><div><div class="kpi-label">Verification</div><div style="margin-top:6px"><span class="badge ' + k[1] + '">' + k[0] + '</span></div></div><div class="row bc-actions" style="gap:8px"><button class="btn btn-primary" data-open="wallet">Deposit</button><button class="btn btn-secondary" data-action="open-withdraw">Withdraw</button></div></div>' +
       '<div class="pill-tabs" style="margin:20px 0">' + [["overview", "Transactions"], ["bets", "Bets"], ["verification", "Verification"]].map(function (t) { return '<a class="' + (t[0] === tab ? "active" : "") + '" href="#/account/' + t[0] + '">' + t[1] + "</a>"; }).join("") + "</div>";
     var body;
-    if (u.cached) body = '<div class="card empty" style="padding:40px 20px"><p class="faint">Loading…</p></div>';
+    if (u.cached) body = '<div class="card empty acc-wait"></div>';
     else if (tab === "bets") body = '<div class="card">' + betsTable(db.betsOf(u.id).slice(0, 50), "Your bets show up here.") + "</div>";
     else if (tab === "verification") body = kycView(u, k);
     else body = txView(u, txs);
@@ -3862,5 +3862,6 @@
   renderSidebar(); renderHeader(); renderFooter(); fillCountries();
   window.addEventListener("hashchange", function () { route(); });
   route();
+  document.documentElement.classList.remove("boot"); // primeira tela já montada: mostra tudo de uma vez
   setInterval(countdown, 1000);
 })();
