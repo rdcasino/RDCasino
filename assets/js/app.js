@@ -399,6 +399,10 @@
     var g = gameOf(id);
     if (!g || !g.enabled) return pages.notfound();
     if (g.playable) return originalPage(g);
+    if (g.demo) return '<div class="container">' +
+      '<div class="game-frame pp-frame" id="pp-frame"><iframe src="' + esc(RD.ppDemo(g.pp)) + '" title="' + esc(g.name) + '" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="origin"></iframe></div>' +
+      '<div class="pp-bar"><div><b>' + esc(g.name) + '</b><small>' + esc(g.provider) + '</small></div><span class="badge badge-gold">Demo · fun mode</span><span class="faint pp-note">Real-money play coming soon</span><button class="icon-btn" data-action="pp-full" title="Fullscreen">' + ic("maximize", 18) + "</button></div>" +
+      '<div class="section">' + sectionHead("More like this", "", "#/casino/" + g.cat) + '<div class="game-row">' + gamesOf(g.cat).filter(function (x) { return x.id !== g.id; }).map(gameCard).join("") + "</div></div></div>";
     return '<div class="container">' +
       '<div class="game-frame">' + media(g, "", "") + '<div class="game-frame-cta"><h2>' + esc(g.name) + '</h2><p class="muted">' + esc(g.provider) + '</p><span class="badge">Coming soon</span>' +
       '<p class="muted" style="max-width:420px">' + (g.provider === "RD Originals" ? "This RD Original is in development. Try Dice, Mines or Chicken in the meantime." : "Third-party games go live once the game aggregator is integrated.") + '</p><a class="btn btn-primary" href="#/game/dice">Play Dice now</a></div></div>' +
@@ -3726,6 +3730,7 @@
       case "open-withdraw": state.walletTab = "withdraw"; openModal("wallet"); return renderWallet();
       case "wd-max": $("#wd-amt").value = u.balance.toFixed(2); return;
       case "np-new": state.npDep = null; return renderWallet();
+      case "pp-full": { var fr = $("#pp-frame"); if (fr && fr.requestFullscreen) fr.requestFullscreen(); else if (fr && fr.webkitRequestFullscreen) fr.webkitRequestFullscreen(); return; }
       case "np-deposit": {
         var na = parseFloat(($("#np-amt") || {}).value), nb = t;
         if (!(na > 0)) { $("#np-msg").innerHTML = errorBox("Enter the amount you want to deposit."); return; }

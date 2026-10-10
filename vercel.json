@@ -34,7 +34,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://szhmaytfipnzcdulotli.supabase.co; connect-src 'self' https://szhmaytfipnzcdulotli.supabase.co wss://szhmaytfipnzcdulotli.supabase.co; frame-src 'none'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'"
+          "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://szhmaytfipnzcdulotli.supabase.co https://common-static.ppgames.net; connect-src 'self' https://szhmaytfipnzcdulotli.supabase.co wss://szhmaytfipnzcdulotli.supabase.co; frame-src https://demogamesfree.pragmaticplay.net; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'"
         }
       ]
     },
