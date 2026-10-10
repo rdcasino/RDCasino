@@ -60,8 +60,9 @@ assets/js/admin.js      Admin: dashboard, jogadores, transações, KYC, jogos,
 assets/js/art.js        Ilustrações SVG (capas dos jogos, banners, promoções)
 assets/img/             Fotos/artes finais que substituem as ilustrações (guia em assets/img/README.md)
 design/artes.html       Kit de artes: ver e baixar todas as ilustrações em SVG
-design/identidade.html  As 3 direções de identidade avaliadas (escolhida: Rubi Real)
-legacy/                 Versão anterior em arquivo único (só referência)
+assets/fonts/           Fontes Inter e Unbounded servidas pelo próprio site (sem Google Fonts)
+assets/dist/            Site empacotado e compactado (gerado: não editar à mão)
+tools/bundle.mjs        Gera assets/dist e atualiza index.html: cd tools && npm install && npm run bundle
 ```
 
 ## Páginas

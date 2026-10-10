@@ -205,14 +205,7 @@ window.RD = window.RD || {};
 
 
   /* Tag do dono/equipe: diamante brilhante (no lugar do nível VIP) */
-  function ownerBadge(size) {
-    size = size || 40; var g = U("ob"), d = U("od"), h = U("oh");
-    return '<svg class="tier-badge owner-badge" width="' + size + '" height="' + size + '" viewBox="0 0 40 40" aria-label="Owner"><defs>' + lin(g, [[0, "#1b2a4a"], [1, "#0b0f22"]], 0, 0, 1, 1) + lin(d, [[0, "#e8fbff"], [0.45, "#7de3ff"], [1, "#b48bff"]], 0, 0, 1, 1) + lin(h, [[0, "#fff", 0.5], [1, "#fff", 0]]) + "</defs>" +
-      '<rect x="1" y="1" width="38" height="38" rx="11" fill="url(#' + g + ')"/><rect x="1" y="1" width="38" height="38" rx="11" fill="none" stroke="#7de3ff" stroke-opacity=".75"/>' +
-      '<path d="M4 12 Q4 3 13 3 H27 Q36 3 36 12 V16 Q20 10 4 18Z" fill="url(#' + h + ')"/>' +
-      '<path d="M20 31 L8 16 L13 9 H27 L32 16 Z" fill="url(#' + d + ')"/><path d="M8 16 H32 M13 9 L17 16 L20 31 L23 16 L27 9 M17 16 L20 9 L23 16" fill="none" stroke="#2a3f73" stroke-opacity=".55" stroke-width="1" stroke-linejoin="round"/>' +
-      '<path d="M33 5 l1 2.4 2.4 1 -2.4 1 -1 2.4 -1 -2.4 -2.4 -1 2.4 -1z" fill="#fff"/></svg>';
-  }
+
 
   /* Mascote do Chicken: galinha com boné e lenço RD (viewBox 0 0 48 48) */
 
@@ -553,7 +546,7 @@ window.RD = window.RD || {};
   }
 
   RD.art = {
-    cover: cover, ownerBadge: ownerBadge, frog: frog, chick: chick,
+    cover: cover, frog: frog, chick: chick,
     has: function (key) { var k = String(key).split(":"); return k[0] === "cover" ? !!COVERS[k[1]] : k[0] === "scene" ? !!SCENES[k[1]] : false; },
     render: function (key, o) {
       var k = String(key).split(":");
