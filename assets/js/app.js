@@ -208,7 +208,9 @@
     var stable = /^(USDT|USDC)$/.test(w.coin), min = Math.max(+w.min_deposit || 0, RD.config.minDeposit || 0);
     var h = '<div class="coin-select">' + coinsL.map(function (x) { return '<button class="coin-opt' + (x === state.coin ? " active" : "") + '" data-coin="' + x + '"><span class="coin-dot" style="background:' + (COIN_COLORS[x] || "#666") + '">' + x[0] + "</span>" + x + "</button>"; }).join("") + "</div>" +
       '<div class="field"><label>Network</label><div class="net-row">' + nets.map(function (x) { return '<button class="chip' + (x.network === state.net ? " active" : "") + '" data-net="' + esc(x.network) + '">' + esc(x.network) + "</button>"; }).join("") + "</div></div>";
-    if (state.walletTab === "deposit") {
+    if (state.walletTab === "deposit" && RD.config.npEnabled) {
+      h += npDepositView(w, min);
+    } else if (state.walletTab === "deposit") {
       h += '<div class="dep-box"><div class="notice" style="margin-bottom:12px;border-color:rgba(255,200,92,.35);background:var(--gold-soft)">' + ic("alert", 16) + "<span>Send only <b>" + esc(w.coin) + "</b> on the <b>" + esc(w.network) + "</b> network. Other coins or networks may be lost.</span></div>" +
         '<div class="field"><label>Deposit address</label><div class="addr-row"><code class="addr">' + esc(w.address) + '</code><button class="btn btn-secondary btn-sm" data-copy="' + esc(w.address) + '">' + ic("copy", 14) + "Copy</button></div></div>" +
         (w.memo ? '<div class="field"><label>Memo / tag (required)</label><div class="addr-row"><code class="addr">' + esc(w.memo) + '</code><button class="btn btn-secondary btn-sm" data-copy="' + esc(w.memo) + '">' + ic("copy", 14) + "Copy</button></div></div>" : "") +
@@ -219,6 +221,58 @@
         '<button class="btn btn-primary btn-block btn-lg" data-action="withdraw">Request withdrawal</button>';
     }
     $("#wallet-body").innerHTML = h; hydrateIcons($("#wallet-body"));
+    if (state.walletTab === "deposit" && RD.config.npEnabled) npAfter();
+  }
+  document.addEventListener("click", function (e) { var c = e.target.closest("[data-np-amt]"); if (!c) return; var i = $("#np-amt"); if (i) { i.value = c.getAttribute("data-np-amt"); i.focus(); } });
+  /* Depósito automático (NOWPayments): o jogador escolhe o valor, recebe um endereço e o valor exato; o saldo entra sozinho */
+  var npTimer = null, npQrLoad = null;
+  function npActive(w) { var d = state.npDep; return d && d.coin === w.coin && d.network === w.network && !d.done ? d : null; }
+  function npDepositView(w, min) {
+    var d = npActive(w);
+    if (!d) {
+      return '<div class="np-box"><div class="field"><label>Amount (USD)</label><div class="input-group"><input type="number" min="' + min + '" step="1" placeholder="Min. ' + fmt.usd(min, { dec: 0 }) + '" id="np-amt" inputmode="decimal"><button class="btn btn-primary btn-sm" data-action="np-deposit">Deposit</button></div></div>' +
+        '<div class="np-quick">' + [20, 50, 100, 250, 500].map(function (v) { return '<button class="chip" data-np-amt="' + v + '">$' + v + "</button>"; }).join("") + "</div>" +
+        '<div id="np-msg"></div><p class="faint np-foot">' + ic("lock", 13) + "You get a one-time " + esc(w.coin) + " (" + esc(w.network) + ") address and the exact amount to send. Your balance is credited automatically after network confirmations.</p></div>";
+    }
+    var amtTxt = String(d.pay_amount) + " " + esc(w.coin);
+    return '<div class="np-box np-pay"><div class="np-qr" id="np-qr"></div><div class="np-info">' +
+      '<div class="field"><label>Send exactly</label><div class="addr-row"><code class="addr">' + amtTxt + '</code><button class="btn btn-secondary btn-sm" data-copy="' + esc(String(d.pay_amount)) + '">' + ic("copy", 14) + "Copy</button></div></div>" +
+      '<div class="field"><label>To this ' + esc(w.coin) + " (" + esc(w.network) + ') address</label><div class="addr-row"><code class="addr">' + esc(d.address) + '</code><button class="btn btn-secondary btn-sm" data-copy="' + esc(d.address) + '">' + ic("copy", 14) + "Copy</button></div></div>" +
+      (d.memo ? '<div class="field"><label>Memo / tag (required)</label><div class="addr-row"><code class="addr">' + esc(d.memo) + '</code><button class="btn btn-secondary btn-sm" data-copy="' + esc(d.memo) + '">' + ic("copy", 14) + "Copy</button></div></div>" : "") +
+      '<div class="np-status" id="np-status"><span class="np-dot"></span><span>Waiting for your payment of ' + fmt.usd(d.amount) + (d.expires ? ' · <span data-np-exp="' + esc(d.expires) + '"></span>' : "") + "</span></div>" +
+      '<div class="notice np-warn">' + ic("alert", 16) + "<span>Send only <b>" + esc(w.coin) + "</b> on <b>" + esc(w.network) + "</b>, in one transaction. A different amount may need manual review.</span></div>" +
+      '<button class="btn btn-ghost btn-sm" data-action="np-new">New deposit</button></div></div>';
+  }
+  function npQr(text) {
+    var box = $("#np-qr"); if (!box) return;
+    var draw = function () { var b = $("#np-qr"); if (!b || !window.qrcode) return; var q = window.qrcode(0, "M"); q.addData(text); q.make(); b.innerHTML = q.createSvgTag({ cellSize: 4, margin: 2, scalable: true }); };
+    if (window.qrcode) return draw();
+    if (!npQrLoad) npQrLoad = new Promise(function (ok) { var sc = document.createElement("script"); sc.src = "assets/vendor/qrcode-2.0.4.min.js"; sc.onload = ok; sc.onerror = ok; document.head.appendChild(sc); });
+    npQrLoad.then(draw);
+  }
+  function npTick() {
+    $$("[data-np-exp]").forEach(function (el) { var ms = new Date(el.getAttribute("data-np-exp")).getTime() - Date.now(); el.textContent = ms > 0 ? "expires in " + Math.floor(ms / 60000) + "m " + String(Math.floor(ms / 1000) % 60).padStart(2, "0") + "s" : "address expired — start a new deposit"; });
+  }
+  function npAfter() {
+    var w = { coin: state.coin, network: state.net }, d = npActive(w);
+    if (d) { npQr(d.address); npTick(); }
+    clearInterval(npTimer);
+    npTimer = setInterval(function () {
+      if (!$("#modal-wallet").classList.contains("open") || state.walletTab !== "deposit") { clearInterval(npTimer); return; }
+      npTick();
+      var cur = state.npDep; if (!cur || cur.done) return;
+      if (++cur.ticks % 8) return; // confere na NOWPayments a cada ~16 s
+      Promise.resolve(db.npCheck()).then(function () {
+        var u = me(), t = u && db.txOf(u.id).filter(function (x) { return x.rid === cur.id || x.id === "TX-" + cur.id; })[0];
+        if (!t || t.status === "Awaiting") return;
+        cur.done = true; // o aviso ("Deposit credited") sai pelo db.onChange, igual aos outros depósitos
+        if ($("#modal-wallet").classList.contains("open")) renderWallet();
+      });
+    }, 2000);
+    if (!d && !state.npRestored) {
+      state.npRestored = true; // reabre um depósito que o jogador deixou aberto
+      Promise.resolve(db.npOpen()).then(function (list) { var x = list && list[0]; if (!x || state.npDep) return; state.npDep = { id: x.id, coin: x.coin, network: x.network, address: x.address, pay_amount: x.pay_amount, memo: x.memo, expires: x.expires, amount: +x.amount, ticks: 0 }; state.coin = x.coin; state.net = x.network; if ($("#modal-wallet").classList.contains("open") && state.walletTab === "deposit") renderWallet(); });
+    }
   }
   function renderWallet() {
     if (RD.live) return renderLiveWallet();
@@ -3671,6 +3725,18 @@
       case "rotate": { t.disabled = true; Promise.resolve(db.rotateSeed(u.id, ($("#new-client").value || "").trim())).then(function (rs) { t.disabled = false; if (rs && rs.error) return RD.toast(rs.error, "error"); RD.toast("Seed pair changed — previous server seed revealed"); seedsModal(); }); return; }
       case "open-withdraw": state.walletTab = "withdraw"; openModal("wallet"); return renderWallet();
       case "wd-max": $("#wd-amt").value = u.balance.toFixed(2); return;
+      case "np-new": state.npDep = null; return renderWallet();
+      case "np-deposit": {
+        var na = parseFloat(($("#np-amt") || {}).value), nb = t;
+        if (!(na > 0)) { $("#np-msg").innerHTML = errorBox("Enter the amount you want to deposit."); return; }
+        nb.disabled = true; nb.textContent = "Creating…";
+        Promise.resolve(db.npDeposit(state.coin, state.net, na)).then(function (r) {
+          if (!r || r.error) { nb.disabled = false; nb.textContent = "Deposit"; var m = $("#np-msg"); if (m) m.innerHTML = errorBox((r && r.error) || "Could not create the deposit."); return; }
+          state.npDep = { id: r.id, coin: state.coin, network: state.net, address: r.address, pay_amount: r.pay_amount, memo: r.memo, expires: r.expires, amount: r.amount, ticks: 0 };
+          renderWallet();
+        });
+        return;
+      }
       case "live-deposit": {
         var lw = db.wallets().filter(function (x) { return x.coin === state.coin && x.network === state.net; })[0], la = parseFloat($("#dep-amt").value), lh = $("#dep-hash").value.trim();
         if (!lw) return;
@@ -3858,7 +3924,8 @@
     if (u && before && after && before.ready && after.ready) {
       var told = false;
       db.txOf(u.id).forEach(function (t) {
-        if (before[t.id] === "Pending" && t.status === "Completed") { told = true; RD.toast("Your withdrawal of " + fmt.usd(t.amount) + " was sent"); }
+        if (before[t.id] === "Pending" && t.status === "Completed") { told = true; RD.toast(t.type === "Deposit" ? "Deposit credited: " + fmt.usd(t.amount) : "Your withdrawal of " + fmt.usd(t.amount) + " was sent"); }
+        if (before[t.id] === "Awaiting" && t.status !== "Awaiting") { told = true; RD.toast(t.status === "Completed" ? "Deposit credited: " + fmt.usd(t.amount) : t.status === "Pending" ? "Payment received with a different amount — our team will review it" : t.status === "Expired" ? "Your deposit address expired" : "Deposit " + t.status.toLowerCase(), t.status === "Completed" || t.status === "Pending" ? "" : "error"); }
         if (before[t.id] === "Pending" && t.status === "Rejected") { told = true; RD.toast("Withdrawal of " + fmt.usd(t.amount) + " was rejected and refunded", "error"); }
         if (!before[t.id] && t.type === "Bonus") { told = true; RD.toast("You received a bonus of " + fmt.usd(t.amount)); }
       });
