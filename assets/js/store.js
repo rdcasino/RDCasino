@@ -267,6 +267,10 @@
     adminSupportStatus: function (pid, st) { var t = (D.supportThreads || {})[pid]; if (t) { t.status = st; if (st === "closed") t.unreadStaff = 0; save(); } return { ok: true }; },
     adminSupportSeen: function (pid) { var t = (D.supportThreads || {})[pid]; if (t) { t.unreadStaff = 0; save(); } },
     /* ---------- Códigos promocionais (demonstração) ---------- */
+    codeCheck: function (pid, code) {
+      var k = String(code || "").trim().toUpperCase(), c = (D.codes || []).filter(function (x) { return x.code === k; })[0];
+      return !!(c && c.active && !(c.expires && new Date(c.expires) < new Date()) && !(c.maxUses && c.uses >= c.maxUses) && (c.users || []).indexOf(pid) < 0);
+    },
     redeemCode: function (pid, code) {
       var p = byId(pid), k = String(code || "").trim().toUpperCase(); D.codes = D.codes || [];
       var c = D.codes.filter(function (x) { return x.code === k; })[0];

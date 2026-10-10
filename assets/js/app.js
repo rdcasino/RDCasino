@@ -63,13 +63,20 @@
   function isStaff(name) { return !!name && (RD.staff || []).some(function (x) { return x.toLowerCase() === String(name).toLowerCase(); }); }
   function topTier() { return RD.vipTiers[RD.vipTiers.length - 1]; }
   function uBadge(name, wagered, size) { return RD.art.tierBadge(isStaff(name) ? topTier() : db.tierOf(wagered || 0), size); }
-  var pendStake = 0; // apostas enviadas ao servidor que ainda não voltaram: já saem do saldo mostrado no clique
-  function shownBal(u) { var t = pendStake; for (var k in inFlight) t += inFlight[k]; return Math.round((u.balance - t) * 100) / 100; }
-  function stakeOut(a) { pendStake = Math.round((pendStake + a) * 100) / 100; var u = me(); if (u) paintBal(u); }
-  function stakeBack(a) { pendStake = Math.max(0, Math.round((pendStake - a) * 100) / 100); var u = me(); if (u) paintBal(u); }
+  /* Saldo mostrado = saldo do servidor − apostas enviadas que ainda não voltaram − prêmios cuja animação não terminou.
+     Cada desconto tem prazo (nada fica preso se uma resposta se perder) e o saldo mostrado nunca fica negativo. */
+  var pend = {}, pendSeq = 0, HOLD_MS = 12000, PEND_MS = 20000;
+  function sumLive(map, ttl) { var now = Date.now(), t = 0; for (var k in map) { if (now - map[k].t > ttl) delete map[k]; else t += map[k].v; } return t; }
+  function shownBal(u) { var v = u.balance - sumLive(pend, PEND_MS) - sumLive(inFlight, HOLD_MS); return Math.max(0, Math.round(v * 100) / 100); }
+  function stakeOut(a) { var k = ++pendSeq; pend[k] = { v: a, t: Date.now() }; var u = me(); if (u) paintBal(u); return k; }
+  function stakeBack(k) { delete pend[k]; var u = me(); if (u) paintBal(u); }
+  function pendTotal() { return sumLive(pend, PEND_MS); }
+  /* aposta voltou com erro: busca o saldo real no servidor (nunca fica um valor que o servidor não confirmou) */
+  var resyncT = null;
+  function resync() { if (!RD.live || !db.refresh) return; clearTimeout(resyncT); resyncT = setTimeout(function () { db.refresh(); }, 400); }
   /* Troca o HTML só quando mudou (evita redesenhar menu, rodapé e tabelas a cada aposta) */
   function setHTML(el, html) { if (!el || el._h === html) return false; el.innerHTML = html; el._h = html; return true; }
-  function hold(b) { if (b && !b.error && b.payout > 0) inFlight[b.id] = b.payout; renderHeader(); }
+  function hold(b) { if (b && !b.error && b.payout > 0) inFlight[b.id] = { v: b.payout, t: Date.now() }; renderHeader(); }
   function release(b) {
     if (!b || !(b.id in inFlight)) return; delete inFlight[b.id];
     var el = $("#hdr-bal"); if (el && b.payout > 0) { el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); }
@@ -431,12 +438,12 @@
   /* Rodada (Mines, Tower...): modo real começa no servidor; demonstração começa aqui */
   function rStart(u, G, a, state, params) {
     if (!RD.live) return Promise.resolve(db.startRound(u.id, G, a, state));
-    stakeOut(a); return db.roundStart(G, a, params || state).then(function (r) { stakeBack(a); return r; });
+    var k = stakeOut(a); return db.roundStart(G, a, params || state).then(function (r) { stakeBack(k); if (r && r.error) resync(); return r; }, function (e) { stakeBack(k); return { error: (e && e.message) || "Something went wrong." }; });
   }
   function roll(u, game, amount, params, count, single) {
-    if (db.playBet) { stakeOut(amount); return db.playBet(game, amount, params).then(function (r) {
-      stakeBack(amount);
-      if (r.error) { var z = []; for (var i = 0; i < count; i++) z.push(0); return { fs: z, nonce: 0, client: "", place: function () { return { error: r.error }; } }; }
+    if (db.playBet) { var pk = stakeOut(amount); return db.playBet(game, amount, params).then(null, function (e) { return { error: (e && e.message) || "Something went wrong." }; }).then(function (r) {
+      stakeBack(pk);
+      if (r.error) { resync(); var z = []; for (var i = 0; i < count; i++) z.push(0); return { fs: z, nonce: 0, client: "", place: function () { return { error: r.error }; } }; }
       return r;
     }); }
     var s = db.reserve(u.id);
@@ -511,7 +518,7 @@
       '<button class="icon-btn" data-ogx="sound" title="Sound">' + ic(RD.sfx.muted() ? "volumeX" : "volume", 18) + "</button>" +
       '<div class="ogx-brand">RDCASINO</div><button class="ogx-fair" data-action="seeds">' + ic("shield", 15) + "Provably fair</button></div>";
     return '<div class="container' + (ogPrefs.theatre ? " wide" : "") + '">' +
-      '<div class="row" style="margin-bottom:14px;gap:8px"><a class="icon-btn" href="#/casino/originals" aria-label="Back">' + ic("chevronLeft") + '</a><h2 style="font-size:18px">' + esc(g.name) + '</h2><span class="badge">RD Originals</span></div>' +
+      '<div class="row" style="margin-bottom:14px;gap:8px"><a class="icon-btn" href="#/casino/originals" aria-label="Back">' + ic("chevronLeft") + '</a><h2 style="font-size:22px">' + esc(g.name) + '</h2><span class="badge">RD Originals</span></div>' +
       '<div class="ogx' + (ogPrefs.theatre ? " theatre" : "") + '" id="ogx"><div class="ogx-main">' + side + stage + "</div>" + bar + "</div>" +
       '<div class="card og-info"><div class="card-head"><div class="pill-tabs" id="og-tabs"><button data-ogtab="mine">My bets</button><button data-ogtab="recent">Recent bets</button><button data-ogtab="high">High rollers</button></div></div><div id="og-tab-body"></div></div></div>';
   }
@@ -580,7 +587,7 @@
         if (!u) { openAuth("register"); return null; }
         if (u.status !== "Active") { ctx.msg("Your account is suspended."); return null; }
         if (a < 0.01) { ctx.msg("Minimum bet is $0.01."); return null; }
-        if (a > u.balance - pendStake + 1e-9) { ctx.msg("Insufficient balance.", ' <a href="#" class="link-sm" data-open="wallet">Deposit</a>'); return null; }
+        if (a > u.balance - pendTotal() + 1e-9) { ctx.msg("Insufficient balance.", ' <a href="#" class="link-sm" data-open="wallet">Deposit</a>'); return null; }
         if (maxMult && maxProfit() && a * (maxMult - 1) > maxProfit()) { ctx.msg("Max profit per bet is " + money(maxProfit(), { dec: 0 }) + "."); return null; }
         return u;
       },
@@ -3017,8 +3024,22 @@
   /* Códigos promocionais: o jogador digita e ganha o bônus na hora */
   function codeBox() {
     return '<form class="code-box" data-code-form><span class="code-ic">' + ic("gift", 18) + '</span><div class="grow"><b>Redeem a promo code</b><small>Drops from our socials, streams and partners.</small></div>' +
-      '<div class="code-row"><input class="input" name="code" placeholder="Code" maxlength="24" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn btn-primary">Redeem</button></div></form>';
+      '<div class="code-row"><input class="input" name="code" placeholder="Code" maxlength="24" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn btn-secondary code-go">Redeem</button></div></form>';
   }
+  /* Redeem fica cinza; azul só quando o código digitado existe (consulta ao servidor depois que o jogador para de digitar) */
+  var codeT = null, codeSeq = 0;
+  document.addEventListener("input", function (e) {
+    var f = e.target.closest && e.target.closest("[data-code-form]"); if (!f) return;
+    var btn = f.querySelector(".code-go"), code = e.target.value.trim(), seq = ++codeSeq, u = me();
+    btn.classList.add("btn-secondary"); btn.classList.remove("btn-primary"); clearTimeout(codeT);
+    if (!u || code.length < 3 || !db.codeCheck) return;
+    codeT = setTimeout(function () {
+      Promise.resolve(db.codeCheck(u.id, code)).then(function (ok) {
+        if (seq !== codeSeq || !document.contains(btn) || !ok) return;
+        btn.classList.add("btn-primary"); btn.classList.remove("btn-secondary");
+      });
+    }, 450);
+  });
   document.addEventListener("submit", function (e) {
     var f = e.target.closest && e.target.closest("[data-code-form]"); if (!f) return;
     e.preventDefault(); if (needLogin()) return;
@@ -3027,7 +3048,7 @@
     Promise.resolve(db.redeemCode(me().id, code)).then(function (r) {
       btn.disabled = false;
       if (r.error) { RD.toast(r.error, "error"); return; }
-      inp.value = ""; RD.toast("Code redeemed: +" + fmt.usd(r.amount)); renderHeader(); renderSidebar();
+      inp.value = ""; btn.classList.add("btn-secondary"); btn.classList.remove("btn-primary"); RD.toast("Code redeemed: +" + money(r.amount)); renderHeader(); renderSidebar();
     });
   });
   function renderVipDrawer() {
@@ -3037,7 +3058,7 @@
       '<span class="vd-ped">' + badge(v.cur, 70) + "</span>" + (v.next ? '<span class="vd-track"><i></i><i></i><i></i>' + ic("chevronRight", 16) + '</span><span class="vd-ped next">' + badge(v.next, 50) + "</span>" : "") + "</div>" +
       '<div class="row between vd-prog-head"><span>Your VIP progress</span><strong>' + v.pct.toFixed(2) + "%</strong></div>" +
       '<div class="progress"><span style="width:' + v.pct + '%"></span></div>' +
-      '<div class="row between vd-tiers"><span>' + (v.cur ? v.cur.name : "Unranked") + '</span><span class="faint">' + (v.next ? money(Math.max(0, v.next.wager - v.w), { dec: 0 }) + " to " + v.next.name : "Max level") + "</span></div>" +
+      '<div class="row between vd-tiers"><span>' + (v.cur ? v.cur.name : "Unranked") + '</span><span class="faint">' + (v.next ? v.next.name : "Max level") + "</span></div>" +
       '<a class="btn btn-primary btn-block" href="#/vip" data-close-drawer>View VIP program</a></div>' +
       '<h4 class="vd-h">' + ic("gift", 16) + "Available rewards</h4>" + rewardCards(u) + codeBox() +
       (!u ? '<button class="btn btn-secondary btn-block" style="margin-top:14px" data-open="register">Create an account to start earning</button>' : "");
@@ -3259,14 +3280,11 @@
     var pendingWd = txs.filter(function (t) { return t.type === "Withdrawal" && t.status === "Pending"; }).reduce(function (a, t) { return a + t.amount; }, 0);
     var head = '<div class="page-head"><h1>' + esc(u.username) + '</h1><p>Member since ' + u.created.slice(0, 10) + "</p></div>" +
       '<div class="card balance-card"><div><div class="kpi-label">Balance</div><div class="kpi-value num">' + fmt.usd(u.balance) + '</div></div><div><div class="kpi-label">Pending withdrawals</div><div class="kpi-value num">' + fmt.usd(pendingWd) + "</div>" + (u.held > 0 ? '<small class="held-note">' + ic("lock", 12) + "On hold: " + fmt.usd(u.held) + " · contact support</small>" : "") + '</div><div><div class="kpi-label">Verification</div><div style="margin-top:6px"><span class="badge ' + k[1] + '">' + k[0] + '</span></div></div><div class="row bc-actions" style="gap:8px"><button class="btn btn-primary" data-open="wallet">Deposit</button><button class="btn btn-secondary" data-action="open-withdraw">Withdraw</button></div></div>' +
-      '<div class="pill-tabs" style="margin:20px 0">' + [["overview", "Transactions"], ["bets", "Bets"], ["verification", "Verification"], ["stats", "Statistics"]].map(function (t) { return '<a class="' + (t[0] === tab ? "active" : "") + '" href="#/account/' + t[0] + '">' + t[1] + "</a>"; }).join("") + "</div>";
+      '<div class="pill-tabs" style="margin:20px 0">' + [["overview", "Transactions"], ["bets", "Bets"], ["verification", "Verification"]].map(function (t) { return '<a class="' + (t[0] === tab ? "active" : "") + '" href="#/account/' + t[0] + '">' + t[1] + "</a>"; }).join("") + "</div>";
     var body;
     if (tab === "bets") body = '<div class="card">' + betsTable(db.betsOf(u.id).slice(0, 50), "Your bets show up here.") + "</div>";
     else if (tab === "verification") body = kycView(u, k);
-    else if (tab === "stats") {
-      var t = db.tierOf(u.wagered);
-      body = '<div class="kpi-grid"><div class="kpi"><div class="kpi-label">Total wagered</div><div class="kpi-value num">' + fmt.usd(u.wagered) + '</div></div><div class="kpi"><div class="kpi-label">Bets</div><div class="kpi-value num">' + fmt.int(u.bets) + '</div></div><div class="kpi"><div class="kpi-label">Profit</div><div class="kpi-value num ' + (u.profit >= 0 ? "pos" : "neg") + '">' + fmt.usd(u.profit) + '</div></div><div class="kpi"><div class="kpi-label">VIP level</div><div class="kpi-value">' + (t ? t.name : "Unranked") + "</div></div></div>";
-    } else body = txView(u, txs);
+    else body = txView(u, txs);
     return '<div class="container">' + head + body + "</div>";
   };
   /* ---------- Verificação de identidade (KYC) ---------- */
@@ -3402,7 +3420,7 @@
       ? esc(L.company) + " is licensed and regulated by " + esc(L.authority) + " under license no. " + esc(L.number) + ". " + esc(L.address)
       : "Licensing information will be published here.";
     setHTML($("#footer"), '<div class="footer-in"><div class="footer-cols">' +
-      '<div class="footer-about"><span class="brand-name">RD<span>Casino</span></span><p>Crypto casino with provably fair originals and fast withdrawals.</p><div class="footer-badges"><span class="age-badge">18+</span><span class="badge">' + ic("shield", 12) + 'Provably fair</span><span class="badge">' + ic("lock", 12) + "SSL</span></div>" + socialLinks() + "</div>" +
+      '<div class="footer-about"><span class="brand-name">RD<span>Casino</span></span><p>Crypto casino with provably fair originals and fast withdrawals.</p><div class="footer-badges"><span class="badge">18+</span><span class="badge">' + ic("shield", 12) + 'Provably fair</span><span class="badge">' + ic("lock", 12) + "SSL</span></div>" + socialLinks() + "</div>" +
       '<div><h4>Casino</h4><a href="#/casino/originals">RD Originals</a><a href="#/casino/slots">Slots</a><a href="#/casino/live">Live Casino</a><a href="#/casino/gameshows">Game Shows</a></div>' +
       '<div><h4>Rewards</h4><a href="#/promotions">Promotions</a><a href="#/vip">VIP Club</a><a href="#/leaderboard">Leaderboard</a><a href="#/affiliate">Affiliate</a></div>' +
       '<div><h4>Support</h4><a href="#" data-drawer="chat">Chat</a><a href="mailto:' + RD.config.supportEmail + '">Email us</a><a href="#/fairness">Provably fair</a><a href="#/responsible">Responsible gaming</a></div>' +
