@@ -61,8 +61,9 @@
   function fill(arr, items) { arr.length = 0; Array.prototype.push.apply(arr, items); }
 
   /* ---------- Carregar dados do servidor para o cache ---------- */
+  var balVer = 0; // muda a cada resultado de aposta aplicado na tela
   function loadPlayer() {
-    var uid = state.user.id;
+    var uid = state.user.id, v0 = balVer;
     return Promise.all([
       sb.from("profiles").select("*").eq("id", uid).maybeSingle(),
       sb.from("transactions").select("*").eq("user_id", uid).order("created_at", { ascending: false }).limit(200),
@@ -75,10 +76,13 @@
     ]).then(function (r) {
       var prof = r[0].data; if (!prof) throw new Error("Profile not found.");
       var txs = (r[1].data || []).map(function (t) { return mapTx(t, prof.username); });
-      var me = mapProfile(prof, state.user.email, txs), s = r[3].data;
+      var me = mapProfile(prof, state.user.email, txs), s = r[3].data, old = db.current();
+      /* chegou um resultado de aposta enquanto este perfil vinha do servidor: o saldo da aposta é mais novo, fica ele */
+      if (old && old.id === prof.id && balVer !== v0) ["balance", "held", "wagered", "profit", "bets", "rakeback"].forEach(function (k) { me[k] = old[k]; });
       if (s) me.seeds = { server: "", hash: s.server_hash, nextHash: s.next_server_hash || null, client: s.client_seed, nonce: +s.nonce, revealed: s.revealed || [] };
       /* um saldo só na tela (o total); wallet guarda de qual cripto veio cada valor */
       me.wallet = prof.wallet || {}; me.coin = prof.active_coin || "USDT"; me.total = me.balance;
+      if (old && old.id === prof.id && balVer !== v0) { me.wallet = old.wallet || me.wallet; me.coin = old.coin || me.coin; me.total = old.total != null ? old.total : me.total; }
       me.reloadGrant = mapReload(r[5].data);
       me.kycInfo = mapKyc(r[6].data); if (me.kycInfo && me.kyc === "Rejected") me.kycReason = me.kycInfo.reason;
       Object.keys(rounds).forEach(function (k) { delete rounds[k]; });
@@ -188,7 +192,7 @@
           if (Math.abs(bet.payout - (win ? n(bet.amount * mult) : 0)) > 0.011) console.warn("RD: resultado do servidor diferente do site", game, bet, mult, win);
           /* Plinko com várias bolas: só o saldo da aposta mais recente vale */
           if (+b.id > lastBetId) {
-            lastBetId = +b.id;
+            lastBetId = +b.id; balVer++;
             me.balance = n(pr.balance); me.wagered = n(pr.wagered); me.profit = n(pr.profit); me.bets = +pr.bets; me.rakeback = +pr.rakeback;
             if (pr.wallet) { me.wallet = pr.wallet; me.coin = pr.coin; me.total = n(pr.total); }
             me.seeds.nonce = nonce + 1;
@@ -205,7 +209,7 @@
   var rounds = {}, lastBet = {};
   /* trocar a moeda usada nas apostas (não deixa com jogo aberto) */
   db.setCoin = function (coin) { return sb.rpc("set_active_coin", { p_coin: coin }).then(function (r) { if (r.error) return { error: msg(r.error) }; applyProfile(r.data); db.emit(); return { ok: true }; }); };
-  function applyProfile(pr) { var me = db.current(); if (!me || !pr) return; if (pr.wallet) { me.wallet = pr.wallet; me.coin = pr.coin; me.total = n(pr.total); } me.balance = n(pr.balance); me.wagered = n(pr.wagered); me.profit = n(pr.profit); me.bets = +pr.bets; me.rakeback = +pr.rakeback; me.held = n(pr.held); }
+  function applyProfile(pr) { var me = db.current(); if (!me || !pr) return; balVer++; if (pr.wallet) { me.wallet = pr.wallet; me.coin = pr.coin; me.total = n(pr.total); } me.balance = n(pr.balance); me.wagered = n(pr.wagered); me.profit = n(pr.profit); me.bets = +pr.bets; me.rakeback = +pr.rakeback; me.held = n(pr.held); }
   function mapBet(b, game, r) { var me = db.current() || {}; return { id: "B-" + b.id, userId: me.id, user: me.username, game: game, amount: n(b.amount), multiplier: +b.multiplier, payout: n(b.payout), date: b.created_at, detail: Object.assign({ nonce: r ? r.nonce : undefined, client: r ? r.client : undefined }, b.detail || {}) }; }
   function syncRounds() { var me = db.current(); if (me) me.rounds = rounds; }
   db.activeRound = function (pid, game) { return rounds[game] || null; };
@@ -343,6 +347,8 @@
   loadLb(); setInterval(function () { if (!document.hidden) loadLb(); }, 30000);
   db.leaderboard = function () { return state.lb; };
   /* ---------- Códigos promocionais ---------- */
+  /* o código existe e ainda pode ser usado? (só sim/não; o servidor limita as consultas) */
+  db.codeCheck = function (pid, code) { return sb.rpc("code_check", { p_code: code }).then(function (r) { return r.error ? null : r.data; }, function () { return null; }); };
   db.redeemCode = function (pid, code) {
     return sb.rpc("redeem_code", { p_code: code }).then(function (r) {
       if (r.error) return { error: msg(r.error) }; if (r.data && r.data.error) return { error: r.data.error };

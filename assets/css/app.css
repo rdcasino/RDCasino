@@ -328,8 +328,8 @@
 
 /* ---------- VIP ---------- */
 #hdr-bal { display: inline-block; }
-#hdr-bal.bump { animation: balBump 0.6s ease; }
-@keyframes balBump { 0% { color: var(--success); transform: scale(1.12); } 100% { color: inherit; transform: none; } }
+#hdr-bal.bump { animation: balBump 0.45s ease-out; }
+@keyframes balBump { 0% { color: #6fe3a8; transform: scale(1.03); } 100% { color: inherit; transform: none; } }
 .ogx-win { position: absolute; left: 50%; top: 46%; z-index: 20; transform: translate(-50%, -50%); min-width: 150px; border-radius: 14px; overflow: hidden; border: 2px solid var(--success); box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55), 0 0 40px rgba(34, 224, 138, 0.25); animation: winIn 0.28s cubic-bezier(.2, 1.4, .4, 1); cursor: pointer; text-align: center; }
 .ogx-win .m { background: var(--success); color: #05301c; font-family: var(--font-display); font-weight: 800; font-size: 28px; padding: 14px 22px; }
 .ogx-win .v { background: #0e1828; color: var(--text); font-weight: 800; font-size: 14px; padding: 9px 16px; display: flex; align-items: center; justify-content: center; gap: 7px; }
@@ -1653,3 +1653,11 @@ a.tx-hash:hover { color: var(--brand-2, #22d3ee); }
 .sb-promo strong { font-size: 15px; margin-top: 0; }
 .sb-promo small { font-size: 10.5px; }
 body.sb-mini .sb-promo { align-items: center; }
+#drawer-vip .drawer-head h3 { font-size: 18px; }
+
+/* Rodapé: selos todos iguais e menores; ícones das redes menores */
+.footer-badges { gap: 6px; margin-top: 14px; }
+.footer-badges .badge { height: 20px; padding: 0 7px; font-size: 10.5px; gap: 4px; }
+.footer-social { gap: 6px; margin-top: 12px; }
+.footer-social .soc { width: 32px; height: 32px; border-radius: 9px; }
+.footer-social .soc svg { width: 15px; height: 15px; }
