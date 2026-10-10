@@ -98,3 +98,12 @@
 .sup-a-form { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--line); }
 .sup-a-form textarea { flex: 1; resize: none; padding: 10px 12px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line-2); color: var(--text); font: inherit; font-size: 14px; }
 @media (max-width: 900px) { .sup-admin { grid-template-columns: 1fr; height: auto; } .sup-a-list { max-height: 260px; } .sup-a-chat { min-height: 460px; } }
+/* Alertas antifraude */
+.risk-list { display: flex; flex-direction: column; gap: 10px; padding: 4px 0; }
+.card .risk-list { padding: 0 18px 18px; }
+.risk-item { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; background: var(--surface-2, rgba(255,255,255,.02)); display: flex; flex-direction: column; gap: 8px; }
+.risk-flag { display: flex; align-items: flex-start; gap: 10px; }
+.risk-flag .grow { display: flex; flex-direction: column; min-width: 0; }
+.risk-flag b { font-size: 13px; }
+.risk-flag small { font-size: 12px; color: var(--text-3); word-break: break-word; }
+.risk-flag.reviewed { opacity: .55; }
