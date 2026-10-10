@@ -373,8 +373,6 @@
   db.saveCode = function (c) { return adminCall("admin_save_code", { p_code: c.code, p_amount: c.amount, p_max_uses: c.maxUses, p_min_wager: c.minWager, p_hours: c.hours, p_active: true }); };
   db.toggleCode = function (code, active) { return adminCall("admin_toggle_code", { p_code: code, p_active: active }); };
   /* ---------- Equipe (tag de diamante) ---------- */
-  RD.staff = [];
-  sb.rpc("public_staff").then(function (r) { if (r.data) { RD.staff = r.data; db.emit(); chatNotify(); } });
   /* ---------- Suporte ao vivo ---------- */
   var sup = { msgs: [], unread: 0, subs: [], loaded: false, ch: null, rt: false };
   function supMap(m) { return { id: m.id, fromStaff: m.from_staff, staff: m.staff_name, text: m.text, at: m.created_at }; }

@@ -34,17 +34,14 @@
     [{ route: "affiliate", label: "Affiliate", icon: "link" }, { route: "fairness", label: "Provably Fair", icon: "shield" }, { route: "responsible", label: "Responsible Gaming", icon: "help" }, { action: "open-support", label: "Live Support", icon: "headset" }]
   ];
   function renderSidebar() {
-    var h = vipWidget() + '<a class="sb-promo" href="#/leaderboard" title="Monthly leaderboard">' + ic("trophy", 18) + '<span class="eyebrow">Monthly leaderboard</span><strong>' + fmt.usd(RD.config.leaderboardPrize, { dec: 0 }) + '</strong></a>';
+    var h = '<a class="sb-promo" href="#/leaderboard" title="Monthly leaderboard">' + ic("trophy", 18) + '<span class="eyebrow">Monthly leaderboard</span><strong>' + fmt.usd(RD.config.leaderboardPrize, { dec: 0 }) + '</strong></a>';
     NAV.forEach(function (box, bi) {
       h += '<div class="sb-cap">' + ["Games", "Rewards", "More"][bi] + '</div><div class="sb-box">' + box.map(function (n) {
         if (n.action) return '<a class="sb-link" href="#" data-action="' + n.action + '" title="' + n.label + '">' + ic(n.icon) + "<span>" + n.label + '</span><span class="badge badge-brand hidden" data-sup-badge></span></a>';
         return '<a class="sb-link" href="#/' + n.route + '" data-route="' + n.route + '" title="' + n.label + '">' + ic(n.icon) + "<span>" + n.label + "</span>" + (n.badge ? '<span class="badge badge-brand">' + n.badge + "</span>" : "") + "</a>";
       }).join("") + "</div>";
     });
-    var nav = $("#sb-nav"), vw = vipWidget(), rest = h.slice(vw.length), old = nav.querySelector(".sb-vip");
-    /* aposta só muda o card VIP: troca só ele */
-    if (nav._rest === rest && nav._vip !== vw && old && vw) { var tmp = document.createElement("div"); tmp.innerHTML = vw; old.replaceWith(tmp.firstChild); nav._vip = vw; }
-    else if (nav._rest !== rest || nav._vip !== vw) { nav.innerHTML = h; nav._rest = rest; nav._vip = vw; }
+    var nav = $("#sb-nav"); if (nav._h !== h) { nav.innerHTML = h; nav._h = h; }
     if (typeof supBadge === "function" && $("#sup-fab")) supBadge();
   }
   function markActive(path) {
@@ -59,12 +56,9 @@
   /* Saldo mostrado = saldo real menos os prêmios de apostas cuja animação ainda não terminou.
      Assim a aposta sai na hora e o prêmio só "entra" quando a bolinha cai / a roda para. */
   var inFlight = {};
-  /* Dono/equipe (lista vem do servidor) ganha a tag de diamante no lugar do nível */
-  function isStaff(name) { return !!name && (RD.staff || []).some(function (x) { return x.toLowerCase() === String(name).toLowerCase(); }); }
-  function topTier() { return RD.vipTiers[RD.vipTiers.length - 1]; }
   /* progresso VIP (apostas com peso por jogo); sem o campo (dados antigos), o total apostado */
   function vipXp(u) { return u ? (u.vipXp != null ? u.vipXp : u.wagered || 0) : 0; }
-  function uBadge(name, wagered, size) { return RD.art.tierBadge(isStaff(name) ? topTier() : db.tierOf(wagered || 0), size); }
+  function uBadge(name, wagered, size) { return RD.art.tierBadge(db.tierOf(wagered || 0), size); }
   /* Saldo mostrado = saldo do servidor − apostas enviadas que ainda não voltaram − prêmios cuja animação não terminou.
      Cada desconto tem prazo (nada fica preso se uma resposta se perder) e o saldo mostrado nunca fica negativo. */
   var pend = {}, pendSeq = 0, HOLD_MS = 12000, PEND_MS = 20000;
@@ -152,10 +146,10 @@
     if (!u) return;
     paintBal(u);
     if (typeof vipDot === "function") vipDot();
-    var t = db.tierOf(vipXp(u)), mk = u.username + "|" + (t ? t.name : "") + "|" + isStaff(u.username), um = $("#user-menu");
+    var t = db.tierOf(vipXp(u)), mk = u.username + "|" + (t ? t.name : ""), um = $("#user-menu");
     if (um._k === mk) return; um._k = mk; // menu só muda quando muda o nível
     setHTML(um,
-      '<div class="menu-head row" style="gap:10px">' + uBadge(u.username, vipXp(u), 30) + '<div><strong>' + esc(u.username) + '</strong><small class="faint">' + (isStaff(u.username) ? topTier().name : t ? t.name : "Unranked") + "</small></div></div>" +
+      '<div class="menu-head row" style="gap:10px">' + uBadge(u.username, vipXp(u), 30) + '<div><strong>' + esc(u.username) + '</strong><small class="faint">' + (t ? t.name : "Unranked") + "</small></div></div>" +
       '<button data-open="wallet">' + ic("wallet", 16) + "Wallet</button>" +
       '<a href="#/account">' + ic("user", 16) + "Account & verification</a>" +
       '<a href="#/account/bets">' + ic("chart", 16) + "My bets</a>" +
@@ -2979,12 +2973,6 @@
   }
   function vipMsg(r) { return r.changed != null ? "Your VIP reward is now " + fmt.usd(r.changed) + " — check it and claim again" : r.error || "Claimed " + fmt.usd(r.amount) + " in VIP rewards"; }
   function claimMsg(r) { return r.changed != null ? "This reward is now " + money(r.changed) + " — check it and claim again" : r.error || "Claimed " + money(r.amount); }
-  function vipWidget() {
-    var u = me(); if (!u) return "";
-    var v = vipState(u);
-    var staff = isStaff(u.username), cur = staff ? topTier() : v.cur, pct = staff ? 100 : v.pct;
-    return '<a class="sb-vip" href="#/vip">' + badge(cur, 30) + '<div class="grow"><div class="row between"><strong>' + (cur ? cur.name : "Unranked") + "</strong><small>" + pct.toFixed(0) + '%</small></div><div class="progress sm"><span style="width:' + pct + '%"></span></div><small class="faint">' + (!staff && v.next ? fmt.usd(Math.ceil(v.next.wager - v.w), { dec: 0 }) + " to " + v.next.name : "Top level reached") + "</small></div>" + (v.pending.length ? '<span class="sb-vip-dot" title="Reward ready"></span>' : "") + "</a>";
-  }
   /* Cards de recompensa (iguais na janela VIP e na página VIP) */
   function untilTxt(iso) {
     var d = Math.max(0, new Date(iso).getTime() - Date.now()), h = Math.floor(d / 36e5), m = Math.floor((d % 36e5) / 6e4), sec = Math.floor((d % 6e4) / 1e3);
