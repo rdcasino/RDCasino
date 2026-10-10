@@ -113,7 +113,7 @@
   function paintBal(u) {
     var v = shownBal(u), el = $("#hdr-bal"), tag = $("#hdr-coin");
     if (!fxRate(disp.cur)) disp.cur = "USD";
-    el.textContent = inCur(v, disp.cur);
+    el.textContent = u.cached ? "···" : inCur(v, disp.cur); el.classList.toggle("bal-wait", !!u.cached);
     if (tag) tag.remove(); // só o saldo na moeda escolhida, sem o ícone ao lado
     if (!$("#bal-menu").classList.contains("hidden")) renderBalMenu();
   }
@@ -585,6 +585,7 @@
       validate: function (a, maxMult) {
         var u = me(); ctx.msg("");
         if (!u) { openAuth("register"); return null; }
+        if (u.cached) { ctx.msg("Loading your balance…"); return null; }
         if (u.status !== "Active") { ctx.msg("Your account is suspended."); return null; }
         if (a < 0.01) { ctx.msg("Minimum bet is $0.01."); return null; }
         if (a > u.balance - pendTotal() + 1e-9) { ctx.msg("Insufficient balance.", ' <a href="#" class="link-sm" data-open="wallet">Deposit</a>'); return null; }
@@ -3259,8 +3260,7 @@
   }
   function txView(u, txs) {
     var cat = state.txCat || "all", list = txs.filter(function (t) { return cat === "all" || txCat(t) === cat; });
-    var count = function (c) { return c === "all" ? txs.length : txs.filter(function (t) { return txCat(t) === c; }).length; };
-    return '<div class="tx-wrap"><nav class="tx-nav">' + TX_CATS.map(function (c) { return '<button class="' + (c[0] === cat ? "active" : "") + '" data-txcat="' + c[0] + '">' + ic(c[2], 16) + "<span>" + c[1] + "</span><i>" + count(c[0]) + "</i></button>"; }).join("") + "</nav>" +
+    return '<div class="tx-wrap"><nav class="tx-nav">' + TX_CATS.map(function (c) { return '<button class="' + (c[0] === cat ? "active" : "") + '" data-txcat="' + c[0] + '">' + ic(c[2], 16) + "<span>" + c[1] + "</span></button>"; }).join("") + "</nav>" +
       '<div class="tx-body"><div class="tx-bar"><label class="tx-search">' + ic("search", 16) + '<input id="tx-q" placeholder="Search by ID, hash or note" autocomplete="off"></label><button class="btn btn-secondary" data-action="tx-csv">' + ic("download", 16) + "<span>Export CSV</span></button></div>" +
       (list.length ? '<div class="tx-list">' + list.map(txRow).join("") + '</div><div class="tx-none hidden">' + empty("No matches", "Try another ID or hash.") + "</div>"
         : empty("Nothing here yet", cat === "dep" || cat === "all" ? "Your deposits show up here as soon as they arrive." : "Transactions of this type show up here.", cat === "dep" || cat === "all" ? '<button class="btn btn-primary btn-sm" data-open="wallet">Deposit</button>' : "")) + "</div></div>";
@@ -3279,10 +3279,11 @@
     var k = KYC_LABEL[u.kyc] || [u.kyc, ""], txs = db.txOf(u.id);
     var pendingWd = txs.filter(function (t) { return t.type === "Withdrawal" && t.status === "Pending"; }).reduce(function (a, t) { return a + t.amount; }, 0);
     var head = '<div class="page-head"><h1>' + esc(u.username) + '</h1><p>Member since ' + u.created.slice(0, 10) + "</p></div>" +
-      '<div class="card balance-card"><div><div class="kpi-label">Balance</div><div class="kpi-value num">' + fmt.usd(u.balance) + '</div></div><div><div class="kpi-label">Pending withdrawals</div><div class="kpi-value num">' + fmt.usd(pendingWd) + "</div>" + (u.held > 0 ? '<small class="held-note">' + ic("lock", 12) + "On hold: " + fmt.usd(u.held) + " · contact support</small>" : "") + '</div><div><div class="kpi-label">Verification</div><div style="margin-top:6px"><span class="badge ' + k[1] + '">' + k[0] + '</span></div></div><div class="row bc-actions" style="gap:8px"><button class="btn btn-primary" data-open="wallet">Deposit</button><button class="btn btn-secondary" data-action="open-withdraw">Withdraw</button></div></div>' +
+      '<div class="card balance-card"><div><div class="kpi-label">Balance</div><div class="kpi-value num">' + (u.cached ? "···" : fmt.usd(u.balance)) + '</div></div><div><div class="kpi-label">Pending withdrawals</div><div class="kpi-value num">' + (u.cached ? "···" : fmt.usd(pendingWd)) + "</div>" + (u.held > 0 ? '<small class="held-note">' + ic("lock", 12) + "On hold: " + fmt.usd(u.held) + " · contact support</small>" : "") + '</div><div><div class="kpi-label">Verification</div><div style="margin-top:6px"><span class="badge ' + k[1] + '">' + k[0] + '</span></div></div><div class="row bc-actions" style="gap:8px"><button class="btn btn-primary" data-open="wallet">Deposit</button><button class="btn btn-secondary" data-action="open-withdraw">Withdraw</button></div></div>' +
       '<div class="pill-tabs" style="margin:20px 0">' + [["overview", "Transactions"], ["bets", "Bets"], ["verification", "Verification"]].map(function (t) { return '<a class="' + (t[0] === tab ? "active" : "") + '" href="#/account/' + t[0] + '">' + t[1] + "</a>"; }).join("") + "</div>";
     var body;
-    if (tab === "bets") body = '<div class="card">' + betsTable(db.betsOf(u.id).slice(0, 50), "Your bets show up here.") + "</div>";
+    if (u.cached) body = '<div class="card empty" style="padding:40px 20px"><p class="faint">Loading…</p></div>';
+    else if (tab === "bets") body = '<div class="card">' + betsTable(db.betsOf(u.id).slice(0, 50), "Your bets show up here.") + "</div>";
     else if (tab === "verification") body = kycView(u, k);
     else body = txView(u, txs);
     return '<div class="container">' + head + body + "</div>";
@@ -3823,8 +3824,11 @@
   function snap() { var u = me(); if (!u) return null; var m = { bal: u.balance, kyc: u.kyc, st: u.status }; db.txOf(u.id).forEach(function (t) { m[t.id] = t.status; }); return m; }
   lastMine = snap();
   var lastUid = me() ? me().id : null;
+  var wasReady = !RD.live || !db.live || db.live.ready;
   db.onChange(function () {
     var before = lastMine, after = snap(), u = me(); lastMine = after;
+    /* terminou de carregar depois do F5 com um jogo aberto: monta o jogo de novo para retomar a rodada */
+    var justReady = !wasReady && db.live && db.live.ready; if (justReady) wasReady = true;
     renderHeader(); renderSidebar(); renderFooter(); markActive(currentPath);
     if (u && before && after) {
       var told = false;
@@ -3839,7 +3843,7 @@
     }
     if ($(".overlay.open")) return;
     /* Login terminou de carregar (ou trocou de conta) com um jogo aberto: monta o jogo de novo para retomar a rodada */
-    var uid = u ? u.id : null; if (uid !== lastUid) { lastUid = uid; if (/^game\//.test(currentPath)) return route(true); }
+    var uid = u ? u.id : null; if (uid !== lastUid || justReady) { lastUid = uid; if (/^game\//.test(currentPath) || /^account/.test(currentPath)) return route(true); }
     if (/^game\//.test(currentPath)) { if (ogTabRefresh) ogTabRefresh(); return; } // não reinicia o jogo no meio da aposta
     if (currentPath === "" || currentPath === "home") { renderTicker(); renderFeed(); return; }
     route(true);

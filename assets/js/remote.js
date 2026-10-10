@@ -62,6 +62,8 @@
 
   /* ---------- Carregar dados do servidor para o cache ---------- */
   var balVer = 0; // muda a cada resultado de aposta aplicado na tela
+  var CACHE = "rd_me";
+  function dropCache() { try { localStorage.removeItem(CACHE); } catch (e) {} }
   function loadPlayer() {
     var uid = state.user.id, v0 = balVer;
     return Promise.all([
@@ -75,6 +77,7 @@
       sb.from("my_rounds").select("*")
     ]).then(function (r) {
       var prof = r[0].data; if (!prof) throw new Error("Profile not found.");
+      try { localStorage.setItem(CACHE, JSON.stringify(prof)); } catch (e) {}
       var txs = (r[1].data || []).map(function (t) { return mapTx(t, prof.username); });
       var me = mapProfile(prof, state.user.email, txs), s = r[3].data, old = db.current();
       /* chegou um resultado de aposta enquanto este perfil vinha do servidor: o saldo da aposta é mais novo, fica ele */
@@ -128,16 +131,25 @@
   }
   function onSession(session) {
     state.user = session ? session.user : null;
-    if (!state.user) { state.admin = false; return refresh(); }
+    if (!state.user) { state.admin = false; dropCache(); return refresh(); }
+    if (!RD.isAdminPage) return refresh(); // no site o jogador nunca precisa saber se é admin: uma consulta a menos ao abrir
     return sb.rpc("is_admin").then(function (r) { state.admin = !!r.data; return refresh(); });
   }
 
   /* ---------- Conta ---------- */
   db.live = state;
+  if (!RD.isAdminPage) (function boot() {
+    try {
+      var tk = JSON.parse(localStorage.getItem("sb-" + cfg.url.split("//")[1].split(".")[0] + "-auth-token") || "null"), prof = JSON.parse(localStorage.getItem(CACHE) || "null");
+      if (!tk || !tk.user || !prof || prof.id !== tk.user.id) return;
+      var me = mapProfile(prof, tk.user.email, []); me.wallet = prof.wallet || {}; me.coin = prof.active_coin || "USDT"; me.total = me.balance; me.cached = true;
+      state.user = tk.user; fill(D.players, [me]);
+    } catch (e) {}
+  })();
   db.ready = sb.auth.getSession().then(function (r) { keepTok(r.data.session); return onSession(r.data.session); });
   sb.auth.onAuthStateChange(function (ev, session) { keepTok(session); if (ev === "SIGNED_OUT") onSession(null); if (ev === "TOKEN_REFRESHED") state.user = session.user; });
   db.current = function () { return state.user && D.players[0] && D.players[0].id === state.user.id ? D.players[0] : (state.user ? D.players.filter(function (p) { return p.id === state.user.id; })[0] || null : null); };
-  db.logout = function () { state.user = null; fill(D.players, []); fill(D.tx, []); fill(D.bets, []); return sb.auth.signOut(); };
+  db.logout = function () { dropCache(); state.user = null; fill(D.players, []); fill(D.tx, []); fill(D.bets, []); return sb.auth.signOut(); };
   db.login = function (email, pass) {
     email = String(email || "").trim();
     if (email.indexOf("@") < 0) return Promise.resolve({ error: "Sign in with your email." });
