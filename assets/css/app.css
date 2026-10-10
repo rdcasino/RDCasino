@@ -189,8 +189,6 @@
 .game .g-tag.badge-brand { color: var(--brand-light); }
 .game .g-tag.badge-danger { color: #ffb199; }
 .game .g-play { position: absolute; top: 8px; right: 8px; z-index: 3; }
-.game-meta { display: flex; align-items: center; gap: 6px; padding: 8px 2px 0; font-size: 12px; color: var(--text-3); }
-.game-meta .dot { color: var(--success); width: 6px; height: 6px; }
 
 /* ---------- Tables ---------- */
 .bets-card .table td:first-child { color: var(--text); }
@@ -1540,7 +1538,6 @@ body { background: radial-gradient(1100px 620px at 88% -12%, rgba(31, 111, 255, 
   .overlay { backdrop-filter: none; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }
-.game-meta .g-rtp { color: var(--text-3); font-weight: 600; }
 
 /* Gaveta VIP compacta: o campo de código aparece sem rolar */
 #drawer-vip .vd-card { padding: 12px; }
@@ -1617,9 +1614,6 @@ a.tx-hash:hover { color: var(--brand-2, #22d3ee); }
 .sp-neon { filter: drop-shadow(0 0 4px #22d3ee); }
 
 /* Selo de RTP real no canto do card (estilo Razed) */
-.g-rtpb { position: absolute; top: 8px; right: 8px; z-index: 3; display: inline-flex; align-items: center; gap: 4px; padding: 3px 7px; border-radius: 7px; font-size: 11px; font-weight: 800; font-variant-numeric: tabular-nums; background: rgba(8, 12, 22, 0.86); }
-.g-rtpb.up { color: #22e08a; box-shadow: inset 0 0 0 1px rgba(34, 224, 138, 0.5); }
-.g-rtpb.down { color: #ffc23a; box-shadow: inset 0 0 0 1px rgba(255, 194, 58, 0.5); }
 /* Provedores */
 .prov-row { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(170px, 1fr); gap: 10px; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; }
 .prov-row::-webkit-scrollbar { display: none; }
@@ -1663,3 +1657,39 @@ body.sb-mini .sb-promo { align-items: center; }
 .footer-social .soc svg { width: 15px; height: 15px; }
 
 #hdr-bal.bal-wait { color: var(--text-3); letter-spacing: 0.1em; }
+
+/* Avisos discretos: cápsula pequena, ícone, some sozinho (clique fecha) */
+.toasts { gap: 6px; right: 16px; }
+.toast { min-width: 0; max-width: 320px; padding: 8px 12px 8px 8px; gap: 8px; border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 12px; background: rgba(16, 28, 50, 0.92); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); font-size: 12.5px; font-weight: 600; color: var(--text); cursor: pointer; animation: toastIn 0.22s ease-out; transition: opacity 0.2s, transform 0.2s; }
+.toast.out { opacity: 0; transform: translateX(10px); }
+.toast-ic { flex: none; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; background: rgba(34, 224, 138, 0.16); color: #3ee39a; }
+.toast.error .toast-ic { background: rgba(240, 65, 79, 0.16); color: #ff5a67; }
+@keyframes toastIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: none; } }
+@media (max-width: 960px) { .toasts { left: auto; right: 12px; align-items: flex-end; } .toast { max-width: calc(100vw - 24px); } }
+/* Botão de suporte menor */
+.sup-fab { width: 46px; height: 46px; right: 18px; bottom: 18px; box-shadow: 0 8px 20px rgba(var(--brand-rgb), 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25); }
+.sup-fab svg { width: 20px; height: 20px; }
+.sup-fab .sup-dot { min-width: 17px; height: 17px; font-size: 10px; top: -2px; right: -2px; }
+@media (max-width: 960px) { .sup-fab { width: 42px; height: 42px; right: 12px; } }
+.toast.error { border-left-color: rgba(255, 255, 255, 0.07); }
+
+/* ---------- Sidebar premium (metal escovado) ---------- */
+.sb-cap { font-size: 10.5px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); padding: 12px 14px 6px; }
+body.sb-mini .sb-cap { display: none; }
+.sb-switch { gap: 8px; margin: 4px 12px 10px; }
+.sb-switch a { position: relative; display: flex; align-items: center; justify-content: center; height: 42px; padding: 0 !important; border-radius: 11px; overflow: hidden; isolation: isolate;
+  font-size: 13.5px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: #b9c7e0 !important; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E"), repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 3px), linear-gradient(180deg, #24344f 0%, #172339 52%, #111b2e 100%) !important;
+  background-blend-mode: soft-light, normal, normal !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 -1px 0 rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.06), 0 2px 6px rgba(0, 0, 0, 0.25);
+  transition: color 0.15s, box-shadow 0.15s, filter 0.15s; }
+.sb-switch a::before { content: ""; position: absolute; inset: 0 0 50% 0; z-index: -1; border-radius: 11px 11px 0 0; background: linear-gradient(180deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0)); pointer-events: none; }
+.sb-switch a:hover { color: #fff !important; filter: brightness(1.08); }
+.sb-switch a.active { color: #fff !important; text-shadow: 0 1px 1px rgba(0, 20, 70, 0.6);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E"), repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 3px), linear-gradient(180deg, #5aa0ff 0%, #2a73f0 45%, #1550cc 100%) !important;
+  background-blend-mode: soft-light, normal, normal !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), inset 0 -1px 0 rgba(0, 0, 40, 0.35), 0 0 0 1px rgba(110, 170, 255, 0.55), 0 8px 22px rgba(31, 117, 255, 0.38); }
+.sb-switch a.active::before { background: linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0)); }
+.sb-box { background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015)); border-radius: 12px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05); }
+.sb-link.active { background: linear-gradient(90deg, #2f7bff, #1b5be0); color: #fff; box-shadow: 0 6px 16px rgba(31, 117, 255, 0.3); }
+.sb-link.active svg { color: #fff; }

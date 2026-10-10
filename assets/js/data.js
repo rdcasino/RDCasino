@@ -250,12 +250,15 @@ RD.toast = function (msg, type) {
   if (!box) { box = document.createElement("div"); box.className = "toasts"; document.body.appendChild(box); }
   /* mesma mensagem já na tela: não repete; no máximo 3 avisos de cada vez */
   if ([].some.call(box.children, function (x) { return x.textContent === msg; })) return;
-  while (box.children.length >= 3) box.firstChild.remove();
-  var t = document.createElement("div");
-  t.className = "toast" + (type === "error" ? " error" : "");
-  t.textContent = msg;
+  while (box.children.length >= 2) box.firstChild.remove();
+  var t = document.createElement("div"), err = type === "error";
+  t.className = "toast" + (err ? " error" : "");
+  t.innerHTML = '<i class="toast-ic" aria-hidden="true">' + (err ? '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M7 7l10 10M17 7L7 17"/></svg>' : '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>') + '</i><span></span>';
+  t.lastChild.textContent = msg;
+  var close = function () { t.classList.add("out"); setTimeout(function () { t.remove(); }, 220); };
+  t.addEventListener("click", close);
   box.appendChild(t);
-  setTimeout(function () { t.style.opacity = "0"; t.style.transition = "opacity .3s"; setTimeout(function () { t.remove(); }, 300); }, 2800);
+  setTimeout(close, err ? 3400 : 2400);
 };
 
 /* ---------- Sons dos originais (gerados na hora com Web Audio: nada para baixar) ---------- */
