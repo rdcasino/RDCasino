@@ -175,7 +175,7 @@
   db.deposit = function () { return { error: "Use the deposit form." }; };
 
   /* ---------- Jogos de um clique: o servidor sorteia, calcula e grava (play_bet) ---------- */
-  var lastNonce = -1;
+  var lastBetId = -1; // ordem das respostas: id da aposta no servidor (o nonce volta a 0 quando o jogador troca a seed)
   db.playBet = function (game, amount, params) {
     return fastRpc("play_bet", { p_game: game, p_amount: amount, p_params: params || {} }).then(function (r) {
       if (r.error) return { error: msg(r.error) };
@@ -187,8 +187,8 @@
           var bet = { id: "B-" + b.id, userId: me.id, user: me.username, game: game, amount: n(b.amount), multiplier: +b.multiplier, payout: n(b.payout), date: b.created_at, detail: Object.assign({}, detail, b.detail, { nonce: nonce, client: x.client }) };
           if (Math.abs(bet.payout - (win ? n(bet.amount * mult) : 0)) > 0.011) console.warn("RD: resultado do servidor diferente do site", game, bet, mult, win);
           /* Plinko com várias bolas: só o saldo da aposta mais recente vale */
-          if (nonce > lastNonce) {
-            lastNonce = nonce;
+          if (+b.id > lastBetId) {
+            lastBetId = +b.id;
             me.balance = n(pr.balance); me.wagered = n(pr.wagered); me.profit = n(pr.profit); me.bets = +pr.bets; me.rakeback = +pr.rakeback;
             if (pr.wallet) { me.wallet = pr.wallet; me.coin = pr.coin; me.total = n(pr.total); }
             me.seeds.nonce = nonce + 1;
@@ -237,14 +237,20 @@
   };
   db.reserve = function () { return { server: "", client: "", nonce: 0 }; };
   /* ---------- Resgates (servidor) ---------- */
+  /* Resgates mandam o valor mostrado (p_expected): o servidor paga exatamente esse valor ou recusa com
+     REWARD_CHANGED <valor atual>; aí a tela é atualizada e o jogador resgata de novo já vendo o valor certo. */
   function claimRpc(fn, args) {
     return sb.rpc(fn, args || {}).then(function (r) {
-      if (r.error) return { error: msg(r.error) };
+      if (r.error) {
+        var ch = /REWARD_CHANGED\s+([0-9.]+)/.exec(r.error.message || "");
+        if (ch) return refresh().then(loadBonus).then(function () { return { error: "This reward was updated.", changed: n(ch[1]) }; });
+        return { error: msg(r.error) };
+      }
       return refresh().then(loadBonus).then(function () { return { amount: n(r.data) }; });
     });
   }
-  db.claimLevel = function (pid, tier) { return claimRpc("claim_level", { p_tier: tier }); };
-  db.claimRakeback = function () { return claimRpc("claim_rakeback"); };
+  db.claimLevel = function (pid, tier) { var t = RD.vipTiers.filter(function (x) { return x.name === tier; })[0]; return claimRpc("claim_level", t ? { p_tier: tier, p_expected: t.reward } : { p_tier: tier }).then(function (r) { if (t && r.changed != null) { t.reward = r.changed; db.emit(); } return r; }); };
+  db.claimRakeback = function () { var me = db.current(); return claimRpc("claim_rakeback", me ? { p_expected: Math.floor(me.rakeback * 100) / 100 } : {}); };
   /* Bônus diário/semanal/mensal calculados no servidor; o VIP Reload continua vindo do reload dado pelo admin */
   var baseBonus = db.bonusState;
   state.bonus = [];
@@ -281,7 +287,7 @@
   db.bonusState = function (pid) { return state.bonus.concat(baseBonus(pid).filter(function (b) { return b.key === "reload"; })); };
   /* Resgate dos bônus: VIP Reload (dado pelo admin) ou diário/semanal/mensal */
   db.claimBonus = function (pid, key) {
-    if (key !== "reload") return claimRpc("claim_bonus", { p_key: key });
+    if (key !== "reload") { var it = state.bonus.filter(function (b) { return b.key === key; })[0]; return claimRpc("claim_bonus", it ? { p_key: key, p_expected: it.amount } : { p_key: key }); }
     return sb.rpc("claim_reload").then(function (r) { if (r.error) return { error: msg(r.error) }; return refresh().then(function () { return { amount: n(r.data) }; }); });
   };
   db.tip = function (pid, to, amount, pub) {
@@ -322,7 +328,8 @@
       payouts: D.tx.filter(function (t) { return t.type === "Commission"; }) };
   };
   db.collectCommission = function () {
-    return sb.rpc("affiliate_collect").then(function (r) { if (r.error) return { error: msg(r.error) }; return refresh().then(function () { return { amount: n(r.data) }; }); });
+    var av = state.aff ? n(state.aff.available) : null;
+    return claimRpc("affiliate_collect", av != null ? { p_expected: av } : {}).then(function (r) { return loadAff().then(function () { return r; }); });
   };
   db.setAffShare = function (pid, share) { return adminCall("admin_set_aff_share", { p_user: pid, p_share: share === "" || share == null ? null : +share }); };
   db.addCampaign = function () { return { error: "Extra campaign codes are coming soon. Use your main link for now." }; };
