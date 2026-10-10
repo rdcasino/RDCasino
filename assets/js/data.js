@@ -99,15 +99,21 @@ RD.games = [
   { id: "spill", name: "Spill", provider: "RD Originals", cat: "originals", rtp: 98, edge: 2, playable: true, tag: "new", c1: "#1f8fff", c2: "#0b1d4f" },
   { id: "pump", name: "Pump", provider: "RD Originals", cat: "originals", rtp: 98, edge: 2, playable: true, tag: "new", c1: "#3fdc4a", c2: "#0b3d1a" },
   { id: "lake", name: "Cross the Lake", provider: "RD Originals", cat: "originals", rtp: 98, edge: 2, playable: true, tag: "new", c1: "#1fb6ff", c2: "#0a3a5c" },
-  { id: "gates-olympus", name: "Gates of Olympus 1000", provider: "Pragmatic Play", cat: "slots", rtp: 96.5, tag: "hot", c1: "#a16207", c2: "#3f2a04" },
-  { id: "sweet-bonanza", name: "Sweet Bonanza 1000", provider: "Pragmatic Play", cat: "slots", rtp: 96.53, c1: "#db2777", c2: "#500724" },
-  { id: "sugar-rush", name: "Sugar Rush 1000", provider: "Pragmatic Play", cat: "slots", rtp: 96.53, c1: "#e11d48", c2: "#4c0519" },
+  { id: "gates-olympus", pp: "vs20olympx", name: "Gates of Olympus 1000", provider: "Pragmatic Play", cat: "slots", rtp: 96.5, tag: "hot", c1: "#a16207", c2: "#3f2a04" },
+  { id: "sweet-bonanza", pp: "vs20fruitswx", name: "Sweet Bonanza 1000", provider: "Pragmatic Play", cat: "slots", rtp: 96.53, c1: "#db2777", c2: "#500724" },
+  { id: "sugar-rush", pp: "vs20sugarrushx", name: "Sugar Rush 1000", provider: "Pragmatic Play", cat: "slots", rtp: 96.53, c1: "#e11d48", c2: "#4c0519" },
   { id: "wanted", name: "Wanted Dead or a Wild", provider: "Hacksaw Gaming", cat: "slots", rtp: 96.38, c1: "#9a3412", c2: "#3b1406" },
   { id: "mental-2", name: "Mental II", provider: "Nolimit City", cat: "slots", rtp: 96.06, c1: "#3f3f46", c2: "#121214" },
-  { id: "starlight", name: "Starlight Princess 1000", provider: "Pragmatic Play", cat: "slots", rtp: 96.5, c1: "#7c3aed", c2: "#2e1065" },
-  { id: "dog-house", name: "The Dog House Megaways", provider: "Pragmatic Play", cat: "slots", rtp: 96.55, c1: "#0284c7", c2: "#082f49" },
+  { id: "starlight", pp: "vs20starlightx", name: "Starlight Princess 1000", provider: "Pragmatic Play", cat: "slots", rtp: 96.5, c1: "#7c3aed", c2: "#2e1065" },
+  { id: "dog-house", pp: "vswaysdogs", name: "The Dog House Megaways", provider: "Pragmatic Play", cat: "slots", rtp: 96.55, c1: "#0284c7", c2: "#082f49" },
   { id: "book-dead", name: "Book of Dead", provider: "Play'n GO", cat: "slots", rtp: 96.21, c1: "#a16207", c2: "#3f2a04" },
-  { id: "big-bass", name: "Big Bass Bonanza", provider: "Pragmatic Play", cat: "slots", rtp: 96.71, c1: "#0e7490", c2: "#083344" },
+  { id: "big-bass", pp: "vs10bbbonanza", name: "Big Bass Bonanza", provider: "Pragmatic Play", cat: "slots", rtp: 96.71, c1: "#0e7490", c2: "#083344" },
+  { id: "gates-olympus-classic", pp: "vs20olympgate", name: "Gates of Olympus", provider: "Pragmatic Play", cat: "slots", rtp: 96.5, c1: "#3b2a7a", c2: "#120a33" },
+  { id: "sweet-bonanza-classic", pp: "vs20fruitsw", name: "Sweet Bonanza", provider: "Pragmatic Play", cat: "slots", rtp: 96.48, c1: "#db2777", c2: "#500724" },
+  { id: "sugar-rush-classic", pp: "vs20sugarrush", name: "Sugar Rush", provider: "Pragmatic Play", cat: "slots", rtp: 96.5, c1: "#e11d48", c2: "#4c0519" },
+  { id: "starlight-classic", pp: "vs20starlight", name: "Starlight Princess", provider: "Pragmatic Play", cat: "slots", rtp: 96.5, c1: "#7c3aed", c2: "#2e1065" },
+  { id: "dog-house-classic", pp: "vs20doghouse", name: "The Dog House", provider: "Pragmatic Play", cat: "slots", rtp: 96.51, c1: "#0284c7", c2: "#082f49" },
+  { id: "temujin", pp: "vs1024temuj", name: "Temujin Treasures", provider: "Pragmatic Play", cat: "slots", rtp: 96.55, c1: "#9a3412", c2: "#3b1406" },
   { id: "lightning-roulette", name: "Lightning Roulette", provider: "Evolution", cat: "live", rtp: 97.3, tag: "hot", c1: "#a16207", c2: "#3f2a04" },
   { id: "blackjack-vip", name: "Blackjack VIP", provider: "Evolution", cat: "live", rtp: 99.28, c1: "#166534", c2: "#052e16" },
   { id: "baccarat", name: "Speed Baccarat", provider: "Evolution", cat: "live", rtp: 98.94, c1: "#9f1239", c2: "#4c0519" },
@@ -118,6 +124,10 @@ RD.games = [
   { id: "funky-time", name: "Funky Time", provider: "Evolution", cat: "gameshows", rtp: 95.99, tag: "new", c1: "#c026d3", c2: "#4a044e" }
 ];
 RD.games.forEach(function (g) { g.img = "assets/img/games/" + g.id + ".jpg"; g.enabled = true; });
+/* Pragmatic Play: foto oficial (CDN deles) e modo demo (jogo grátis embutido; dinheiro real chega com o agregador) */
+RD.ppImg = "https://common-static.ppgames.net/game_pic/rec/325/";
+RD.ppDemo = function (sym) { return "https://demogamesfree.pragmaticplay.net/gs2c/openGame.do?gameSymbol=" + encodeURIComponent(sym) + "&lang=en&cur=USD&jurisdiction=99&lobbyUrl=" + encodeURIComponent(location.origin); };
+RD.games.forEach(function (g) { if (g.pp) { g.img = RD.ppImg + g.pp + ".png"; g.demo = true; } });
 
 /* Promoções (todas reais e funcionando no site). value = título grande na arte; title = nome do card.
    cat: casino | sports. route/cta = para onde o botão leva. featured = destaque no topo. */
