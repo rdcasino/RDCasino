@@ -1979,28 +1979,37 @@
   function spillMult(bad, k) { var sv = 1; for (var i = 0; i < bad; i++) sv *= (25 - k - i) / (25 - i); return sv > 0 ? Math.floor(0.98 / sv * 100) / 100 : 0; }
   RD.fair.spillMult = spillMult;
   function spillScene() {
-    // estilo da referência: bico simples no topo (com detalhe neon), copo 3D com borda em elipse, base em perspectiva e caixa do multiplicador
+    // copo de vidro 3D: água com duas ondas em movimento, bolhas subindo, jato com brilho, borda em elipse, base em perspectiva e caixa do multiplicador
     var ticks = ""; for (var i = 0; i <= 4; i++) { var y = 282 - i * 50; ticks += '<path class="sp-tk" data-v="' + i * 25 + '" d="M100 ' + y + ' H118" stroke="#8a97b3" stroke-opacity=".55" stroke-width="2"/><text class="sp-tl" data-v="' + i * 25 + '" x="92" y="' + (y + 4) + '" text-anchor="end" font-size="12" font-weight="700" fill="#8a97b3">' + i * 25 + "%</text>" + (i < 4 ? '<path d="M108 ' + (y - 25) + ' H118" stroke="#8a97b3" stroke-opacity=".3" stroke-width="2"/>' : ""); }
+    var wave = function (amp, y0) { var d = "M0 " + y0; for (var x = 0; x <= 320; x += 40) d += " Q" + (x + 10) + " " + (y0 - amp) + " " + (x + 20) + " " + y0 + " T" + (x + 40) + " " + y0; return d + " V330 H0 Z"; };
+    var bub = ""; [[160, 0, 3], [182, 1.2, 2.2], [216, 0.6, 2.8], [236, 1.8, 2], [196, 2.4, 2.5]].forEach(function (b) { bub += '<circle class="sp-bub" cx="' + b[0] + '" cy="290" r="' + b[2] + '" style="animation-delay:' + b[1] + 's"/>'; });
     var glass = "M130 80 A70 12 0 0 0 270 80 L254 282 A54 9 0 0 1 146 282 Z";
-    return '<svg viewBox="0 0 400 330" class="sp-svg"><defs><clipPath id="spClip"><path d="M130 80 L270 80 L254 282 A54 9 0 0 1 146 282 Z"/></clipPath>' +
-      '<linearGradient id="spWater" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3fb7f5"/><stop offset=".5" stop-color="#8fdcff"/><stop offset="1" stop-color="#2f9cf0"/></linearGradient>' +
-      '<linearGradient id="spGlass" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset=".3" stop-color="#fff" stop-opacity=".04"/><stop offset=".8" stop-color="#fff" stop-opacity=".02"/><stop offset="1" stop-color="#fff" stop-opacity=".14"/></linearGradient>' +
-      '<linearGradient id="spSlabT" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b4256"/><stop offset="1" stop-color="#2a3042"/></linearGradient></defs>' +
-      ticks +
+    return '<svg viewBox="0 0 400 330" class="sp-svg"><defs><clipPath id="spClip"><path d="M131 80 L269 80 L253 281 A53 8.5 0 0 1 147 281 Z"/></clipPath>' +
+      '<linearGradient id="spWater" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2f9cf0"/><stop offset=".45" stop-color="#7fd4ff"/><stop offset="1" stop-color="#1f7ae0"/></linearGradient>' +
+      '<linearGradient id="spDeep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4fb8ff" stop-opacity="0"/><stop offset="1" stop-color="#0b3f9a" stop-opacity=".55"/></linearGradient>' +
+      '<linearGradient id="spGlass" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".18" stop-color="#fff" stop-opacity=".05"/><stop offset=".78" stop-color="#fff" stop-opacity=".02"/><stop offset="1" stop-color="#fff" stop-opacity=".18"/></linearGradient>' +
+      '<linearGradient id="spJet" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4fb8ff"/><stop offset=".4" stop-color="#d8f4ff"/><stop offset="1" stop-color="#2f9cf0"/></linearGradient>' +
+      '<linearGradient id="spSlabT" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b4256"/><stop offset="1" stop-color="#262c3d"/></linearGradient>' +
+      '<radialGradient id="spGlow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#4fb8ff" stop-opacity=".28"/><stop offset="1" stop-color="#4fb8ff" stop-opacity="0"/></radialGradient></defs>' +
+      '<ellipse cx="200" cy="190" rx="150" ry="130" fill="url(#spGlow)"/>' + ticks +
       // bico
-      '<rect x="182" y="0" width="36" height="36" rx="6" fill="#262c3d"/><rect x="186" y="34" width="28" height="10" rx="4" fill="#1b2030"/><rect x="190" y="43" width="20" height="3" rx="1.5" fill="#22d3ee" class="sp-neon"/>' +
-      '<rect id="sp-stream" x="194.5" y="46" width="11" height="236" rx="5.5" fill="url(#spWater)" opacity="0"/>' +
+      '<rect x="182" y="0" width="36" height="36" rx="6" fill="#262c3d"/><rect x="185" y="2" width="6" height="32" rx="3" fill="#fff" opacity=".07"/><rect x="186" y="34" width="28" height="10" rx="4" fill="#1b2030"/><rect x="190" y="43" width="20" height="3" rx="1.5" fill="#22d3ee" class="sp-neon"/>' +
+      '<g id="sp-stream" opacity="0"><rect x="194.5" y="46" width="11" height="236" rx="5.5" fill="url(#spJet)"/><rect class="sp-jet" x="197" y="46" width="3" height="236" rx="1.5" fill="#fff" opacity=".7"/></g>' +
       // base 3D
-      '<path d="M118 292 L282 292 L296 312 L104 312 Z" fill="url(#spSlabT)"/><rect x="104" y="312" width="192" height="12" fill="#1c2130"/>' +
-      // água
-      '<g clip-path="url(#spClip)"><g id="sp-water" style="transform:translateY(210px)"><rect x="120" y="80" width="160" height="230" fill="url(#spWater)" opacity=".9"/><ellipse cx="200" cy="80" rx="80" ry="11" fill="#c9f0ff" opacity=".9"/></g></g>' +
+      '<ellipse cx="200" cy="318" rx="104" ry="9" fill="#000" opacity=".35"/><path d="M118 292 L282 292 L296 312 L104 312 Z" fill="url(#spSlabT)"/><path d="M118 292 L282 292" stroke="#fff" stroke-opacity=".12" stroke-width="2"/><rect x="104" y="312" width="192" height="12" fill="#1c2130"/>' +
+      // água (sobe com translateY no #sp-water; as ondas correm sozinhas)
+      '<g clip-path="url(#spClip)"><g id="sp-water" style="transform:translateY(210px)">' +
+      '<g class="sp-wave b"><path d="' + wave(5, 84) + '" fill="#1f7ae0" opacity=".75"/></g>' +
+      '<g class="sp-wave f"><path d="' + wave(6, 88) + '" fill="url(#spWater)"/></g>' +
+      '<rect x="120" y="96" width="160" height="230" fill="url(#spDeep)"/>' + bub + "</g></g>" +
       // copo
-      '<path d="' + glass + '" fill="url(#spGlass)" stroke="#e8f2ff" stroke-opacity=".55" stroke-width="2.5"/>' +
-      '<ellipse cx="200" cy="80" rx="70" ry="12" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="2.5"/>' +
-      '<path d="M146 98 L158 268" stroke="#fff" stroke-opacity=".22" stroke-width="7" stroke-linecap="round"/><path d="M246 104 L238 250" stroke="#fff" stroke-opacity=".1" stroke-width="4" stroke-linecap="round"/>' +
+      '<path d="' + glass + '" fill="url(#spGlass)" stroke="#e8f2ff" stroke-opacity=".6" stroke-width="2.5"/>' +
+      '<path d="M146 282 A54 9 0 0 0 254 282" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="4"/>' +
+      '<ellipse cx="200" cy="80" rx="70" ry="12" fill="none" stroke="#fff" stroke-opacity=".9" stroke-width="2.5"/><ellipse cx="200" cy="80" rx="66" ry="9.5" fill="none" stroke="#fff" stroke-opacity=".18" stroke-width="2"/>' +
+      '<path d="M144 98 L157 268" stroke="#fff" stroke-opacity=".28" stroke-width="8" stroke-linecap="round"/><path d="M158 100 L166 200" stroke="#fff" stroke-opacity=".12" stroke-width="3" stroke-linecap="round"/><path d="M247 104 L239 250" stroke="#fff" stroke-opacity=".12" stroke-width="4" stroke-linecap="round"/>' +
       // caixa do multiplicador
-      '<g class="sp-mbox"><rect x="300" y="150" width="88" height="56" rx="12" fill="#151a28" stroke="#2c3550" stroke-width="3"/><text id="sp-mbox" x="344" y="185" text-anchor="middle" font-size="18" font-weight="800" fill="#cfd8ea" style="font-family:var(--font-display,Arial)">—</text></g>' +
-      '<g id="sp-over" opacity="0"><path d="M130 80 q-14 4 -18 30 q-3 22 6 30 q6 -10 4 -26 q-2 -18 12 -26z M270 80 q14 4 18 34 q3 22 -6 32 q-6 -12 -4 -28 q2 -18 -12 -30z" fill="url(#spWater)"/><ellipse cx="200" cy="78" rx="74" ry="13" fill="#c9f0ff"/></g>' +
+      '<g class="sp-mbox"><rect x="300" y="153" width="88" height="56" rx="12" fill="#0b0f1a" opacity=".6"/><rect x="300" y="150" width="88" height="56" rx="12" fill="#151a28" stroke="#2c3550" stroke-width="3"/><text id="sp-mbox" x="344" y="185" text-anchor="middle" font-size="18" font-weight="800" fill="#cfd8ea" style="font-family:var(--font-display,Arial)">—</text></g>' +
+      '<g id="sp-over" opacity="0"><path d="M130 80 q-14 4 -18 30 q-3 22 6 30 q6 -10 4 -26 q-2 -18 12 -26z M270 80 q14 4 18 34 q3 22 -6 32 q-6 -12 -4 -28 q2 -18 -12 -30z" fill="url(#spWater)"/><path d="M118 300 q-8 -6 0 -12 q6 6 0 12z M282 300 q8 -6 0 -12 q-6 6 0 12z" fill="#7fd4ff"/><ellipse cx="200" cy="78" rx="74" ry="13" fill="#c9f0ff"/><circle cx="122" cy="62" r="4" fill="#bfeaff"/><circle cx="278" cy="60" r="4" fill="#bfeaff"/><circle cx="150" cy="56" r="3" fill="#bfeaff"/><circle cx="252" cy="54" r="3" fill="#bfeaff"/></g>' +
       "</svg>";
   }
 
@@ -2053,7 +2062,7 @@
         if (!round || pending) return;
         var u = me(), r = db.activeRound(u.id, G); if (!r) return;
         pending = true; $("#sp-pour").disabled = true; ctx.btn().disabled = true;
-        var st = $("#sp-stream"); if (st) { st.classList.remove("on"); void st.getBoundingClientRect(); st.classList.add("on"); }
+        var st = $("#sp-stream"), t0 = performance.now(); if (st) { st.classList.remove("on"); void st.getBoundingClientRect(); st.classList.add("on"); }
         RD.sfx.play("step");
         var got = RD.live ? db.roundAct(G, "pour").then(function (x) { if (x.error) { pending = false; setLive(true); ctx.msg(x.error); return null; } return { ok: x.ok, bad: x.bad || [], done: !!x.bet && x.ok }; })
           : floats(r.server, r.client, r.nonce, 24).then(function (fs) { var pos = minesFrom(fs, bad()); return { ok: pos.indexOf(round.steps) < 0, bad: pos }; });
@@ -2069,7 +2078,7 @@
             if (round.steps >= maxSteps()) return end(true, detail);
             if (!$("#sp-pour")) return;
             paint(); setLive(true);
-          }, 420);
+          }, Math.max(0, 300 - (performance.now() - t0)));
         });
       }
       $("#sp-pour").addEventListener("click", pour);

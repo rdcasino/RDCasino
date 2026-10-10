@@ -299,12 +299,22 @@ window.RD = window.RD || {};
         '<path d="M150 64 C 140 92 162 120 150 150 C 140 176 172 196 178 214" stroke="url(#' + tr + ')" stroke-width="12" fill="none" stroke-linecap="round"/>' +
         '<circle cx="178" cy="214" r="28" fill="#ff4fa0" opacity=".35"/><circle cx="178" cy="214" r="19" fill="url(#' + ball + ')"/><circle cx="171" cy="207" r="5.5" fill="#fff" opacity=".9"/>' + spark(250, 80, 10) + spark(56, 120, 8);
     } },
-    hilo: { a: "#14c8e6", b: "#053344", draw: function () {
-      // uma carta só, grande, com as setas de maior e menor brilhando
-      var gu = U("hu"), gd = U("hd");
-      var arrow = function (x, y, up, fill) { return '<g transform="translate(' + x + " " + y + (up ? "" : ") rotate(180") + ')"><circle r="30" fill="' + fill + '" opacity=".25"/><circle r="22" fill="' + fill + '"/><path d="M0 -11 L11 2 H4 V11 H-4 V2 H-11 Z" fill="#fff"/></g>'; };
-      return "<defs>" + rad(gu, [[0, "#ffffff", 0.5], [1, "#ffffff", 0]]) + "</defs>" + '<circle cx="150" cy="168" r="110" fill="url(#' + gu + ')"/>' +
-        card(150, 168, 128, 6, "6", "♥", true) + arrow(244, 78, true, "#16c25a") + arrow(58, 258, false, "#ff2e55") + spark(64, 86, 12) + spark(250, 250, 9);
+    hilo: { a: "#16c8ea", b: "#04283a", draw: function () {
+      // duas cartas em leque (K de espadas atrás, 7 de copas na frente) e setas 3D de maior e menor
+      var gl = U("hg"), ray = "";
+      for (var i = 0; i < 10; i++) ray += '<path d="M150 170 L' + (150 + 260 * Math.cos(i * 0.628)).toFixed(0) + " " + (170 + 260 * Math.sin(i * 0.628)).toFixed(0) + " L" + (150 + 260 * Math.cos(i * 0.628 + 0.2)).toFixed(0) + " " + (170 + 260 * Math.sin(i * 0.628 + 0.2)).toFixed(0) + 'Z" fill="#fff" opacity=".05"/>';
+      var arr = function (x, y, up, c1, c2) {
+        var g = U("ha"), h = U("hh");
+        return "<defs>" + lin(g, [[0, c1], [1, c2]]) + rad(h, [[0, "#fff", 0.75], [1, "#fff", 0]], 0.35, 0.25, 0.6) + "</defs>" +
+          '<g transform="translate(' + x + " " + y + ')"><circle cy="5" r="27" fill="' + c2 + '" opacity=".9"/><circle r="27" fill="url(#' + g + ')"/><circle r="27" fill="url(#' + h + ')"/>' +
+          '<circle r="25.5" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="2"/>' +
+          '<path transform="' + (up ? "" : "rotate(180)") + '" d="M0 -15 L14 2 H6 V14 H-6 V2 H-14 Z" fill="#fff" stroke="' + c2 + '" stroke-width="1.5" stroke-linejoin="round"/></g>';
+      };
+      return "<defs>" + rad(gl, [[0, "#c8f6ff", 0.6], [1, "#c8f6ff", 0]]) + "</defs>" + ray + '<circle cx="150" cy="168" r="118" fill="url(#' + gl + ')"/>' +
+        '<ellipse cx="150" cy="276" rx="92" ry="11" fill="#000" opacity=".3"/>' +
+        card(116, 176, 104, -15, "K", "♠", false) + card(180, 168, 116, 9, "7", "♥", true) +
+        arr(246, 80, true, "#3cf08a", "#0b8a45") + arr(54, 252, false, "#ff6b86", "#b0102e") +
+        spark(60, 76, 11) + spark(256, 252, 9) + spark(214, 40, 7, "#fff", 0.7);
     } },
     blackjack: { a: "#22b35e", b: "#063a1c", draw: function () {
       // mesa: o arco do feltro, o verso da carta do dealer e o Ás virado, fichas altas
@@ -330,17 +340,26 @@ window.RD = window.RD || {};
         '<circle cx="214" cy="112" r="8" fill="#fff"/><circle cx="212" cy="110" r="3" fill="#fff" opacity=".9"/>';
     } },
     wheel: { a: "#ff7a1a", b: "#4a1203", draw: function () {
-      // roda igual à do jogo: moldura escura com lâmpadas, segmentos coloridos e centro com RD
-      var cx = 150, cy = 160, R = 104, r = 72, cols = ["#3a2a35", "#22e08a", "#3a2a35", "#ffc85c", "#3a2a35", "#7aa7ff", "#3a2a35", "#22e08a", "#3a2a35", "#a07bff", "#3a2a35", "#ffc85c"], out = "", bulbs = "", N = 24;
+      // roda com borda dourada em relevo, segmentos com brilho, lâmpadas acesas, ponteiro 3D e moedas saltando
+      var cx = 150, cy = 156, R = 100, r = 50, N = 16, cols = ["#ff2e55", "#ffd23f", "#2f7bff", "#22e08a", "#a06bff", "#ff8a1a", "#14c8e6", "#ffd23f"], seg = "", bulbs = "", rim = U("wr"), gl = U("wg"), hub = U("wh"), bg = U("wb");
+      var P = function (rr, a) { return (cx + rr * Math.cos(a)).toFixed(1) + " " + (cy + rr * Math.sin(a)).toFixed(1); };
       for (var i = 0; i < N; i++) {
-        var a0 = (i / N) * 2 * Math.PI - Math.PI / 2 - Math.PI / N, a1 = a0 + 2 * Math.PI / N, P = function (rr, a) { return (cx + rr * Math.cos(a)).toFixed(1) + " " + (cy + rr * Math.sin(a)).toFixed(1); };
-        out += '<path d="M' + P(R, a0) + " A" + R + " " + R + " 0 0 1 " + P(R, a1) + " L" + P(r, a1) + " A" + r + " " + r + " 0 0 0 " + P(r, a0) + 'Z" fill="' + cols[i % cols.length] + '" stroke="#140f17" stroke-width="1.4"/>';
-        bulbs += '<circle cx="' + (cx + 114 * Math.cos(a0)).toFixed(1) + '" cy="' + (cy + 114 * Math.sin(a0)).toFixed(1) + '" r="3" fill="#ffe9a8" opacity="' + (i % 2 ? 0.5 : 1) + '"/>';
+        var a0 = (i / N) * 2 * Math.PI - Math.PI / 2, a1 = a0 + 2 * Math.PI / N;
+        seg += '<path d="M' + P(R, a0) + " A" + R + " " + R + " 0 0 1 " + P(R, a1) + " L" + P(r, a1) + " A" + r + " " + r + " 0 0 0 " + P(r, a0) + 'Z" fill="' + cols[i % cols.length] + '" stroke="#2a0d05" stroke-width="2"/>';
+        var b = (i / N) * 2 * Math.PI - Math.PI / 2;
+        bulbs += '<circle cx="' + (cx + 113 * Math.cos(b)).toFixed(1) + '" cy="' + (cy + 113 * Math.sin(b)).toFixed(1) + '" r="' + (i % 2 ? 3.2 : 4) + '" fill="#fff6c9"/>' + (i % 2 ? "" : '<circle cx="' + (cx + 113 * Math.cos(b)).toFixed(1) + '" cy="' + (cy + 113 * Math.sin(b)).toFixed(1) + '" r="9" fill="#ffe27a" opacity=".35"/>');
       }
-      return '<ellipse cx="150" cy="286" rx="96" ry="12" fill="#000" opacity=".3"/><circle cx="' + cx + '" cy="' + cy + '" r="122" fill="#2a1f30"/><circle cx="' + cx + '" cy="' + cy + '" r="122" fill="none" stroke="#fff" stroke-opacity=".18" stroke-width="2"/>' + bulbs +
-        '<circle cx="' + cx + '" cy="' + cy + '" r="107" fill="#140f17"/>' + out + '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="#1c1520"/><circle cx="' + cx + '" cy="' + cy + '" r="54" fill="#2a1f30" stroke="#fff" stroke-opacity=".15" stroke-width="2"/>' +
-        '<text x="' + cx + '" y="' + (cy + 9) + '" text-anchor="middle" font-size="26" font-weight="900" fill="#fff" style="font-family:var(--font-display,Arial)">RD</text>' +
-        '<g transform="translate(150 30)"><path d="M0 34 C-6 24 -13 17 -13 9 A13 13 0 0 1 13 9 C13 17 6 24 0 34Z" fill="#ff2e55"/><circle cy="9" r="4.5" fill="#fff"/></g>' + spark(262, 60, 11) + spark(40, 252, 9);
+      return "<defs>" + lin(rim, [[0, "#fff1b8"], [0.35, "#ffc23a"], [0.7, "#c97a00"], [1, "#ffe08a"]], 0, 0, 1, 1) + rad(gl, [[0, "#fff", 0.45], [0.6, "#fff", 0.08], [1, "#fff", 0]], 0.32, 0.22, 0.75) +
+        rad(hub, [[0, "#4a2a1a"], [1, "#1c0d06"]]) + rad(bg, [[0, "#ffd08a", 0.55], [1, "#ffd08a", 0]]) + "</defs>" +
+        '<circle cx="150" cy="156" r="146" fill="url(#' + bg + ')"/>' +
+        '<ellipse cx="150" cy="284" rx="100" ry="12" fill="#000" opacity=".32"/>' +
+        '<circle cx="' + cx + '" cy="' + (cy + 9) + '" r="124" fill="#7a3a00"/><circle cx="' + cx + '" cy="' + cy + '" r="124" fill="url(#' + rim + ')"/>' +
+        '<circle cx="' + cx + '" cy="' + cy + '" r="106" fill="#2a0d05"/>' + seg + bulbs +
+        '<circle cx="' + cx + '" cy="' + cy + '" r="' + R + '" fill="url(#' + gl + ')"/>' +
+        '<circle cx="' + cx + '" cy="' + cy + '" r="' + (r + 2) + '" fill="url(#' + rim + ')"/><circle cx="' + cx + '" cy="' + cy + '" r="' + (r - 5) + '" fill="url(#' + hub + ')"/>' +
+        '<text x="' + cx + '" y="' + (cy + 10) + '" text-anchor="middle" font-size="28" font-weight="900" fill="#ffd23f" style="font-family:var(--font-display,Arial)">RD</text>' +
+        '<g transform="translate(150 26)"><path d="M-17 0 H17 L0 34 Z" fill="#7a0d1f"/><path d="M-17 -4 H17 L0 30 Z" fill="#ff2e55" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/><circle cy="2" r="4" fill="#fff"/></g>' +
+        coinFront(254, 238, 20) + coinFront(42, 214, 15) + spark(262, 60, 11) + spark(36, 92, 9);
     } },
     tower: { a: "#12c48b", b: "#04291f", draw: function () {
       // torre em blocos 3D afunilando até o topo, um caminho de ovos acesos e o ovo dourado brilhando lá em cima
@@ -362,14 +381,18 @@ window.RD = window.RD || {};
         '<path d="M133 54 q8.5 6 17 0 t17 0" stroke="#c97800" stroke-width="2.5" fill="none" opacity=".7"/>' + spark(214, 44, 12) + spark(80, 78, 9) + spark(236, 120, 7);
     } },
     chicken: { a: "#ffc23a", b: "#8a3300", draw: function () {
-      // estrada vista de cima: tampas de bueiro com multiplicador, carro vindo e a galinha de boné RD
-      var out = '<rect x="40" y="0" width="220" height="300" fill="#2a2230"/>';
-      [100, 160, 220].forEach(function (x) { out += '<path d="M' + x + ' 0 V300" stroke="#fff" stroke-opacity=".5" stroke-width="3" stroke-dasharray="18 14"/>'; });
-      out += '<rect x="40" y="0" width="6" height="300" fill="#ffd23f"/><rect x="254" y="0" width="6" height="300" fill="#ffd23f"/>';
-      var cover = function (x, y, m, on) { return '<ellipse cx="' + x + '" cy="' + y + '" rx="26" ry="26" fill="' + (on ? "#ffd23f" : "#4a4458") + '"/><ellipse cx="' + x + '" cy="' + y + '" rx="20" ry="20" fill="none" stroke="' + (on ? "#b46f00" : "#3a3446") + '" stroke-width="3"/><text x="' + x + '" y="' + (y + 5) + '" text-anchor="middle" font-size="13" font-weight="900" fill="' + (on ? "#5a3300" : "#cfc8dc") + '" style="font-family:Arial">' + m + "</text>"; };
-      out += cover(70, 236, "1.09×", true) + cover(130, 236, "1.51×", false) + cover(190, 236, "2.46×", false);
-      out += '<g transform="translate(190 70)"><path d="M-18 40 L-40 140 L40 140 L18 40Z" fill="#fff4c2" opacity=".14"/><rect x="-22" y="-34" width="44" height="74" rx="10" fill="#ff2e55"/><rect x="-16" y="-24" width="32" height="16" rx="4" fill="#2a1a24"/><rect x="-16" y="16" width="32" height="12" rx="4" fill="#2a1a24"/><circle cx="-13" cy="38" r="4" fill="#fff8d6"/><circle cx="13" cy="38" r="4" fill="#fff8d6"/></g>';
-      return out + '<g transform="translate(-4 108) scale(1.3)">' + chick() + "</g>" + spark(276, 40, 10, "#fff") + spark(24, 60, 8, "#fff");
+      // estrada em perspectiva até o horizonte, farol do carro vindo, bueiros dourados com multiplicador e a galinha na frente
+      var road = U("cr"), beam = U("cb"), out = "";
+      out += "<defs>" + lin(road, [[0, "#1d1824"], [1, "#3a3046"]]) + lin(beam, [[0, "#fff6c8", 0.7], [1, "#fff6c8", 0]]) + "</defs>";
+      out += '<path d="M118 0 H182 L300 300 H0 Z" fill="url(#' + road + ')"/>';
+      out += '<path d="M118 0 L0 300" stroke="#ffd23f" stroke-width="5"/><path d="M182 0 L300 300" stroke="#ffd23f" stroke-width="5"/>';
+      [[0.35, 4], [0.62, 6], [0.88, 8]].forEach(function (l) { out += '<path d="M' + (118 + 64 * l[0]) + " 0 L" + (300 * l[0]) + ' 300" stroke="#fff" stroke-opacity=".55" stroke-width="' + l[1] * 0.6 + '" stroke-dasharray="' + (l[1] * 3) + " " + (l[1] * 3) + '"/>'; });
+      // carro ao longe com o facho de luz vindo
+      out += '<path d="M138 46 L82 230 H218 L162 46 Z" fill="url(#' + beam + ')"/>' +
+        '<g transform="translate(150 40)"><rect x="-20" y="-16" width="40" height="30" rx="7" fill="#ff2e55"/><rect x="-15" y="-11" width="30" height="10" rx="3" fill="#2a1a24"/><circle cx="-12" cy="9" r="4.5" fill="#fff6c8"/><circle cx="12" cy="9" r="4.5" fill="#fff6c8"/><circle cx="-12" cy="9" r="10" fill="#fff6c8" opacity=".35"/><circle cx="12" cy="9" r="10" fill="#fff6c8" opacity=".35"/></g>';
+      var mh = function (x, y, s, m, on) { return '<g transform="translate(' + x + " " + y + ") scale(" + s + ')"><ellipse cy="4" rx="34" ry="13" fill="#000" opacity=".4"/><ellipse rx="34" ry="13" fill="' + (on ? "#ffd23f" : "#4a4458") + '" stroke="' + (on ? "#b46f00" : "#2e2838") + '" stroke-width="3"/><text y="5" text-anchor="middle" font-size="13" font-weight="900" fill="' + (on ? "#5a3400" : "#cfc8dc") + '" style="font-family:Arial Black,Arial">' + m + "</text></g>"; };
+      out += mh(112, 120, 0.5, "", false) + mh(188, 120, 0.5, "", false) + mh(84, 196, 0.82, "1.51×", false) + mh(216, 196, 0.82, "2.46×", false) + mh(150, 268, 1.3, "1.09×", true);
+      return out + '<g transform="translate(66 128) scale(1.42)">' + chick() + "</g>" + spark(270, 40, 10, "#fff") + spark(30, 64, 8, "#fff");
     } },
     coinflip: { a: "#ffc23a", b: "#7a4a00", draw: function () {
       // moeda girando no ar (inclinada, com a espessura da borda), moeda de prata atrás e rastro de movimento
@@ -381,26 +404,28 @@ window.RD = window.RD || {};
         '<g transform="translate(150 168) rotate(-14) scale(.92 .78)"><ellipse cx="0" cy="18" rx="100" ry="100" fill="#7a4e06"/><ellipse cx="0" cy="11" rx="100" ry="100" fill="#a8700a"/>' + coinSide("heads") + "</g>" + spark(68, 72, 12) + spark(246, 220, 10) + spark(104, 40, 7);
     } },
     rps: { a: "#7c5cff", b: "#1d0f4a", draw: function () {
-      // batalha de luvas (estilo ilustração de jogo): soco à esquerda contra tesoura à direita, impacto no meio
-      var gw = U("gw"), sh = U("gs"), bz = U("bz"), O = "#1b2540", SW = 3.6;
-      var R = function (x, y, w, h, extra) { return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="' + Math.min(w, h) / 2 + '" fill="url(#' + sh + ')" stroke="' + O + '" stroke-width="' + SW + '"' + (extra || "") + "/>"; };
-      var fist = function (cuff) {
-        return '<rect x="-78" y="-27" width="30" height="54" rx="9" fill="' + cuff + '" stroke="' + O + '" stroke-width="' + SW + '"/><path d="M-72 -18 v36 M-63 -18 v36" stroke="#fff" stroke-opacity=".35" stroke-width="2"/>' +
-          R(-52, -36, 72, 72) + R(10, -34, 32, 17) + R(12, -16, 32, 17) + R(12, 2, 32, 17) + R(8, 20, 30, 16) +
-          R(-34, 8, 50, 19, ' transform="rotate(-8 -9 17)"') + '<path d="M-40 -22 q10 -6 22 -2 M-42 -8 q12 -5 24 -1" fill="none" stroke="' + O + '" stroke-opacity=".35" stroke-width="2.4" stroke-linecap="round"/>';
-      };
-      var scissors = function (cuff) {
-        return '<rect x="-78" y="-27" width="30" height="54" rx="9" fill="' + cuff + '" stroke="' + O + '" stroke-width="' + SW + '"/><path d="M-72 -18 v36 M-63 -18 v36" stroke="#fff" stroke-opacity=".35" stroke-width="2"/>' +
-          R(0, -40, 74, 18, ' transform="rotate(-16 0 -31)"') + R(0, -18, 78, 18, ' transform="rotate(10 0 -9)"') +
-          R(-52, -32, 66, 66) + R(6, 4, 28, 16) + R(4, 20, 26, 15) + R(-36, 10, 46, 18, ' transform="rotate(-6 -13 19)"');
-      };
-      var burst = ""; for (var i = 0; i < 12; i++) { var an = i * Math.PI / 6, r1 = i % 2 ? 22 : 34; burst += (i ? " L" : "M") + (150 + r1 * Math.cos(an)).toFixed(1) + " " + (172 + r1 * Math.sin(an)).toFixed(1); }
-      return "<defs>" + rad(gw, [[0, "#c4b5fd", 0.6], [1, "#c4b5fd", 0]]) + lin(sh, [[0, "#ffffff"], [0.62, "#f1f4fa"], [1, "#cfd8e8"]], 0, 0, 0, 1) + lin(bz, [[0, "#fff6c8"], [1, "#ffb020"]], 0, 0, 0, 1) + "</defs>" +
-        '<circle cx="150" cy="170" r="128" fill="url(#' + gw + ')"/>' +
-        '<g transform="translate(96 196) rotate(-8) scale(.92)">' + fist("#1f8fff") + "</g>" +
-        '<g transform="translate(206 150) rotate(172) scale(.92)">' + scissors("#ff3d64") + "</g>" +
-        '<g transform="translate(152 98)"><circle r="23" fill="url(#' + bz + ')" stroke="#fff" stroke-width="3"/><text y="7" text-anchor="middle" font-size="18" font-weight="900" fill="#5a2a00" style="font-family:var(--font-display,Arial)">VS</text></g>' +
-        '<path d="M150 136 v-6 M150 238 v8 M138 246 l-6 8 M162 246 l6 8" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".7"/>' + spark(262, 58, 12) + spark(36, 98, 9) + spark(266, 270, 8);
+      // pedra, papel e tesoura de verdade (objetos com volume), ligados por raios de energia, com o VS no meio
+      var st = U("rs"), sh = U("rh"), pp = U("rp"), bl = U("rb"), gw = U("rg"), vs = U("rv");
+      var rock = '<g transform="translate(78 224) scale(1.05)"><ellipse cy="40" rx="50" ry="9" fill="#000" opacity=".3"/>' +
+        '<path d="M-48 18 L-36 -22 L-6 -40 L30 -32 L50 -4 L44 30 L10 42 L-30 38 Z" fill="url(#' + st + ')"/>' +
+        '<path d="M-36 -22 L-6 -40 L30 -32 L8 -10 Z" fill="#fff" opacity=".28"/><path d="M8 -10 L30 -32 L50 -4 L24 6 Z" fill="#fff" opacity=".12"/><path d="M-48 18 L-36 -22 L8 -10 L-8 20 Z" fill="#000" opacity=".1"/><path d="M-8 20 L24 6 L44 30 L10 42 Z" fill="#000" opacity=".22"/><path d="M-30 38 L-8 20 L10 42 Z" fill="#000" opacity=".3"/></g>';
+      var paper = '<g transform="translate(150 96) rotate(-8) scale(.92)"><rect x="-40" y="-50" width="84" height="104" rx="6" fill="#000" opacity=".25" transform="translate(6 8)"/>' +
+        '<path d="M-40 -50 H24 L44 -30 V54 H-40 Z" fill="url(#' + pp + ')"/><path d="M24 -50 V-30 H44 Z" fill="#c9d3e8"/>' +
+        '<path d="M-28 -24 H28 M-28 -10 H28 M-28 4 H28 M-28 18 H14 M-28 32 H22" stroke="#9aa7c4" stroke-width="3.5" stroke-linecap="round"/></g>';
+      var scis = '<g transform="translate(224 236) rotate(-28) scale(1.15)"><ellipse cx="6" cy="46" rx="40" ry="7" fill="#000" opacity=".25" transform="rotate(32)"/>' +
+        '<path d="M-4 -8 L-10 -84 Q-6 -92 0 -84 L6 -10 Z" fill="url(#' + bl + ')" stroke="#5a6578" stroke-width="1.5"/>' +
+        '<path d="M4 -8 L40 -76 Q46 -80 46 -72 L12 -4 Z" fill="url(#' + bl + ')" stroke="#5a6578" stroke-width="1.5"/>' +
+        '<circle cx="3" cy="-6" r="6" fill="#d7dee9" stroke="#5a6578" stroke-width="2"/>' +
+        '<ellipse cx="-14" cy="22" rx="15" ry="19" fill="none" stroke="#ff3d64" stroke-width="10" transform="rotate(14 -14 22)"/><ellipse cx="20" cy="20" rx="15" ry="19" fill="none" stroke="#1f8fff" stroke-width="10" transform="rotate(-20 20 20)"/>' +
+        '<ellipse cx="-18" cy="12" rx="5" ry="3" fill="#fff" opacity=".5"/><ellipse cx="14" cy="10" rx="5" ry="3" fill="#fff" opacity=".5"/></g>';
+      var zap = function (d) { return '<path d="' + d + '" fill="none" stroke="#ffe27a" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" opacity=".9"/><path d="' + d + '" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>'; };
+      return "<defs>" + lin(st, [[0, "#c3c9d6"], [1, "#6b7384"]], 0, 0, 1, 1) + lin(pp, [[0, "#ffffff"], [1, "#e3e9f6"]]) + lin(bl, [[0, "#ffffff"], [0.5, "#c5cfdd"], [1, "#8792a6"]], 0, 0, 1, 0) +
+        rad(gw, [[0, "#d8ccff", 0.55], [1, "#d8ccff", 0]]) + lin(vs, [[0, "#fff6c8"], [1, "#ffb020"]]) + "</defs>" +
+        '<circle cx="150" cy="168" r="130" fill="url(#' + gw + ')"/>' +
+        zap("M96 178 L112 160 L106 152 L124 134") + zap("M204 136 L188 152 L196 158 L180 176") + zap("M124 246 L144 240 L142 250 L166 244") +
+        paper + rock + scis +
+        '<g transform="translate(150 178)"><circle r="27" fill="#5a2a00" opacity=".5" cy="4"/><circle r="27" fill="url(#' + vs + ')" stroke="#fff" stroke-width="3"/><text y="8" text-anchor="middle" font-size="21" font-weight="900" fill="#5a2a00" style="font-family:var(--font-display,Arial)">VS</text></g>' +
+        spark(48, 70, 11) + spark(262, 262, 9) + spark(150, 52, 8);
     } },
     baccarat: { a: "#ff2e55", b: "#4a0716", draw: function () {
       // Player × Banker: duas torres de fichas frente a frente e o 9 dourado (a mão perfeita) no meio
@@ -435,35 +460,66 @@ window.RD = window.RD || {};
         '<path d="M236 78 l14 -10 M240 92 l16 -2 M232 66 l6 -14" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".7"/>' + spark(40, 240, 10) + spark(266, 244, 12);
     } },
     lake: { a: "#1fb6ff", b: "#0a3a7a", draw: function () {
-      var w = U("lw"), pad = function (x, y, s, m, c) { return '<g transform="translate(' + x + " " + y + ") scale(" + s + ')"><ellipse cx="0" cy="6" rx="46" ry="30" fill="#0b4a8a" opacity=".5"/><path d="M0 0 L44 -8 A44 34 0 1 1 16 -32 Z" fill="#3fbf4a" stroke="#2a9a38" stroke-width="3"/><path d="M0 0 L-28 -18 M0 0 L-30 12 M0 0 L-6 30 M0 0 L28 24" stroke="#2f9e3a" stroke-width="3" stroke-linecap="round"/>' + (m ? '<text x="0" y="8" text-anchor="middle" font-size="24" font-weight="900" fill="' + c + '" stroke="#0b3a20" stroke-width="5" paint-order="stroke" style="font-family:var(--font-display,Arial)">' + m + "</text>" : "") + "</g>"; };
-      var rip = ""; [[60, 70, 30], [240, 120, 40], [90, 250, 34], [230, 250, 26]].forEach(function (r) { rip += '<ellipse cx="' + r[0] + '" cy="' + r[1] + '" rx="' + r[2] + '" ry="' + r[2] * 0.35 + '" fill="none" stroke="#fff" stroke-opacity=".3" stroke-width="2"/>'; });
-      return "<defs>" + rad(w, [[0, "#7fe0ff", 0.5], [1, "#7fe0ff", 0]]) + "</defs>" + rip + '<circle cx="150" cy="190" r="120" fill="url(#' + w + ')"/>' +
-        pad(228, 90, 0.95, "1.66×", "#ffb3f0") + pad(232, 206, 0.95, "1.23×", "#ffe0a8") + pad(122, 214, 1.25, "", "") +
-        '<g transform="translate(64 112) scale(1.2)">' + frog() + "</g>" + spark(44, 66, 10, "#fff") + spark(278, 160, 8, "#fff");
+      // sapo no meio do pulo entre duas vitórias-régias, rastro do salto, água com reflexos e juncos
+      var wv = U("lw"), gw = U("lg"), out = "";
+      var pad = function (x, y, s, m, flower) { return '<g transform="translate(' + x + " " + y + ") scale(" + s + ')"><ellipse cy="7" rx="50" ry="18" fill="#063a6a" opacity=".55"/><path d="M0 0 L46 -6 A50 18 0 1 1 30 -14 Z" fill="#3fbf4a"/><path d="M0 0 L46 -6 A50 18 0 1 1 30 -14 Z" fill="none" stroke="#2a9a38" stroke-width="2.5"/><path d="M0 0 L-30 -8 M0 0 L-34 6 M0 0 L-6 16 M0 0 L22 12" stroke="#2a9a38" stroke-width="2" stroke-linecap="round"/>' +
+        (flower ? '<g transform="translate(-24 -10)"><circle r="9" fill="#ffb3f0"/><circle r="4" fill="#ffe27a"/></g>' : "") +
+        (m ? '<g transform="translate(6 -22)"><rect x="-26" y="-12" width="52" height="24" rx="12" fill="#0b2a52" opacity=".85"/><text y="5" text-anchor="middle" font-size="14" font-weight="900" fill="#ffe27a" style="font-family:Arial Black,Arial">' + m + "</text></g>" : "") + "</g>"; };
+      for (var i = 0; i < 7; i++) out += '<path d="M' + (20 + i * 40) + " " + (60 + (i % 3) * 70) + " q14 -6 28 0" + '" stroke="#fff" stroke-opacity=".28" stroke-width="2.5" fill="none" stroke-linecap="round"/>';
+      var reed = function (x, h, k) { return '<path d="M' + x + " 300 Q" + (x + k) + " " + (300 - h / 2) + " " + (x + k * 1.6) + " " + (300 - h) + '" stroke="#1f7a3a" stroke-width="5" fill="none" stroke-linecap="round"/>'; };
+      return "<defs>" + lin(wv, [[0, "#ffffff", 0], [1, "#ffffff", 0.18]]) + rad(gw, [[0, "#9fe8ff", 0.5], [1, "#9fe8ff", 0]]) + "</defs>" + out +
+        '<circle cx="150" cy="170" r="130" fill="url(#' + gw + ')"/>' +
+        pad(214, 92, 0.62, "2.40×", false) + pad(232, 166, 0.82, "1.66×", true) + pad(112, 250, 1.45, "", false) +
+        '<path d="M150 184 Q 190 120 226 148 M228 140 Q 236 104 218 84" stroke="#fff" stroke-opacity=".7" stroke-width="3" stroke-dasharray="3 9" stroke-linecap="round" fill="none"/>' +
+        '<ellipse cx="112" cy="252" rx="62" ry="12" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="2"/>' +
+        '<g transform="translate(36 112) scale(1.4)">' + frog() + "</g>" +
+        '<circle cx="196" cy="128" r="3" fill="#dff7ff"/><circle cx="208" cy="118" r="2" fill="#dff7ff"/>' + spark(40, 70, 10, "#fff") + spark(272, 40, 8, "#fff");
     } },
     pump: { a: "#33d14a", b: "#0b3d1a", draw: function () {
-      var bal = function (x, y, s, rot) { var g = U("pg"); return "<defs>" + rad(g, [[0, "#d6ffb0"], [0.45, "#4ee05a"], [1, "#0c7a24"]], 0.35, 0.3, 0.8) + "</defs>" + '<g transform="translate(' + x + " " + y + ") rotate(" + rot + ") scale(" + s + ')"><path d="M0 64 C -10 96 10 120 -4 150" stroke="#e9ffe0" stroke-opacity=".7" stroke-width="2.5" fill="none"/><ellipse cx="0" cy="0" rx="52" ry="60" fill="url(#' + g + ')"/><path d="M-7 58 L7 58 L0 66Z" fill="#0c7a24"/><ellipse cx="-20" cy="-26" rx="11" ry="18" fill="#fff" opacity=".4" transform="rotate(-22 -20 -26)"/></g>'; };
-      var bolt = function (x, y, s) { return '<path transform="translate(' + x + " " + y + ") scale(" + s + ')" d="M13 2 4 14h7l-1 8 9-12h-7z" fill="#eaff7a"/>'; };
-      return '<circle cx="150" cy="160" r="130" fill="#b6ff7a" opacity=".12"/>' + bolt(30, 60, 2.6) + bolt(240, 40, 2) + bolt(250, 220, 1.6) +
-        bal(74, 168, 0.85, -16) + bal(226, 158, 0.9, 14) + bal(150, 112, 1.15, 0) +
-        '<text x="150" y="124" text-anchor="middle" font-size="34" font-weight="900" fill="#fff" fill-opacity=".92" style="font-family:var(--font-display,Arial)">RD</text>';
+      // um balão grande e brilhante enchendo pela bomba, com balões menores desfocados atrás
+      var g = U("pg"), hl = U("ph"), sm = U("ps"), gw = U("pw"), bd = U("pb");
+      var small = function (x, y, s, op) { return '<g transform="translate(' + x + " " + y + ") scale(" + s + ')" opacity="' + op + '"><ellipse rx="40" ry="46" fill="url(#' + sm + ')"/><path d="M-4 46 L4 46 L0 54 Z" fill="#1b8a2e"/><path d="M0 54 C -6 74 6 90 -2 110" stroke="#e9ffe0" stroke-opacity=".5" stroke-width="2" fill="none"/></g>'; };
+      return "<defs>" + rad(g, [[0, "#e9ffc9"], [0.35, "#62e870"], [0.8, "#13a334"], [1, "#0a6a20"]], 0.36, 0.3, 0.8) + rad(hl, [[0, "#fff", 0.9], [1, "#fff", 0]]) + rad(sm, [[0, "#b6ff9a"], [1, "#1b8a2e"]], 0.35, 0.3, 0.8) +
+        rad(gw, [[0, "#b6ff7a", 0.5], [1, "#b6ff7a", 0]]) + lin(bd, [[0, "#e6ecf5"], [0.5, "#ffffff"], [1, "#9aa6b8"]], 0, 0, 1, 0) + "</defs>" +
+        '<circle cx="150" cy="128" r="140" fill="url(#' + gw + ')"/>' +
+        small(52, 118, 0.85, 0.55) + small(250, 100, 0.75, 0.5) +
+        // bomba de ar e mangueira
+        '<path d="M150 214 C 150 244 210 236 220 262" stroke="#1b2540" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M150 214 C 150 244 210 236 220 262" stroke="#3a4a6a" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+        '<g transform="translate(232 238)"><rect x="-14" y="-2" width="28" height="44" rx="6" fill="url(#' + bd + ')" stroke="#5a6578" stroke-width="2"/><rect x="-3" y="-26" width="6" height="26" fill="#9aa6b8"/><rect x="-18" y="-32" width="36" height="9" rx="4.5" fill="#ff2e55"/><rect x="-20" y="40" width="40" height="7" rx="3" fill="#5a6578"/></g>' +
+        // balão principal
+        '<ellipse cx="150" cy="282" rx="58" ry="8" fill="#000" opacity=".25"/>' +
+        '<path d="M142 206 L158 206 L150 220 Z" fill="#0a6a20"/>' +
+        '<ellipse cx="150" cy="124" rx="80" ry="88" fill="url(#' + g + ')"/>' +
+        '<ellipse cx="118" cy="80" rx="26" ry="34" fill="url(#' + hl + ')" transform="rotate(-24 118 80)"/><ellipse cx="196" cy="168" rx="14" ry="8" fill="#fff" opacity=".25" transform="rotate(-40 196 168)"/>' +
+        '<text x="152" y="140" text-anchor="middle" font-size="46" font-weight="900" fill="#0a5a1a" opacity=".35" style="font-family:var(--font-display,Arial)">RD</text>' +
+        '<text x="150" y="137" text-anchor="middle" font-size="46" font-weight="900" fill="#fff" style="font-family:var(--font-display,Arial)">RD</text>' +
+        '<path transform="translate(36 40) scale(2.4)" d="M13 2 4 14h7l-1 8 9-12h-7z" fill="#eaff7a"/><path transform="translate(244 196) scale(1.7)" d="M13 2 4 14h7l-1 8 9-12h-7z" fill="#eaff7a"/>' + spark(262, 44, 10) + spark(40, 236, 8);
     } },
     spill: { a: "#1f8fff", b: "#071a44", draw: function () {
-      // copo quase transbordando embaixo da torneira, com gotas e o multiplicador
-      var w = U("sw"), m = U("sm"), gl = U("sg"), cp = U("sc");
-      var glass = "M92 98 L208 98 L197 268 Q196 276 188 276 L112 276 Q104 276 103 268 Z";
-      return "<defs>" + lin(w, [[0, "#9fe2ff"], [1, "#2f9cf0"]], 0, 0, 0, 1) + lin(m, [[0, "#5a6578"], [0.5, "#b4bfd0"], [1, "#4a5466"]], 0, 0, 1, 0) + rad(gl, [[0, "#7dd3fc", 0.55], [1, "#7dd3fc", 0]]) +
+      // torneira cromada enchendo um copo de vidro até transbordar, com respingos e o multiplicador
+      var w = U("sw"), m = U("sm"), gl = U("sg"), cp = U("sc"), gs = U("sv"), tag = U("st");
+      var glass = "M96 112 L204 112 L194 270 Q193 278 185 278 L115 278 Q107 278 106 270 Z";
+      var drops = ""; [[86, 150, 5], [72, 184, 3.5], [222, 168, 4.5], [236, 204, 3], [80, 230, 3]].forEach(function (d) { drops += '<path d="M' + d[0] + " " + (d[1] - d[2] * 1.8) + " Q" + (d[0] + d[2]) + " " + d[1] + " " + d[0] + " " + (d[1] + d[2]) + " Q" + (d[0] - d[2]) + " " + d[1] + " " + d[0] + " " + (d[1] - d[2] * 1.8) + 'Z" fill="#bfeaff"/>'; });
+      return "<defs>" + lin(w, [[0, "#b9ecff"], [0.5, "#4fb8ff"], [1, "#1f7ae0"]]) + lin(m, [[0, "#6b7688"], [0.45, "#f2f5fa"], [0.6, "#c3ccda"], [1, "#4a5466"]], 0, 0, 1, 0) + rad(gl, [[0, "#7dd3fc", 0.55], [1, "#7dd3fc", 0]]) +
+        lin(gs, [[0, "#ffffff", 0.5], [0.25, "#ffffff", 0.08], [0.8, "#ffffff", 0.04], [1, "#ffffff", 0.35]], 0, 0, 1, 0) + lin(tag, [[0, "#3cf08a"], [1, "#0b8a45"]]) +
         '<clipPath id="' + cp + '"><path d="' + glass + '"/></clipPath></defs>' +
-        '<circle cx="150" cy="170" r="130" fill="url(#' + gl + ')"/>' +
-        '<rect x="136" y="20" width="28" height="30" fill="url(#' + m + ')"/><rect x="124" y="46" width="52" height="14" rx="5" fill="url(#' + m + ')"/><rect x="140" y="58" width="20" height="12" rx="3" fill="#3c4556"/>' +
-        '<rect x="145" y="68" width="10" height="44" rx="5" fill="url(#' + w + ')"/>' +
-        '<ellipse cx="150" cy="282" rx="66" ry="9" fill="#000" opacity=".3"/>' +
-        '<g clip-path="url(#' + cp + ')"><rect x="80" y="112" width="140" height="180" fill="url(#' + w + ')"/><path d="M80 112 q15 -7 30 0 t30 0 t30 0 t30 0 t30 0 v6 h-150z" fill="#d6f4ff"/></g>' +
-        '<path d="' + glass + '" fill="rgba(255,255,255,.08)" stroke="#fff" stroke-opacity=".7" stroke-width="3.5" stroke-linejoin="round"/><path d="M104 112 L113 254" stroke="#fff" stroke-opacity=".35" stroke-width="6" stroke-linecap="round"/>' +
-        '<path d="M92 98 q-12 4 -14 26 q-1 14 6 18 q4 -8 3 -20 q-1 -14 9 -22z M208 98 q12 6 13 30 q1 14 -6 18 q-4 -8 -3 -22 q1 -14 -8 -24z" fill="url(#' + w + ')"/>' +
-        '<circle cx="74" cy="168" r="5" fill="#9fe2ff"/><circle cx="230" cy="180" r="4" fill="#9fe2ff"/><circle cx="66" cy="196" r="3" fill="#9fe2ff"/>' +
-        '<g transform="translate(206 38)"><rect width="70" height="30" rx="15" fill="#22e08a"/><text x="35" y="21" text-anchor="middle" font-size="15" font-weight="900" fill="#05301c" style="font-family:var(--font-display,Arial)">24.5×</text></g>' +
-        spark(48, 76, 11) + spark(256, 236, 9);
+        '<circle cx="150" cy="170" r="132" fill="url(#' + gl + ')"/>' +
+        // torneira
+        '<rect x="132" y="14" width="36" height="30" rx="4" fill="url(#' + m + ')"/><rect x="110" y="40" width="80" height="16" rx="8" fill="url(#' + m + ')"/><rect x="138" y="54" width="24" height="16" rx="4" fill="url(#' + m + ')"/><rect x="141" y="68" width="18" height="6" rx="2" fill="#3c4556"/>' +
+        '<rect x="144" y="72" width="12" height="56" rx="6" fill="url(#' + w + ')"/><rect x="146" y="74" width="3" height="50" rx="1.5" fill="#fff" opacity=".6"/>' +
+        // poça e água transbordando
+        '<ellipse cx="150" cy="284" rx="84" ry="10" fill="#4fb8ff" opacity=".45"/><ellipse cx="150" cy="284" rx="66" ry="6" fill="#000" opacity=".2"/>' +
+        '<path d="M198 112 Q220 118 214 164 Q210 214 224 280 L204 280 Q196 220 200 164 Z" fill="#8fdcff"/><path d="M206 120 Q214 150 210 190" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".7" fill="none"/>' +
+        '<path d="M102 112 Q82 122 88 170 Q94 222 78 280 L96 280 Q104 222 100 170 Z" fill="#8fdcff" opacity=".85"/>' +
+        // copo
+        '<g clip-path="url(#' + cp + ')"><rect x="90" y="112" width="120" height="170" fill="url(#' + w + ')"/><path d="M90 126 Q120 116 150 124 T210 120 V112 H90Z" fill="#dff7ff" opacity=".8"/>' +
+        '<circle cx="128" cy="210" r="4" fill="#fff" opacity=".5"/><circle cx="168" cy="236" r="3" fill="#fff" opacity=".5"/><circle cx="146" cy="180" r="2.5" fill="#fff" opacity=".5"/></g>' +
+        '<path d="' + glass + '" fill="url(#' + gs + ')" stroke="#e8f6ff" stroke-opacity=".9" stroke-width="3"/>' +
+        '<ellipse cx="150" cy="112" rx="54" ry="7" fill="#dff7ff" stroke="#fff" stroke-width="2.5"/>' +
+        '<path d="M104 110 q-8 -14 -2 -22 M118 106 q-2 -12 4 -18 M184 106 q4 -12 -2 -18 M198 110 q8 -14 2 -22" stroke="#bfeaff" stroke-width="4" stroke-linecap="round" fill="none"/><circle cx="96" cy="84" r="3.5" fill="#bfeaff"/><circle cx="206" cy="82" r="3.5" fill="#bfeaff"/><circle cx="124" cy="82" r="2.5" fill="#bfeaff"/>' +
+        '<path d="M108 130 L116 262" stroke="#fff" stroke-opacity=".55" stroke-width="5" stroke-linecap="round"/>' + drops +
+        '<g transform="translate(236 64)"><rect x="-32" y="-15" width="64" height="30" rx="15" fill="#0a5a2c" transform="translate(0 3)"/><rect x="-32" y="-15" width="64" height="30" rx="15" fill="url(#' + tag + ')" stroke="#fff" stroke-opacity=".5" stroke-width="1.5"/><text y="6" text-anchor="middle" font-size="16" font-weight="900" fill="#fff" style="font-family:Arial Black,Arial">24.5×</text></g>' +
+        spark(52, 80, 11) + spark(256, 250, 8);
     } },
     door: { a: "#6a4bd8", b: "#170a3a", draw: function () {
       // três portas vermelhas com número e luz; a do meio aberta mostrando o diamante
