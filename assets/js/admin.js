@@ -44,6 +44,7 @@
       { group: "Visão geral" },
       { id: "dashboard", label: "Dashboard", icon: "chart" },
       { group: "Operação" },
+      RD.live ? { id: "live", label: "Ao vivo", icon: "eye", dot: true } : null,
       { id: "players", label: "Jogadores", icon: "users", count: db.players().length },
       { id: "transactions", label: "Transações", icon: "coins", badge: pendingWd().length },
       { id: "support", label: "Suporte", icon: "chat", badge: supUnreadTotal },
@@ -68,7 +69,7 @@
     $("#adm-nav").innerHTML = NAV().filter(Boolean).map(function (n) {
       if (n.group) return '<div class="adm-group">' + n.group + "</div>";
       return '<a class="adm-link' + (n.id === active ? " active" : "") + '" href="#/' + n.id + '">' + ic(n.icon, 17) + n.label +
-        (n.badge ? '<span class="badge badge-warn">' + n.badge + "</span>" : n.count ? '<span class="badge">' + n.count + "</span>" : "") + "</a>";
+        (n.dot ? '<span class="live-dot"></span>' : n.badge ? '<span class="badge badge-warn">' + n.badge + "</span>" : n.count ? '<span class="badge">' + n.count + "</span>" : "") + "</a>";
     }).join("");
   }
 
@@ -184,6 +185,65 @@
       '<div class="tabs" style="margin-bottom:16px">' + tabs.map(function (t) { return '<a class="tab' + (t[0] === filter ? " active" : "") + '" href="#/transactions/' + t[0] + '">' + t[1] + "</a>"; }).join("") + "</div>" +
       '<div class="card">' + txTable(list, true) + "</div>";
   };
+
+  /* ---------- Ao vivo: quem está jogando agora (só leitura; o jogador não vê nada) ---------- */
+  var live = { sel: null, data: null, timer: null, seenBet: {}, big: 500 };
+  try { live.big = +localStorage.getItem("rda_live_big") || 500; } catch (x) {}
+  function ago(iso) { if (!iso) return "—"; var m = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000)); return m < 1 ? "agora" : m < 60 ? "há " + m + " min" : m < 1440 ? "há " + Math.floor(m / 60) + " h" : "há " + Math.floor(m / 1440) + " d"; }
+  function hhmm(iso) { var d = new Date(iso); return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" }); }
+  function where(path) { if (!path) return "—"; var p = path.replace(/^\//, "").split("/"); if (p[0] === "game" && p[1]) return gameOf(p[1]).name; return { "": "Lobby", casino: "Lista de jogos", account: "Conta", vip: "VIP", promotions: "Promoções", leaderboard: "Leaderboard", affiliate: "Afiliados", responsible: "Limites" }[p[0]] || p[0]; }
+  function tierName(xp) { var t = db.tierOf(+xp || 0); return t ? t.name : "Sem rank"; }
+  function beep() { try { var A = window.AudioContext || window.webkitAudioContext, c = new A(), o = c.createOscillator(), g = c.createGain(); o.frequency.value = 880; g.gain.value = 0.08; o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime + 0.18); } catch (x) {} }
+  function liveRow(p, kind) {
+    var on = live.sel === p.id, net = +p.net || 0;
+    return '<a href="#" class="live-pl' + (on ? " on" : "") + '" data-live-sel="' + p.id + '"><span class="avatar">' + initials(p.username) + (p.online ? '<i class="live-on"></i>' : "") + '</span><div class="grow"><b>' + esc(p.username) + "</b><small>" +
+      (kind === "new" ? "Cadastro " + ago(p.created_at) + (+p.deposits ? " · depositou " + fmt.usd(+p.deposits) : " · sem depósito") : where(p.path) + " · " + ago(p.since || p.seen)) + "</small></div>" +
+      (kind === "new" ? '<span class="faint" style="font-size:12px">' + (p.seen ? ago(p.seen) : "não entrou") + "</span>" : '<span class="num ' + (net > 0 ? "pos" : net < 0 ? "neg" : "faint") + '" style="font-size:12.5px;font-weight:700">' + (p.bets ? fmt.usd(net, { sign: true }) : "sem apostas") + "</span>") + "</a>";
+  }
+  function liveDetail(d) {
+    if (!d) return '<div class="card">' + empty("Escolha um jogador", "Clique em alguém da lista para acompanhar.") + "</div>";
+    var s = d.session || {}, net = +s.net || 0, online = d.seen && Date.now() - new Date(d.seen).getTime() < 180000;
+    var bal = +d.balance, rows = (d.feed || []).map(function (b) {
+      var res = +b.payout - +b.amount, big = +b.amount >= live.big, fresh = live.seenBet[d.id] != null && b.id > live.seenBet[d.id];
+      return '<tr class="' + (fresh ? "live-new" : big ? "live-big" : "") + '"><td class="faint">' + hhmm(b.at) + "</td><td>" + esc(gameOf(b.game).name) + '</td><td class="right num">' + fmt.usd(+b.amount) + '</td><td class="right num">' + (+b.payout > 0 ? '<span class="badge badge-success">' + (+b.multiplier).toFixed(2) + "×</span>" : '<span class="badge badge-danger">perdeu</span>') + '</td><td class="right num strong ' + (res >= 0 ? "pos" : "neg") + '">' + fmt.usd(res, { sign: true }) + "</td></tr>";
+    }).join("");
+    return '<div class="card"><div class="card-head" style="gap:14px"><div class="row" style="gap:12px"><span class="avatar" style="width:42px;height:42px">' + initials(d.username) + '</span><div><h3 style="font-size:18px">' + esc(d.username) + ' <span class="badge">' + tierName(d.vip_xp) + "</span> " + (online ? '<span class="badge badge-success">online</span>' : '<span class="badge">offline</span>') + '</h3><small class="faint">' + (online ? "Agora em: <b>" + esc(where(d.path)) + "</b> · " : "Visto " + ago(d.seen) + " · ") + esc(d.country || "") + " · cadastro " + ago(d.created_at) + (d.kyc && d.kyc !== "none" ? " · KYC " + esc(d.kyc) : "") + '</small></div></div><div class="row" style="gap:8px"><button class="btn btn-secondary btn-sm" data-player="' + d.id + '">Abrir perfil</button></div></div>' +
+      '<div class="kpi-grid live-kpis">' + kpi("Saldo agora", fmt.usd(bal), +d.held ? "Retido " + fmt.usd(+d.held) : "") + kpi("Apostado na sessão", fmt.usd(+s.wagered || 0), d.session_start ? "desde " + hhmm(d.session_start) : "sem sessão aberta") + kpi("Resultado na sessão", fmt.usd(net, { sign: true }), "", net > 0 ? "pos" : net < 0 ? "neg" : "") + kpi("Maior aposta", fmt.usd(+s.max_bet || 0), (s.bets || 0) + " apostas") + "</div>" +
+      ((d.tx || []).length ? '<div class="live-tx">' + d.tx.map(function (t) { return '<span class="badge ' + (t.type === "deposit" ? "badge-success" : t.type === "withdrawal" ? "badge-warn" : "") + '">' + ({ deposit: "Depósito", withdrawal: "Saque", bonus: "Bônus", tip: "Gorjeta" }[t.type] || esc(t.type)) + " " + fmt.usd(+t.amount) + (t.coin ? " " + esc(t.coin) : "") + " · " + ({ completed: "concluído", pending: "pendente", awaiting: "aguardando", rejected: "recusado", expired: "expirado" }[t.status] || esc(t.status)) + " · " + ago(t.at) + "</span>"; }).join("") + "</div>" : "") +
+      '<div class="table-wrap"><table class="table"><thead><tr><th>Hora</th><th>Jogo</th><th class="right">Aposta</th><th class="right">Multiplicador</th><th class="right">Resultado</th></tr></thead><tbody>' + (rows || '<tr><td colspan="5">' + empty("Ainda não apostou", "As apostas aparecem aqui na hora.") + "</td></tr>") + "</tbody></table></div></div>";
+  }
+  function liveRender() {
+    var root = $("#live-root"), d = live.data; if (!root || !d) return;
+    var act = d.active || [], nw = d.new || [];
+    var html = '<div class="live-grid"><div class="live-side"><div class="card"><div class="card-head"><h3>Jogando agora</h3><small class="faint">' + act.length + " ativo" + (act.length === 1 ? "" : "s") + "</small></div>" + (act.length ? act.map(function (p) { return liveRow(p); }).join("") : '<div class="card-pad faint" style="font-size:13px">Ninguém ativo nos últimos minutos.</div>') + "</div>" +
+      '<div class="card" style="margin-top:12px"><div class="card-head"><h3>Novos jogadores</h3><small class="faint">7 dias</small></div>' + (nw.length ? nw.map(function (p) { return liveRow(p, "new"); }).join("") : '<div class="card-pad faint" style="font-size:13px">Nenhum cadastro novo.</div>') + "</div></div>" +
+      '<div class="live-main">' + liveDetail(d.player) + "</div></div>";
+    if (root._h !== html) { root.innerHTML = html; root._h = html; }
+    var pl = d.player; if (pl && pl.feed && pl.feed.length) { var top = pl.feed[0].id; if (live.seenBet[pl.id] != null && top > live.seenBet[pl.id] && pl.feed.some(function (b) { return b.id > live.seenBet[pl.id] && +b.amount >= live.big; })) { beep(); RD.toast(pl.username + " apostou alto: " + fmt.usd(+pl.feed[0].amount)); } setTimeout(function () { live.seenBet[pl.id] = top; }, 3500); if (live.seenBet[pl.id] == null) live.seenBet[pl.id] = top; }
+  }
+  function liveTick() {
+    clearTimeout(live.timer);
+    if (current !== "live") return;
+    if (document.hidden) { live.timer = setTimeout(liveTick, 4000); return; }
+    Promise.resolve(db.adminLive(live.sel)).then(function (r) {
+      if (current !== "live") return;
+      if (r && !r.error) {
+        if (!live.sel) { var first = (r.active || [])[0] || (r.new || [])[0]; if (first) { live.sel = first.id; return liveTick(); } }
+        live.data = r; liveRender();
+      }
+      live.timer = setTimeout(liveTick, 4000);
+    });
+  }
+  P.live = function () {
+    return head("Ao vivo", "Atualiza a cada 4 segundos · só você vê esta tela", '<label class="row faint" style="gap:8px;font-size:13px">Alerta de aposta alta a partir de <input class="input" id="live-big" type="number" min="1" step="50" value="' + live.big + '" style="width:100px;height:34px"></label>') +
+      '<div id="live-root">' + (live.data ? "" : '<div class="card card-pad faint">Carregando…</div>') + "</div>";
+  };
+  P.live.after = function () {
+    if (live.data) liveRender();
+    liveTick();
+    var inp = $("#live-big"); if (inp) inp.addEventListener("change", function () { live.big = Math.max(1, +this.value || 500); try { localStorage.setItem("rda_live_big", live.big); } catch (x) {} liveRender(); });
+  };
+  document.addEventListener("click", function (e) { var t = e.target.closest("[data-live-sel]"); if (!t) return; e.preventDefault(); live.sel = t.getAttribute("data-live-sel"); var root = $("#live-root"); if (root) root._h = null; liveTick(); });
 
   P.bets = function () { return head("Apostas", "Todas as apostas dos jogos próprios, em tempo real") + '<div class="card">' + betsTable(db.allBets().slice(0, 200)) + "</div>"; };
 
@@ -472,7 +532,7 @@
   };
 
   /* ---------- Router ---------- */
-  var TITLES = { dashboard: "Dashboard", players: "Jogadores", transactions: "Transações", bets: "Apostas", kyc: "KYC & Risco", games: "Jogos", promotions: "Promoções", media: "Banners & Imagens", affiliates: "Afiliados", invites: "Convites", rain: "Chuva (Rain)", vip: "VIP & Recompensas", settings: "Configurações", audit: "Auditoria" };
+  var TITLES = { live: "Ao vivo", dashboard: "Dashboard", players: "Jogadores", transactions: "Transações", bets: "Apostas", kyc: "KYC & Risco", games: "Jogos", promotions: "Promoções", media: "Banners & Imagens", affiliates: "Afiliados", invites: "Convites", rain: "Chuva (Rain)", vip: "VIP & Recompensas", settings: "Configurações", audit: "Auditoria" };
   var current = "dashboard";
   function route() {
     var parts = (location.hash || "#/dashboard").replace(/^#\/?/, "").split("/");

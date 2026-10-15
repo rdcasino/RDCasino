@@ -382,6 +382,9 @@
   /* antifraude: alertas para o admin revisar (o servidor nunca bloqueia ninguém sozinho) */
   db.adminRisk = function (uid, all) { return rgCall("admin_risk", { p_user: uid || null, p_all: !!all }); };
   db.adminRiskReview = function (uid, key) { return rgCall("admin_risk_review", { p_user: uid, p_key: key }); };
+  /* ao vivo: sinal de presença (silencioso) e a visão do admin */
+  db.seen = function (path) { if (!db.live || !db.live.user) return; sb.rpc("rd_seen", { p_path: String(path || "/") }).then(function () {}, function () {}); };
+  db.adminLive = function (uid) { return rgCall("admin_live", { p_user: uid || null }); };
   db.rgExclude = function (months) { return rgCall("rg_self_exclude", { p_months: months }); };
   /* ---------- Códigos promocionais ---------- */
   /* o código existe e ainda pode ser usado? (só sim/não; o servidor limita as consultas) */

@@ -3652,9 +3652,14 @@
     var banner = u && u.status !== "Active" ? '<div class="container" style="padding-bottom:0"><div class="notice" style="background:var(--danger-soft);border-color:rgba(255,122,89,.3);color:var(--danger)">' + ic("ban", 16) + "<span><strong>Your account is suspended.</strong> Deposits, bets and withdrawals are disabled. Contact support.</span></div></div>" : "";
     $("#view").innerHTML = banner + fn(arg);
     if (fn.after) fn.after(arg);
-    closeAll(); markActive(path); countdown();
+    closeAll(); markActive(path); countdown(); ping();
     if (!keep) window.scrollTo(0, 0);
   }
+  /* presença: avisa o servidor que a conta está ativa e em qual página (sem nada na tela) */
+  var lastPing = 0, lastPath = null;
+  function ping(force) { if (!RD.live || !db.seen || !me() || document.hidden) return; if (!force && currentPath === lastPath && Date.now() - lastPing < 40000) return; lastPing = Date.now(); lastPath = currentPath; db.seen("/" + currentPath); }
+  setInterval(function () { ping(true); }, 45000);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) ping(true); });
 
   /* ---------- Events ---------- */
   document.addEventListener("click", function (e) {

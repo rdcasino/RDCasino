@@ -107,3 +107,22 @@
 .risk-flag b { font-size: 13px; }
 .risk-flag small { font-size: 12px; color: var(--text-3); word-break: break-word; }
 .risk-flag.reviewed { opacity: .55; }
+/* Ao vivo */
+.live-dot { margin-left: auto; width: 8px; height: 8px; border-radius: 50%; background: var(--danger); box-shadow: 0 0 0 4px rgba(255, 84, 112, 0.18); animation: liveBlink 1.6s ease-in-out infinite; }
+@keyframes liveBlink { 50% { opacity: 0.35; } }
+.live-grid { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 14px; align-items: start; }
+.live-pl { display: flex; align-items: center; gap: 10px; padding: 11px 16px; border-bottom: 1px solid var(--line); color: var(--text-2); }
+.live-pl:last-child { border-bottom: 0; }
+.live-pl:hover { background: rgba(255, 255, 255, 0.02); }
+.live-pl.on { background: rgba(47, 123, 255, 0.1); box-shadow: inset 3px 0 0 var(--brand); }
+.live-pl b { display: block; color: var(--text); font-size: 13.5px; }
+.live-pl small { display: block; font-size: 12px; color: var(--text-3); margin-top: 1px; }
+.live-pl .avatar { position: relative; }
+.live-on { position: absolute; right: -2px; bottom: -2px; width: 10px; height: 10px; border-radius: 50%; background: var(--success); box-shadow: 0 0 0 2px var(--surface); }
+.live-kpis { padding: 14px 20px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.live-kpis .kpi { padding: 14px 16px; }
+.live-tx { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 20px 14px; }
+.table tr.live-new td { background: rgba(47, 123, 255, 0.12); }
+.table tr.live-big td { background: rgba(255, 200, 92, 0.07); }
+@media (max-width: 900px) { .live-grid { grid-template-columns: 1fr; } .live-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.kpi-value.pos { color: var(--success); } .kpi-value.neg { color: var(--danger); }
