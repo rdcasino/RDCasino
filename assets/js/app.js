@@ -3109,7 +3109,7 @@
   setInterval(function () {
     var due = false;
     $$("[data-until]").forEach(function (el) { var iso = el.getAttribute("data-until"); if (new Date(iso).getTime() <= Date.now()) due = true; else el.textContent = untilTxt(iso); });
-    if (due) { if ($("#drawer-vip").classList.contains("open")) renderVipDrawer(); else if (currentPath === "vip") route(true); renderRain(); }
+    if (due) { if ($("#drawer-vip").classList.contains("open")) renderVipDrawer(); else if (currentPath === "vip") route(true); }
   }, 1000);
 
   pages.vip = function () {
@@ -3523,25 +3523,14 @@
   }
 
   /* ---------- Chat ---------- */
-  function renderRain() {
-    var box = $("#rain-box"); if (!box) return;
-    var r = RD.live && db.rain ? db.rain() : null;
-    if (!r) { box.innerHTML = ""; return; }
-    var left = new Date(r.ends_at).getTime() - Date.now();
-    if (left <= 0) { box.innerHTML = '<div class="rain-card ending"><div class="rain-ic">' + rainIcon() + '</div><div class="grow"><b>Rain ending…</b><small>Splitting the pot</small></div></div>'; if (!renderRain.settling) { renderRain.settling = true; db.rainSettle().then(function () { renderRain.settling = false; renderRain(); }); } return; }
-    box.innerHTML = '<div class="rain-card"><div class="rain-ic">' + rainIcon() + '</div><div class="grow"><b>Rain</b><div class="rain-stats"><span>' + ic("users", 13) + r.participants + '</span><span class="rain-timer">' + ic("clock", 13) + '<i data-until="' + r.ends_at + '">' + untilTxt(r.ends_at) + "</i></span></div>" + (+r.min_wager > 0 && !r.joined ? '<small class="rain-req">Wager ' + fmt.usd(+r.min_wager, { dec: 0 }) + ' in the last 7 days to join</small>' : '') + "</div>" +
-      '<div class="rain-act">' + (r.joined ? '<button class="btn btn-sm rain-joined" disabled>' + ic("check", 14) + "Joined</button>" : '<button class="btn btn-primary btn-sm" data-rain="join">Join</button>') +
-      '<div class="rain-pot"><span>' + fmt.usd(+r.amount) + '</span><button data-rain="add" aria-label="Add to rain">' + ic("plus", 13) + "</button></div></div></div>";
-  }
-  function rainIcon() { return '<svg viewBox="0 0 48 48" width="40" height="40"><path d="M14 30a9 9 0 0 1 1-18 12 12 0 0 1 22 4 7 7 0 0 1-1 14z" fill="#cfe3ff"/><path d="M14 30a9 9 0 0 1 1-18 12 12 0 0 1 22 4" fill="none" stroke="#fff" stroke-width="2" opacity=".6"/><path d="M17 35l-2 5M25 35l-2 5M33 35l-2 5" stroke="#4da3ff" stroke-width="3" stroke-linecap="round"/></svg>'; }
   function renderChat() {
     var list = db.chat(), box = $("#chat-list"), u = me();
     var atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 60;
     var hue = function (name) { var h = 0; for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % 360; return h; };
-    renderRain();
+    list = list.filter(function (m) { return m.kind !== "rain"; }); // só o chat: avisos de rain não aparecem
     box.innerHTML = list.length ? list.map(function (m) {
       if (m.kind === "tip") return '<div class="chat-sys tip">' + ic("gift", 14) + "<span>" + esc(m.text) + "</span></div>";
-      if (m.kind === "rain" || m.kind === "system") return '<div class="chat-sys">' + (m.kind === "rain" ? rainIcon().replace('width="40" height="40"', 'width="20" height="20"') : ic("alert", 14)) + "<span>" + esc(m.text) + "</span></div>";
+      if (m.kind === "system") return '<div class="chat-sys">' + ic("alert", 14) + "<span>" + esc(m.text) + "</span></div>";
       var pl = db.findByName(m.user), mine = u && u.username === m.user, h = hue(m.user || "?");
       return '<div class="chat-msg' + (mine ? " mine" : "") + (m.pending ? " pending" : "") + '"><div class="chat-bubble"><div class="chat-meta">' + uBadge(m.user, pl ? vipXp(pl) : 0, 16) + (mine || !u ? "<strong>" + esc(m.user) + "</strong>" : '<button class="chat-name" data-tip-user="' + esc(m.user) + '" title="Tip ' + esc(m.user) + '">' + esc(m.user) + "</button>") + '<time>' + (m.at ? new Date(m.at).toTimeString().slice(0, 5) : "") + "</time></div><p>" + esc(m.text) + "</p></div></div>";
     }).join("") : '<div class="empty" style="padding:40px 10px"><h3>No messages yet</h3><p>Say hi to the community.</p></div>';
@@ -3877,22 +3866,7 @@
     var txt = inp.value; inp.value = "";
     Promise.resolve(db.chatSend(me().id, txt)).then(function (r) { if (r && r.error) { RD.toast(r.error, "error"); inp.value = txt; } renderChat(); });
   });
-  /* Chuva (modo real): entrar e colocar dinheiro no pote */
-  $("#rain-box").addEventListener("click", function (e) {
-    var b = e.target.closest("[data-rain]"); if (!b) return;
-    if (needLogin()) return;
-    if (b.getAttribute("data-rain") === "join") {
-      b.disabled = true;
-      return db.rainJoin().then(function (r) { RD.toast(r.error || "You joined the rain!", r.error ? "error" : ""); renderRain(); });
-    }
-    openGeneric('<div class="modal-head"><h3>Add to the rain</h3><button class="icon-btn" data-close aria-label="Close">' + ic("x") + '</button></div><div class="modal-body"><p class="muted" style="margin-bottom:14px">The amount comes out of your balance and is split between everyone in the rain.</p><div id="rc-msg"></div><div class="field"><label>Amount (USD)</label><input class="input" type="number" id="rc-amt" min="1" step="1" value="5"></div><button class="btn btn-primary btn-block btn-lg" id="rc-go">Add to rain</button></div>');
-    $("#rc-go").addEventListener("click", function () {
-      var v = parseFloat($("#rc-amt").value); if (!(v >= 1)) { $("#rc-msg").innerHTML = errorBox("Minimum is $1."); return; }
-      this.disabled = true;
-      db.rainContribute(v).then(function (r) { if (r.error) { $("#rc-msg").innerHTML = errorBox(r.error); $("#rc-go").disabled = false; return; } closeAll(); renderHeader(); RD.toast("Added " + fmt.usd(v) + " to the rain"); });
-    });
-  });
-  if (db.onChat) db.onChat(function () { if ($("#drawer-chat").classList.contains("open")) renderChat(); else renderRain(); });
+  if (db.onChat) db.onChat(function () { if ($("#drawer-chat").classList.contains("open")) renderChat(); });
 
   /* Link de afiliado: ?ref=CODE conta o clique e preenche o cadastro */
   (function () {
