@@ -100,7 +100,7 @@ RD.games = [
   { id: "spill", name: "Spill", provider: "RD Originals", cat: "originals", rtp: 98, edge: 2, playable: true, tag: "new", c1: "#1f8fff", c2: "#0b1d4f" },
   { id: "pump", name: "Pump", provider: "RD Originals", cat: "originals", rtp: 98, edge: 2, playable: true, tag: "new", c1: "#3fdc4a", c2: "#0b3d1a" },
   { id: "lake", name: "Cross the Lake", provider: "RD Originals", cat: "originals", rtp: 98, edge: 2, playable: true, tag: "new", c1: "#1fb6ff", c2: "#0a3a5c" },
-  { id: "gatto", name: "Don Gatto", provider: "RD Originals", cat: "slots", rtp: 96.5, edge: 3.5, slot: true, src: "games/don-gatto/index.html?v=1", tag: "new", c1: "#7a1f3d", c2: "#1a0a14" },
+  { id: "gatto", name: "Don Gatto", provider: "RD Originals", cat: "slots", rtp: 96.5, edge: 3.5, slot: true, src: "games/don-gatto/index.html?v=2", tag: "new", c1: "#7a1f3d", c2: "#1a0a14" },
   { id: "gates-olympus", pp: "vs20olympx", name: "Gates of Olympus 1000", provider: "Pragmatic Play", cat: "slots", rtp: 96.5, tag: "hot", c1: "#a16207", c2: "#3f2a04" },
   { id: "sweet-bonanza", pp: "vs20fruitswx", name: "Sweet Bonanza 1000", provider: "Pragmatic Play", cat: "slots", rtp: 96.53, c1: "#db2777", c2: "#500724" },
   { id: "sugar-rush", pp: "vs20sugarrushx", name: "Sugar Rush 1000", provider: "Pragmatic Play", cat: "slots", rtp: 96.53, c1: "#e11d48", c2: "#4c0519" },

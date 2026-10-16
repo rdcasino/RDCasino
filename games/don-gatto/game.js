@@ -235,8 +235,8 @@ function pay(s, n) { return PAYT[CODES.indexOf(s)][Math.min(n, 15) - 5] / 100; }
 function cellOf(code) { if (code >= 100) return { s: "en", v: code - 100 }; if (code === 10) return { s: "ri" }; if (code === 11) return { s: "va" }; return { s: CODES[code] }; }
 /* ================= LAYOUT ================= */
 var LAY = {
-  L: { W: 1280, H: 720, logo: [44, 10, 336, 158], char: [2, 150, 410, 446], hud: [420, 6, 628, 42], grid: [420, 52, 100], win: [420, 588, 628, 52], buy: [1072, 64, 176, 96], spin: [1160, 322], auto: [1160, 196], turbo: [1160, 448], bet: [1072, 520, 176, 74], bar: [0, 662, 1280, 58], win0: [36, 36, 380, 520] },
-  P: { W: 720, H: 1280, logo: [372, 96, 328, 154], char: [-6, 18, 384, 418], hud: [28, 424, 664, 40], grid: [28, 470, 106], win: [28, 1034, 664, 52], buy: [28, 1100, 180, 96], spin: [360, 1148], auto: [262, 1148], turbo: [458, 1148], bet: [520, 1112, 172, 74], bar: [0, 1222, 720, 58], win0: [24, 24, 344, 392] }
+  L: { W: 1280, H: 720, logo: [44, 10, 336, 158], char: [2, 150, 410, 446], hud: [420, 6, 628, 42], grid: [420, 52, 100], win: [420, 588, 628, 52], buy: [1076, 56, 176, 92], spin: [1164, 340], auto: [1164, 214], turbo: [1164, 466], bet: [1076, 522, 176, 74], bar: [0, 662, 1280, 58], win0: [36, 36, 380, 520] },
+  P: { W: 720, H: 1280, logo: [372, 96, 328, 154], char: [-6, 18, 384, 418], hud: [28, 424, 664, 40], grid: [28, 470, 106], win: [28, 1034, 664, 52], buy: [28, 1100, 180, 96], spin: [364, 1148], auto: [253, 1148], turbo: [475, 1148], bet: [520, 1112, 172, 74], bar: [0, 1222, 720, 58], win0: [24, 24, 344, 392] }
 };
 var P0 = JSON.parse(JSON.stringify(LAY.P));
 function setPortraitH(H) {
@@ -266,7 +266,7 @@ function layout(force) {
       $("cells").style.backgroundSize = cs + "px " + cs + "px";
       $("glows").style.width = cs * 6 + "px"; $("glows").style.height = cs * 5 + "px";
       $("glows").innerHTML = [0, 1, 2, 3, 4, 5].map(function (c) { return '<div class="glow" style="left:' + c * cs + "px;width:" + cs + 'px"></div>'; }).join("");
-      document.querySelectorAll(".tag").forEach(function (t) { t.style.fontSize = (cs * .19) + "px"; });
+      document.querySelectorAll(".tag").forEach(function (t) { t.style.fontSize = (cs * .23) + "px"; });
       drawBG(); FX.size(L.W, L.H); renderGrid();
     }
   }
@@ -364,9 +364,9 @@ function tone(f, d, type, vol, slide, delay) {
 }
 function semis(base, arr, gap, type, vol, d) { arr.forEach(function (n, i) { tone(base * Math.pow(2, n / 12), d || .25, type || "triangle", vol || .08, null, i * (gap || .07)); }); }
 var SND = {
-  spin: function () { tone(240, .14, "triangle", .07, 480); },
+  spin: function () { tone(150, .16, "sine", .05, 110); },
   land: function () { tone(120, .1, "sine", .16, 62); },
-  pop: function (i) { tone(520 + i * 70, .14, "square", .04, 980 + i * 70); },
+  pop: function () {},
   win: function (i) { semis(523 * Math.pow(2, (i || 0) * 2 / 12), [0, 4, 7], .06); },
   vault: function () { tone(200, .3, "sawtooth", .05, 100); tone(988, .28, "triangle", .07, null, .03); },
   antic: function () { tone(280, 1.0, "sawtooth", .035, 840); },
@@ -411,7 +411,7 @@ window.addEventListener("message", function (e) {
 function mkSym(cell, c, r) {
   var e = document.createElement("div"); e.className = "sym s-" + cell.s;
   e.style.left = c * cs + "px"; e.style.top = r * cs + "px"; e.style.width = cs + "px"; e.style.height = cs + "px";
-  e.innerHTML = '<div class="art">' + SYM[cell.s] + "</div>" + (cell.s === "en" ? '<b class="tag" style="font-size:' + (cs * .19) + 'px">' + money(cell.v * (busy ? roundBet : bet())) + "</b>" : "");
+  e.innerHTML = '<div class="art">' + SYM[cell.s] + "</div>" + (cell.s === "en" ? '<b class="tag" style="font-size:' + (cs * .23) + 'px">' + money(cell.v * (busy ? roundBet : bet())) + "</b>" : "");
   $("cells").appendChild(e); cell.el = e; return e;
 }
 function renderGrid() { $("cells").innerHTML = ""; for (var c = 0; c < grid.length; c++) for (var r = 0; r < 5; r++) mkSym(grid[c][r], c, r); }
