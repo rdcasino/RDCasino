@@ -63,7 +63,9 @@
      Cada desconto tem prazo (nada fica preso se uma resposta se perder) e o saldo mostrado nunca fica negativo. */
   var pend = {}, pendSeq = 0, HOLD_MS = 12000, PEND_MS = 20000;
   function sumLive(map, ttl) { var now = Date.now(), t = 0; for (var k in map) { if (now - map[k].t > ttl) delete map[k]; else t += map[k].v; } return t; }
-  function shownBal(u) { var v = u.balance - sumLive(pend, PEND_MS) - sumLive(inFlight, HOLD_MS); return Math.max(0, Math.round(v * 100) / 100); }
+  /* slots próprios: o prêmio só aparece no topo quando a animação do giro termina (até 3 min) */
+  var slotHold = {}, SLOT_MS = 180000;
+  function shownBal(u) { var v = u.balance - sumLive(pend, PEND_MS) - sumLive(inFlight, HOLD_MS) - sumLive(slotHold, SLOT_MS); return Math.max(0, Math.round(v * 100) / 100); }
   function stakeOut(a) { var k = ++pendSeq; pend[k] = { v: a, t: Date.now() }; var u = me(); if (u) paintBal(u); return k; }
   function stakeBack(k) { delete pend[k]; var u = me(); if (u) paintBal(u); }
   function pendTotal() { return sumLive(pend, PEND_MS); }
@@ -398,6 +400,7 @@
   pages.game = function (id) {
     var g = gameOf(id);
     if (!g || !g.enabled) return pages.notfound();
+    if (g.slot) return slotPage(g);
     if (g.playable) return originalPage(g);
     if (g.demo) return '<div class="container">' +
       '<div class="game-frame pp-frame" id="pp-frame"><iframe src="' + esc(RD.ppDemo(g.pp)) + '" title="' + esc(g.name) + '" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="origin"></iframe></div>' +
@@ -409,6 +412,50 @@
       '<div class="section">' + sectionHead("More like this", "", "#/casino/" + g.cat) + '<div class="game-row">' + gamesOf(g.cat).filter(function (x) { return x.id !== g.id; }).map(gameCard).join("") + "</div></div></div>";
   };
   pages.game.after = function (id) { var g = gameOf(id); if (g && g.playable) bindOriginal(g); };
+
+  /* ---------- Slots próprios (Don Gatto): o jogo roda num iframe da mesma origem, isolado do site.
+     Cada giro vem para cá: no modo real vai ao servidor (slot_spin), na demonstração roda o mesmo motor aqui. ---------- */
+  function slotPage(g) {
+    return '<div class="container">' +
+      '<div class="game-frame pp-frame own-slot" id="pp-frame"><iframe id="own-slot" src="' + esc(g.src) + '" title="' + esc(g.name) + '" allow="autoplay; fullscreen" allowfullscreen></iframe></div>' +
+      '<div class="pp-bar"><div><b>' + esc(g.name) + '</b><small>' + esc(g.provider) + '</small></div><span class="faint pp-note">RTP ' + g.rtp.toFixed(2) + "% · Max win 5,000x · Max bet " + fmt.usd(RD.config.gattoMaxBet) + '</span><button class="icon-btn" data-action="pp-full" title="Fullscreen">' + ic("maximize", 18) + "</button></div>" +
+      '<div class="section">' + sectionHead("More like this", "", "#/casino/" + g.cat) + '<div class="game-row">' + gamesOf(g.cat).filter(function (x) { return x.id !== g.id; }).map(gameCard).join("") + "</div></div></div>";
+  }
+  function slotFrame() { var f = document.getElementById("own-slot"); return f && f.contentWindow ? f : null; }
+  function slotState() {
+    var f = slotFrame(); if (!f) return; var u = me();
+    f.contentWindow.postMessage({ t: "state", signed: !!u, live: !!RD.live, balance: u ? u.balance : 0, maxBet: RD.config.gattoMaxBet }, location.origin);
+  }
+  function slotPaint() { var u = me(); if (u) paintBal(u); }
+  function slotSpin(d) {
+    var u = me(); if (!u) { openAuth("register"); return Promise.resolve({ error: "Sign in to play." }); }
+    return slotRun(d).then(function (r) {
+      if (r.error) delete slotHold[d.id]; else slotHold[d.id] = { v: r.payout, t: Date.now() };
+      slotPaint(); return r;
+    });
+  }
+  function slotRun(d) {
+    var u = me();
+    var mode = d.mode, bet = Math.round(+d.bet * 100) / 100, cost = Math.round(bet * ((window.GattoEngine && GattoEngine.COST[mode]) || 0) * 100) / 100;
+    if (!(cost > 0)) return Promise.resolve({ error: "Invalid bet." });
+    if (bet > RD.config.gattoMaxBet) return Promise.resolve({ error: "Maximum bet is " + fmt.usd(RD.config.gattoMaxBet) + "." });
+    slotHold[d.id] = { v: cost, t: Date.now() }; slotPaint();
+    if (RD.live && db.slotSpin) return db.slotSpin("gatto", bet, mode).then(function (r) { return r.error ? r : { result: r.result, payout: r.payout, balance: me().balance }; }, function (e) { return { error: (e && e.message) || "Something went wrong." }; });
+    if (u.balance < cost) return Promise.resolve({ error: "Insufficient balance." });
+    var res = GattoEngine.round(Math.random, mode), payout = Math.round(bet * res.tot) / 100;
+    var b = db.placeBet(u.id, "gatto", cost, payout / cost, payout > 0, { mode: mode, bet: bet });
+    if (b && b.error) return Promise.resolve({ error: b.error });
+    return Promise.resolve({ result: res, payout: payout, balance: me().balance });
+  }
+  window.addEventListener("message", function (e) {
+    var f = slotFrame(); if (!f || e.source !== f.contentWindow || e.origin !== location.origin) return;
+    var d = e.data || {};
+    if (d.t === "hello") slotState();
+    else if (d.t === "login") openAuth("register");
+    else if (d.t === "done") { delete slotHold[d.id]; slotPaint(); }
+    else if (d.t === "spin") slotSpin(d).then(function (r) { r.t = "result"; r.id = d.id; var f2 = slotFrame(); if (f2) f2.contentWindow.postMessage(r, location.origin); });
+  });
+  db.onChange(function () { slotState(); });
 
   /* ==========================================================================
      RD Originals — moldura compartilhada (padrão Shuffle/Rainbet) + 6 jogos.

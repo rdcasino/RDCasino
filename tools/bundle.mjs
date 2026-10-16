@@ -4,7 +4,7 @@ import { transform } from "esbuild";
 import { readFileSync, writeFileSync, readdirSync, unlinkSync, mkdirSync } from "fs";
 import { createHash } from "crypto";
 const root = new URL("../", import.meta.url).pathname, rd = (f) => readFileSync(root + f, "utf8");
-const JS = ["assets/js/icons.js", "assets/js/data.js", "assets/js/art.js", "assets/js/store.js", "assets/js/remote.js", "assets/js/app.js"];
+const JS = ["assets/js/icons.js", "assets/js/data.js", "assets/js/art.js", "assets/js/store.js", "assets/js/remote.js", "assets/js/gatto-engine.js", "assets/js/app.js"];
 const CSS = ["assets/fonts/fonts.css", "assets/css/base.css", "assets/css/app.css"];
 const hash = (s) => createHash("sha256").update(s).digest("hex").slice(0, 10);
 

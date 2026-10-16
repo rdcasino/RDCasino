@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Don Gatto</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+/* Layout: palco 16:9 (ou 9:16 no celular) escalado para caber; gato + logo à esquerda, grade 6x5 no centro, comandos à direita. */
+:root {
+  --bg: #12070d; --ink: #1a1026; --gold: #ffd34d; --gold2: #e48c12; --cream: #f6efe2; --red: #d6283f; --muted: #b9a7b4;
+  --disp: "Luckiest Guy", "Arial Black", Impact, sans-serif;
+  --ui: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  color-scheme: dark;
+}
+html, body { height: 100%; margin: 0; }
+body { background: radial-gradient(120% 90% at 30% 20%, #2a0f1e 0%, #12070d 60%, #08040a 100%); background-color: var(--bg); color: var(--cream); overflow: hidden; font-family: var(--ui); -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
+#wrap { position: relative; height: 100%; box-sizing: border-box; padding: 0; }
+[hidden] { display: none !important; }
+#stage { position: absolute; left: 50%; top: 50%; transform-origin: 50% 50%; overflow: hidden; }
+#stage > * { position: absolute; }
+canvas#bg, canvas#fx { left: 0; top: 0; pointer-events: none; }
+canvas#fx { z-index: 30; }
+button { font-family: var(--ui); color: inherit; border: 0; background: none; cursor: pointer; padding: 0; }
+button:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+button:disabled { cursor: default; }
+
+/* personagem e logo */
+#char { z-index: 5; }
+#char svg { width: 100%; height: 100%; overflow: visible; display: block; }
+#logo { z-index: 6; pointer-events: none; }
+#logo svg { width: 100%; height: 100%; overflow: visible; display: block; }
+.lg-t { font-family: var(--disp); font-size: 92px; }
+.lg-d { font-family: "Yellowtail", cursive; font-size: 66px; }
+.shine { animation: shine 5.5s ease-in-out infinite; }
+@keyframes shine { 0%, 62% { transform: translateX(-60px) skewX(-20deg); } 80%, 100% { transform: translateX(460px) skewX(-20deg); } }
+
+/* grade */
+#grid { z-index: 10; border-radius: 22px; background: linear-gradient(180deg, rgba(20,8,18,.80), rgba(12,5,12,.86)); box-shadow: inset 0 0 0 2px rgba(255,211,77,.28), 0 0 0 5px var(--ink), 0 22px 50px rgba(0,0,0,.55); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); transition: box-shadow .5s; }
+#grid.fs { box-shadow: inset 0 0 0 2px rgba(255,211,77,.7), 0 0 0 5px var(--ink), 0 0 0 9px #b3122b, 0 0 60px rgba(214,40,63,.45), 0 22px 50px rgba(0,0,0,.55); }
+#cells { position: absolute; left: 14px; top: 14px; overflow: hidden; border-radius: 12px; }
+#glows { position: absolute; left: 14px; top: 14px; pointer-events: none; }
+.glow { position: absolute; top: 0; bottom: 0; border-radius: 12px; opacity: 0; background: linear-gradient(180deg, rgba(255,211,77,0), rgba(255,211,77,.28) 50%, rgba(255,211,77,0)); box-shadow: inset 0 0 0 3px rgba(255,211,77,.9), 0 0 30px rgba(255,180,40,.6); transition: opacity .25s; }
+.glow.on { opacity: 1; animation: glowp .5s ease-in-out infinite alternate; }
+@keyframes glowp { to { box-shadow: inset 0 0 0 3px #fff3b0, 0 0 46px rgba(255,180,40,.9); } }
+.sym { position: absolute; will-change: transform; }
+.sym .art { position: absolute; inset: 7%; filter: drop-shadow(0 4px 0 rgba(10,4,12,.45)); }
+.sym .art svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.sym.hit::before { content: ""; position: absolute; inset: 4%; border-radius: 16px; background: radial-gradient(circle, rgba(255,226,120,.55), rgba(255,180,40,0) 70%); box-shadow: inset 0 0 0 3px rgba(255,211,77,.95); animation: hitp .45s ease-in-out infinite alternate; }
+.sym.hit .art { animation: hitb .45s ease-in-out infinite alternate; }
+@keyframes hitp { to { box-shadow: inset 0 0 0 3px #fff7d1; } }
+@keyframes hitb { from { transform: scale(1); } to { transform: scale(1.1); } }
+.sym.pulse .art { animation: pul .38s ease-in-out infinite alternate; }
+@keyframes pul { from { transform: scale(1) rotate(0); } to { transform: scale(1.16) rotate(-4deg); } }
+.sym.done { opacity: .35; transition: opacity .3s; }
+.tag { position: absolute; left: 50%; bottom: 6%; transform: translateX(-50%); background: var(--cream); color: var(--ink); font: 800 19px/1.15 var(--ui); padding: 0 8px; border-radius: 999px; box-shadow: 0 0 0 3px var(--ink); white-space: nowrap; letter-spacing: .01em; }
+.wl { position: absolute; transform: translate(-50%, -50%); font: 400 34px/1 var(--disp); color: #fff; -webkit-text-stroke: 7px var(--ink); paint-order: stroke fill; text-shadow: 0 4px 0 var(--ink); pointer-events: none; z-index: 5; white-space: nowrap; }
+
+/* faixa de prêmio e HUD */
+#winline { z-index: 11; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+#winline span { font: 400 30px/1 var(--disp); color: var(--gold); -webkit-text-stroke: 6px var(--ink); paint-order: stroke fill; text-shadow: 0 4px 0 var(--ink); letter-spacing: .02em; }
+#winline small { font: 800 15px/1 var(--ui); letter-spacing: .18em; color: var(--muted); margin-right: 12px; }
+#hud { z-index: 11; display: flex; align-items: center; justify-content: center; gap: 12px; pointer-events: none; opacity: 0; transition: opacity .3s; }
+#hud.on { opacity: 1; }
+.pill { display: inline-flex; align-items: baseline; gap: 8px; padding: 5px 16px 4px; border-radius: 999px; background: rgba(12,5,12,.85); box-shadow: 0 0 0 3px var(--ink), inset 0 0 0 2px rgba(255,211,77,.45); font: 800 15px/1 var(--ui); letter-spacing: .16em; color: var(--muted); white-space: nowrap; }
+.pill b { font: 400 22px/1 var(--disp); color: var(--gold); letter-spacing: .02em; }
+.ladder { display: inline-flex; gap: 4px; }
+.ladder i { font: 400 16px/1 var(--disp); font-style: normal; color: #6f5a6b; padding: 2px 6px; border-radius: 6px; }
+.ladder i.on { color: var(--ink); background: var(--gold); }
+
+/* comandos */
+#buy { z-index: 12; border-radius: 20px; background: linear-gradient(180deg, #ffe38a, #ffc72e 55%, #e8920f); box-shadow: inset 0 0 0 4px var(--ink), inset 0 -8px 0 rgba(160,70,0,.35), 0 6px 0 var(--ink); display: grid; place-items: center; transition: transform .12s, filter .2s; }
+#buy:hover { transform: translateY(-2px); }
+#buy:active { transform: translateY(3px); box-shadow: inset 0 0 0 4px var(--ink), inset 0 -4px 0 rgba(160,70,0,.35), 0 2px 0 var(--ink); }
+#buy:disabled { filter: grayscale(.8) brightness(.6); transform: none; }
+#buy .bb { display: flex; align-items: center; gap: 10px; }
+#buy svg { width: 40px; height: 40px; }
+#buy .bt { font: 400 27px/0.95 var(--disp); color: var(--ink); text-align: left; letter-spacing: .01em; }
+#buy .bt small { display: block; font: 400 17px/1 var(--disp); color: #8a3f00; letter-spacing: .04em; }
+#spin { z-index: 12; width: 132px; height: 132px; border-radius: 50%; background: radial-gradient(circle at 50% 35%, #fffaf0, #efe2c9 70%, #d8c5a4); box-shadow: inset 0 0 0 5px var(--ink), inset 0 -9px 0 rgba(90,60,30,.25), 0 7px 0 var(--ink), 0 0 0 9px rgba(255,211,77,.18); display: grid; place-items: center; transform: translate(-50%, -50%); transition: filter .2s; }
+#spin:hover { filter: brightness(1.05); }
+#spin:active { transform: translate(-50%, -48%); }
+#spin svg { width: 58px; height: 58px; transition: transform .5s cubic-bezier(.3,1.4,.5,1); }
+#spin.busy svg { animation: spinr .7s linear infinite; }
+#spin.busy { filter: brightness(.82); }
+@keyframes spinr { to { transform: rotate(360deg); } }
+#spin .cnt { position: absolute; font: 400 34px/1 var(--disp); color: var(--ink); }
+.mini { z-index: 12; width: 58px; height: 58px; border-radius: 50%; background: rgba(14,6,14,.82); box-shadow: inset 0 0 0 3px var(--ink), 0 0 0 2px rgba(255,255,255,.12), 0 4px 0 var(--ink); display: grid; place-items: center; transform: translate(-50%, -50%); color: var(--cream); transition: background .2s, color .2s; }
+.mini svg { width: 28px; height: 28px; }
+.mini.on { background: var(--gold); color: var(--ink); }
+.mini:disabled { opacity: .45; }
+#betbox { z-index: 12; display: grid; justify-items: center; gap: 6px; }
+#betbox .lbl { font: 800 13px/1 var(--ui); letter-spacing: .24em; color: var(--muted); }
+#betbox .row { display: flex; align-items: center; gap: 10px; }
+#betbox b { font: 400 26px/1 var(--disp); min-width: 84px; text-align: center; color: var(--cream); letter-spacing: .02em; -webkit-text-stroke: 5px var(--ink); paint-order: stroke fill; }
+.pm { width: 38px; height: 38px; border-radius: 50%; background: rgba(14,6,14,.82); box-shadow: inset 0 0 0 3px var(--ink), 0 0 0 2px rgba(255,255,255,.12); font: 800 26px/1 var(--ui); display: grid; place-items: center; }
+.pm:disabled { opacity: .35; }
+
+/* barra inferior */
+#bar { z-index: 12; display: flex; align-items: center; justify-content: space-between; padding: 0 22px; box-sizing: border-box; background: linear-gradient(180deg, rgba(8,3,8,0), rgba(8,3,8,.92) 40%); }
+#bar .ic { display: flex; gap: 6px; }
+#bar .ic button { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; color: var(--muted); }
+#bar .ic button:hover { color: var(--cream); background: rgba(255,255,255,.06); }
+#bar .ic svg { width: 22px; height: 22px; }
+#bar .vals { display: flex; gap: 34px; }
+.kv { display: flex; align-items: baseline; gap: 9px; white-space: nowrap; }
+.kv span { font: 800 13px/1 var(--ui); letter-spacing: .22em; color: var(--muted); }
+.kv b { font: 700 22px/1 var(--ui); letter-spacing: .02em; color: var(--cream); font-variant-numeric: tabular-nums; }
+.kv b.g { color: var(--gold); }
+#bar .demo { font: 800 12px/1 var(--ui); letter-spacing: .22em; color: #7c6577; }
+
+/* sobreposições */
+.ov { z-index: 40; left: 0; top: 0; right: 0; bottom: 0; display: grid; place-items: center; background: rgba(8,3,8,.72); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+#big { background: radial-gradient(circle at 50% 45%, rgba(60,20,10,.55), rgba(8,3,8,.82)); cursor: pointer; }
+#big .t { font: 400 96px/1 var(--disp); color: var(--gold); -webkit-text-stroke: 14px var(--ink); paint-order: stroke fill; text-shadow: 0 10px 0 var(--ink); text-align: center; animation: bigt .9s cubic-bezier(.3,1.6,.5,1) both; letter-spacing: .02em; }
+#big .t.mega { color: #ff8a3d; } #big .t.epic { color: #ff4d6d; }
+#big .a { font: 400 70px/1 var(--disp); color: #fff; -webkit-text-stroke: 12px var(--ink); paint-order: stroke fill; text-shadow: 0 8px 0 var(--ink); text-align: center; margin-top: 18px; font-variant-numeric: tabular-nums; }
+#big .s { font: 800 14px/1 var(--ui); letter-spacing: .28em; color: var(--muted); text-align: center; margin-top: 26px; }
+@keyframes bigt { from { transform: scale(.2) rotate(-8deg); opacity: 0; } to { transform: scale(1) rotate(-3deg); opacity: 1; } }
+.card-ov { width: min(900px, 92%); }
+.mh { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.mh h2 { margin: 0; font: 400 40px/1 var(--disp); color: var(--gold); -webkit-text-stroke: 8px var(--ink); paint-order: stroke fill; text-shadow: 0 5px 0 var(--ink); letter-spacing: .02em; }
+.x { width: 46px; height: 46px; border-radius: 50%; background: rgba(255,255,255,.08); box-shadow: inset 0 0 0 3px var(--ink); font: 800 26px/1 var(--ui); }
+.buys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.bcard { border-radius: 22px; padding: 18px 16px 16px; background: linear-gradient(180deg, #2b1424, #1a0b16); box-shadow: inset 0 0 0 3px var(--ink), inset 0 0 0 5px rgba(255,211,77,.22), 0 8px 0 var(--ink); display: grid; justify-items: center; gap: 8px; text-align: center; min-width: 0; }
+.bcard.hot { box-shadow: inset 0 0 0 3px var(--ink), inset 0 0 0 5px rgba(255,211,77,.7), 0 8px 0 var(--ink), 0 0 40px rgba(255,180,40,.25); }
+.bcard .ico { width: 110px; height: 96px; }
+.bcard .ico svg { width: 100%; height: 100%; overflow: visible; }
+.bcard h3 { margin: 0; font: 400 26px/1 var(--disp); color: var(--cream); letter-spacing: .02em; }
+.bcard p { margin: 0; font: 600 16px/1.25 var(--ui); color: var(--muted); min-height: 40px; }
+.bcard .price { font: 400 32px/1 var(--disp); color: var(--gold); -webkit-text-stroke: 6px var(--ink); paint-order: stroke fill; }
+.bcard .price small { display: block; font: 800 13px/1 var(--ui); letter-spacing: .2em; color: var(--muted); -webkit-text-stroke: 0; margin-top: 4px; }
+.btn { border-radius: 14px; padding: 11px 26px 9px; font: 400 22px/1 var(--disp); letter-spacing: .03em; color: var(--ink); background: linear-gradient(180deg, #ffe38a, #ffc72e 55%, #e8920f); box-shadow: inset 0 0 0 3px var(--ink), 0 5px 0 var(--ink); }
+.btn:active { transform: translateY(3px); box-shadow: inset 0 0 0 3px var(--ink), 0 2px 0 var(--ink); }
+.btn.ghost { background: rgba(255,255,255,.1); color: var(--cream); }
+.btn.on { background: linear-gradient(180deg, #8dffb9, #2fd47a); }
+.btn:disabled { filter: grayscale(1) brightness(.6); }
+.confirm { display: flex; gap: 10px; }
+.info { max-height: 82%; overflow: auto; display: grid; gap: 14px; font: 600 18px/1.35 var(--ui); color: var(--cream); }
+.info h4 { margin: 6px 0 0; font: 400 22px/1 var(--disp); color: var(--gold); letter-spacing: .03em; }
+.info p { margin: 0; color: #d9cbd5; max-width: 70ch; }
+.ptab { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.pt { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 14px; background: rgba(255,255,255,.04); box-shadow: inset 0 0 0 2px rgba(255,255,255,.06); min-width: 0; }
+.pt .ico { width: 54px; height: 54px; flex: none; }
+.pt .ico svg { width: 100%; height: 100%; overflow: visible; }
+.pt div { font: 700 15px/1.3 var(--ui); color: #d9cbd5; font-variant-numeric: tabular-nums; }
+.pt div b { color: var(--gold); font-weight: 800; }
+#fsov .box { display: grid; justify-items: center; gap: 10px; text-align: center; }
+#fsov .vd { width: 230px; height: 230px; perspective: 700px; }
+#fsov .vd svg { width: 100%; height: 100%; overflow: visible; }
+#fsov .door { transform-origin: 18px 115px; transform-box: view-box; transition: transform 1s cubic-bezier(.5,0,.3,1) .7s; }
+#fsov.open .door { transform: scaleX(.12) skewY(10deg); }
+#fsov .dial { transform-origin: 115px 115px; transform-box: view-box; transition: transform .9s ease-in-out; }
+#fsov.open .dial { transform: rotate(300deg); }
+#fsov h2 { margin: 0; font: 400 74px/1 var(--disp); color: var(--gold); -webkit-text-stroke: 12px var(--ink); paint-order: stroke fill; text-shadow: 0 8px 0 var(--ink); letter-spacing: .02em; }
+#fsov h3 { margin: 0; font: 400 40px/1 var(--disp); color: #fff; -webkit-text-stroke: 8px var(--ink); paint-order: stroke fill; letter-spacing: .02em; }
+#fsov p { margin: 0 0 8px; font: 700 19px/1.3 var(--ui); color: #d9cbd5; max-width: 46ch; text-wrap: balance; }
+#toast { z-index: 50; left: 50%; top: 18px; transform: translateX(-50%); padding: 10px 18px; border-radius: 12px; background: var(--ink); color: var(--cream); font: 700 18px/1 var(--ui); letter-spacing: .04em; opacity: 0; transition: opacity .25s; pointer-events: none; box-shadow: 0 0 0 2px rgba(255,211,77,.4); }
+#toast.on { opacity: 1; }
+.P .buys { grid-template-columns: 1fr; }
+.P .bcard { grid-template-columns: 90px 1fr auto; justify-items: start; text-align: left; align-items: center; padding: 12px 14px; }
+.P .bcard .ico { width: 84px; height: 72px; grid-row: span 3; }
+.P .bcard .price, .P .bcard .btn, .P .bcard .confirm { grid-column: 3; grid-row: 1 / span 3; align-self: center; }
+.P .bcard .price { grid-row: 1; } .P .bcard .btn, .P .bcard .confirm { grid-row: 2 / span 2; }
+.P .bcard p { min-height: 0; }
+@media (prefers-reduced-motion: reduce) { .shine { animation: none; } .glow.on { animation: none; } }
+</style>
+</head>
+<body>
+
+<div id="wrap">
+<div id="stage" class="L">
+  <canvas id="bg"></canvas>
+  <div id="char"></div>
+  <div id="logo">
+    <svg viewBox="0 0 340 160" aria-label="Don Gatto">
+      <defs>
+        <linearGradient id="lgG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6c4"/><stop offset=".48" stop-color="#ffd34d"/><stop offset="1" stop-color="#e48c12"/></linearGradient>
+        <radialGradient id="lgS"><stop offset="0" stop-color="#05020a" stop-opacity=".7"/><stop offset="1" stop-color="#05020a" stop-opacity="0"/></radialGradient>
+        <clipPath id="lgC"><text x="170" y="140" text-anchor="middle" class="lg-t">GATTO</text></clipPath>
+      </defs>
+      <ellipse cx="170" cy="100" rx="200" ry="86" fill="url(#lgS)"/>
+      <g id="lgEars"></g>
+      <text x="170" y="148" text-anchor="middle" class="lg-t" fill="#1a1026" stroke="#1a1026" stroke-width="22" stroke-linejoin="round">GATTO</text>
+      <text x="170" y="140" text-anchor="middle" class="lg-t" fill="#1a1026" stroke="#1a1026" stroke-width="22" stroke-linejoin="round">GATTO</text>
+      <text x="170" y="140" text-anchor="middle" class="lg-t" fill="url(#lgG)" stroke="#b3122b" stroke-width="9" stroke-linejoin="round" paint-order="stroke">GATTO</text>
+      <g clip-path="url(#lgC)"><rect class="shine" x="0" y="30" width="46" height="140" fill="#fff" opacity=".5"/></g>
+      <g transform="rotate(-7 176 52)">
+        <text x="176" y="62" text-anchor="middle" class="lg-d" fill="#1a1026" stroke="#1a1026" stroke-width="16" stroke-linejoin="round">Don</text>
+        <text x="176" y="58" text-anchor="middle" class="lg-d" fill="#fff4dc" stroke="#1a1026" stroke-width="10" stroke-linejoin="round" paint-order="stroke">Don</text>
+      </g>
+    </svg>
+  </div>
+  <div id="hud"><span class="pill">FREE SPINS <b id="fsLeft">10</b></span><span class="pill">COLLECT <span class="ladder" id="ladder"></span></span></div>
+  <div id="grid"><div id="cells"></div><div id="glows"></div></div>
+  <div id="winline"></div>
+  <button id="buy" aria-label="Bonus buy"><span class="bb"><svg viewBox="0 0 100 100" id="buyIco"></svg><span class="bt"><small>BONUS</small>BUY</span></span></button>
+  <button id="auto" class="mini" aria-label="Autoplay"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 9"/><path d="M20 4v5h-5"/><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15"/><path d="M4 20v-5h5"/><path d="M10.5 9.5v5l4-2.5z" fill="currentColor"/></svg></button>
+  <button id="spin" aria-label="Spin"><svg viewBox="0 0 24 24" fill="none" stroke="#1a1026" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v5h-5"/></svg><span class="cnt" hidden></span></button>
+  <button id="turbo" class="mini" aria-label="Turbo"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 2 5 13.5h6L9.8 22 19 9.8h-6.2z"/></svg></button>
+  <div id="betbox"><span class="lbl">BET</span><div class="row"><button class="pm" id="minus" aria-label="Lower bet">−</button><b id="betv">$1.00</b><button class="pm" id="plus" aria-label="Raise bet">+</button></div></div>
+  <div id="bar">
+    <div class="ic">
+      <button id="infoBtn" aria-label="Game rules"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <button id="sndBtn" aria-label="Sound"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path id="sndW" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg></button>
+    </div>
+    <div class="vals"><div class="kv"><span>BALANCE</span><b id="balv">$1,000.00</b></div><div class="kv"><span>WIN</span><b class="g" id="winv">$0.00</b></div></div>
+    <div class="demo">DEMO · NO REAL MONEY</div>
+  </div>
+  <canvas id="fx"></canvas>
+  <div id="big" class="ov" hidden><div><div class="t" id="bigT">BIG WIN</div><div class="a" id="bigA">$0.00</div><div class="s">TAP TO CONTINUE</div></div></div>
+  <div id="modal" class="ov" hidden><div class="card-ov" id="modalBody"></div></div>
+  <div id="fsov" class="ov" hidden><div class="box" id="fsBox"></div></div>
+  <div id="toast"></div>
+</div>
+</div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="gSteel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e3e8f2"/><stop offset=".5" stop-color="#9aa5bd"/><stop offset="1" stop-color="#5d6782"/></linearGradient>
+    <linearGradient id="gGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff2a8"/><stop offset=".5" stop-color="#ffcf3f"/><stop offset="1" stop-color="#d98a0b"/></linearGradient>
+    <radialGradient id="gWater" cx=".4" cy=".35" r=".75"><stop offset="0" stop-color="#d8f6ff"/><stop offset=".6" stop-color="#7fd3f2"/><stop offset="1" stop-color="#3e8fc7"/></radialGradient>
+    <linearGradient id="gAmber" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc35c"/><stop offset="1" stop-color="#c8641a"/></linearGradient>
+    <radialGradient id="gRuby" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ffb3c0"/><stop offset=".45" stop-color="#ff2d55"/><stop offset="1" stop-color="#8f0c2b"/></radialGradient>
+    <linearGradient id="gWood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a3a26"/><stop offset="1" stop-color="#3d1c14"/></linearGradient>
+    <radialGradient id="gLamp" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffc06a" stop-opacity=".5"/><stop offset="1" stop-color="#ffc06a" stop-opacity="0"/></radialGradient>
+  </defs>
+</svg>
+
+<script src="game.js"></script>
+</body>
+</html>

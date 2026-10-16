@@ -37,6 +37,7 @@ RD.config = {
   minAge: 18,
   leaderboardPrize: 50000,
   minDeposit: 10, // depósito mínimo em USD (vale para todas as moedas; se a Kraken exigir mais numa moeda, vale o maior)
+  gattoMaxBet: 10, // aposta máxima no Don Gatto (igual a settings.gatto_max_bet no servidor; com ganho máximo de 5.000x = até $50.000 por rodada)
   maxProfit: 0, // lucro máximo por aposta nos originais (0 = sem limite; muda no admin)
   leaderboardPrizes: [15000, 9000, 6000, 4000, 3000, 2500, 2000, 1500, 1200, 1000],
   kycWithdrawLimit: 2000,
@@ -99,6 +100,7 @@ RD.games = [
   { id: "spill", name: "Spill", provider: "RD Originals", cat: "originals", rtp: 98, edge: 2, playable: true, tag: "new", c1: "#1f8fff", c2: "#0b1d4f" },
   { id: "pump", name: "Pump", provider: "RD Originals", cat: "originals", rtp: 98, edge: 2, playable: true, tag: "new", c1: "#3fdc4a", c2: "#0b3d1a" },
   { id: "lake", name: "Cross the Lake", provider: "RD Originals", cat: "originals", rtp: 98, edge: 2, playable: true, tag: "new", c1: "#1fb6ff", c2: "#0a3a5c" },
+  { id: "gatto", name: "Don Gatto", provider: "RD Originals", cat: "slots", rtp: 96.5, edge: 3.5, slot: true, src: "games/don-gatto/index.html?v=1", tag: "new", c1: "#7a1f3d", c2: "#1a0a14" },
   { id: "gates-olympus", pp: "vs20olympx", name: "Gates of Olympus 1000", provider: "Pragmatic Play", cat: "slots", rtp: 96.5, tag: "hot", c1: "#a16207", c2: "#3f2a04" },
   { id: "sweet-bonanza", pp: "vs20fruitswx", name: "Sweet Bonanza 1000", provider: "Pragmatic Play", cat: "slots", rtp: 96.53, c1: "#db2777", c2: "#500724" },
   { id: "sugar-rush", pp: "vs20sugarrushx", name: "Sugar Rush 1000", provider: "Pragmatic Play", cat: "slots", rtp: 96.53, c1: "#e11d48", c2: "#4c0519" },
@@ -250,7 +252,7 @@ RD.esc = function (s) {
 
 /* Fotos enviadas para assets/img: liste o caminho aqui ao subir uma (ex.: "assets/img/games/chicken.jpg").
    Sem estar na lista, o site usa a ilustração própria e não faz pedido nenhum ao servidor (evita dezenas de 404 por página). */
-RD.imgFiles = ["sugar-rush", "big-bass", "sweet-bonanza-classic", "wanted", "mental-2", "book-dead", "lightning-roulette", "lightning-blackjack", "golden-wealth-baccarat", "immersive-roulette", "crazy-time", "monopoly", "dream-catcher", "funky-time"].map(function (id) { return "assets/img/games/" + id + ".jpg"; }); // fotos oficiais dos provedores, hospedadas no site
+RD.imgFiles = ["gatto", "sugar-rush", "big-bass", "sweet-bonanza-classic", "wanted", "mental-2", "book-dead", "lightning-roulette", "lightning-blackjack", "golden-wealth-baccarat", "immersive-roulette", "crazy-time", "monopoly", "dream-catcher", "funky-time"].map(function (id) { return "assets/img/games/" + id + ".jpg"; }); // fotos oficiais dos provedores, hospedadas no site
 RD.hasImg = function (src) { return !!src && (/^(https?|data|blob):/.test(src) || RD.imgFiles.indexOf(src) > -1); };
 
 RD.media = function (o, cls, label) {
