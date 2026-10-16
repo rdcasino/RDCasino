@@ -216,6 +216,19 @@
       };
     }, function (e) { return { error: msg(e) }; });
   };
+  /* ---------- Slots próprios (Don Gatto): o servidor sorteia a rodada inteira (slot_spin); o jogo só anima ---------- */
+  db.slotSpin = function (game, bet, mode) {
+    return fastRpc("slot_spin", { p_game: game, p_bet: bet, p_mode: mode }).then(function (r) {
+      if (r.error) return { error: msg(r.error) };
+      var x = r.data, me = db.current();
+      applyProfile(x.profile);
+      if (me && me.seeds) me.seeds.nonce = +x.nonce + 1;
+      if (+x.bet.id > lastBetId) lastBetId = +x.bet.id;
+      D.bets.unshift(mapBet(Object.assign({}, x.bet, { detail: { mode: mode, bet: bet } }), game, { nonce: +x.nonce, client: x.client })); if (D.bets.length > 500) D.bets.length = 500;
+      bonusSoon(); db.emit();
+      return { result: x.result, payout: n(x.bet.payout) };
+    }, function (e) { return { error: msg(e) }; });
+  };
   /* ---------- Jogos com rodada (Mines, Tower, Chicken, Hi-Lo, RPS, Crash, Blackjack): o servidor joga ---------- */
   var SOON = { error: "Not available yet." };
   db.placeBet = function () { return SOON; };

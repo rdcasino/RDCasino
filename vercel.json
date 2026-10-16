@@ -12,10 +12,6 @@
           "value": "nosniff"
         },
         {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
           "key": "Referrer-Policy",
           "value": "strict-origin-when-cross-origin"
         },
@@ -30,11 +26,33 @@
       ]
     },
     {
-      "source": "/((?!design/).*)",
+      "source": "/((?!games/).*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        }
+      ]
+    },
+    {
+      "source": "/games/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"
+        }
+      ]
+    },
+    {
+      "source": "/((?!design/|games/).*)",
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://szhmaytfipnzcdulotli.supabase.co https://common-static.ppgames.net; connect-src 'self' https://szhmaytfipnzcdulotli.supabase.co wss://szhmaytfipnzcdulotli.supabase.co; frame-src https://demogamesfree.pragmaticplay.net; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'"
+          "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://szhmaytfipnzcdulotli.supabase.co https://common-static.ppgames.net; connect-src 'self' https://szhmaytfipnzcdulotli.supabase.co wss://szhmaytfipnzcdulotli.supabase.co; frame-src 'self' https://demogamesfree.pragmaticplay.net; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'"
         }
       ]
     },

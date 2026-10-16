@@ -1758,6 +1758,9 @@ body.sb-mini .sb-link { height: 38px; }
 .pp-bar small { font-size: 12px; color: var(--text-3); }
 .pp-note { font-size: 12.5px; }
 @media (max-width: 640px) { .pp-note { display: none; } .pp-frame { aspect-ratio: 4 / 3; } }
+/* Slots próprios: o jogo se ajusta sozinho (16:9 no PC, em pé no celular) */
+.own-slot { background: #12070d; }
+@media (max-width: 640px) { .own-slot { aspect-ratio: auto; height: calc(100svh - 170px); min-height: 520px; } }
 /* Leaderboard: rank VIP de cada jogador */
 .lb-player { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .lb-who { display: flex; flex-direction: column; min-width: 0; line-height: 1.2; }
