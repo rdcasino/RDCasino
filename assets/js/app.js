@@ -472,21 +472,21 @@
   }
 
   /* ---------- Tabelas e fórmulas ---------- */
-  /* Plinko: mesmo formato das tabelas da Stake, calibradas para RTP 98% (nunca acima) */
+  /* Plinko: mesmo formato das tabelas da Stake, calibradas para RTP 97% (nunca acima) */
   var PLINKO = {
-    8: { low: [5.5, 1.95, 1.1, 1, 0.5, 1, 1.1, 1.95, 5.5], medium: [13, 2.85, 1.3, 0.7, 0.4, 0.7, 1.3, 2.85, 13], high: [29, 4, 1.45, 0.3, 0.2, 0.3, 1.45, 4, 29] },
-    9: { low: [5.3, 1.75, 1.6, 1, 0.7, 0.7, 1, 1.6, 1.75, 5.3], medium: [15.5, 3.95, 1.7, 0.9, 0.5, 0.5, 0.9, 1.7, 3.95, 15.5], high: [42.5, 6.75, 2, 0.6, 0.2, 0.2, 0.6, 2, 6.75, 42.5] },
-    10: { low: [8.75, 2.5, 1.4, 1.1, 1, 0.5, 1, 1.1, 1.4, 2.5, 8.75], medium: [22, 4.75, 1.95, 1.4, 0.6, 0.4, 0.6, 1.4, 1.95, 4.75, 22], high: [76, 9.45, 3, 0.9, 0.3, 0.2, 0.3, 0.9, 3, 9.45, 76] },
-    11: { low: [8, 2.85, 1.9, 1.25, 1, 0.7, 0.7, 1, 1.25, 1.9, 2.85, 8], medium: [19, 6, 2.9, 1.8, 0.7, 0.5, 0.5, 0.7, 1.8, 2.9, 6, 19], high: [108, 14, 5.2, 1.4, 0.4, 0.2, 0.2, 0.4, 1.4, 5.2, 14, 108] },
-    12: { low: [10, 2.7, 1.35, 1.4, 1.1, 1, 0.5, 1, 1.1, 1.4, 1.35, 2.7, 10], medium: [32.5, 11, 3.7, 2, 1.1, 0.6, 0.3, 0.6, 1.1, 2, 3.7, 11, 32.5], high: [169, 23, 7.95, 2, 0.7, 0.2, 0.2, 0.2, 0.7, 2, 7.95, 23, 169] },
-    13: { low: [8.1, 3.6, 3, 1.9, 1.15, 0.9, 0.7, 0.7, 0.9, 1.15, 1.9, 3, 3.6, 8.1], medium: [38, 13, 6, 3, 1.25, 0.7, 0.4, 0.4, 0.7, 1.25, 3, 6, 13, 38], high: [257, 36, 11, 3.9, 1, 0.2, 0.2, 0.2, 0.2, 1, 3.9, 11, 36, 257] },
-    14: { low: [7.05, 4, 1.8, 1.2, 1.3, 1.1, 1, 0.5, 1, 1.1, 1.3, 1.2, 1.8, 4, 7.05], medium: [52.5, 9.9, 6.95, 4, 1.9, 1, 0.5, 0.2, 0.5, 1, 1.9, 4, 6.95, 9.9, 52.5], high: [414, 52, 18, 4.95, 1.9, 0.3, 0.2, 0.2, 0.2, 0.3, 1.9, 4.95, 18, 52, 414] },
-    15: { low: [10, 8, 3, 1.65, 1.5, 1.1, 1, 0.7, 0.7, 1, 1.1, 1.5, 1.65, 3, 8, 10], medium: [83.5, 18, 11, 4.65, 3, 1.3, 0.5, 0.3, 0.3, 0.5, 1.3, 3, 4.65, 11, 18, 83.5], high: [611, 83, 27, 7.65, 3, 0.5, 0.2, 0.2, 0.2, 0.2, 0.5, 3, 7.65, 27, 83, 611] },
-    16: { low: [16, 8.65, 2, 1.4, 1.4, 1.2, 1.1, 1, 0.45, 1, 1.1, 1.2, 1.4, 1.4, 2, 8.65, 16], medium: [110, 40, 10, 4.45, 3, 1.5, 1, 0.5, 0.3, 0.5, 1, 1.5, 3, 4.45, 10, 40, 110], high: [1000, 130, 24.5, 8.75, 4, 2, 0.2, 0.2, 0.2, 0.2, 0.2, 2, 4, 8.75, 24.5, 130, 1000] }
+    8: { low: [5.5,1.94,1.09,0.99,0.49,0.99,1.09,1.94,5.5], medium: [13,2.84,1.29,0.69,0.39,0.69,1.29,2.84,13], high: [28.7,3.96,1.44,0.3,0.19,0.3,1.44,3.96,28.7] },
+    9: { low: [5.3,1.74,1.59,0.99,0.69,0.69,0.99,1.59,1.74,5.3], medium: [15.5,3.94,1.69,0.89,0.49,0.49,0.89,1.69,3.94,15.5], high: [42.1,6.68,1.98,0.59,0.2,0.2,0.59,1.98,6.68,42.1] },
+    10: { low: [8.75,2.49,1.39,1.09,0.99,0.49,0.99,1.09,1.39,2.49,8.75], medium: [22,4.75,1.94,1.39,0.59,0.39,0.59,1.39,1.94,4.75,22], high: [75.5,9.37,2.97,0.89,0.3,0.19,0.3,0.89,2.97,9.37,75.5] },
+    11: { low: [8,2.84,1.89,1.24,0.99,0.69,0.69,0.99,1.24,1.89,2.84,8], medium: [19,5.99,2.89,1.79,0.69,0.49,0.49,0.69,1.79,2.89,5.99,19], high: [107,13.9,5.16,1.39,0.4,0.19,0.19,0.4,1.39,5.16,13.9,107] },
+    12: { low: [10,2.69,1.34,1.39,1.09,0.99,0.49,0.99,1.09,1.39,1.34,2.69,10], medium: [32.5,10.9,3.67,1.98,1.09,0.59,0.3,0.59,1.09,1.98,3.67,10.9,32.5], high: [168,22.8,7.9,1.98,0.69,0.2,0.19,0.2,0.69,1.98,7.9,22.8,168] },
+    13: { low: [8.1,3.59,2.99,1.89,1.14,0.89,0.69,0.69,0.89,1.14,1.89,2.99,3.59,8.1], medium: [38,13,5.98,2.99,1.24,0.69,0.39,0.39,0.69,1.24,2.99,5.98,13,38], high: [256,35.8,10.9,3.88,0.99,0.2,0.19,0.19,0.2,0.99,3.88,10.9,35.8,256] },
+    14: { low: [7.05,3.99,1.79,1.19,1.29,1.09,0.99,0.49,0.99,1.09,1.29,1.19,1.79,3.99,7.05], medium: [52.4,9.84,6.91,3.98,1.88,0.99,0.49,0.2,0.49,0.99,1.88,3.98,6.91,9.84,52.4], high: [412,51.5,17.8,4.9,1.88,0.3,0.2,0.19,0.2,0.3,1.88,4.9,17.8,51.5,412] },
+    15: { low: [10,8,3,1.65,1.48,1.09,0.99,0.69,0.69,0.99,1.09,1.48,1.65,3,8,10], medium: [83.5,18,11,4.63,2.99,1.29,0.49,0.29,0.29,0.49,1.29,2.99,4.63,11,18,83.5], high: [611,82.7,26.9,7.59,2.98,0.49,0.2,0.19,0.19,0.2,0.49,2.98,7.59,26.9,82.7,611] },
+    16: { low: [16,8.64,1.99,1.39,1.39,1.19,1.09,0.99,0.44,0.99,1.09,1.19,1.39,1.39,1.99,8.64,16], medium: [110,39.8,9.93,4.42,2.99,1.48,0.99,0.49,0.3,0.49,0.99,1.48,2.99,4.42,9.93,39.8,110], high: [993,129,24.2,8.67,3.96,1.98,0.2,0.2,0.19,0.2,0.2,1.98,3.96,8.67,24.2,129,993] }
   };
 
   RD.fair.plinko = PLINKO;
-  function minesMult(k, m) { var x = 0.98; for (var i = 0; i < k; i++) x *= (25 - i) / (25 - m - i); return Math.floor(x * 100) / 100; }
+  function minesMult(k, m) { var x = 0.97; for (var i = 0; i < k; i++) x *= (25 - i) / (25 - m - i); return Math.floor(x * 100) / 100; }
   var RANKS = ["", "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"], SUITS = ["♠", "♥", "♦", "♣"];
   /* Carta de baralho (Blackjack, Hi-Lo, Baccarat): naipes desenhados em SVG, frente/verso com virada 3D */
   var SUIT_D = ["M12 2C9 6.5 3.5 9.5 3.5 14a4.5 4.5 0 0 0 7.6 3.2L10 22h4l-1.1-4.8A4.5 4.5 0 0 0 20.5 14C20.5 9.5 15 6.5 12 2z",
@@ -558,18 +558,18 @@
   var ABOUT = {
     dice: "<p><strong>Dice</strong> is the classic crypto casino game. Set your win chance anywhere from 0.01% to 97% and roll over or under the target. The lower your win chance, the higher the multiplier — up to 9,800×.</p><p>Every roll lands between 0.00 and 100.00.</p>",
     limbo: "<p><strong>Limbo</strong>: set a target multiplier and bet. If the result reaches your target, you win your bet times the target. Targets go from 1.01× to 1,000,000×.</p>",
-    plinko: "<p><strong>Plinko</strong>: drop the ball and watch it bounce down the pegs. Where it lands sets your multiplier. Choose 8 to 16 rows and low, medium or high risk — 16 rows on high risk pays up to 1,000× on the edges.</p>",
+    plinko: "<p><strong>Plinko</strong>: drop the ball and watch it bounce down the pegs. Where it lands sets your multiplier. Choose 8 to 16 rows and low, medium or high risk — 16 rows on high risk pays up to 993× on the edges.</p>",
     crash: "<p><strong>Crash</strong>: the multiplier starts at 1.00× and climbs until it crashes. Cash out before the crash to win your bet times the multiplier. Set an automatic cashout to lock in a target.</p>",
     mines: "<p><strong>Mines</strong>: a 5×5 grid hides gems and mines. Choose how many mines (1–24), then reveal tiles. Every gem raises your multiplier — cash out any time, but hit a mine and the round is lost.</p>",
-    wheel: "<p><strong>Wheel</strong>: spin the wheel and win the multiplier it stops on. Choose 10 to 50 segments and low, medium or high risk — high risk has a single big segment worth up to 49×.</p>",
-    keno: "<p><strong>Keno</strong>: pick 1 to 10 numbers from 40. We draw 10. The more of your numbers are drawn, the bigger the multiplier — up to 1,140×. Choose Classic, Low, Medium or High risk; the payout table updates as you pick.</p>",
+    wheel: "<p><strong>Wheel</strong>: spin the wheel and win the multiplier it stops on. Choose 10 to 50 segments and low, medium or high risk — high risk has a single big segment worth up to 48.5×.</p>",
+    keno: "<p><strong>Keno</strong>: pick 1 to 10 numbers from 40. We draw 10. The more of your numbers are drawn, the bigger the multiplier — up to 1,000×. Choose Classic, Low, Medium or High risk; the payout table updates as you pick.</p>",
     blackjack: "<p><strong>Blackjack</strong>: get closer to 21 than the dealer without going over. Blackjack pays 3 to 2, the dealer hits soft 17 and stands on hard 17, you can double on your first two cards or split a pair once (no doubling after a split), and when the dealer shows an Ace you can take insurance (half your bet, pays 2 to 1 if the dealer has Blackjack). Cards are dealt from an infinite deck. RTP shown assumes basic strategy (approximate).</p>",
     roulette: "<p><strong>Roulette</strong>: European wheel with a single zero. Place chips on numbers or outside bets — a number pays 36.26×, dozens and columns 3.02×, and red/black, even/odd and 1–18/19–36 pay 2.01× (your bet included). RTP 98% on every bet.</p>",
-    tower: "<p><strong>Tower</strong>: climb 9 floors. On every floor pick a tile — find the egg and you go up, hit the skull and the round ends. Cash out whenever you want. Five difficulties, from Easy (3 eggs in 4 tiles) to Master (1 egg in 4 tiles, up to 256,901×).</p>",
+    tower: "<p><strong>Tower</strong>: climb 9 floors. On every floor pick a tile — find the egg and you go up, hit the skull and the round ends. Cash out whenever you want. Five difficulties, from Easy (3 eggs in 4 tiles) to Master (1 egg in 4 tiles, up to 254,279×).</p>",
     spill: "<p><strong>Spill</strong>: fill the cup one step at a time. Every fill raises your multiplier, but a hidden fill makes the cup spill over. Cash out any time. Easy hides 1 spill in 25 fills, Medium 3, Hard 5 and Expert 10.</p>",
     chicken: "<p><strong>Chicken</strong>: help the chicken cross the road, one lane at a time. Every lane you cross raises your multiplier, but some lanes hide a car. Cash out before you get hit. Easy hides 1 car in 20 lanes, Expert hides 10.</p>",
-    coinflip: "<p><strong>Coinflip</strong>: pick Heads or Tails and flip. <b>Classic</b> is one flip at 1.96×. <b>Target</b> asks for 2 to 10 flips in a row on your side — every extra flip doubles the multiplier, up to 1,003.52×. Heads is the gold RD coin, Tails the silver one.</p>",
-    rps: "<p><strong>Rock Paper Scissors</strong>: beat the house hand to climb the ladder — 1.96×, 3.92×, 7.84× and up to 1,003.52× after 10 wins. A tie gives you another throw at no cost. Cash out after any win. Scissors cut paper, rock smashes scissors, paper wraps rock.</p>",
+    coinflip: "<p><strong>Coinflip</strong>: pick Heads or Tails and flip. <b>Classic</b> is one flip at 1.94×. <b>Target</b> asks for 2 to 10 flips in a row on your side — every extra flip doubles the multiplier, up to 993.28×. Heads is the gold RD coin, Tails the silver one.</p>",
+    rps: "<p><strong>Rock Paper Scissors</strong>: beat the house hand to climb the ladder — 1.94×, 3.88×, 7.76× and up to 993.28× after 10 wins. A tie gives you another throw at no cost. Cash out after any win. Scissors cut paper, rock smashes scissors, paper wraps rock.</p>",
     baccarat: "<p><strong>Baccarat</strong>: bet on Player, Banker or Tie. The hand closest to 9 wins. Player pays 1:1, Banker pays 0.95:1 and Tie pays 8:1 (on a tie, Player and Banker bets are returned). Standard third-card rules, infinite deck. House edge: 1.24% on Player, 1.06% on Banker, 14.4% on Tie.</p>",
     double: "<p><strong>Double</strong>: pick a color and spin. 15 tiles: 7 red and 7 black pay 2.1×, the white RD tile pays 14.7×. RTP 98%.</p>",
     soccer: "<p><strong>Soccer</strong>: choose a corner and shoot. The keeper covers 1 to 4 of the 5 corners depending on difficulty. Every goal multiplies your win — cash out any time, or keep shooting for up to 15,000×.</p>",
@@ -1213,7 +1213,7 @@
         [["up", o.up], ["down", o.down]].forEach(function (x) {
           $("#hl-" + x[0] + "-l").textContent = x[1].label;
           $("#hl-" + x[0] + "-p").textContent = (x[1].p * 100).toFixed(2) + "%";
-          $("#hl-" + x[0] + "-m").textContent = (0.98 / x[1].p).toFixed(2) + "×";
+          $("#hl-" + x[0] + "-m").textContent = (0.97 / x[1].p).toFixed(2) + "×";
           $("#hl-" + x[0]).disabled = !live;
         });
         $("#hl-skip").disabled = live ? false : !me();
@@ -1261,7 +1261,7 @@
               setTimeout(function () { if (!round && $("#hl-card")) { loadPreview(); } }, 1600);
               return;
             }
-            round.mult = RD.live ? x.state.mult : Math.floor(round.mult * (0.98 / opt.p) * 100) / 100;
+            round.mult = RD.live ? x.state.mult : Math.floor(round.mult * (0.97 / opt.p) * 100) / 100;
           }
           db.updateRound(u.id, G, { cards: round.cards, mult: round.mult }); keepCard(next); busyCard = false; show(true);
         });
@@ -1302,18 +1302,18 @@
     }
   };
 
-  /* ---------- Tabelas: Wheel e Keno (RTP 98%, conferidas) ---------- */
-  /* Wheel: RTP 98% em todas as combinações */
-  var WHEEL_MED = {"10":[0,1.8,0,1.5,0,2,0,1.5,0,3],"20":[1.4,0,2,0,2,0,2,0,1.4,0,3,0,1.8,0,2,0,2,0,2,0],"30":[1.5,0,1.5,0,2,0,1.5,0,2,0,2,0,1.5,0,3,0,1.5,0,2,0,2,0,1.4,0,4,0,1.5,0,2,0],"40":[2,0,3,0,2,0,1.5,0,3,0,1.5,0,1.5,0,2,0,1.5,0,3,0,1.5,0,2,0,2,0,1.2,0,2,0,1.5,0,3,0,1.5,0,2,0,1.5,0],"50":[2,0,1.5,0,2,0,1.5,0,3,0,1.5,0,1.5,0,2,0,1.5,0,3,0,1.5,0,2,0,1.5,0,2,0,2,0,1.5,0,3,0,1.5,0,2,0,1.5,0,1.5,0,4.5,0,1.5,0,2,0,1.5,0]};
+  /* ---------- Tabelas: Wheel e Keno (RTP 97%, conferidas) ---------- */
+  /* Wheel: RTP 97% em todas as combinações */
+  var WHEEL_MED = {"10":[0,1.79,0,1.48,0,1.98,0,1.48,0,2.97],"20":[1.38,0,1.98,0,1.98,0,1.98,0,1.39,0,2.97,0,1.78,0,1.98,0,1.98,0,1.98,0],"30":[1.49,0,1.49,0,1.98,0,1.48,0,1.98,0,1.98,0,1.48,0,2.97,0,1.48,0,1.98,0,1.98,0,1.39,0,3.96,0,1.48,0,1.98,0],"40":[1.99,0,2.98,0,1.99,0,1.48,0,2.97,0,1.48,0,1.48,0,1.98,0,1.48,0,2.97,0,1.48,0,1.98,0,1.98,0,1.19,0,1.98,0,1.48,0,2.97,0,1.48,0,1.98,0,1.48,0],"50":[1.99,0,1.49,0,1.99,0,1.49,0,2.98,0,1.49,0,1.48,0,1.98,0,1.48,0,2.97,0,1.48,0,1.98,0,1.48,0,1.98,0,1.98,0,1.48,0,2.97,0,1.48,0,1.98,0,1.48,0,1.48,0,4.45,0,1.48,0,1.98,0,1.48,0]};
   function wheelTable(n, risk) {
     if (risk === "medium") return WHEEL_MED[n].slice();
-    var low = [1.4, 1.2, 1.2, 1.2, 0, 1.2, 1.2, 1.2, 1.2, 0], t = [];
-    for (var i = 0; i < n; i++) t.push(risk === "high" ? (i === n - 1 ? Math.round(0.98 * n * 100) / 100 : 0) : low[i % 10]);
+    var low = [1.37, 1.19, 1.19, 1.19, 0, 1.19, 1.19, 1.19, 1.19, 0], t = [];
+    for (var i = 0; i < n; i++) t.push(risk === "high" ? (i === n - 1 ? Math.round(0.97 * n * 100) / 100 : 0) : low[i % 10]);
     return t;
   }
   function comb(n, k) { if (k < 0 || k > n) return 0; var r = 1; for (var i = 1; i <= k; i++) r = r * (n - k + i) / i; return r; }
-  /* Keno: multiplicador por acertos, RTP 98% (nunca acima) */
-  var KENO = {"low":[[0.69,1.85],[0,2,3.65],[0,1.1,1.32,25.96],[0,0,2.19,7.72,90],[0,0,1.5,4.11,13,295],[0,0,1.1,1.93,6.2,100,678],[0,0,1.1,1.6,3.5,14.84,200,700],[0,0,1.1,1.5,1.88,5.42,39,100,800],[0,0,1.1,1.3,1.63,2.38,7.5,50,250,1000],[0,0,1.1,1.2,1.3,1.62,3.5,13,50,250,1000]],"high":[[0,3.92],[0,0,16.98],[0,0,0,80.68],[0,0,0,9.77,259],[0,0,0,4.5,47.99,427],[0,0,0,0,10.58,350,710],[0,0,0,0,6.93,90,381,800],[0,0,0,0,5,19.28,270,600,900],[0,0,0,0,4,10.86,56,468,800,1000],[0,0,0,0,3.5,7.77,12.95,63,500,800,1000]],"medium":[[0.39,2.75],[0,1.79,5.05],[0,0,2.74,49.86],[0,0,1.68,9.91,100],[0,0,1.4,3.9,14,386],[0,0,0,3,8.98,176,710],[0,0,0,2,6.93,30,381,800],[0,0,0,2,3.88,10.98,67,400,900],[0,0,0,2,2.43,4.93,15,100,500,1000],[0,0,0,1.6,2,3.77,7,26,100,500,1000]],"classic":[[0,3.92],[0,1.9,4.32],[0,1,3.1,9.56],[0,0.8,1.8,4.76,22.43],[0,0.23,1.4,4.1,16.34,36],[0,0,0.97,3.68,7,16.48,40],[0,0,0.47,2.95,4.5,13.83,31,60],[0,0,0,2.2,4,12.23,22,55,70],[0,0,0,1.53,3,7.82,15,44,60,85],[0,0,0,1.4,2.18,4.5,8,16.86,50,80,100]]};
+  /* Keno: multiplicador por acertos, RTP 97% (nunca acima) */
+  var KENO = {"low":[[0.68,1.84],[0,1.98,3.61],[0,1.08,1.32,25.8],[0,0,2.16,7.66,89.4],[0,0,1.48,4.07,12.9,294],[0,0,1.08,1.92,6.17,99.3,674],[0,0,1.09,1.58,3.46,14.7,198,700],[0,0,1.09,1.48,1.86,5.38,38.9,100,800],[0,0,1.08,1.29,1.62,2.38,7.5,50,250,1000],[0,0,1.08,1.19,1.29,1.62,3.49,13,50,250,1000]],"high":[[0,3.88],[0,0,16.8],[0,0,0,79.8],[0,0,0,9.69,256],[0,0,0,4.45,47.5,423],[0,0,0,0,10.5,346,706],[0,0,0,0,6.86,89,378,800],[0,0,0,0,4.96,19,267,600,900],[0,0,0,0,3.96,10.7,55.6,466,800,1000],[0,0,0,0,3.46,7.7,12.8,62.8,499,800,1000]],"medium":[[0.38,2.74],[0,1.77,5.01],[0,0,2.7,49.4],[0,0,1.66,9.81,99.2],[0,0,1.38,3.87,13.9,383],[0,0,0,2.97,8.89,174,708],[0,0,0,1.97,6.87,29.8,378,800],[0,0,0,1.97,3.85,10.9,66.9,400,900],[0,0,0,1.97,2.42,4.9,14.9,99.9,500,1000],[0,0,0,1.58,1.98,3.74,6.99,26,100,500,1000]],"classic":[[0,3.88],[0,1.88,4.28],[0,0.98,3.09,9.56],[0,0.79,1.78,4.72,22.4],[0,0.22,1.39,4.07,16.2,36],[0,0,0.96,3.64,6.93,16.4,40],[0,0,0.46,2.92,4.47,13.8,31,60],[0,0,0,2.17,3.97,12.1,22,55,70],[0,0,0,1.51,2.97,7.76,15,44,60,85],[0,0,0,1.38,2.16,4.47,8,16.8,50,80,100]]};
   function kenoTable(k, risk) { return (KENO[risk] || KENO.classic)[k - 1].slice(); }
   function kenoFrom(fs) { var a = []; for (var i = 1; i <= 40; i++) a.push(i); for (var j = 0; j < 10; j++) { var k = j + Math.floor(fs[j] * (40 - j)), t = a[j]; a[j] = a[k]; a[k] = t; } return a.slice(0, 10); }
   RD.fair.wheelTable = wheelTable; RD.fair.kenoTable = kenoTable; RD.fair.kenoFrom = kenoFrom;
@@ -1789,13 +1789,13 @@
     }
   };
 
-  /* ---------- TOWER (tabelas da Stake: 9 andares, RTP 98%) ---------- */
+  /* ---------- TOWER (tabelas da Stake: 9 andares, RTP 97%) ---------- */
   var TOWER = {
-    easy: { tiles: 4, eggs: 3, mult: [1.3, 1.74, 2.32, 3.09, 4.12, 5.5, 7.34, 9.78, 13.05] },
-    medium: { tiles: 3, eggs: 2, mult: [1.47, 2.2, 3.3, 4.96, 7.44, 11.16, 16.74, 25.11, 37.67] },
-    hard: { tiles: 2, eggs: 1, mult: [1.96, 3.92, 7.84, 15.68, 31.36, 62.72, 125.44, 250.88, 501.76] },
-    expert: { tiles: 3, eggs: 1, mult: [2.94, 8.82, 26.46, 79.38, 238.14, 714.42, 2143.26, 6429.78, 19289.3] },
-    master: { tiles: 4, eggs: 1, mult: [3.92, 15.68, 62.72, 250.88, 1003.52, 4014.08, 16056.3, 64225.3, 256901.12] }
+    easy: { tiles: 4, eggs: 3, mult: [1.29,1.72,2.29,3.06,4.08,5.45,7.26,9.68,12.91] },
+    medium: { tiles: 3, eggs: 2, mult: [1.45,2.18,3.27,4.91,7.36,11.04,16.57,24.86,37.29] },
+    hard: { tiles: 2, eggs: 1, mult: [1.94,3.88,7.76,15.52,31.04,62.08,124.16,248.32,496.64] },
+    expert: { tiles: 3, eggs: 1, mult: [2.91,8.73,26.19,78.57,235.71,707.13,2121.39,6364.17,19092.51] },
+    master: { tiles: 4, eggs: 1, mult: [3.88,15.52,62.08,248.32,993.28,3973.12,15892.48,63569.92,254279.68] }
   };
   /* Cada andar: embaralha as casas (Fisher–Yates) com (casas − 1) números; as primeiras "eggs" são seguras */
   function towerFrom(fs, level) {
@@ -1913,12 +1913,12 @@
     }
   };
 
-  /* ---------- CHICKEN (tabelas da Stake: 20 faixas, RTP 98%) ---------- */
+  /* ---------- CHICKEN (tabelas da Stake: 20 faixas, RTP 97%) ---------- */
   var CHICKEN = {
-    easy: { bones: 1, mult: [1, 1.03, 1.08, 1.15, 1.22, 1.3, 1.4, 1.5, 1.63, 1.78, 1.96, 2.17, 2.45, 2.8, 3.26, 3.92, 4.9, 6.53, 9.8, 19.6] },
-    medium: { bones: 3, mult: [1, 1.15, 1.36, 1.64, 1.99, 2.45, 3.06, 3.9, 5.07, 6.77, 9.31, 13.3, 19.95, 31.92, 55.86, 111.72, 279.3, 1117.2] },
-    hard: { bones: 5, mult: [1, 1.3, 1.77, 2.45, 3.47, 5.05, 7.58, 11.8, 19.18, 32.88, 60.29, 120.58, 271.32, 723.52, 2532.32, 15193.9] },
-    expert: { bones: 10, mult: [1, 1.96, 4.13, 9.31, 22.61, 60.29, 180.88, 633.08, 2743.34, 16460.1, 181060.88] }
+    easy: { bones: 1, mult: [1,1.02,1.07,1.14,1.21,1.29,1.38,1.49,1.61,1.76,1.94,2.15,2.42,2.77,3.23,3.88,4.85,6.46,9.7,19.4] },
+    medium: { bones: 3, mult: [1,1.14,1.35,1.62,1.97,2.43,3.03,3.86,5.02,6.7,9.21,13.16,19.74,31.59,55.29,110.58,276.45,1105.8] },
+    hard: { bones: 5, mult: [1,1.29,1.75,2.43,3.44,5,7.51,11.68,18.98,32.55,59.67,119.35,268.55,716.13,2506.48,15038.88] },
+    expert: { bones: 10, mult: [1,1.94,4.09,9.21,22.37,59.67,179.03,626.62,2715.35,16292.12,179213.31] }
   };
   /* Embaralha as 20 faixas (Fisher–Yates, 19 números); as primeiras "bones" escondem um carro */
   function chickenFrom(fs, diff) { var a = []; for (var i = 0; i < 20; i++) a.push(i); for (var j = 0; j < 19; j++) { var k = j + Math.floor(fs[j] * (20 - j)), t = a[j]; a[j] = a[k]; a[k] = t; } return a.slice(0, CHICKEN[diff].bones); }
@@ -2025,11 +2025,11 @@
     }
   };
 
-  /* ---------- SPILL (estilo Pump: 25 enchidas de 4%; posições escondidas derramam; RTP 98%) ---------- */
+  /* ---------- SPILL (estilo Pump: 25 enchidas de 4%; posições escondidas derramam; RTP 97%) ---------- */
   var SPILL_BAD = { low: 1, medium: 3, high: 5, degen: 10 };
   /* nomes iguais aos outros jogos (as chaves internas continuam as do servidor) */
   var DIFF_LBL = { low: "Easy", medium: "Medium", high: "Hard", degen: "Expert" }, DIFF_KEY = { easy: "low", medium: "medium", hard: "high", expert: "degen" };
-  function spillMult(bad, k) { var sv = 1; for (var i = 0; i < bad; i++) sv *= (25 - k - i) / (25 - i); return sv > 0 ? Math.floor(0.98 / sv * 100) / 100 : 0; }
+  function spillMult(bad, k) { var sv = 1; for (var i = 0; i < bad; i++) sv *= (25 - k - i) / (25 - i); return sv > 0 ? Math.floor(0.97 / sv * 100) / 100 : 0; }
   RD.fair.spillMult = spillMult;
   function spillScene() {
     // copo de vidro 3D: água com duas ondas em movimento, bolhas subindo, jato com brilho, borda em elipse, base em perspectiva e caixa do multiplicador
@@ -2163,7 +2163,7 @@
     }
   };  /* ---------- CROSS THE LAKE: o sapo rapper atravessa o lago pulando nas vitórias-régias ----------
      Em cada coluna o jogador escolhe a folha: branca (96% de não afundar), laranja (80%) ou rosa (59%).
-     Multiplicador = 0,98 ÷ chance acumulada (RTP 98%). Pulo k usa o k-ésimo número das seeds: afunda se número ≥ chance. */
+     Multiplicador = 0,97 ÷ chance acumulada (RTP 97%). Pulo k usa o k-ésimo número das seeds: afunda se número ≥ chance. */
   var LAKE_COLS = 20, LAKE_PADS = [{ k: "risky", p: 0.59, cls: "r" }, { k: "safe", p: 0.96, cls: "s" }, { k: "mid", p: 0.8, cls: "m" }];
   function lakeMult(raw) { return Math.floor(raw * 100 + 1e-9) / 100; }
   RD.fair.lakePads = LAKE_PADS;
@@ -2199,7 +2199,7 @@
         world.style.transform = "translateX(" + (-off) + "px)";
       }
       function paint() {
-        var k = round ? round.steps : 0, raw = round ? round.raw : 0.98;
+        var k = round ? round.steps : 0, raw = round ? round.raw : 0.97;
         $$(".lk-pad", world).forEach(function (el) {
           var c = +el.getAttribute("data-c"), r = +el.getAttribute("data-r"), pad = LAKE_PADS[r], lab = el.querySelector("b");
           el.className = "lk-pad"; lab.textContent = "";
@@ -2256,9 +2256,9 @@
       function start() {
         var a = ctx.amount(), u = ctx.validate(a); if (!u || pending) return;
         pending = true; RD.sfx.music.start();
-        rStart(u, G, a, { steps: 0, mult: 0.98, path: [] }, {}).then(function (r) {
+        rStart(u, G, a, { steps: 0, mult: 0.97, path: [] }, {}).then(function (r) {
           pending = false; if (r.error) return ctx.msg(r.error);
-          round = { amount: a, steps: 0, raw: 0.98, path: [] }; badge("", "hidden"); reset(); renderHeader(); ctx.refresh(); paint(); setLive(true);
+          round = { amount: a, steps: 0, raw: 0.97, path: [] }; badge("", "hidden"); reset(); renderHeader(); ctx.refresh(); paint(); setLive(true);
         });
       }
       reset(); paint();
@@ -2275,7 +2275,7 @@
         resume: function () {
           var u = me(), r = u && db.activeRound(u.id, G);
           if (r) {
-            var st = r.state || {}; round = { amount: r.amount, steps: st.steps || 0, raw: +st.mult || 0.98, path: (st.path || []).slice() };
+            var st = r.state || {}; round = { amount: r.amount, steps: st.steps || 0, raw: +st.mult || 0.97, path: (st.path || []).slice() };
             $("#og-amt").value = amtIn(r.amount);
             var last = round.path.length ? LAKE_PADS.map(function (q) { return q.k; }).indexOf(round.path[round.path.length - 1]) : 1;
             frogAt(round.steps, last, true); paint(); setLive(true);
@@ -2460,8 +2460,8 @@
     }
   };
 
-  /* ---------- SOCCER (pênalti: 5 alvos, o goleiro defende 1–4; cada gol multiplica, RTP 98%) ---------- */
-  var SOCCER = {"easy":{"mult":[1,1.22,1.53,1.91,2.39,2.99,3.73,4.67,5.84,7.3,9.12],"block":1,"kicks":10},"hard":{"mult":[1,2.45,6.12,15.31,38.28,95.7,239.25,598.14,1495.36],"block":3,"kicks":8},"expert":{"mult":[1,4.9,24.5,122.5,612.5,3062.5,15312.5],"block":4,"kicks":6},"medium":{"mult":[1,1.63,2.72,4.53,7.56,12.6,21,35,58.34,97.24,162.07],"block":2,"kicks":10}};
+  /* ---------- SOCCER (pênalti: 5 alvos, o goleiro defende 1–4; cada gol multiplica, RTP 97%) ---------- */
+  var SOCCER = {"easy":{"mult":[1,1.21,1.51,1.89,2.36,2.96,3.7,4.62,5.78,7.22,9.03],"block":1,"kicks":10},"hard":{"mult":[1,2.42,6.06,15.15,37.89,94.72,236.81,592.04,1480.1],"block":3,"kicks":8},"expert":{"mult":[1,4.85,24.25,121.25,606.25,3031.25,15156.25],"block":4,"kicks":6},"medium":{"mult":[1,1.61,2.69,4.49,7.48,12.47,20.79,34.65,57.75,96.25,160.42],"block":2,"kicks":10}};
   /* Chute nº k: embaralha os 5 alvos com os números 4k…4k+3 (Fisher–Yates); os primeiros "block" são defendidos */
   function soccerFrom(fs, kick, block) { var a = [0, 1, 2, 3, 4], f = fs.slice(kick * 4, kick * 4 + 4); for (var j = 0; j < 4; j++) { var x = j + Math.floor(f[j] * (5 - j)), t = a[j]; a[j] = a[x]; a[x] = t; } return a.slice(0, block); }
   RD.fair.soccer = SOCCER; RD.fair.soccerFrom = soccerFrom;
@@ -2585,8 +2585,8 @@
     }
   };
 
-  /* ---------- DOOR (escolha uma porta por andar, 10 andares, RTP 98%) ---------- */
-  var DOOR = {"easy":{"bad":1,"mult":[1,1.3,1.74,2.32,3.09,4.12,5.5,7.34,9.78,13.05,17.4],"doors":4},"hard":{"bad":1,"mult":[1,1.96,3.92,7.84,15.68,31.36,62.72,125.44,250.88,501.76,1003.52],"doors":2},"expert":{"bad":2,"mult":[1,2.94,8.82,26.46,79.38,238.14,714.42,2143.25,6429.78,19289.34,57868.02],"doors":3},"medium":{"bad":1,"mult":[1,1.47,2.2,3.3,4.96,7.44,11.16,16.74,25.11,37.67,56.51],"doors":3}};
+  /* ---------- DOOR (escolha uma porta por andar, 10 andares, RTP 97%) ---------- */
+  var DOOR = {"easy":{"bad":1,"mult":[1,1.29,1.72,2.29,3.06,4.08,5.45,7.26,9.68,12.91,17.22],"doors":4},"hard":{"bad":1,"mult":[1,1.94,3.88,7.76,15.52,31.04,62.08,124.16,248.32,496.64,993.28],"doors":2},"expert":{"bad":2,"mult":[1,2.91,8.73,26.19,78.57,235.71,707.13,2121.39,6364.17,19092.51,57277.53],"doors":3},"medium":{"bad":1,"mult":[1,1.45,2.18,3.27,4.91,7.36,11.04,16.57,24.86,37.29,55.93],"doors":3}};
   /* Andar nº k: embaralha as portas com os números 3k…3k+2; as primeiras "bad" são armadilha */
   function doorFrom(fs, level, cfg) { var a = [], f = fs.slice(level * 3, level * 3 + 3); for (var i = 0; i < cfg.doors; i++) a.push(i); for (var j = 0; j < cfg.doors - 1; j++) { var x = j + Math.floor(f[j] * (cfg.doors - j)), t = a[j]; a[j] = a[x]; a[x] = t; } return a.slice(0, cfg.bad); }
   RD.fair.door = DOOR; RD.fair.doorFrom = doorFrom;
@@ -2690,8 +2690,8 @@
     }
   };
 
-  /* ---------- COINFLIP (RTP 98%) ---------- */
-  function coinMult(k) { return Math.floor(0.98 * Math.pow(2, k) * 100) / 100; }
+  /* ---------- COINFLIP (RTP 97%) ---------- */
+  function coinMult(k) { return Math.floor(0.97 * Math.pow(2, k) * 100) / 100; }
   function coinFrom(fs) { return fs.map(function (f) { return f < 0.5 ? "heads" : "tails"; }); }
   RD.fair.coinFrom = coinFrom;
   OG.coinflip = {
@@ -2759,9 +2759,9 @@
     }
   };
 
-  /* ---------- PEDRA, PAPEL E TESOURA (sequência de vitórias, RTP 98%) ---------- */
+  /* ---------- PEDRA, PAPEL E TESOURA (sequência de vitórias, RTP 97%) ---------- */
   var RPS = ["rock", "paper", "scissors"], RPS_E = { rock: RD.art.rpsHand("rock"), paper: RD.art.rpsHand("paper"), scissors: RD.art.rpsHand("scissors") };
-  function rpsMult(k) { return Math.round(0.98 * Math.pow(2, k) * 100) / 100; }
+  function rpsMult(k) { return Math.round(0.97 * Math.pow(2, k) * 100) / 100; }
   function rpsBeats(a, b) { return (a === "rock" && b === "scissors") || (a === "scissors" && b === "paper") || (a === "paper" && b === "rock"); }
   function rpsFrom(f) { return RPS[Math.floor(f * 3)]; }
   RD.fair.rpsFrom = rpsFrom;
@@ -3424,8 +3424,8 @@
       "<p><strong>Why can't I see my current server seed?</strong><br>Showing it would let anyone predict the next results. You see its hash now and the seed itself as soon as you rotate.</p>" +
       "<p><strong>What if a result doesn't match?</strong><br>A valid bet always matches its seeds and nonce. If one doesn't, contact support with the bet ID.</p>" +
       "<h2>How results are made (technical)</h2><ul>" +
-      "<li><strong>Dice / Limbo / Crash:</strong> <code>HMAC_SHA256(server_seed, client_seed:nonce)</code> → first 4 bytes → number between 0 and 1. Dice: <code>floor(n × 10001) / 100</code>. Limbo and Crash: <code>floor(0.98 / n × 100) / 100</code> (min 1.00×). Bets placed before 9 Oct 2026 used 0.99 (RTP 99%) in Dice, Limbo, Crash, Mines, Hi-Lo, Coinflip, Wheel, Plinko and Keno.</li>" +
-      "<li><strong>All other games:</strong> need several numbers, made with <code>HMAC_SHA256(server_seed, client_seed:nonce:cursor)</code>, 8 numbers per cursor. Plinko: each row goes right if <code>n ≥ 0.5</code>. Mines: Fisher–Yates shuffle of the 25 tiles, the first N are mines. Hi-Lo and Blackjack: card = <code>floor(n × 52)</code> (infinite deck). In Hi-Lo the first card on the table is the last card of your previous round; every card after it comes from your seeds. Keno: shuffle of 1–40, first 10 are drawn. Wheel: segment = <code>floor(n × segments)</code>. Roulette: number = <code>floor(n × 37)</code>. Tower: on each of the 9 floors, Fisher–Yates shuffle of the tiles, the first ones are eggs. Chicken: Fisher–Yates shuffle of the 20 lanes, the first ones hide a car. Spill: Fisher–Yates shuffle of the 25 fills (like Mines), the first ones spill (1, 3, 5 or 10 by difficulty); multiplier after k pours = 0.98 ÷ chance of surviving k pours. Coinflip: heads if <code>n &lt; 0.5</code>. Rock Paper Scissors: house hand = <code>floor(n × 3)</code> (rock, paper, scissors), one number per throw. Baccarat: 6 cards in order P1 B1 P2 B2, then third cards when the standard rules ask for them.</li></ul>" +
+      "<li><strong>Dice / Limbo / Crash:</strong> <code>HMAC_SHA256(server_seed, client_seed:nonce)</code> → first 4 bytes → number between 0 and 1. Dice: <code>floor(n × 10001) / 100</code>. Limbo and Crash: <code>floor(0.98 / n × 100) / 100</code> (min 1.00×). Bets placed before 9 Oct 2026 used 0.99 (RTP 99%) in Dice, Limbo, Crash, Mines, Hi-Lo, Coinflip, Wheel, Plinko and Keno. Since 16 Oct 2026, Plinko, Keno, Wheel, Mines, Hi-Lo, Coinflip, Rock Paper Scissors, Tower, Chicken, Soccer, Door, Spill, Pump and Cross the Lake pay RTP 97% (0.97 in their formulas); Dice, Limbo, Crash and the table games stay at 98%.</li>" +
+      "<li><strong>All other games:</strong> need several numbers, made with <code>HMAC_SHA256(server_seed, client_seed:nonce:cursor)</code>, 8 numbers per cursor. Plinko: each row goes right if <code>n ≥ 0.5</code>. Mines: Fisher–Yates shuffle of the 25 tiles, the first N are mines. Hi-Lo and Blackjack: card = <code>floor(n × 52)</code> (infinite deck). In Hi-Lo the first card on the table is the last card of your previous round; every card after it comes from your seeds. Keno: shuffle of 1–40, first 10 are drawn. Wheel: segment = <code>floor(n × segments)</code>. Roulette: number = <code>floor(n × 37)</code>. Tower: on each of the 9 floors, Fisher–Yates shuffle of the tiles, the first ones are eggs. Chicken: Fisher–Yates shuffle of the 20 lanes, the first ones hide a car. Spill: Fisher–Yates shuffle of the 25 fills (like Mines), the first ones spill (1, 3, 5 or 10 by difficulty); multiplier after k pours = 0.97 ÷ chance of surviving k pours. Coinflip: heads if <code>n &lt; 0.5</code>. Rock Paper Scissors: house hand = <code>floor(n × 3)</code> (rock, paper, scissors), one number per throw. Baccarat: 6 cards in order P1 B1 P2 B2, then third cards when the standard rules ask for them.</li></ul>" +
       '<h2>Verify a bet</h2><div class="card card-pad">' + verifyForm() + '</div>' +
       '<p class="faint" style="font-size:13px;margin-top:12px">Open "Provably fair" in the bottom bar of any RD Original and rotate your seed to reveal the server seed used for your past bets.</p></div>';
   };
